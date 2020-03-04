@@ -1780,9 +1780,11 @@ public class ModelUtils {
 
     public static Color parseColorRGB(String rgbColor) {
         Matcher m = rgbPattern.matcher(rgbColor);
-        m.find();
-        return new Color(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3)));
-
+        if (m.find()) {
+            return new Color(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3)));
+        } else {
+            return Color.LIGHT_GRAY;
+        }
     }
 
     public static CyNetwork createIntactNetworkFromJSON(IntactNetwork intactNetwork, String species,
