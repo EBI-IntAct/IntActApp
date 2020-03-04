@@ -1,10 +1,7 @@
 package uk.ac.ebi.intact.intactApp.internal.utils;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
+import org.cytoscape.model.*;
 import org.cytoscape.view.model.*;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -18,8 +15,8 @@ import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import uk.ac.ebi.intact.intactApp.internal.model.ChartType;
 import uk.ac.ebi.intact.intactApp.internal.model.EnrichmentTerm;
-import uk.ac.ebi.intact.intactApp.internal.model.Species;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.Species;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -46,9 +43,6 @@ public class ViewUtils {
             useStitch = true;
         VisualStyle stringStyle = createStyle(manager, network, useStitch);
 
-        // if (useHost)
-        //	updateColorMapHost(manager, stringStyle, netView);
-        // else
         updateColorMap(manager, stringStyle, network);
         updateEnhancedLabels(manager, stringStyle, network, manager.showEnhancedLabels());
         updateGlassBallEffect(manager, stringStyle, network, manager.showGlassBallEffect());
@@ -60,6 +54,28 @@ public class ViewUtils {
             vmm.setVisualStyle(stringStyle, netView);
             manager.getService(CyNetworkViewManager.class).addNetworkView(netView);
             manager.getService(CyApplicationManager.class).setCurrentNetworkView(netView);
+
+            CyTable nodeHiddenTable = network.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
+            for (CyNode node : network.getNodeList()) {
+                CyRow nodeRow = nodeHiddenTable.getRow(node.getSUID());
+                View<CyNode> nodeView = netView.getNodeView(node);
+                nodeView.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, ModelUtils.parseColorRGB(nodeRow.get("style", "color", String.class)));
+                nodeView.setLockedValue(BasicVisualLexicon.NODE_SHAPE, BasicVisualLexicon.NODE_SHAPE.parseSerializableString(nodeRow.get("style", "shape", String.class).replace('-', '_')));
+            }
+
+            CyTable edgeHiddenTable = network.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
+            for (CyEdge edge : network.getEdgeList()) {
+                CyRow edgeRow = edgeHiddenTable.getRow(edge.getSUID());
+                View<CyEdge> nodeView = netView.getEdgeView(edge);
+                nodeView.setLockedValue(BasicVisualLexicon.EDGE_PAINT, ModelUtils.parseColorRGB(edgeRow.get("style", "color", String.class)));
+                String shape = edgeRow.get("style", "shape", String.class).replace('-', '_');
+                if (shape.equals("dashed")) {
+                    shape = "EQUAL_DASH";
+                }
+                nodeView.setLockedValue(BasicVisualLexicon.EDGE_LINE_TYPE, BasicVisualLexicon.EDGE_LINE_TYPE.parseSerializableString(shape));
+            }
+
+
         }
 
         return netView;

@@ -12,6 +12,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -19,40 +20,59 @@ import org.w3c.dom.NodeList;
 import uk.ac.ebi.intact.intactApp.internal.model.*;
 import uk.ac.ebi.intact.intactApp.internal.model.EnrichmentTerm.TermCategory;
 
+import java.awt.*;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.List;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ModelUtils {
 
     // Namespaces
-    public static String STRINGDB_NAMESPACE = "stringdb";
+    public static String INTACTDB_NAMESPACE = "intactdb";
     public static String NAMESPACE_SEPARATOR = "::";
 
     // Node information
-    public static String CANONICAL = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "canonical name";
+    public static String CANONICAL = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "canonical name";
     public static String DISPLAY = "display name";
-    public static String FULLNAME = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "full name";
-    public static String CV_STYLE = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "chemViz Passthrough";
-    public static String ELABEL_STYLE = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "enhancedLabel Passthrough";
+    public static String FULLNAME = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "full name";
+    public static String CV_STYLE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "chemViz Passthrough";
+    public static String ELABEL_STYLE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "enhancedLabel Passthrough";
     public static String ID = "@id";
-    public static String DESCRIPTION = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "description";
-    public static String DISEASE_SCORE = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "disease score";
-    public static String NAMESPACE = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "namespace";
+
+
+    public static String INTACT_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "id";
+    public static String PREFERRED_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "preferred id";
+    public static String PREFERRED_ID_DB = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "preferred id database";
+
+    public static String DETECTION_METHOD = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "detection method";
+    public static List<String> NODE_STYLE_KEYS = new ArrayList<>(Arrays.asList("shape", "color"));
+    public static List<String> EDGE_STYLE_KEYS = new ArrayList<>(Arrays.asList("shape", "color", "collapsed_color"));
+
+
+    public static String DESCRIPTION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "description";
+    public static String DISEASE_SCORE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "disease score";
+    public static String NAMESPACE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "namespace";
     public static String QUERYTERM = "query term";
-    public static String SEQUENCE = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "sequence";
-    public static String SMILES = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "smiles";
-    public static String SPECIES = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "species";
-    public static String STRINGID = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "database identifier";
-    public static String STYLE = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "STRING style";
-    public static String TYPE = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "node type";
-    public static String TM_FOREGROUND = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "textmining foreground";
-    public static String TM_BACKGROUND = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "textmining background";
-    public static String TM_SCORE = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "textmining score";
+    public static String SEQUENCE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "sequence";
+    public static String SMILES = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "smiles";
+    public static String SPECIES = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "species";
+    public static String STRINGID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "database identifier";
+    public static String STYLE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "STRING style";
+    public static String TYPE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "node type";
+    public static String TM_FOREGROUND = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "textmining foreground";
+    public static String TM_BACKGROUND = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "textmining background";
+    public static String TM_SCORE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "textmining score";
 
     public static String TISSUE_NAMESPACE = "tissue";
     public static String COMPARTMENT_NAMESPACE = "compartment";
     // public static String TM_LINKOUT = "TextMining Linkout";
-    public static List<String> ignoreKeys = new ArrayList<>(Arrays.asList("image", "canonical", "@id", "description"));
+    public static List<String> ignoreKeys = new ArrayList<>(Arrays.asList("image", "canonical", "@id", "description",
+            "id", "preferred_id", "preferred_id_db", "interactor_type", "species", "interactor_name", "label",
+            "source", "target", "interaction_ac", "interaction_detection_method", "interaction_type"));
     public static List<String> namespacedNodeAttributes = new ArrayList<>(Arrays.asList("canonical name", "full name", "chemViz Passthrough",
             "enhancedLabel Passthrough", "description", "disease score", "namespace", "sequence", "smiles", "species", "database identifier",
             "STRING style", "node type", "textmining foreground", "textmining background", "textmining score"));
@@ -71,9 +91,9 @@ public class ModelUtils {
     // "http://diseases.jensenlab.org/Entity?type1=9606&type2=-26";
 
     // Edge information
-    public static String SCORE = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "score";
+    public static String SCORE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "score";
     public static String SCORE_NO_NAMESPACE = "score";
-    public static String INTERSPECIES = STRINGDB_NAMESPACE + NAMESPACE_SEPARATOR + "interspecies";
+    public static String INTERSPECIES = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "interspecies";
 
     public static List<String> namespacedEdgeAttributes = new ArrayList<>(Arrays.asList("score", "interspecies", "experiments", "cooccurrence",
             "coexpression", "textmining", "databases", "neighborhood"));
@@ -151,7 +171,7 @@ public class ModelUtils {
     public static List<String> getSubScoreList(CyNetwork network) {
         List<String> scores = new ArrayList<>();
         if (network == null) return scores;
-        Collection<CyColumn> columns = network.getDefaultEdgeTable().getColumns(STRINGDB_NAMESPACE);
+        Collection<CyColumn> columns = network.getDefaultEdgeTable().getColumns(INTACTDB_NAMESPACE);
         if (columns == null || columns.size() == 0) return scores;
         for (CyColumn col : columns) {
             if (col.getNameOnly().equals("score") || !col.getType().equals(Double.class))
@@ -424,7 +444,7 @@ public class ModelUtils {
         Map<String, String> nodeNameMap = new HashMap<>();
         String species = ModelUtils.getNetSpecies(net);
         // TODO: Check if we really don't have to infer the database!
-        // String useDATABASE = IntactManager.STRINGDB;
+        // String useDATABASE = IntactManager.INTACTDB;
         for (CyNode node : net.getNodeList()) {
             if (species == null)
                 species = net.getRow(node).get(SPECIES, String.class);
@@ -678,6 +698,7 @@ public class ModelUtils {
 
         // Get the nodes
         JSONArray nodes = (JSONArray) json.get("nodes");
+
         if (nodes != null && nodes.size() > 0) {
             createColumnsFromJSON(nodes, network.getDefaultNodeTable());
             for (Object nodeObj : nodes) {
@@ -731,7 +752,7 @@ public class ModelUtils {
         Collections.sort(jsonKeysSorted);
         for (String jsonKey : jsonKeysSorted) {
             // String formattedJsonKey = formatForColumnNamespace(jsonKey);
-            if (ignoreKeys.contains(jsonKey))
+            if (ignoreKeys.contains(jsonKey) || NODE_STYLE_KEYS.contains(jsonKey) || EDGE_STYLE_KEYS.contains(jsonKey))
                 continue;
             if (listKeys.contains(jsonKey)) {
                 createListColumnIfNeeded(table, jsonKeysClass.get(jsonKey), jsonKey);
@@ -739,14 +760,13 @@ public class ModelUtils {
                 createColumnIfNeeded(table, jsonKeysClass.get(jsonKey), jsonKey);
             }
         }
-
     }
 
     public static String formatForColumnNamespace(String columnName) {
         String formattedColumnName = columnName;
         if (columnName.contains("::")) {
-            if (columnName.startsWith(STRINGDB_NAMESPACE))
-                formattedColumnName = columnName.substring(STRINGDB_NAMESPACE.length() + 2);
+            if (columnName.startsWith(INTACTDB_NAMESPACE))
+                formattedColumnName = columnName.substring(INTACTDB_NAMESPACE.length() + 2);
             else
                 formattedColumnName = columnName.replaceFirst("::", " ");
         }
@@ -778,7 +798,7 @@ public class ModelUtils {
     public static boolean ifHaveStringNS(CyNetwork network) {
         if (network == null) return false;
         CyRow netRow = network.getRow(network);
-        Collection<CyColumn> columns = network.getDefaultNodeTable().getColumns(STRINGDB_NAMESPACE);
+        Collection<CyColumn> columns = network.getDefaultNodeTable().getColumns(INTACTDB_NAMESPACE);
         return netRow.isSet(CONFIDENCE) && netRow.isSet(NET_SPECIES) && columns != null && columns.size() > 0;
     }
 
@@ -1730,5 +1750,270 @@ public class ModelUtils {
             super(name, "stringApp.props", policy);
         }
     }
+
+
+    /////////////////////////////////////////////////////////////////////
+
+
+    public static Map<String, List<JSONObject>> groupByJSON(JSONArray toSplit, String keyGroup) {
+        Map<String, List<JSONObject>> groups = new HashMap<>();
+        if (keyGroup == null || keyGroup.equals("")) {
+            keyGroup = "group";
+        }
+
+        for (Object elementObj : toSplit) {
+            JSONObject element = (JSONObject) elementObj;
+            String group = (String) element.get(keyGroup);
+            if (!groups.containsKey(group)) {
+                List<JSONObject> elementsOfGroup = new ArrayList<>();
+                elementsOfGroup.add((JSONObject) element.get("data"));
+                groups.put(group, elementsOfGroup);
+            } else {
+                groups.get(group).add((JSONObject) element.get("data"));
+            }
+        }
+
+        return groups;
+    }
+
+    private static Pattern rgbPattern = Pattern.compile("rgb\\((\\d+), ?(\\d+), ?(\\d+) ?\\)");
+
+    public static Color parseColorRGB(String rgbColor) {
+        Matcher m = rgbPattern.matcher(rgbColor);
+        m.find();
+        return new Color(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3)));
+
+    }
+
+    public static CyNetwork createIntactNetworkFromJSON(IntactNetwork intactNetwork, String species,
+                                                        JSONObject object, Map<String, String> queryTermMap, String netName,
+                                                        String useDATABASE) {
+        intactNetwork.getManager().ignoreAdd();
+        CyNetwork network = createIntactNetworkFromJSON(intactNetwork.getManager(), species, object, queryTermMap, netName, useDATABASE);
+        intactNetwork.getManager().addStringNetwork(intactNetwork, network);
+        intactNetwork.getManager().listenToAdd();
+        intactNetwork.getManager().showResultsPanel();
+        return network;
+    }
+
+    private static CyNetwork createIntactNetworkFromJSON(IntactManager manager, String species,
+                                                         JSONObject object, Map<String, String> queryTermMap, String netName,
+                                                         String useDATABASE) {
+        JSONObject results = getResultsFromJSON(object, JSONObject.class);
+        if (results == null)
+            return null;
+
+        // Get a network name
+        String defaultName = "IntAct Network";
+        if (netName != null && !netName.equals("")) {
+            netName = defaultName + " - " + netName;
+        } else if (queryTermMap != null && queryTermMap.size() == 1) {
+            netName = defaultName + " - " + queryTermMap.values().iterator().next();
+        } else {
+            netName = defaultName;
+        }
+
+        // Create the network
+        CyNetwork newNetwork = manager.createNetwork(netName);
+        setDatabase(newNetwork, useDATABASE);
+        setNetSpecies(newNetwork, species);
+
+        // Create a map to save the nodes
+        Map<String, CyNode> nodeMap = new HashMap<>();
+
+        // Create a map to save the node names
+        Map<String, String> nodeNameMap = new HashMap<>();
+
+        loadJSON(newNetwork, nodeMap, nodeNameMap, null, null);
+
+        manager.addNetwork(newNetwork);
+        return newNetwork;
+    }
+
+    public static List<CyNode> loadJSON(CyNetwork network, Map<String, CyNode> nodeMap, Map<String, String> nodeNameMap, List<CyEdge> newEdges, JSONArray json) {
+        try {
+            List<CyNode> newNodes = new ArrayList<>();
+
+            List<String> intactNodeColumns = new ArrayList<>(Arrays.asList(INTACT_ID, PREFERRED_ID, PREFERRED_ID_DB, TYPE, SPECIES));
+            for (String intactNodeColumn : intactNodeColumns) {
+                createColumnIfNeeded(network.getDefaultNodeTable(), String.class, intactNodeColumn);
+            }
+            for (String styleKey : NODE_STYLE_KEYS) {
+                createColumnIfNeeded(network.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS), String.class, "style::" + styleKey);
+            }
+            List<String> intactEdgeColumns = new ArrayList<>(Arrays.asList(INTACT_ID, DETECTION_METHOD));
+            for (String intactEdgeColumn : intactEdgeColumns) {
+                createColumnIfNeeded(network.getDefaultEdgeTable(), String.class, intactEdgeColumn);
+            }
+            for (String styleKey : EDGE_STYLE_KEYS) {
+                createColumnIfNeeded(network.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS), String.class, "style::" + styleKey);
+            }
+
+            URL resource = Species.class.getResource("/getInteractions.json");
+            InputStream stream = resource.openConnection().getInputStream();
+            JSONArray fixedJSON = (JSONArray) new JSONParser().parse(new InputStreamReader(stream));
+
+            Map<String, List<JSONObject>> groups = ModelUtils.groupByJSON(fixedJSON, "group");
+            List<JSONObject> nodesJSON = groups.get("nodes");
+            List<JSONObject> edgesJSON = groups.get("edges");
+
+            if (nodesJSON.size() > 0) {
+                createColumnsFromIntactJSON(nodesJSON, network.getDefaultNodeTable());
+                for (JSONObject node : nodesJSON) {
+                    CyNode newNode = createIntactNode(network, node, nodeMap, nodeNameMap);
+                    if (newNode != null)
+                        newNodes.add(newNode);
+                }
+            }
+            if (edgesJSON.size() > 0) {
+                createColumnsFromIntactJSON(edgesJSON, network.getDefaultEdgeTable());
+                for (JSONObject edge : edgesJSON) {
+                    createIntactEdge(network, edge, nodeMap, nodeNameMap, newEdges);
+                }
+            }
+
+            return newNodes;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void createColumnsFromIntactJSON(List<JSONObject> nodes, CyTable table) {
+        Map<String, Class<?>> jsonKeysClass = new HashMap<>();
+        Set<String> listKeys = new HashSet<>();
+        for (Object nodeObj : nodes) {
+            if (nodeObj instanceof JSONObject) {
+                JSONObject nodeJSON = (JSONObject) nodeObj;
+                for (Object objKey : nodeJSON.keySet()) {
+                    String key = (String) objKey;
+                    if (jsonKeysClass.containsKey(key)) {
+                        continue;
+                    }
+                    Object value = nodeJSON.get(key);
+                    if (value instanceof JSONArray) {
+                        JSONArray list = (JSONArray) value;
+                        Object element = list.get(0);
+                        jsonKeysClass.put(key, element.getClass());
+                        listKeys.add(key);
+                    } else {
+                        try {
+                            jsonKeysClass.put(key, value.getClass());
+                        } catch (NullPointerException ignored) {
+                        }
+                    }
+                }
+            }
+        }
+        List<String> jsonKeysSorted = new ArrayList<>(jsonKeysClass.keySet());
+        Collections.sort(jsonKeysSorted);
+        for (String jsonKey : jsonKeysSorted) {
+            // String formattedJsonKey = formatForColumnNamespace(jsonKey);
+            if (ignoreKeys.contains(jsonKey) || NODE_STYLE_KEYS.contains(jsonKey) || EDGE_STYLE_KEYS.contains(jsonKey))
+                continue;
+            if (listKeys.contains(jsonKey)) {
+                createListColumnIfNeeded(table, jsonKeysClass.get(jsonKey), jsonKey);
+            } else {
+                createColumnIfNeeded(table, jsonKeysClass.get(jsonKey), jsonKey);
+            }
+        }
+    }
+
+
+    private static CyNode createIntactNode(CyNetwork network, JSONObject nodeJSON,
+                                           Map<String, CyNode> nodeMap, Map<String, String> nodeNameMap) {
+
+        String intactId = (String) nodeJSON.get("id");
+
+        if (nodeMap.containsKey(intactId))
+            return null;
+
+        CyNode newNode = network.addNode();
+        CyRow hiddenRow = network.getRow(newNode, CyNetwork.HIDDEN_ATTRS);
+        CyRow row = network.getRow(newNode);
+
+        for (Object objKey : nodeJSON.keySet()) {
+            String key = (String) objKey;
+            switch (key) {
+                case "id":
+                    row.set(INTACT_ID, intactId);
+                    break;
+                case "interactor_name":
+                    row.set(CyNetwork.NAME, nodeJSON.get(key));
+                    break;
+                case "interactor_type":
+                    row.set(TYPE, nodeJSON.get(key));
+                    break;
+                case "species":
+                    row.set(SPECIES, nodeJSON.get(key));
+                    break;
+                case "preferred_id":
+                    row.set(PREFERRED_ID, nodeJSON.get(key));
+                    break;
+                case "preferred_id_db":
+                    row.set(PREFERRED_ID_DB, ((String) nodeJSON.get(key)).split("[()]")[1]);
+                    break;
+                case "label":
+                case "parent":
+                    continue;
+                default:
+                    if (NODE_STYLE_KEYS.contains(key)) {
+                        hiddenRow.set("style::" + key, nodeJSON.get(key));
+                    } else {
+                        row.set(key, nodeJSON.get(key));
+                    }
+            }
+        }
+
+        nodeMap.put(intactId, newNode);
+        nodeNameMap.put(intactId, intactId);
+        return newNode;
+    }
+
+    private static void createIntactEdge(CyNetwork network, JSONObject edgeJSON,
+                                         Map<String, CyNode> nodeMap, Map<String, String> nodeNameMap, List<CyEdge> newEdges) {
+        String source = (String) edgeJSON.get("source");
+        String target = (String) edgeJSON.get("target");
+        CyNode sourceNode = nodeMap.get(source);
+        CyNode targetNode = nodeMap.get(target);
+
+        CyEdge edge;
+        String type = (String) edgeJSON.get("interaction_type");
+
+        edge = network.addEdge(sourceNode, targetNode, false);
+        CyRow row = network.getRow(edge);
+        CyRow hiddenRow = network.getRow(edge, CyNetwork.HIDDEN_ATTRS);
+        row.set(CyNetwork.NAME, nodeNameMap.get(source) + " (" + type + ") " + nodeNameMap.get(target));
+        row.set(CyEdge.INTERACTION, type);
+
+        if (newEdges != null)
+            newEdges.add(edge);
+
+        for (Object keyObj : edgeJSON.keySet()) {
+            String key = (String) keyObj;
+            if (EDGE_STYLE_KEYS.contains(key)) {
+                hiddenRow.set("style::" + key, edgeJSON.get(key));
+            } else {
+                switch (key) {
+                    case "id":
+                    case "source":
+                    case "target":
+                    case "interaction_type":
+                        continue;
+                    case "interaction_detection_method":
+                        row.set(DETECTION_METHOD, edgeJSON.get(key));
+                        break;
+                    case "interaction_ac":
+                        row.set(INTACT_ID, edgeJSON.get(key));
+                        break;
+                    default:
+                        row.set(key, edgeJSON.get(key));
+                }
+            }
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////
 
 }

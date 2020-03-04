@@ -21,7 +21,7 @@ import uk.ac.ebi.intact.intactApp.internal.utils.ViewUtils;
 import java.util.*;
 
 public class LoadInteractions extends AbstractTask {
-    final IntactNetwork stringNet;
+    final IntactNetwork intactNet;
     final String species;
     final int taxonId;
     final int confidence;
@@ -31,13 +31,13 @@ public class LoadInteractions extends AbstractTask {
     final String netName;
     final String useDATABASE;
 
-    public LoadInteractions(final IntactNetwork stringNet, final String species, final int taxonId,
+    public LoadInteractions(final IntactNetwork intactNet, final String species, final int taxonId,
                             final int confidence, final int additionalNodes,
                             final List<String> stringIds,
                             final Map<String, String> queryTermMap,
                             final String netName,
                             final String useDATABASE) {
-        this.stringNet = stringNet;
+        this.intactNet = intactNet;
         this.taxonId = taxonId;
         this.additionalNodes = additionalNodes;
         this.confidence = confidence;
@@ -53,7 +53,7 @@ public class LoadInteractions extends AbstractTask {
             monitor.setTitle("Loading data from STRING for " + stringIds.size() + " identifiers.");
         else if (useDATABASE.equals(Databases.STITCH.getAPIName()))
             monitor.setTitle("Loading data from STITCH for " + stringIds.size() + " identifiers.");
-        IntactManager manager = stringNet.getManager();
+        IntactManager manager = intactNet.getManager();
         StringBuilder ids = null;
         for (String id : stringIds) {
             if (ids == null)
@@ -85,8 +85,8 @@ public class LoadInteractions extends AbstractTask {
         JSONObject results = HttpUtils.postJSON(manager.getNetworkURL(), args, manager);
 
         // This may change...
-        CyNetwork network = ModelUtils.createNetworkFromJSON(stringNet, species, results,
-                queryTermMap, ids.toString().trim(), netName, useDATABASE);
+        CyNetwork network = ModelUtils.createIntactNetworkFromJSON(intactNet, species, results,
+                queryTermMap, netName, useDATABASE);
 
         if (network == null) {
             monitor.showMessage(TaskMonitor.Level.ERROR, "String returned no results");
@@ -105,7 +105,7 @@ public class LoadInteractions extends AbstractTask {
         ModelUtils.setNetSpecies(network, species);
         ModelUtils.setDataVersion(network, manager.getDataVersion());
         ModelUtils.setNetURI(network, manager.getNetworkURL());
-        stringNet.setNetwork(network);
+        intactNet.setNetwork(network);
 
         // System.out.println("Results: "+results.toString());
         // Now style the network

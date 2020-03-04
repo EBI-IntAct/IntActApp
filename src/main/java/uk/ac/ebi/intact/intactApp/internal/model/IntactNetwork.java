@@ -184,6 +184,8 @@ public class IntactNetwork {
             String termsBatch = getTerms(termsArray, i, i + 5000, termsArray.length);
             annotations = getAnnotationBatch(taxon, termsBatch, useDATABASE, includeViruses);
         }
+
+//        IntactImporter imp = new IntactImporter(this, manager);
         return annotations;
     }
 
@@ -203,6 +205,7 @@ public class IntactNetwork {
         // System.out.println("Getting STRING term resolution");
         JSONObject results = HttpUtils.postJSON(url, args, manager);
         // System.out.println("Results: "+results);
+
 
         if (results != null) {
             // System.out.println("Got results");

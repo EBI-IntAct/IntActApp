@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>uk.ac.ebi.intact.intactApp.internal.tasks</OriginalElement>
+  <nodes>
+    <node x="427.7797008547008" y="270.0">uk.ac.ebi.intact.intactApp.internal.tasks.StringifyTask</node>
+    <node x="0.0" y="103.0">uk.ac.ebi.intact.intactApp.internal.tasks.GetAnnotationsTask</node>
+    <node x="965.296978021978" y="125.0">uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowEnrichmentPanelTaskFactory</node>
+    <node x="302.99999999999994" y="125.0">uk.ac.ebi.intact.intactApp.internal.tasks.factories.ImportNetworkTaskFactory</node>
+    <node x="673.296978021978" y="125.0">uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowPublicationsPanelTaskFactory</node>
+    <node x="358.796978021978" y="0.0">uk.ac.ebi.intact.intactApp.internal.tasks.LoadTermsTask</node>
+    <node x="742.1964285714284" y="508.0">uk.ac.ebi.intact.intactApp.internal.tasks.factories.GetEnrichmentTaskFactory</node>
+    <node x="468.48749999999995" y="405.0">uk.ac.ebi.intact.intactApp.internal.tasks.RequeryTask</node>
+    <node x="129.79697802197802" y="0.0">uk.ac.ebi.intact.intactApp.internal.tasks.LoadSpeciesInteractions</node>
+    <node x="989.796978021978" y="12.0">uk.ac.ebi.intact.intactApp.internal.tasks.ShowEnrichmentPanelTask</node>
+    <node x="517.796978021978" y="0.0">uk.ac.ebi.intact.intactApp.internal.tasks.LoadInteractions</node>
+    <node x="848.546978021978" y="270.0">uk.ac.ebi.intact.intactApp.internal.tasks.GetEnrichmentTask</node>
+    <node x="517.234478021978" y="621.0">uk.ac.ebi.intact.intactApp.internal.tasks.factories.IntactSearchTaskFactory</node>
+    <node x="697.796978021978" y="12.0">uk.ac.ebi.intact.intactApp.internal.tasks.ShowPublicationsPanelTask</node>
+    <node x="828.1182539682541" y="417.0">uk.ac.ebi.intact.intactApp.internal.tasks.GetEnrichmentTaskSwing</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.GetEnrichmentTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowEnrichmentPanelTaskFactory">
+      <point x="174.8571428571429" y="-26.5" />
+      <point x="1121.0535714285713" y="488.0" />
+      <point x="1142.555753968254" y="488.0" />
+      <point x="1142.555753968254" y="250.0" />
+      <point x="1158.796978021978" y="250.0" />
+      <point x="64.5" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.GetEnrichmentTaskSwing" target="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowEnrichmentPanelTaskFactory">
+      <point x="75.75000000000003" y="-14.5" />
+      <point x="1004.8682539682541" y="385.0" />
+      <point x="1120.555753968254" y="385.0" />
+      <point x="1120.555753968254" y="250.0" />
+      <point x="1072.796978021978" y="250.0" />
+      <point x="-21.5" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowPublicationsPanelTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.ShowPublicationsPanelTask">
+      <point x="-102.0" y="-26.5" />
+      <point x="707.296978021978" y="78.0" />
+      <point x="725.671978021978" y="78.0" />
+      <point x="-83.625" y="14.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.IntactSearchTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.factories.GetEnrichmentTaskFactory">
+      <point x="18.25" y="-158.5" />
+      <point x="644.984478021978" y="581.0" />
+      <point x="844.1964285714284" y="581.0" />
+      <point x="-102.0" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.GetEnrichmentTaskSwing" target="uk.ac.ebi.intact.intactApp.internal.tasks.GetEnrichmentTask">
+      <point x="25.25" y="-14.5" />
+      <point x="954.3682539682541" y="385.0" />
+      <point x="923.921978021978" y="385.0" />
+      <point x="-25.125" y="37.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.StringifyTask" target="uk.ac.ebi.intact.intactApp.internal.tasks.GetAnnotationsTask">
+      <point x="-80.39999999999998" y="-37.5" />
+      <point x="447.87970085470084" y="240.0" />
+      <point x="176.875" y="240.0" />
+      <point x="35.375" y="48.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.GetEnrichmentTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.GetEnrichmentTask">
+      <point x="-5.6843418860808015E-14" y="-26.5" />
+      <point x="946.1964285714284" y="478.0" />
+      <point x="1040.618253968254" y="478.0" />
+      <point x="1040.618253968254" y="375.0" />
+      <point x="974.171978021978" y="375.0" />
+      <point x="25.125" y="37.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.StringifyTask" target="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ImportNetworkTaskFactory">
+      <point x="0.0" y="-37.5" />
+      <point x="528.2797008547009" y="220.0" />
+      <point x="464.99999999999994" y="220.0" />
+      <point x="54.0" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.ShowPublicationsPanelTask" target="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowPublicationsPanelTaskFactory">
+      <point x="83.625" y="14.5" />
+      <point x="892.921978021978" y="78.0" />
+      <point x="911.296978021978" y="78.0" />
+      <point x="102.0" y="-26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ImportNetworkTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.LoadInteractions">
+      <point x="72.0" y="-26.5" />
+      <point x="482.99999999999994" y="78.0" />
+      <point x="544.4636446886446" y="78.0" />
+      <point x="-53.33333333333337" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.ShowEnrichmentPanelTask" target="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowEnrichmentPanelTaskFactory">
+      <point x="26.125" y="14.5" />
+      <point x="1120.421978021978" y="78.0" />
+      <point x="1126.546978021978" y="78.0" />
+      <point x="32.25" y="-26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.GetEnrichmentTask" target="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowPublicationsPanelTaskFactory">
+      <point x="-25.125" y="-37.5" />
+      <point x="923.921978021978" y="250.0" />
+      <point x="911.296978021978" y="250.0" />
+      <point x="102.0" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.IntactSearchTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.GetAnnotationsTask">
+      <point x="-54.75" y="-158.5" />
+      <point x="571.984478021978" y="591.0" />
+      <point x="91.04220085470081" y="591.0" />
+      <point x="91.04220085470081" y="250.0" />
+      <point x="106.125" y="250.0" />
+      <point x="-35.375" y="48.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ImportNetworkTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.LoadSpeciesInteractions">
+      <point x="-72.0" y="-26.5" />
+      <point x="338.99999999999994" y="78.0" />
+      <point x="234.29697802197802" y="78.0" />
+      <point x="0.0" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.RequeryTask" target="uk.ac.ebi.intact.intactApp.internal.tasks.StringifyTask">
+      <point x="-31.25" y="-26.5" />
+      <point x="499.73749999999995" y="385.0" />
+      <point x="478.0297008547008" y="385.0" />
+      <point x="-50.25" y="37.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.StringifyTask" target="uk.ac.ebi.intact.intactApp.internal.tasks.LoadInteractions">
+      <point x="80.39999999999998" y="-37.5" />
+      <point x="608.6797008547007" y="250.0" />
+      <point x="636.6041666666666" y="250.0" />
+      <point x="636.6041666666666" y="78.0" />
+      <point x="651.1303113553114" y="78.0" />
+      <point x="53.33333333333337" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.GetEnrichmentTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.GetEnrichmentTaskSwing">
+      <point x="-58.285714285714334" y="-26.5" />
+      <point x="887.9107142857142" y="488.0" />
+      <point x="929.1182539682541" y="488.0" />
+      <point x="0.0" y="14.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.GetEnrichmentTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowPublicationsPanelTaskFactory">
+      <point x="-116.57142857142861" y="-26.5" />
+      <point x="829.6249999999999" y="478.0" />
+      <point x="740.2885531135531" y="478.0" />
+      <point x="740.2885531135531" y="250.0" />
+      <point x="707.296978021978" y="250.0" />
+      <point x="-102.0" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.GetEnrichmentTaskSwing" target="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowPublicationsPanelTaskFactory">
+      <point x="-75.75" y="-14.5" />
+      <point x="853.3682539682541" y="385.0" />
+      <point x="793.125" y="385.0" />
+      <point x="793.125" y="250.0" />
+      <point x="775.296978021978" y="250.0" />
+      <point x="-34.0" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.GetEnrichmentTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.RequeryTask">
+      <point x="-174.8571428571429" y="-26.5" />
+      <point x="771.3392857142856" y="488.0" />
+      <point x="530.9875" y="488.0" />
+      <point x="0.0" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ImportNetworkTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.LoadTermsTask">
+      <point x="0.0" y="-26.5" />
+      <point x="410.99999999999994" y="78.0" />
+      <point x="428.296978021978" y="78.0" />
+      <point x="0.0" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.GetEnrichmentTask" target="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowEnrichmentPanelTaskFactory">
+      <point x="25.125" y="-37.5" />
+      <point x="974.171978021978" y="250.0" />
+      <point x="986.796978021978" y="250.0" />
+      <point x="-107.5" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.IntactSearchTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowEnrichmentPanelTaskFactory">
+      <point x="91.25" y="-158.5" />
+      <point x="717.984478021978" y="601.0" />
+      <point x="1180.7010531135531" y="601.0" />
+      <point x="1180.7010531135531" y="250.0" />
+      <point x="1201.796978021978" y="250.0" />
+      <point x="107.5" y="26.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowEnrichmentPanelTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.ShowEnrichmentPanelTask">
+      <point x="-96.75" y="-26.5" />
+      <point x="997.546978021978" y="78.0" />
+      <point x="1015.921978021978" y="78.0" />
+      <point x="-78.375" y="14.5" />
+    </edge>
+    <edge source="uk.ac.ebi.intact.intactApp.internal.tasks.factories.IntactSearchTaskFactory" target="uk.ac.ebi.intact.intactApp.internal.tasks.factories.ImportNetworkTaskFactory">
+      <point x="-18.25" y="-158.5" />
+      <point x="608.484478021978" y="581.0" />
+      <point x="355.49999999999994" y="581.0" />
+      <point x="355.49999999999994" y="250.0" />
+      <point x="356.99999999999994" y="250.0" />
+      <point x="-54.0" y="26.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="576.5" y="400.5" />
+  <SelectedNodes>
+    <node>uk.ac.ebi.intact.intactApp.internal.tasks.factories.IntactSearchTaskFactory</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Properties</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

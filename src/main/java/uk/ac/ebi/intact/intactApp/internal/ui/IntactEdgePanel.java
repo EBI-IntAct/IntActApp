@@ -170,7 +170,7 @@ public class IntactEdgePanel extends AbstractStringPanel {
             CyRow edgeRow = currentNetwork.getRow(edge);
             boolean show = true;
             for (String lbl : filter.keySet()) {
-                Double v = edgeRow.get(ModelUtils.STRINGDB_NAMESPACE, lbl.toLowerCase(), Double.class);
+                Double v = edgeRow.get(ModelUtils.INTACTDB_NAMESPACE, lbl.toLowerCase(), Double.class);
                 double nv = filter.get(lbl);
                 if ((v == null && nv > 0) || v < nv) {
                     show = false;
@@ -196,7 +196,7 @@ public class IntactEdgePanel extends AbstractStringPanel {
             for (String lbl : color.keySet()) {
                 if (!color.get(lbl))
                     continue;
-                Double v = edgeRow.get(ModelUtils.STRINGDB_NAMESPACE, lbl, Double.class);
+                Double v = edgeRow.get(ModelUtils.INTACTDB_NAMESPACE, lbl, Double.class);
                 if (v != null && v > max) {
                     max = v;
                     clr = colorMap.get(lbl);

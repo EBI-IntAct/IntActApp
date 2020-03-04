@@ -56,7 +56,7 @@ public class AddNamespacesTask extends AbstractTask {
                 String columnName = col.getName();
                 if (ModelUtils.namespacedNodeAttributes.contains(columnName)) {
                     // add STRINGDB namespace
-                    fromToColumns.put(col, ModelUtils.STRINGDB_NAMESPACE
+                    fromToColumns.put(col, ModelUtils.INTACTDB_NAMESPACE
                             + ModelUtils.NAMESPACE_SEPARATOR + columnName);
                     continue;
                 }
@@ -89,7 +89,7 @@ public class AddNamespacesTask extends AbstractTask {
             for (CyColumn col : edgeTable.getColumns()) {
                 if (ModelUtils.namespacedEdgeAttributes.contains(col.getName())) {
                     // add STRINGDB namespace
-                    fromToColumns.put(col, ModelUtils.STRINGDB_NAMESPACE
+                    fromToColumns.put(col, ModelUtils.INTACTDB_NAMESPACE
                             + ModelUtils.NAMESPACE_SEPARATOR + col.getName());
                 }
             }
