@@ -32,6 +32,13 @@ import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.*;
 import uk.ac.ebi.intact.intactApp.internal.ui.IntactCytoPanel;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.intactApp.internal.utils.styles.IntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.data.CollapsedIntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.data.ExpendedIntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.data.MutationIntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice.CollapsedIntactWebserviceStyle;
+import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice.ExpendedIntactWebserviceStyle;
+import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice.MutationIntactWebserviceStyle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -77,6 +84,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     final SynchronousTaskManager<?> synchronousTaskManager;
     final CommandExecutorTaskFactory commandExecutorTaskFactory;
     final AvailableCommands availableCommands;
+
     private ShowImagesTaskFactory imagesTaskFactory;
     private ShowEnhancedLabelsTaskFactory labelsTaskFactory;
     private ShowEnrichmentPanelTaskFactory enrichmentTaskFactory;
@@ -112,6 +120,9 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     private Map<String, Color> channelColors;
     private CyProperty<Properties> sessionProperties;
     private CyProperty<Properties> configProps;
+
+
+    private static Map<String, IntactStyle> intactStyles = new HashMap<>();
 
     private boolean ignore = false;
 
@@ -228,7 +239,27 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
         // Get a session property file for the current session
         sessionProperties = ModelUtils.getPropertyService(this, SavePolicy.SESSION_FILE);
+        setupStyles();
+    }
 
+    private void setupStyles() {
+        if (intactStyles.size() > 0) {
+            for (IntactStyle style: intactStyles.values()) {
+                style.removeStyle();
+            }
+            intactStyles.clear();
+        }
+
+        IntactStyle collapsed = new CollapsedIntactStyle(this);
+        IntactStyle expended = new ExpendedIntactStyle(this);
+        IntactStyle mutation = new MutationIntactStyle(this);
+
+        IntactStyle collapsedWeb = new CollapsedIntactWebserviceStyle(this);
+        IntactStyle expendedWeb = new ExpendedIntactWebserviceStyle(this);
+        IntactStyle mutationWeb = new MutationIntactWebserviceStyle(this);
+
+        for (IntactStyle style: new IntactStyle[]{collapsed, expended, mutation, collapsedWeb, expendedWeb, mutationWeb})
+            intactStyles.put(style.getStyleName(), style);
     }
 
     public void updateURIsFromConfig() {

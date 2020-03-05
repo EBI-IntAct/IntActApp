@@ -47,8 +47,12 @@ public class ModelUtils {
     public static String INTACT_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "id";
     public static String PREFERRED_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "preferred id";
     public static String PREFERRED_ID_DB = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "preferred id database";
+    public static String TAX_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "tax id";
+    public static String MUTATION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "mutation";
 
     public static String DETECTION_METHOD = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "detection method";
+    public static String DISRUPTED_BY_MUTATION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "disrupted by mutation";
+    public static String MI_SCORE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "mi score";
     public static List<String> NODE_STYLE_KEYS = new ArrayList<>(Arrays.asList("shape", "color"));
     public static List<String> EDGE_STYLE_KEYS = new ArrayList<>(Arrays.asList("shape", "color", "collapsed_color"));
 
@@ -71,8 +75,8 @@ public class ModelUtils {
     public static String COMPARTMENT_NAMESPACE = "compartment";
     // public static String TM_LINKOUT = "TextMining Linkout";
     public static List<String> ignoreKeys = new ArrayList<>(Arrays.asList("image", "canonical", "@id", "description",
-            "id", "preferred_id", "preferred_id_db", "interactor_type", "species", "interactor_name", "label",
-            "source", "target", "interaction_ac", "interaction_detection_method", "interaction_type"));
+            "id", "preferred_id", "preferred_id_db", "interactor_type", "species", "interactor_name", "label", "tax_id", "mutation",
+            "source", "target", "interaction_ac", "interaction_detection_method", "interaction_type", "mi_score", "disrupted_by_mutation"));
     public static List<String> namespacedNodeAttributes = new ArrayList<>(Arrays.asList("canonical name", "full name", "chemViz Passthrough",
             "enhancedLabel Passthrough", "description", "disease score", "namespace", "sequence", "smiles", "species", "database identifier",
             "STRING style", "node type", "textmining foreground", "textmining background", "textmining score"));
@@ -1836,17 +1840,31 @@ public class ModelUtils {
         try {
             List<CyNode> newNodes = new ArrayList<>();
 
-            List<String> intactNodeColumns = new ArrayList<>(Arrays.asList(INTACT_ID, PREFERRED_ID, PREFERRED_ID_DB, TYPE, SPECIES));
+            List<String> intactNodeColumns = new ArrayList<>(Arrays.asList(INTACT_ID, PREFERRED_ID, PREFERRED_ID_DB, TYPE,SPECIES));
             for (String intactNodeColumn : intactNodeColumns) {
                 createColumnIfNeeded(network.getDefaultNodeTable(), String.class, intactNodeColumn);
             }
-            for (String styleKey : NODE_STYLE_KEYS) {
-                createColumnIfNeeded(network.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS), String.class, "style::" + styleKey);
-            }
+
+            createColumnIfNeeded(network.getDefaultNodeTable(), Long.class, TAX_ID);
+            createColumnIfNeeded(network.getDefaultNodeTable(), Boolean.class, MUTATION);
+
+//            for (String styleKey : NODE_STYLE_KEYS) {
+//                createColumnIfNeeded(network.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS), String.class, "style::" + styleKey);
+//            }
+            createColumnIfNeeded(network.getDefaultNodeTable(), String.class, "style::color");
+            createColumnIfNeeded(network.getDefaultNodeTable(), String.class, "style::shape");
+
+
+
             List<String> intactEdgeColumns = new ArrayList<>(Arrays.asList(INTACT_ID, DETECTION_METHOD));
             for (String intactEdgeColumn : intactEdgeColumns) {
                 createColumnIfNeeded(network.getDefaultEdgeTable(), String.class, intactEdgeColumn);
             }
+
+            createColumnIfNeeded(network.getDefaultEdgeTable(), Double.class, MI_SCORE);
+            createColumnIfNeeded(network.getDefaultEdgeTable(), Boolean.class, DISRUPTED_BY_MUTATION);
+
+
             for (String styleKey : EDGE_STYLE_KEYS) {
                 createColumnIfNeeded(network.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS), String.class, "style::" + styleKey);
             }
@@ -1956,12 +1974,22 @@ public class ModelUtils {
                 case "preferred_id_db":
                     row.set(PREFERRED_ID_DB, ((String) nodeJSON.get(key)).split("[()]")[1]);
                     break;
+                case "tax_id":
+                    row.set(TAX_ID, nodeJSON.get(key));
+                    break;
+                case "mutation":
+                    row.set(MUTATION, nodeJSON.get(key));
+                    break;
                 case "label":
                 case "parent":
                     continue;
                 default:
                     if (NODE_STYLE_KEYS.contains(key)) {
-                        hiddenRow.set("style::" + key, nodeJSON.get(key));
+                        if (key.contains("color")) {
+                           row.set("style::" + key, ((String) nodeJSON.get(key)).replaceFirst("rgb\\(", "").replace(')',' '));
+                        } else {
+                            row.set("style::" + key, nodeJSON.get(key));
+                        }
                     } else {
                         row.set(key, nodeJSON.get(key));
                     }
@@ -2008,6 +2036,12 @@ public class ModelUtils {
                         break;
                     case "interaction_ac":
                         row.set(INTACT_ID, edgeJSON.get(key));
+                        break;
+                    case "mi_score":
+                        row.set(MI_SCORE, edgeJSON.get(key));
+                        break;
+                    case "disrupted_by_mutation":
+                        row.set(DISRUPTED_BY_MUTATION, edgeJSON.get(key));
                         break;
                     default:
                         row.set(key, edgeJSON.get(key));
