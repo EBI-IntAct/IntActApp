@@ -12,7 +12,6 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -24,7 +23,6 @@ import uk.ac.ebi.intact.intactApp.internal.ui.IntactWebServiceClient;
 import uk.ac.ebi.intact.intactApp.internal.ui.StitchWebServiceClient;
 import uk.ac.ebi.intact.intactApp.internal.ui.TextMiningWebServiceClient;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
-import uk.ac.ebi.intact.intactApp.internal.utils.styles.FunctionalMapping.FunctionalMappingFactory;
 import uk.ac.ebi.intact.intactApp.internal.view.StringCustomGraphicsFactory;
 import uk.ac.ebi.intact.intactApp.internal.view.StringLayer;
 
@@ -57,13 +55,13 @@ public class CyActivator extends AbstractCyActivator {
         // Get a handle on the CyServiceRegistrar
         CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
 
-        final FunctionalMappingFactory fnFactory = new FunctionalMappingFactory(registrar);
-        {
-            final Properties props = new Properties();
-            props.setProperty("service.type", "factory");
-            props.setProperty("mapping.type", "functional");
-            registerService(bc, fnFactory, VisualMappingFunctionFactory.class, props);
-        }
+//        final FunctionalMappingFactory fnFactory = new FunctionalMappingFactory(registrar);
+//        {
+//            final Properties props = new Properties();
+//            props.setProperty("service.type", "factory");
+//            props.setProperty("mapping.type", "functional");
+//            registerService(bc, fnFactory, VisualMappingFunctionFactory.class, props);
+//        }
 
         IntactManager manager = new IntactManager(registrar);
 

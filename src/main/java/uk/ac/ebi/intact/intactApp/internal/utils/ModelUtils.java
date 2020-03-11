@@ -33,6 +33,7 @@ public class ModelUtils {
 
     // Namespaces
     public static String INTACTDB_NAMESPACE = "intactdb";
+    public static String STYLE_NAMESPACE = "style";
     public static String NAMESPACE_SEPARATOR = "::";
 
     // Node information
@@ -53,8 +54,9 @@ public class ModelUtils {
     public static String DETECTION_METHOD = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "detection method";
     public static String DISRUPTED_BY_MUTATION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "disrupted by mutation";
     public static String MI_SCORE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "mi score";
-    public static List<String> NODE_STYLE_KEYS = new ArrayList<>(Arrays.asList("shape", "color"));
-    public static List<String> EDGE_STYLE_KEYS = new ArrayList<>(Arrays.asList("shape", "color", "collapsed_color"));
+    public static String SHAPE = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "shape";
+    public static String COLOR = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "color";
+    public static String COLLAPSED_COLOR = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "collapsed_color";
 
 
     public static String DESCRIPTION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "description";
@@ -76,7 +78,8 @@ public class ModelUtils {
     // public static String TM_LINKOUT = "TextMining Linkout";
     public static List<String> ignoreKeys = new ArrayList<>(Arrays.asList("image", "canonical", "@id", "description",
             "id", "preferred_id", "preferred_id_db", "interactor_type", "species", "interactor_name", "label", "tax_id", "mutation",
-            "source", "target", "interaction_ac", "interaction_detection_method", "interaction_type", "mi_score", "disrupted_by_mutation"));
+            "source", "target", "interaction_ac", "interaction_detection_method", "interaction_type", "mi_score", "disrupted_by_mutation",
+            "shape", "color", "collapsed_color"));
     public static List<String> namespacedNodeAttributes = new ArrayList<>(Arrays.asList("canonical name", "full name", "chemViz Passthrough",
             "enhancedLabel Passthrough", "description", "disease score", "namespace", "sequence", "smiles", "species", "database identifier",
             "STRING style", "node type", "textmining foreground", "textmining background", "textmining score"));
@@ -756,7 +759,7 @@ public class ModelUtils {
         Collections.sort(jsonKeysSorted);
         for (String jsonKey : jsonKeysSorted) {
             // String formattedJsonKey = formatForColumnNamespace(jsonKey);
-            if (ignoreKeys.contains(jsonKey) || NODE_STYLE_KEYS.contains(jsonKey) || EDGE_STYLE_KEYS.contains(jsonKey))
+            if (ignoreKeys.contains(jsonKey))
                 continue;
             if (listKeys.contains(jsonKey)) {
                 createListColumnIfNeeded(table, jsonKeysClass.get(jsonKey), jsonKey);
@@ -1840,34 +1843,20 @@ public class ModelUtils {
         try {
             List<CyNode> newNodes = new ArrayList<>();
 
-            List<String> intactNodeColumns = new ArrayList<>(Arrays.asList(INTACT_ID, PREFERRED_ID, PREFERRED_ID_DB, TYPE,SPECIES));
+            List<String> intactNodeColumns = new ArrayList<>(Arrays.asList(INTACT_ID, PREFERRED_ID, PREFERRED_ID_DB, TYPE, SPECIES, SHAPE, COLOR));
             for (String intactNodeColumn : intactNodeColumns) {
                 createColumnIfNeeded(network.getDefaultNodeTable(), String.class, intactNodeColumn);
             }
-
             createColumnIfNeeded(network.getDefaultNodeTable(), Long.class, TAX_ID);
             createColumnIfNeeded(network.getDefaultNodeTable(), Boolean.class, MUTATION);
 
-//            for (String styleKey : NODE_STYLE_KEYS) {
-//                createColumnIfNeeded(network.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS), String.class, "style::" + styleKey);
-//            }
-            createColumnIfNeeded(network.getDefaultNodeTable(), String.class, "style::color");
-            createColumnIfNeeded(network.getDefaultNodeTable(), String.class, "style::shape");
 
-
-
-            List<String> intactEdgeColumns = new ArrayList<>(Arrays.asList(INTACT_ID, DETECTION_METHOD));
+            List<String> intactEdgeColumns = new ArrayList<>(Arrays.asList(INTACT_ID, DETECTION_METHOD, SHAPE, COLOR, COLLAPSED_COLOR));
             for (String intactEdgeColumn : intactEdgeColumns) {
                 createColumnIfNeeded(network.getDefaultEdgeTable(), String.class, intactEdgeColumn);
             }
-
             createColumnIfNeeded(network.getDefaultEdgeTable(), Double.class, MI_SCORE);
             createColumnIfNeeded(network.getDefaultEdgeTable(), Boolean.class, DISRUPTED_BY_MUTATION);
-
-
-            for (String styleKey : EDGE_STYLE_KEYS) {
-                createColumnIfNeeded(network.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS), String.class, "style::" + styleKey);
-            }
 
             URL resource = Species.class.getResource("/getInteractions.json");
             InputStream stream = resource.openConnection().getInputStream();
@@ -1929,8 +1918,7 @@ public class ModelUtils {
         List<String> jsonKeysSorted = new ArrayList<>(jsonKeysClass.keySet());
         Collections.sort(jsonKeysSorted);
         for (String jsonKey : jsonKeysSorted) {
-            // String formattedJsonKey = formatForColumnNamespace(jsonKey);
-            if (ignoreKeys.contains(jsonKey) || NODE_STYLE_KEYS.contains(jsonKey) || EDGE_STYLE_KEYS.contains(jsonKey))
+            if (ignoreKeys.contains(jsonKey))
                 continue;
             if (listKeys.contains(jsonKey)) {
                 createListColumnIfNeeded(table, jsonKeysClass.get(jsonKey), jsonKey);
@@ -1950,7 +1938,6 @@ public class ModelUtils {
             return null;
 
         CyNode newNode = network.addNode();
-        CyRow hiddenRow = network.getRow(newNode, CyNetwork.HIDDEN_ATTRS);
         CyRow row = network.getRow(newNode);
 
         for (Object objKey : nodeJSON.keySet()) {
@@ -1980,19 +1967,18 @@ public class ModelUtils {
                 case "mutation":
                     row.set(MUTATION, nodeJSON.get(key));
                     break;
+                case "shape":
+                    row.set(SHAPE, nodeJSON.get(key));
+                    break;
+                case "color":
+                    row.set(COLOR, cleanJSONColorData(nodeJSON.get(key)));
+                    break;
                 case "label":
                 case "parent":
                     continue;
                 default:
-                    if (NODE_STYLE_KEYS.contains(key)) {
-                        if (key.contains("color")) {
-                           row.set("style::" + key, ((String) nodeJSON.get(key)).replaceFirst("rgb\\(", "").replace(')',' '));
-                        } else {
-                            row.set("style::" + key, nodeJSON.get(key));
-                        }
-                    } else {
-                        row.set(key, nodeJSON.get(key));
-                    }
+                    row.set(key, nodeJSON.get(key));
+
             }
         }
 
@@ -2008,12 +1994,17 @@ public class ModelUtils {
         CyNode sourceNode = nodeMap.get(source);
         CyNode targetNode = nodeMap.get(target);
 
+        if (network.getRow(sourceNode).get(MUTATION, Boolean.class)) {
+
+        }
+
         CyEdge edge;
         String type = (String) edgeJSON.get("interaction_type");
 
         edge = network.addEdge(sourceNode, targetNode, false);
+
         CyRow row = network.getRow(edge);
-        CyRow hiddenRow = network.getRow(edge, CyNetwork.HIDDEN_ATTRS);
+
         row.set(CyNetwork.NAME, nodeNameMap.get(source) + " (" + type + ") " + nodeNameMap.get(target));
         row.set(CyEdge.INTERACTION, type);
 
@@ -2022,32 +2013,43 @@ public class ModelUtils {
 
         for (Object keyObj : edgeJSON.keySet()) {
             String key = (String) keyObj;
-            if (EDGE_STYLE_KEYS.contains(key)) {
-                hiddenRow.set("style::" + key, edgeJSON.get(key));
-            } else {
-                switch (key) {
-                    case "id":
-                    case "source":
-                    case "target":
-                    case "interaction_type":
-                        continue;
-                    case "interaction_detection_method":
-                        row.set(DETECTION_METHOD, edgeJSON.get(key));
-                        break;
-                    case "interaction_ac":
-                        row.set(INTACT_ID, edgeJSON.get(key));
-                        break;
-                    case "mi_score":
-                        row.set(MI_SCORE, edgeJSON.get(key));
-                        break;
-                    case "disrupted_by_mutation":
-                        row.set(DISRUPTED_BY_MUTATION, edgeJSON.get(key));
-                        break;
-                    default:
-                        row.set(key, edgeJSON.get(key));
-                }
+
+            switch (key) {
+                case "id":
+                case "source":
+                case "target":
+                case "interaction_type":
+                    continue;
+                case "interaction_detection_method":
+                    row.set(DETECTION_METHOD, edgeJSON.get(key));
+                    break;
+                case "interaction_ac":
+                    row.set(INTACT_ID, edgeJSON.get(key));
+                    break;
+                case "mi_score":
+                    row.set(MI_SCORE, edgeJSON.get(key));
+                    break;
+                case "disrupted_by_mutation":
+                    row.set(DISRUPTED_BY_MUTATION, edgeJSON.get(key));
+                    break;
+                case "shape":
+                    row.set(SHAPE, edgeJSON.get(key));
+                    break;
+                case "color":
+                    row.set(COLOR, cleanJSONColorData(edgeJSON.get(key)));
+                    break;
+                case "collapsed_color":
+                    row.set(COLLAPSED_COLOR, cleanJSONColorData(edgeJSON.get(key)));
+                    break;
+                default:
+                    row.set(key, edgeJSON.get(key));
             }
+
         }
+    }
+
+    private static String cleanJSONColorData(Object colorObject) {
+        return ((String) colorObject).replaceFirst("rgb\\(", "");
     }
 
     //////////////////////////////////////////////////////////////////////

@@ -25,7 +25,6 @@ public abstract class IntactStyle {
     protected VisualMappingFunctionFactory continuousFactory;
     protected VisualMappingFunctionFactory discreteFactory;
     protected VisualMappingFunctionFactory passthroughFactory;
-    protected VisualMappingFunctionFactory functionalFactory;
 
     public IntactStyle(IntactManager manager, String styleName) {
         this.manager = manager;
@@ -36,7 +35,6 @@ public abstract class IntactStyle {
         continuousFactory = manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
         discreteFactory = manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
         passthroughFactory = manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
-        functionalFactory = manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=functional)");
         createStyle();
         registerStyle();
     }
@@ -51,7 +49,7 @@ public abstract class IntactStyle {
     }
 
     protected void setNodeShapeStyle() {
-        DiscreteMapping<String, NodeShape> dMapping = (DiscreteMapping) discreteFactory.createVisualMappingFunction(ModelUtils.TYPE, String.class, BasicVisualLexicon.NODE_SHAPE);
+        DiscreteMapping<String, NodeShape> dMapping = (DiscreteMapping<String, NodeShape>) discreteFactory.createVisualMappingFunction(ModelUtils.TYPE, String.class, BasicVisualLexicon.NODE_SHAPE);
         dMapping.putMapValue("small molecule", NodeShapeVisualProperty.TRIANGLE);
         dMapping.putMapValue("protein", NodeShapeVisualProperty.ELLIPSE);
         dMapping.putMapValue("gene", NodeShapeVisualProperty.ROUND_RECTANGLE);
@@ -63,31 +61,28 @@ public abstract class IntactStyle {
     }
 
     protected void setNodePaintStyle() {
-        DiscreteMapping<Long, Paint> dMapping = (DiscreteMapping) discreteFactory.createVisualMappingFunction(ModelUtils.TAX_ID, Long.class, BasicVisualLexicon.NODE_FILL_COLOR);
-        dMapping.putMapValue(9606L, new Color(51, 94, 148)); // Homo Sapiens
-        dMapping.putMapValue(4932L, new Color(107, 13, 10)); // Saccharomyces cerevisiae
-        dMapping.putMapValue(10090L, new Color(88, 115, 29)); // Mus musculus Saccharomyces cerevisiae
-        dMapping.putMapValue(3702L, new Color(97, 74, 124)); // Arabidopsis thaliana (Mouse-ear cress)
-        dMapping.putMapValue(7227L, new Color(47, 132, 156)); // Drosophila melanogaster
-        dMapping.putMapValue(6239L, new Color(202, 115, 47)); // Caenorhabditis elegans
-        dMapping.putMapValue(562L, new Color(144, 163, 198)); // Escherichia coli
-        dMapping.putMapValue(-2L, new Color(141, 102, 102)); // chemical synthesis
-        style.setDefaultValue(BasicVisualLexicon.NODE_PAINT, new Color(255, 204, 153));
+        DiscreteMapping<Long, Paint> taxIdToNodeColor = (DiscreteMapping<Long, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.TAX_ID, Long.class, BasicVisualLexicon.NODE_FILL_COLOR);
+        style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, new Color(157, 177, 128));
+        setNodePaintDiscreteMapping(taxIdToNodeColor);
 
-        style.addVisualMappingFunction(dMapping);
     }
 
     protected void setNodeBorderPaintStyle() {
-        DiscreteMapping<Long, Paint> dMapping = (DiscreteMapping) discreteFactory.createVisualMappingFunction(ModelUtils.TAX_ID, Long.class, BasicVisualLexicon.NODE_BORDER_PAINT);
+        DiscreteMapping<Long, Paint> taxIdToNodeBorderColor = (DiscreteMapping<Long, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.TAX_ID, Long.class, BasicVisualLexicon.NODE_BORDER_PAINT);
+        style.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, new Color(157, 177, 128));
+        setNodePaintDiscreteMapping(taxIdToNodeBorderColor);
+
+    }
+
+    private void setNodePaintDiscreteMapping(DiscreteMapping<Long, Paint> dMapping) {
         dMapping.putMapValue(9606L, new Color(51, 94, 148)); // Homo Sapiens
         dMapping.putMapValue(4932L, new Color(107, 13, 10)); // Saccharomyces cerevisiae
-        dMapping.putMapValue(10090L, new Color(88, 115, 29)); // Mus musculus Saccharomyces cerevisiae
+        dMapping.putMapValue(10090L, new Color(88, 115, 29)); // Mus musculus
         dMapping.putMapValue(3702L, new Color(97, 74, 124)); // Arabidopsis thaliana (Mouse-ear cress)
         dMapping.putMapValue(7227L, new Color(47, 132, 156)); // Drosophila melanogaster
         dMapping.putMapValue(6239L, new Color(202, 115, 47)); // Caenorhabditis elegans
         dMapping.putMapValue(562L, new Color(144, 163, 198)); // Escherichia coli
         dMapping.putMapValue(-2L, new Color(141, 102, 102)); // chemical synthesis
-        style.setDefaultValue(BasicVisualLexicon.NODE_PAINT, new Color(255, 204, 153));
 
         style.addVisualMappingFunction(dMapping);
     }
@@ -99,6 +94,10 @@ public abstract class IntactStyle {
 
         style.addVisualMappingFunction(dMapping);
     }
+
+    protected void setNodeBorderWidth(){}
+
+    protected void setEdgeWidth(){}
 
     protected abstract void setEdgePaintStyle();
 

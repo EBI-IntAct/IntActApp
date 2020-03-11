@@ -123,21 +123,15 @@ public class EnrichmentTableModel extends AbstractTableModel {
             case EnrichmentTerm.colFDR:
                 return Double.class;
             case EnrichmentTerm.colGenesBG:
-                return Integer.class;
             case EnrichmentTerm.colGenesCount:
-                return Integer.class;
             case EnrichmentTerm.colGenesCountOld:
-                return Integer.class;
-            case EnrichmentTerm.colIDPubl:
-                return String.class;
             case EnrichmentTerm.colYear:
                 return Integer.class;
             case EnrichmentTerm.colGenes:
-                return List.class;
             case EnrichmentTerm.colGenesOld:
-                return List.class;
             case EnrichmentTerm.colGenesSUID:
                 return List.class;
+            case EnrichmentTerm.colIDPubl:
             default:
                 return String.class;
         }

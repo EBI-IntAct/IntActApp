@@ -33,12 +33,11 @@ import uk.ac.ebi.intact.intactApp.internal.tasks.factories.*;
 import uk.ac.ebi.intact.intactApp.internal.ui.IntactCytoPanel;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.styles.IntactStyle;
-import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.data.CollapsedIntactStyle;
-import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.data.ExpendedIntactStyle;
-import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.data.MutationIntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.model.CollapsedIntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.model.ExpendedIntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.model.MutationIntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice.CollapsedIntactWebserviceStyle;
 import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice.ExpendedIntactWebserviceStyle;
-import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice.MutationIntactWebserviceStyle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -256,9 +255,8 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
         IntactStyle collapsedWeb = new CollapsedIntactWebserviceStyle(this);
         IntactStyle expendedWeb = new ExpendedIntactWebserviceStyle(this);
-        IntactStyle mutationWeb = new MutationIntactWebserviceStyle(this);
 
-        for (IntactStyle style: new IntactStyle[]{collapsed, expended, mutation, collapsedWeb, expendedWeb, mutationWeb})
+        for (IntactStyle style: new IntactStyle[]{collapsed, expended, mutation, collapsedWeb, expendedWeb})
             intactStyles.put(style.getStyleName(), style);
     }
 
@@ -269,51 +267,48 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         IntactManager manager = this;
 
         // Run this in the background in case we have a timeout
-        Executors.newCachedThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-                JSONObject uris = null;
-                // use alternative config URI if available and otherwise retrieve the default one
-                // based on the app version
-                if (alternativeCONFIGURI != null && alternativeCONFIGURI.length() > 0) {
-                    uris = ModelUtils.getResultsFromJSON(
-                            HttpUtils.getJSON(alternativeCONFIGURI, args, manager),
-                            JSONObject.class);
-                } else {
-                    uris = ModelUtils.getResultsFromJSON(HttpUtils.getJSON(url, args, manager),
-                            JSONObject.class);
-                }
-                if (uris != null) {
-                    if (uris.containsKey("URI")) {
-                        URI = uris.get("URI").toString();
-                    }
-                    if (uris.containsKey("STRINGResolveURI")) {
-                        STRINGResolveURI = uris.get("STRINGResolveURI").toString();
-                    }
-                    if (uris.containsKey("STITCHResolveURI")) {
-                        STITCHResolveURI = uris.get("STITCHResolveURI").toString();
-                    }
-                    if (uris.containsKey("VIRUSESResolveURI")) {
-                        VIRUSESResolveURI = uris.get("VIRUSESResolveURI").toString();
-                    }
-                    if (uris.containsKey("DataVersion")) {
-                        DATAVERSION = uris.get("DataVersion").toString();
-                    }
-                    if (uris.containsKey("messageUserError")) {
-                        error(uris.get("messageUserError").toString());
-                    }
-                    if (uris.containsKey("messageUserCriticalError")) {
-                        critical(uris.get("messageUserCriticalError").toString());
-                    }
-                    if (uris.containsKey("messageUserWarning")) {
-                        warn(uris.get("messageUserWarning").toString());
-                    }
-                    if (uris.containsKey("messageUserInfo")) {
-                        info(uris.get("messageUserInfo").toString());
-                    }
-                }
-                haveURIs = true;
+        Executors.newCachedThreadPool().execute(() -> {
+            JSONObject uris = null;
+            // use alternative config URI if available and otherwise retrieve the default one
+            // based on the app version
+            if (alternativeCONFIGURI != null && alternativeCONFIGURI.length() > 0) {
+                uris = ModelUtils.getResultsFromJSON(
+                        HttpUtils.getJSON(alternativeCONFIGURI, args, manager),
+                        JSONObject.class);
+            } else {
+                uris = ModelUtils.getResultsFromJSON(HttpUtils.getJSON(url, args, manager),
+                        JSONObject.class);
             }
+            if (uris != null) {
+                if (uris.containsKey("URI")) {
+                    URI = uris.get("URI").toString();
+                }
+                if (uris.containsKey("STRINGResolveURI")) {
+                    STRINGResolveURI = uris.get("STRINGResolveURI").toString();
+                }
+                if (uris.containsKey("STITCHResolveURI")) {
+                    STITCHResolveURI = uris.get("STITCHResolveURI").toString();
+                }
+                if (uris.containsKey("VIRUSESResolveURI")) {
+                    VIRUSESResolveURI = uris.get("VIRUSESResolveURI").toString();
+                }
+                if (uris.containsKey("DataVersion")) {
+                    DATAVERSION = uris.get("DataVersion").toString();
+                }
+                if (uris.containsKey("messageUserError")) {
+                    error(uris.get("messageUserError").toString());
+                }
+                if (uris.containsKey("messageUserCriticalError")) {
+                    critical(uris.get("messageUserCriticalError").toString());
+                }
+                if (uris.containsKey("messageUserWarning")) {
+                    warn(uris.get("messageUserWarning").toString());
+                }
+                if (uris.containsKey("messageUserInfo")) {
+                    info(uris.get("messageUserInfo").toString());
+                }
+            }
+            haveURIs = true;
         });
     }
 
@@ -340,7 +335,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
                         int v = Integer.parseInt(subname.substring(3));
                         if (v >= index)
                             index = v + 1;
-                    } catch (NumberFormatException e) {
+                    } catch (NumberFormatException ignored) {
                     }
                 }
             }
@@ -611,11 +606,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     public void critical(String criticalError) {
         logger.error(criticalError);
         SwingUtilities.invokeLater(
-                new Runnable() {
-                    public void run() {
-                        JOptionPane.showMessageDialog(null, "<html><p style=\"width:200px;\">" + criticalError + "</p></html>", "Critical stringApp error", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
+                () -> JOptionPane.showMessageDialog(null, "<html><p style=\"width:200px;\">" + criticalError + "</p></html>", "Critical stringApp error", JOptionPane.ERROR_MESSAGE)
         );
     }
 

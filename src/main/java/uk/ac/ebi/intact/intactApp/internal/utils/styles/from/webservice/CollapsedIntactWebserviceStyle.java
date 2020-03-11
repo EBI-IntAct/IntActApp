@@ -2,7 +2,11 @@ package uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice;
 
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
+import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
+
+import java.awt.*;
 
 public class CollapsedIntactWebserviceStyle extends IntactWebserviceStyle {
     public CollapsedIntactWebserviceStyle(IntactManager manager) {
@@ -15,9 +19,8 @@ public class CollapsedIntactWebserviceStyle extends IntactWebserviceStyle {
     }
     @Override
     protected void setEdgePaintStyle() {
-//        FunctionalMapping<String, Paint> fMapping = (FunctionalMapping) functionalFactory.createVisualMappingFunction("style::collapsed_color", String.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
-//        fMapping.setFunction(ModelUtils::parseColorRGB);
-//
-//        style.addVisualMappingFunction(fMapping);
+        PassthroughMapping<String, Paint> colorToEdgeColor = (PassthroughMapping<String, Paint>) passthroughFactory.createVisualMappingFunction(ModelUtils.COLLAPSED_COLOR, String.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+
+        style.addVisualMappingFunction(colorToEdgeColor);
     }
 }

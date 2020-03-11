@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.intactApp.internal.utils.styles.from.data;
+package uk.ac.ebi.intact.intactApp.internal.utils.styles.from.model;
 
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
@@ -16,16 +16,16 @@ public class ExpendedIntactStyle extends IntactStyle {
     @Override
     protected void setEdgeLineTypeStyle() {
         //TODO Move to data instead of webservice infos
-        DiscreteMapping<String, LineType> dMapping = (DiscreteMapping) discreteFactory.createVisualMappingFunction("style::shape", String.class, BasicVisualLexicon.EDGE_LINE_TYPE);
-        dMapping.putMapValue("solid", LineTypeVisualProperty.SOLID);
-        dMapping.putMapValue("dashed", LineTypeVisualProperty.EQUAL_DASH);
+        DiscreteMapping<String, LineType> shapeToLineType = (DiscreteMapping<String, LineType>) discreteFactory.createVisualMappingFunction("style::shape", String.class, BasicVisualLexicon.EDGE_LINE_TYPE);
+        shapeToLineType.putMapValue("solid", LineTypeVisualProperty.SOLID);
+        shapeToLineType.putMapValue("dashed", LineTypeVisualProperty.EQUAL_DASH);
 
-        style.addVisualMappingFunction(dMapping);
+        style.addVisualMappingFunction(shapeToLineType);
     }
 
     @Override
     protected void setEdgePaintStyle() {
-//        FunctionalMapping<String, Paint> fMapping = (FunctionalMapping) functionalFactory.createVisualMappingFunction("style::color", String.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
+//        FunctionalMapping<String, Paint> fMapping = (FunctionalMapping) functionalFactory.createVisualMappingFunction("style::color", String.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
 //        fMapping.setFunction(ModelUtils::parseColorRGB);
 //        style.addVisualMappingFunction(fMapping);
     }

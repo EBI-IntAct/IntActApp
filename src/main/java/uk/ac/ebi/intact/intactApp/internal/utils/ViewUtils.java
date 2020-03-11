@@ -53,27 +53,6 @@ public class ViewUtils {
             manager.getService(CyNetworkViewManager.class).addNetworkView(netView);
             manager.getService(CyApplicationManager.class).setCurrentNetworkView(netView);
 
-//            CyTable nodeHiddenTable = network.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
-//            for (CyNode node : network.getNodeList()) {
-//                CyRow nodeRow = nodeHiddenTable.getRow(node.getSUID());
-//                View<CyNode> nodeView = netView.getNodeView(node);
-//                nodeView.setLockedValue(BasicVisualLexicon.NODE_PAINT, ModelUtils.parseColorRGB(nodeRow.get("style", "color", String.class)));
-////                nodeView.setVisualProperty(BasicVisualLexicon.NODE_BORDER_PAINT, ModelUtils.parseColorRGB(nodeRow.get("style", "color", String.class)));
-//            }
-//
-//            CyTable edgeHiddenTable = network.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
-//            for (CyEdge edge : network.getEdgeList()) {
-//                CyRow edgeRow = edgeHiddenTable.getRow(edge.getSUID());
-//                View<CyEdge> edgeView = netView.getEdgeView(edge);
-//                edgeView.setLockedValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, ModelUtils.parseColorRGB(edgeRow.get("style", "color", String.class)));
-//                String shape = edgeRow.get("style", "shape", String.class).replace('-', '_');
-//                if (shape.equals("dashed")) {
-//                    shape = "EQUAL_DASH";
-//                }
-//                edgeView.setLockedValue(BasicVisualLexicon.EDGE_LINE_TYPE, BasicVisualLexicon.EDGE_LINE_TYPE.parseSerializableString(shape));
-//            }
-
-
         }
 
         return netView;

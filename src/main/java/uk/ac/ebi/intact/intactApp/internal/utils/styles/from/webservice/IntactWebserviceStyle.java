@@ -7,6 +7,7 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.styles.IntactStyle;
 
 import java.awt.*;
@@ -19,34 +20,29 @@ public abstract class IntactWebserviceStyle extends IntactStyle {
 
     @Override
     protected void setNodePaintStyle() {
-//        FunctionalMapping<String, Paint> fMapping = (FunctionalMapping) functionalFactory.createVisualMappingFunction("style::color", String.class, BasicVisualLexicon.NODE_FILL_COLOR);
-//        fMapping.setFunction(ModelUtils::parseColorRGB);
-//        style.addVisualMappingFunction(fMapping);
-        PassthroughMapping<String, Paint> fMapping = (PassthroughMapping<String, Paint>) passthroughFactory.createVisualMappingFunction("style::color", String.class, BasicVisualLexicon.NODE_FILL_COLOR);
+        PassthroughMapping<String, Paint> colorToNodeColor = (PassthroughMapping<String, Paint>) passthroughFactory.createVisualMappingFunction(ModelUtils.COLOR, String.class, BasicVisualLexicon.NODE_FILL_COLOR);
 
-        style.addVisualMappingFunction(fMapping);
+        style.addVisualMappingFunction(colorToNodeColor);
 
     }
 
     @Override
     protected void setNodeBorderPaintStyle() {
-//        FunctionalMapping<String, Paint> fMapping = (FunctionalMapping) functionalFactory.createVisualMappingFunction("style::color", String.class, BasicVisualLexicon.NODE_BORDER_PAINT);
-//        fMapping.setFunction(ModelUtils::parseColorRGB);
-        PassthroughMapping<String, Paint> fMapping = (PassthroughMapping<String, Paint>) passthroughFactory.createVisualMappingFunction("style::color", String.class, BasicVisualLexicon.NODE_BORDER_PAINT);
+        PassthroughMapping<String, Paint> colorToNodeBorderColor = (PassthroughMapping<String, Paint>) passthroughFactory.createVisualMappingFunction(ModelUtils.COLOR, String.class, BasicVisualLexicon.NODE_BORDER_PAINT);
 
-        style.addVisualMappingFunction(fMapping);
+        style.addVisualMappingFunction(colorToNodeBorderColor);
     }
 
     @Override
     protected void setNodeShapeStyle() {
-        PassthroughMapping<String, NodeShape> pMapping = (PassthroughMapping<String, NodeShape>) passthroughFactory.createVisualMappingFunction("style::shape", String.class, BasicVisualLexicon.NODE_SHAPE);
+        PassthroughMapping<String, NodeShape> shapeToNodeShape = (PassthroughMapping<String, NodeShape>) passthroughFactory.createVisualMappingFunction(ModelUtils.SHAPE, String.class, BasicVisualLexicon.NODE_SHAPE);
 
-        style.addVisualMappingFunction(pMapping);
+        style.addVisualMappingFunction(shapeToNodeShape);
     }
 
     @Override
     protected void setEdgeLineTypeStyle() {
-        DiscreteMapping<String, LineType> dMapping = (DiscreteMapping<String, LineType>) discreteFactory.createVisualMappingFunction("style::shape", String.class, BasicVisualLexicon.EDGE_LINE_TYPE);
+        DiscreteMapping<String, LineType> dMapping = (DiscreteMapping<String, LineType>) discreteFactory.createVisualMappingFunction(ModelUtils.SHAPE, String.class, BasicVisualLexicon.EDGE_LINE_TYPE);
         dMapping.putMapValue("solid", LineTypeVisualProperty.SOLID);
         dMapping.putMapValue("dashed", LineTypeVisualProperty.EQUAL_DASH);
 
