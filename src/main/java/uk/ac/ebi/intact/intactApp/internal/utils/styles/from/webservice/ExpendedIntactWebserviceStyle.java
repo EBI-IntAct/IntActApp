@@ -11,8 +11,9 @@ import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import java.awt.*;
 
 public class ExpendedIntactWebserviceStyle extends IntactWebserviceStyle {
+    public final static String TITLE = "IntAct - Evidence - Webservice";
     public ExpendedIntactWebserviceStyle(IntactManager manager) {
-        super(manager, "IntAct - Evidence - Webservice");
+        super(manager);
     }
 
     @Override
@@ -29,5 +30,10 @@ public class ExpendedIntactWebserviceStyle extends IntactWebserviceStyle {
         PassthroughMapping<String, Paint> colorToEdgeColor = (PassthroughMapping<String, Paint>) passthroughFactory.createVisualMappingFunction(ModelUtils.COLOR, String.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
 
         style.addVisualMappingFunction(colorToEdgeColor);
+    }
+
+    @Override
+    public String getStyleName() {
+        return TITLE;
     }
 }

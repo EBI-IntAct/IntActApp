@@ -34,6 +34,7 @@ public class ModelUtils {
     // Namespaces
     public static String INTACTDB_NAMESPACE = "intactdb";
     public static String STYLE_NAMESPACE = "style";
+    public static String COLLAPSED_NAMESPACE = "collapsed";
     public static String NAMESPACE_SEPARATOR = "::";
 
     // Node information
@@ -56,7 +57,11 @@ public class ModelUtils {
     public static String MI_SCORE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "mi score";
     public static String SHAPE = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "shape";
     public static String COLOR = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "color";
-    public static String COLLAPSED_COLOR = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "collapsed_color";
+    public static String SOURCE_SHAPE = STYLE_NAMESPACE + COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "source shape";
+    public static String TARGET_SHAPE = STYLE_NAMESPACE + COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "target shape";
+    public static String C_COLOR = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "color";
+    public static String C_INTACT_IDS = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "intact ids";
+    public static String C_MI_SCORE = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "mi score";
 
 
     public static String DESCRIPTION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "description";
@@ -478,7 +483,7 @@ public class ModelUtils {
         intactNetwork.getManager().ignoreAdd();
         CyNetwork network = createNetworkFromJSON(intactNetwork.getManager(), species, object,
                 queryTermMap, ids, netName, useDATABASE);
-        intactNetwork.getManager().addStringNetwork(intactNetwork, network);
+        intactNetwork.getManager().addIntactNetwork(intactNetwork, network);
         intactNetwork.getManager().listenToAdd();
         intactNetwork.getManager().showResultsPanel();
         return network;
@@ -1799,7 +1804,6 @@ public class ModelUtils {
                                                         String useDATABASE) {
         intactNetwork.getManager().ignoreAdd();
         CyNetwork network = createIntactNetworkFromJSON(intactNetwork.getManager(), species, object, queryTermMap, netName, useDATABASE);
-        intactNetwork.getManager().addStringNetwork(intactNetwork, network);
         intactNetwork.getManager().listenToAdd();
         intactNetwork.getManager().showResultsPanel();
         return network;
@@ -1851,12 +1855,19 @@ public class ModelUtils {
             createColumnIfNeeded(network.getDefaultNodeTable(), Boolean.class, MUTATION);
 
 
-            List<String> intactEdgeColumns = new ArrayList<>(Arrays.asList(INTACT_ID, DETECTION_METHOD, SHAPE, COLOR, COLLAPSED_COLOR));
+            List<String> intactEdgeColumns = new ArrayList<>(Arrays.asList(INTACT_ID, DETECTION_METHOD));
             for (String intactEdgeColumn : intactEdgeColumns) {
                 createColumnIfNeeded(network.getDefaultEdgeTable(), String.class, intactEdgeColumn);
             }
             createColumnIfNeeded(network.getDefaultEdgeTable(), Double.class, MI_SCORE);
             createColumnIfNeeded(network.getDefaultEdgeTable(), Boolean.class, DISRUPTED_BY_MUTATION);
+
+            intactEdgeColumns = new ArrayList<>(Arrays.asList(SOURCE_SHAPE, TARGET_SHAPE, SHAPE, COLOR, C_COLOR));
+            for (String intactEdgeColumn : intactEdgeColumns) {
+                createColumnIfNeeded(network.getDefaultEdgeTable(), String.class, intactEdgeColumn);
+            }
+            createColumnIfNeeded(network.getDefaultEdgeTable(), Double.class, C_MI_SCORE);
+            createListColumnIfNeeded(network.getDefaultEdgeTable(), String.class, C_INTACT_IDS);
 
             URL resource = Species.class.getResource("/getInteractions.json");
             InputStream stream = resource.openConnection().getInputStream();
@@ -1994,9 +2005,6 @@ public class ModelUtils {
         CyNode sourceNode = nodeMap.get(source);
         CyNode targetNode = nodeMap.get(target);
 
-        if (network.getRow(sourceNode).get(MUTATION, Boolean.class)) {
-
-        }
 
         CyEdge edge;
         String type = (String) edgeJSON.get("interaction_type");
@@ -2007,6 +2015,16 @@ public class ModelUtils {
 
         row.set(CyNetwork.NAME, nodeNameMap.get(source) + " (" + type + ") " + nodeNameMap.get(target));
         row.set(CyEdge.INTERACTION, type);
+
+        boolean isDisruptedByMutation = (boolean) edgeJSON.get("disrupted_by_mutation");
+        if (isDisruptedByMutation) {
+            if (network.getRow(sourceNode).get(MUTATION, Boolean.class)) {
+                row.set(SOURCE_SHAPE, "Delta");
+            }
+            if (network.getRow(targetNode).get(MUTATION, Boolean.class)) {
+                row.set(TARGET_SHAPE, "Delta");
+            }
+        }
 
         if (newEdges != null)
             newEdges.add(edge);
@@ -2039,7 +2057,7 @@ public class ModelUtils {
                     row.set(COLOR, cleanJSONColorData(edgeJSON.get(key)));
                     break;
                 case "collapsed_color":
-                    row.set(COLLAPSED_COLOR, cleanJSONColorData(edgeJSON.get(key)));
+                    row.set(C_COLOR, cleanJSONColorData(edgeJSON.get(key)));
                     break;
                 default:
                     row.set(key, edgeJSON.get(key));

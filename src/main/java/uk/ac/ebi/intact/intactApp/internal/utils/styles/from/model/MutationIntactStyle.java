@@ -1,9 +1,12 @@
 package uk.ac.ebi.intact.intactApp.internal.utils.styles.from.model;
 
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice.IntactWebserviceStyle;
@@ -11,8 +14,11 @@ import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice.IntactWe
 import java.awt.*;
 
 public class MutationIntactStyle extends IntactWebserviceStyle {
+
+    public static final String TITLE = "Intact - Mutation";
+
     public MutationIntactStyle(IntactManager manager) {
-        super(manager, "Intact - Mutation");
+        super(manager);
     }
 
     @Override
@@ -51,6 +57,11 @@ public class MutationIntactStyle extends IntactWebserviceStyle {
     }
 
     @Override
+    public String getStyleName() {
+        return TITLE;
+    }
+
+    @Override
     protected void setEdgeWidth() {
         DiscreteMapping<Boolean, Double> disruptedToNodeBorderWidth = (DiscreteMapping<Boolean, Double>) discreteFactory.createVisualMappingFunction(ModelUtils.DISRUPTED_BY_MUTATION, Boolean.class, BasicVisualLexicon.EDGE_WIDTH);
         disruptedToNodeBorderWidth.putMapValue(true, 4.0);
@@ -58,4 +69,19 @@ public class MutationIntactStyle extends IntactWebserviceStyle {
 
         style.addVisualMappingFunction(disruptedToNodeBorderWidth);
     }
+
+    @Override
+    protected void setEdgeSourceShape() {
+        PassthroughMapping<String, ArrowShape> valueToSourceShape = (PassthroughMapping<String, ArrowShape>) passthroughFactory.createVisualMappingFunction(ModelUtils.SOURCE_SHAPE, String.class, BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE);
+        style.setDefaultValue(BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, ArrowShapeVisualProperty.NONE);
+        style.addVisualMappingFunction(valueToSourceShape);
+    }
+
+    @Override
+    protected void setEdgeTargetShape() {
+        PassthroughMapping<String, ArrowShape> valueToTargetShape = (PassthroughMapping<String, ArrowShape>) passthroughFactory.createVisualMappingFunction(ModelUtils.TARGET_SHAPE, String.class, BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
+        style.setDefaultValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.NONE);
+        style.addVisualMappingFunction(valueToTargetShape);
+    }
+
 }

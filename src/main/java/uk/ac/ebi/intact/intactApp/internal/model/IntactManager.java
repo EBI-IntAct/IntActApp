@@ -97,7 +97,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     private Boolean haveChemViz = null;
     private Boolean haveCyBrowser = null;
     private boolean haveURIs = false;
-    private Map<CyNetwork, IntactNetwork> stringNetworkMap;
+    private Map<CyNetwork, IntactNetwork> intactNetworkMap;
     private IntactCytoPanel cytoPanel = null;
     // Settings default values.  Network specific values are stored in StringNetwork
     private boolean showImage = true;
@@ -133,7 +133,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         availableCommands = registrar.getService(AvailableCommands.class);
         commandExecutorTaskFactory = registrar.getService(CommandExecutorTaskFactory.class);
         cyEventHelper = registrar.getService(CyEventHelper.class);
-        stringNetworkMap = new HashMap<>();
+        intactNetworkMap = new HashMap<>();
         if (!haveEnhancedGraphics())
             showEnhancedLabels = false;
 
@@ -232,7 +232,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         for (CyNetwork network : registrar.getService(CyNetworkManager.class).getNetworkSet()) {
             if (ModelUtils.isStringNetwork(network)) {
                 IntactNetwork stringNet = new IntactNetwork(this);
-                addStringNetwork(stringNet, network);
+                addIntactNetwork(stringNet, network);
             }
         }
 
@@ -242,22 +242,24 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     }
 
     private void setupStyles() {
-        if (intactStyles.size() > 0) {
-            for (IntactStyle style: intactStyles.values()) {
-                style.removeStyle();
-            }
-            intactStyles.clear();
-        }
-
         IntactStyle collapsed = new CollapsedIntactStyle(this);
         IntactStyle expended = new ExpendedIntactStyle(this);
         IntactStyle mutation = new MutationIntactStyle(this);
 
-        IntactStyle collapsedWeb = new CollapsedIntactWebserviceStyle(this);
+        IntactStyle collapsedWebStyle = new CollapsedIntactWebserviceStyle(this);
         IntactStyle expendedWeb = new ExpendedIntactWebserviceStyle(this);
 
-        for (IntactStyle style: new IntactStyle[]{collapsed, expended, mutation, collapsedWeb, expendedWeb})
+        for (IntactStyle style : new IntactStyle[]{collapsed, expended, mutation, collapsedWebStyle, expendedWeb}){
             intactStyles.put(style.getStyleName(), style);
+        }
+    }
+
+    public void applyStyle(String styleName) {
+        applyStyle(styleName, getCurrentNetworkView());
+    }
+
+    public void applyStyle(String styleName, CyNetworkView view) {
+        intactStyles.get(styleName).applyStyle(view);
     }
 
     public void updateURIsFromConfig() {
@@ -355,23 +357,23 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         CyNetwork network = createNetwork(name);
         ModelUtils.setDatabase(network, useDATABASE);
         ModelUtils.setNetSpecies(network, species);
-        addStringNetwork(stringNet, network);
+        addIntactNetwork(stringNet, network);
         return network;
     }
 
-    public void addStringNetwork(IntactNetwork stringNet, CyNetwork network) {
-        stringNetworkMap.put(network, stringNet);
-        stringNet.setNetwork(network);
+    public void addIntactNetwork(IntactNetwork intactNetwork, CyNetwork network) {
+        intactNetworkMap.put(network, intactNetwork);
+        intactNetwork.setNetwork(network);
     }
 
-    public IntactNetwork getStringNetwork(CyNetwork network) {
-        if (stringNetworkMap.containsKey(network))
-            return stringNetworkMap.get(network);
+    public IntactNetwork getIntactNetwork(CyNetwork network) {
+        if (intactNetworkMap.containsKey(network))
+            return intactNetworkMap.get(network);
         return null;
     }
 
-    public List<IntactNetwork> getStringNetworks() {
-        return new ArrayList<>(stringNetworkMap.values());
+    public List<IntactNetwork> getIntactNetworks() {
+        return new ArrayList<>(intactNetworkMap.values());
     }
 
     public String getNetworkName(CyNetwork net) {
@@ -381,6 +383,10 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     public CyNetworkView createNetworkView(CyNetwork network) {
         CyNetworkView view = registrar.getService(CyNetworkViewFactory.class)
                 .createNetworkView(network);
+        if (intactNetworkMap.containsKey(network)) {
+            intactNetworkMap.get(network).hideExpendedEdgesOnViewCreation(view);
+            intactStyles.get(CollapsedIntactWebserviceStyle.TITLE).applyStyle(view);
+        }
         return view;
     }
 
@@ -399,6 +405,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
     public boolean showImage() {
         return showImage;
+
     }
 
     public void setShowImage(boolean set) {
@@ -659,8 +666,8 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         // "@id", "species", "canonical name", and "sequence" columns in the node table, and
         // a "score" column in the edge table
         if (ModelUtils.isStringNetwork(network)) {
-            IntactNetwork stringNet = new IntactNetwork(this);
-            addStringNetwork(stringNet, network);
+            IntactNetwork intactNet = new IntactNetwork(this);
+            addIntactNetwork(intactNet, network);
             showResultsPanel();
         }
     }
@@ -676,7 +683,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
             if (ModelUtils.isStringNetwork(network)) {
                 if (ModelUtils.ifHaveStringNS(network)) {
                     IntactNetwork stringNet = new IntactNetwork(this);
-                    addStringNetwork(stringNet, network);
+                    addIntactNetwork(stringNet, network);
                 } else if (ModelUtils.getDataVersion(network) == null) {
                     networksToUpgrade.add(network);
                 }
@@ -749,7 +756,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         }
         reloadEnrichmentPanel();
         // remove as string network
-        stringNetworkMap.remove(network);
+        intactNetworkMap.remove(network);
     }
 
     public void showResultsPanel() {
@@ -897,43 +904,43 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
     // Getters and Setters for defaults
     public double getOverlapCutoff(CyNetwork network) {
-        if (network == null || !stringNetworkMap.containsKey(network))
+        if (network == null || !intactNetworkMap.containsKey(network))
             return overlapCutoff;
-        return stringNetworkMap.get(network).getOverlapCutoff();
+        return intactNetworkMap.get(network).getOverlapCutoff();
     }
 
     public void setOverlapCutoff(CyNetwork network, double cutoff) {
-        if (network == null || !stringNetworkMap.containsKey(network)) {
+        if (network == null || !intactNetworkMap.containsKey(network)) {
             overlapCutoff = cutoff;
             return;
         }
-        stringNetworkMap.get(network).setOverlapCutoff(cutoff);
+        intactNetworkMap.get(network).setOverlapCutoff(cutoff);
     }
 
     public int getTopTerms(CyNetwork network) {
-        if (network == null || !stringNetworkMap.containsKey(network))
+        if (network == null || !intactNetworkMap.containsKey(network))
             return topTerms;
-        return stringNetworkMap.get(network).getTopTerms();
+        return intactNetworkMap.get(network).getTopTerms();
     }
 
     public void setTopTerms(CyNetwork network, int topN) {
-        if (network == null || !stringNetworkMap.containsKey(network))
+        if (network == null || !intactNetworkMap.containsKey(network))
             topTerms = topN;
         else
-            stringNetworkMap.get(network).setTopTerms(topN);
+            intactNetworkMap.get(network).setTopTerms(topN);
     }
 
     public List<EnrichmentTerm.TermCategory> getCategoryFilter(CyNetwork network) {
-        if (network == null || !stringNetworkMap.containsKey(network))
+        if (network == null || !intactNetworkMap.containsKey(network))
             return categoryFilter;
-        return stringNetworkMap.get(network).getCategoryFilter();
+        return intactNetworkMap.get(network).getCategoryFilter();
     }
 
     public void setCategoryFilter(CyNetwork network, List<EnrichmentTerm.TermCategory> categories) {
-        if (network == null || !stringNetworkMap.containsKey(network)) {
+        if (network == null || !intactNetworkMap.containsKey(network)) {
             categoryFilter = categories;
         } else
-            stringNetworkMap.get(network).setCategoryFilter(categories);
+            intactNetworkMap.get(network).setCategoryFilter(categories);
     }
 
     public void setCategoryFilter(CyNetwork network, String categories) {
@@ -963,16 +970,16 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     }
 */
     public Palette getEnrichmentPalette(CyNetwork network) {
-        if (network == null || !stringNetworkMap.containsKey(network))
+        if (network == null || !intactNetworkMap.containsKey(network))
             return brewerPalette;
-        return stringNetworkMap.get(network).getEnrichmentPalette();
+        return intactNetworkMap.get(network).getEnrichmentPalette();
     }
 
     public void setEnrichmentPalette(CyNetwork network, Palette palette) {
-        if (network == null || !stringNetworkMap.containsKey(network))
+        if (network == null || !intactNetworkMap.containsKey(network))
             brewerPalette = palette;
         else
-            stringNetworkMap.get(network).setEnrichmentPalette(palette);
+            intactNetworkMap.get(network).setEnrichmentPalette(palette);
     }
 
     public void setEnrichmentPalette(CyNetwork network, String palette) {
@@ -994,16 +1001,16 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     }
 
     public ChartType getChartType(CyNetwork network) {
-        if (network == null || !stringNetworkMap.containsKey(network))
+        if (network == null || !intactNetworkMap.containsKey(network))
             return chartType;
-        return stringNetworkMap.get(network).getChartType();
+        return intactNetworkMap.get(network).getChartType();
     }
 
     public void setChartType(CyNetwork network, ChartType type) {
-        if (network == null || !stringNetworkMap.containsKey(network)) {
+        if (network == null || !intactNetworkMap.containsKey(network)) {
             chartType = type;
         } else
-            stringNetworkMap.get(network).setChartType(type);
+            intactNetworkMap.get(network).setChartType(type);
     }
 
     public void setChartType(CyNetwork network, String type) {
@@ -1011,16 +1018,16 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     }
 
     public boolean getRemoveOverlap(CyNetwork network) {
-        if (network == null || !stringNetworkMap.containsKey(network))
+        if (network == null || !intactNetworkMap.containsKey(network))
             return removeOverlap;
-        return stringNetworkMap.get(network).getRemoveOverlap();
+        return intactNetworkMap.get(network).getRemoveOverlap();
     }
 
     public void setRemoveOverlap(CyNetwork network, boolean remove) {
-        if (network == null || !stringNetworkMap.containsKey(network)) {
+        if (network == null || !intactNetworkMap.containsKey(network)) {
             removeOverlap = remove;
         } else
-            stringNetworkMap.get(network).setRemoveOverlap(remove);
+            intactNetworkMap.get(network).setRemoveOverlap(remove);
     }
 
     public Map<String, Color> getChannelColors() {

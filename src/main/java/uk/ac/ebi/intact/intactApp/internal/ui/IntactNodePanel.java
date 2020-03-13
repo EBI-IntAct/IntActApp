@@ -368,7 +368,7 @@ public class IntactNodePanel extends AbstractStringPanel {
 
     private JPanel createNodePanel(CyNode node) {
         JPanel panel = new JPanel();
-        IntactNode sNode = new IntactNode(manager.getStringNetwork(currentNetwork), node);
+        IntactNode sNode = new IntactNode(manager.getIntactNetwork(currentNetwork), node);
         EasyGBC c = new EasyGBC();
         panel.setLayout(new GridBagLayout());
 

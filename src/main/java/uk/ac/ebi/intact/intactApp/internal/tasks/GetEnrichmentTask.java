@@ -97,7 +97,7 @@ public class GetEnrichmentTask extends AbstractTask implements ObservableTask {
 
         List<String> netList = new ArrayList<>();
         netList.add("genome");
-        for (IntactNetwork sn : manager.getStringNetworks()) {
+        for (IntactNetwork sn : manager.getIntactNetworks()) {
             CyNetwork net = sn.getNetwork();
             String name = ModelUtils.getName(net, net);
             netList.add(name);

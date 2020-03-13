@@ -9,8 +9,11 @@ import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import java.awt.*;
 
 public class CollapsedIntactWebserviceStyle extends IntactWebserviceStyle {
+
+    public static final String TITLE = "Intact - Collapsed - Webservice";
+
     public CollapsedIntactWebserviceStyle(IntactManager manager) {
-        super(manager, "Intact - Collapsed - Webservice");
+        super(manager);
     }
 
     @Override
@@ -19,8 +22,13 @@ public class CollapsedIntactWebserviceStyle extends IntactWebserviceStyle {
     }
     @Override
     protected void setEdgePaintStyle() {
-        PassthroughMapping<String, Paint> colorToEdgeColor = (PassthroughMapping<String, Paint>) passthroughFactory.createVisualMappingFunction(ModelUtils.COLLAPSED_COLOR, String.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+        PassthroughMapping<String, Paint> colorToEdgeColor = (PassthroughMapping<String, Paint>) passthroughFactory.createVisualMappingFunction(ModelUtils.C_COLOR, String.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
 
         style.addVisualMappingFunction(colorToEdgeColor);
+    }
+
+    @Override
+    public String getStyleName() {
+        return TITLE;
     }
 }

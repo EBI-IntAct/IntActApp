@@ -18,6 +18,8 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.*;
+import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.CollapseTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.ExpendTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.ui.DiseaseNetworkWebServiceClient;
 import uk.ac.ebi.intact.intactApp.internal.ui.IntactWebServiceClient;
 import uk.ac.ebi.intact.intactApp.internal.ui.StitchWebServiceClient;
@@ -135,20 +137,44 @@ public class CyActivator extends AbstractCyActivator {
 
             registerService(bc, getNetwork, TaskFactory.class, props);
         }
-
         {
-            ExpandNetworkTaskFactory expandFactory = new ExpandNetworkTaskFactory(manager);
-            Properties expandProps = new Properties();
-            expandProps.setProperty(COMMAND_NAMESPACE, "string");
-            expandProps.setProperty(COMMAND, "expand");
-            expandProps.setProperty(COMMAND_DESCRIPTION, "Expand a STRING network by more interactors");
-            expandProps.setProperty(COMMAND_LONG_DESCRIPTION,
-                    "Expand an already exisitng STRING network by more interactors such as STITCH compounds, "
-                            + "proteins of the network species as well as proteins interacting with avaialble viruses or host species proteins");
-            expandProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
-            expandProps.setProperty(COMMAND_EXAMPLE_JSON, JSON_EXAMPLE);
-            registerService(bc, expandFactory, TaskFactory.class, expandProps);
+            CollapseTaskFactory collapseTaskFactory = new CollapseTaskFactory(manager);
+            Properties collapseProperties = new Properties();
+            collapseProperties.setProperty(COMMAND_NAMESPACE, "intact");
+            collapseProperties.setProperty(COMMAND, "collapse");
+
+            collapseProperties.setProperty(PREFERRED_MENU, "Apps.Intact");
+            collapseProperties.setProperty(TITLE, "Collapse edges");
+            collapseProperties.setProperty(MENU_GRAVITY, "1.0");
+            collapseProperties.setProperty(IN_MENU_BAR, "true");
+            registerService(bc, collapseTaskFactory, TaskFactory.class, collapseProperties);
         }
+        {
+            ExpendTaskFactory expendTaskFactory = new ExpendTaskFactory(manager);
+            Properties collapseProperties = new Properties();
+            collapseProperties.setProperty(COMMAND_NAMESPACE, "intact");
+            collapseProperties.setProperty(COMMAND, "expend");
+
+            collapseProperties.setProperty(PREFERRED_MENU, "Apps.Intact");
+            collapseProperties.setProperty(TITLE, "Expend edges");
+            collapseProperties.setProperty(MENU_GRAVITY, "1.0");
+            collapseProperties.setProperty(IN_MENU_BAR, "true");
+            registerService(bc, expendTaskFactory, TaskFactory.class, collapseProperties);
+        }
+
+//        {
+//            ExpandNetworkTaskFactory expandFactory = new ExpandNetworkTaskFactory(manager);
+//            Properties expandProps = new Properties();
+//            expandProps.setProperty(COMMAND_NAMESPACE, "string");
+//            expandProps.setProperty(COMMAND, "expand");
+//            expandProps.setProperty(COMMAND_DESCRIPTION, "Expand a STRING network by more interactors");
+//            expandProps.setProperty(COMMAND_LONG_DESCRIPTION,
+//                    "Expand an already exisitng STRING network by more interactors such as STITCH compounds, "
+//                            + "proteins of the network species as well as proteins interacting with avaialble viruses or host species proteins");
+//            expandProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
+//            expandProps.setProperty(COMMAND_EXAMPLE_JSON, JSON_EXAMPLE);
+//            registerService(bc, expandFactory, TaskFactory.class, expandProps);
+//        }
 
         {
             VersionTaskFactory versionFactory = new VersionTaskFactory(version);

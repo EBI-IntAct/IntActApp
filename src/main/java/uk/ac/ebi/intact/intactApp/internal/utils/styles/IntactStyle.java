@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.intactApp.internal.utils.styles;
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
@@ -12,6 +13,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
@@ -26,26 +28,46 @@ public abstract class IntactStyle {
     protected VisualMappingFunctionFactory discreteFactory;
     protected VisualMappingFunctionFactory passthroughFactory;
 
-    public IntactStyle(IntactManager manager, String styleName) {
+    private boolean newStyle;
+
+    public IntactStyle(IntactManager manager) {
         this.manager = manager;
         vmm = manager.getService(VisualMappingManager.class);
         eventHelper = manager.getService(CyEventHelper.class);
-        VisualStyleFactory vsf = manager.getService(VisualStyleFactory.class);
-        style = vsf.createVisualStyle(styleName);
+        style = getOrCreateStyle();
         continuousFactory = manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
         discreteFactory = manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
         passthroughFactory = manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
         createStyle();
-        registerStyle();
+        if (newStyle)
+            registerStyle();
+    }
+
+    private VisualStyle getOrCreateStyle() {
+        for (VisualStyle createdStyle : vmm.getAllVisualStyles()) {
+            if (createdStyle.getTitle().equals(getStyleName())) {
+                newStyle = false;
+                return createdStyle;
+            }
+        }
+        newStyle = true;
+        return manager.getService(VisualStyleFactory.class).createVisualStyle(getStyleName());
     }
 
     private void createStyle() {
         setNodeShapeStyle();
         setNodePaintStyle();
         setNodeBorderPaintStyle();
+        setNodeBorderWidth();
+        setNodeLabel();
+        setNodeLabelColor();
 
         setEdgeLineTypeStyle();
         setEdgePaintStyle();
+        setEdgeWidth();
+        setEdgeSourceShape();
+        setEdgeTargetShape();
+        setEdgeArrowColor();
     }
 
     protected void setNodeShapeStyle() {
@@ -74,6 +96,19 @@ public abstract class IntactStyle {
 
     }
 
+    protected void setNodeBorderWidth() {
+    }
+
+    private void setNodeLabel() {
+        PassthroughMapping<String, String> nameToLabel = (PassthroughMapping<String, String>) passthroughFactory.createVisualMappingFunction(CyNetwork.NAME, String.class, BasicVisualLexicon.NODE_LABEL);
+
+        style.addVisualMappingFunction(nameToLabel);
+    }
+
+    private void setNodeLabelColor() {
+        style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, Color.WHITE);
+    }
+
     private void setNodePaintDiscreteMapping(DiscreteMapping<Long, Paint> dMapping) {
         dMapping.putMapValue(9606L, new Color(51, 94, 148)); // Homo Sapiens
         dMapping.putMapValue(4932L, new Color(107, 13, 10)); // Saccharomyces cerevisiae
@@ -87,20 +122,29 @@ public abstract class IntactStyle {
         style.addVisualMappingFunction(dMapping);
     }
 
+
     protected void setEdgeLineTypeStyle() {
-        DiscreteMapping<String, LineType> dMapping = (DiscreteMapping) discreteFactory.createVisualMappingFunction("style::shape", String.class, BasicVisualLexicon.EDGE_LINE_TYPE);
+        DiscreteMapping<String, LineType> dMapping = (DiscreteMapping<String, LineType>) discreteFactory.createVisualMappingFunction("style::shape", String.class, BasicVisualLexicon.EDGE_LINE_TYPE);
         dMapping.putMapValue("solid", LineTypeVisualProperty.SOLID);
         dMapping.putMapValue("dashed", LineTypeVisualProperty.EQUAL_DASH);
 
         style.addVisualMappingFunction(dMapping);
     }
 
-    protected void setNodeBorderWidth(){}
-
-    protected void setEdgeWidth(){}
-
     protected abstract void setEdgePaintStyle();
 
+    protected void setEdgeWidth() {
+    }
+
+    protected void setEdgeSourceShape() {
+    }
+
+    protected void setEdgeTargetShape() {
+    }
+
+    private void setEdgeArrowColor() {
+        style.setDefaultValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, Color.RED);
+    }
 
     public void registerStyle() {
         vmm.addVisualStyle(style);
@@ -116,14 +160,11 @@ public abstract class IntactStyle {
         vmm.setCurrentVisualStyle(style);
     }
 
-    public String getStyleName() {
-        return style.getTitle();
-    }
-
     public void removeStyle() {
         vmm.removeVisualStyle(style);
     }
 
+    public abstract String getStyleName();
 
 }
 

@@ -14,8 +14,8 @@ import java.awt.*;
 
 public abstract class IntactWebserviceStyle extends IntactStyle {
 
-    public IntactWebserviceStyle(IntactManager manager, String styleName) {
-        super(manager, styleName);
+    public IntactWebserviceStyle(IntactManager manager) {
+        super(manager);
     }
 
     @Override

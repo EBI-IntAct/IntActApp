@@ -1,33 +1,48 @@
 package uk.ac.ebi.intact.intactApp.internal.model;
 
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
+import org.cytoscape.model.events.AboutToRemoveEdgesListener;
+import org.cytoscape.model.events.AddedEdgesEvent;
+import org.cytoscape.model.events.AddedEdgesListener;
+import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.util.color.Palette;
+import org.cytoscape.view.model.CyNetworkView;
 import org.json.simple.JSONObject;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static uk.ac.ebi.intact.intactApp.internal.utils.TableUtil.getColumnValuesOfEdges;
 
 // import org.jcolorbrewer.ColorBrewer;
 
-public class IntactNetwork {
+public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesListener {
     final IntactManager manager;
     CyNetwork network;
     Map<String, List<String>> resolvedIdMap = null;
     Map<String, List<Annotation>> annotations = null;
     Map<String, String> settings = null;
+    CyTable edgeTable;
+    CyTable nodeTable;
 
     // Enrichment table options for this network
-    private int topTerms = -1;
-    private double overlapCutoff = -1;
-    private Palette brewerPalette = null;
-    private List<EnrichmentTerm.TermCategory> categoryFilter = null;
-    private ChartType chartType = null;
-    private boolean removeOverlap = false;
+    private int topTerms;
+    private double overlapCutoff;
+    private Palette brewerPalette;
+    private List<EnrichmentTerm.TermCategory> categoryFilter;
+    private ChartType chartType;
+    private boolean removeOverlap;
 
+    // Collapsed edges
+    private boolean collapsed = true;
+    private Map<Couple, CyEdge> collapsedEdges;
+    private List<CyEdge> expendedEdges;
+    private Map<Couple, List<CyEdge>> coupleToEdges = new HashMap<>();
 
     public IntactNetwork(IntactManager manager) {
         this.manager = manager;
@@ -56,6 +71,7 @@ public class IntactNetwork {
     }
 
     public void setNetwork(CyNetwork network) {
+
         this.network = network;
 
         // Load our options
@@ -89,6 +105,28 @@ public class IntactNetwork {
         if (settings.containsKey("chartType")) {
             chartType = Enum.valueOf(ChartType.class, settings.get("chartType"));
         }
+
+        // INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT //
+
+        edgeTable = network.getDefaultEdgeTable();
+        nodeTable = network.getDefaultNodeTable();
+        expendedEdges = new ArrayList<>(network.getEdgeList());
+        collapsedEdges = new HashMap<>();
+        coupleToEdges = new HashMap<>();
+
+        Couple.putEdgesToCouples(expendedEdges, coupleToEdges);
+        updateCollapsedEdges(coupleToEdges.keySet());
+
+//        manager.registrar.registerService(this, AddedEdgesListener.class, new Properties());
+//        manager.registrar.registerService(this, AboutToRemoveEdgesListener.class, new Properties());
+
+        // INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT //
+
+    }
+
+    void hideExpendedEdgesOnViewCreation(CyNetworkView networkView) {
+        HideTaskFactory hideTaskFactory = manager.getService(HideTaskFactory.class);
+        manager.execute(hideTaskFactory.createTaskIterator(networkView, null, expendedEdges));
     }
 
     public double getOverlapCutoff() {
@@ -351,4 +389,70 @@ public class IntactNetwork {
         }
     }
 
+    // INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT //
+
+    private void updateCollapsedEdges(Collection<Couple> couplesToUpdate) {
+        for (Couple couple : couplesToUpdate) {
+            CyEdge summaryEdge;
+            if (!coupleToEdges.get(couple).isEmpty()) {
+                if (!collapsedEdges.containsKey(couple)) {
+                    summaryEdge = network.addEdge(couple.node1, couple.node2, false);
+                    collapsedEdges.put(couple, summaryEdge);
+                } else {
+                    summaryEdge = collapsedEdges.get(couple);
+                }
+                CyRow summaryEdgeRow = network.getRow(summaryEdge);
+                summaryEdgeRow.set(ModelUtils.C_INTACT_IDS, getColumnValuesOfEdges(edgeTable, ModelUtils.INTACT_ID, String.class, coupleToEdges.get(couple), "???"));
+                CyRow firstEdgeRow = network.getRow(coupleToEdges.get(couple).iterator().next());
+                summaryEdgeRow.set(ModelUtils.C_MI_SCORE, firstEdgeRow.get(ModelUtils.MI_SCORE, Double.class));
+                summaryEdgeRow.set(ModelUtils.C_COLOR, firstEdgeRow.get(ModelUtils.C_COLOR, String.class));
+            } else {
+                summaryEdge = collapsedEdges.get(couple);
+                network.removeEdges(Collections.singleton(summaryEdge));
+            }
+        }
+    }
+
+
+    public List<CyEdge> getCollapsedEdges() {
+        return new ArrayList<>(collapsedEdges.values());
+    }
+
+    public List<CyEdge> getExpendedEdges() {
+        return new ArrayList<>(expendedEdges);
+    }
+
+    public boolean isCollapsed() {
+        return collapsed;
+    }
+
+    public void setCollapsed(boolean collapsed) {
+        this.collapsed = collapsed;
+    }
+
+
+    @Override
+    public void handleEvent(AddedEdgesEvent e) {
+        if (e.getSource() == network) {
+            Collection<CyEdge> addedEdges = e.getPayloadCollection();
+            expendedEdges.addAll(addedEdges);
+            Set<Couple> updatedCouples = Couple.putEdgesToCouples(addedEdges, coupleToEdges);
+            updateCollapsedEdges(updatedCouples);
+        }
+    }
+
+
+    @Override
+    public void handleEvent(AboutToRemoveEdgesEvent e) {
+        if (e.getSource() == network) {
+            Collection<CyEdge> removedEdges = e.getEdges();
+            expendedEdges.removeAll(removedEdges);
+            Map<Couple, List<CyEdge>> couplesToRemove = new HashMap<>();
+            Couple.putEdgesToCouples(removedEdges, couplesToRemove);
+            couplesToRemove.forEach((couple, cyEdges) -> coupleToEdges.get(couple).removeAll(cyEdges));
+            updateCollapsedEdges(couplesToRemove.keySet());
+        }
+    }
+
+    // INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT //
 }

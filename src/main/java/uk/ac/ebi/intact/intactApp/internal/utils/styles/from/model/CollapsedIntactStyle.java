@@ -11,8 +11,10 @@ import uk.ac.ebi.intact.intactApp.internal.utils.styles.IntactStyle;
 import java.awt.*;
 
 public class CollapsedIntactStyle extends IntactStyle {
+    public final static String TITLE = "Intact - Collapsed";
+
     public CollapsedIntactStyle(IntactManager manager) {
-        super(manager, "Intact - Collapsed");
+        super(manager);
     }
 
     private static Color[] colors = {
@@ -37,10 +39,16 @@ public class CollapsedIntactStyle extends IntactStyle {
 
     @Override
     protected void setEdgePaintStyle() {
-        ContinuousMapping<Double, Paint> miScoreToEdgeColor = (ContinuousMapping<Double, Paint>) continuousFactory.createVisualMappingFunction(ModelUtils.MI_SCORE, Double.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+        ContinuousMapping<Double, Paint> miScoreToEdgeColor = (ContinuousMapping<Double, Paint>) continuousFactory.createVisualMappingFunction(ModelUtils.C_MI_SCORE, Double.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
         for (int i = 0; i < colors.length - 1; i++) {
             miScoreToEdgeColor.addPoint(i / 10.0, new BoundaryRangeValues<>(colors[i], colors[i], colors[i + 1]));
+            miScoreToEdgeColor.addPoint((i / 10.0) + 0.001, new BoundaryRangeValues<>(colors[i+1], colors[i+1], colors[i + 1]));
         }
         style.addVisualMappingFunction(miScoreToEdgeColor);
+    }
+
+    @Override
+    public String getStyleName() {
+        return TITLE;
     }
 }

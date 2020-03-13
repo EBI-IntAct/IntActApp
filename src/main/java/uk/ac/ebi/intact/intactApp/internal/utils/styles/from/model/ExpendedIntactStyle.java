@@ -9,8 +9,10 @@ import uk.ac.ebi.intact.intactApp.internal.utils.styles.IntactStyle;
 
 public class ExpendedIntactStyle extends IntactStyle {
 
+    public static final String TITLE = "Intact - Evidence";
+
     public ExpendedIntactStyle(IntactManager manager) {
-        super(manager, "Intact - Evidence");
+        super(manager);
     }
 
     @Override
@@ -28,5 +30,10 @@ public class ExpendedIntactStyle extends IntactStyle {
 //        FunctionalMapping<String, Paint> fMapping = (FunctionalMapping) functionalFactory.createVisualMappingFunction("style::color", String.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
 //        fMapping.setFunction(ModelUtils::parseColorRGB);
 //        style.addVisualMappingFunction(fMapping);
+    }
+
+    @Override
+    public String getStyleName() {
+        return TITLE;
     }
 }

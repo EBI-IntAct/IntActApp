@@ -105,11 +105,10 @@ public class LoadInteractions extends AbstractTask {
         ModelUtils.setNetSpecies(network, species);
         ModelUtils.setDataVersion(network, manager.getDataVersion());
         ModelUtils.setNetURI(network, manager.getNetworkURL());
-        intactNet.setNetwork(network);
+        manager.addIntactNetwork(intactNet, network);
 
         // System.out.println("Results: "+results.toString());
         // Now style the network
-        // TODO:  change style to accomodate STITCH
         CyNetworkView networkView = manager.createNetworkView(network);
         ViewUtils.styleNetwork(manager, network, networkView);
 

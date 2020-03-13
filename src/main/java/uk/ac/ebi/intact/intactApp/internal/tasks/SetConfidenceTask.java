@@ -59,7 +59,7 @@ public class SetConfidenceTask extends AbstractTask implements ObservableTask {
 
         IntactNetwork stringNet = new IntactNetwork(manager);
         stringNet.setNetwork(net);
-        manager.addStringNetwork(stringNet, net);
+        manager.addIntactNetwork(stringNet, net);
     }
 
     @Override
