@@ -23,7 +23,7 @@ public class ShowGlassBallEffectTaskFactory extends AbstractNetworkViewTaskFacto
     public boolean isReady(CyNetworkView netView) {
         if (netView == null)
             return false;
-        return ModelUtils.isStringNetwork(netView.getModel());
+        return ModelUtils.isIntactNetwork(netView.getModel());
     }
 
     public TaskIterator createTaskIterator(CyNetworkView netView) {
@@ -33,7 +33,7 @@ public class ShowGlassBallEffectTaskFactory extends AbstractNetworkViewTaskFacto
     public void reregister() {
         manager.unregisterService(this, NetworkViewTaskFactory.class);
         Properties props = new Properties();
-        props.setProperty(PREFERRED_MENU, "Apps.STRING");
+        props.setProperty(PREFERRED_MENU, "Apps.IntAct");
         if (manager.showGlassBallEffect()) {
             props.setProperty(TITLE, "Disable STRING glass balls effect");
             props.setProperty(COMMAND_NAMESPACE, "string");

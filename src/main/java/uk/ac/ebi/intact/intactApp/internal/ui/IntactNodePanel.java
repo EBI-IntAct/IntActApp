@@ -6,18 +6,12 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNode;
-import uk.ac.ebi.intact.intactApp.internal.tasks.factories.GetEnrichmentTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.tasks.factories.GetPublicationsTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowEnrichmentPanelTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowPublicationsPanelTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.ViewUtils;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collection;
@@ -30,14 +24,9 @@ import java.util.Map;
  *
  * @author Scooter Morris
  */
-public class IntactNodePanel extends AbstractStringPanel {
+public class IntactNodePanel extends AbstractIntactPanel {
 
-    private JCheckBox enableGlass;
-    private JCheckBox showStructure;
     private JCheckBox stringLabels;
-    private JCheckBox showSingletons;
-    private JCheckBox stringColors;
-    private JCheckBox highlightBox;
     private JPanel tissuesPanel = null;
     private JPanel compartmentsPanel = null;
     private JPanel nodesPanel = null;
@@ -58,18 +47,7 @@ public class IntactNodePanel extends AbstractStringPanel {
 
     public void updateControls() {
         updating = true;
-        enableGlass.setSelected(manager.showGlassBallEffect());
-        showStructure.setSelected(manager.showImage());
         stringLabels.setSelected(manager.showEnhancedLabels());
-        stringColors.setSelected(manager.showStringColors());
-        showSingletons.setSelected(manager.showSingletons());
-
-        // TODO: fix me
-        highlightBox.setSelected(manager.highlightNeighbors());
-        if (!manager.showGlassBallEffect())
-            showStructure.setEnabled(false);
-        else
-            showStructure.setEnabled(true);
         updating = false;
     }
 
@@ -106,32 +84,6 @@ public class IntactNodePanel extends AbstractStringPanel {
 
         EasyGBC upperGBC = new EasyGBC();
         JPanel upperPanel = new JPanel(new GridBagLayout());
-        {
-            enableGlass = new JCheckBox("Glass ball effect");
-            enableGlass.setFont(labelFont);
-            enableGlass.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    if (updating) return;
-                    manager.execute(
-                            manager.getGlassBallTaskFactory().createTaskIterator(manager.getCurrentNetworkView()), true);
-                }
-            });
-            upperPanel.add(enableGlass, upperGBC.anchor("northwest").noExpand());
-        }
-
-        {
-            showStructure = new JCheckBox("Structure images");
-            showStructure.setFont(labelFont);
-            // showStructure.setBorder(null);
-            showStructure.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    if (updating) return;
-                    manager.execute(
-                            manager.getImagesTaskFactory().createTaskIterator(manager.getCurrentNetworkView()), true);
-                }
-            });
-            upperPanel.add(showStructure, upperGBC.right().insets(0, 10, 0, 0).noExpand());
-        }
 
         {
             stringLabels = new JCheckBox("STRING style labels");
@@ -145,108 +97,61 @@ public class IntactNodePanel extends AbstractStringPanel {
             });
             upperPanel.add(stringLabels, upperGBC.left().down().noInsets().noExpand());
         }
-
-        {
-            stringColors = new JCheckBox("String colors");
-            stringColors.setFont(labelFont);
-            stringColors.setSelected(true);
-            stringColors.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    if (updating) return;
-                    manager.setShowStringColors(stringColors.isSelected());
-                    ViewUtils.hideStringColors(manager, manager.getCurrentNetworkView(), stringColors.isSelected());
-                }
-            });
-            upperPanel.add(stringColors, upperGBC.right().insets(0, 10, 0, 0).noExpand());
-        }
-
-        {
-            showSingletons = new JCheckBox("Singletons");
-            showSingletons.setFont(labelFont);
-            showSingletons.setSelected(true);
-            showSingletons.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    if (updating) return;
-                    manager.setShowSingletons(showSingletons.isSelected());
-                    ViewUtils.hideSingletons(manager.getCurrentNetworkView(), showSingletons.isSelected());
-                }
-            });
-            upperPanel.add(showSingletons, upperGBC.left().down().noInsets().noExpand());
-        }
-
-        {
-            highlightBox = new JCheckBox("Highlight first neighbors");
-            highlightBox.setFont(labelFont);
-            highlightBox.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    if (e.getStateChange() == ItemEvent.SELECTED) {
-                        manager.setHighlightNeighbors(true);
-                        doHighlight(manager.getCurrentNetworkView());
-                    } else {
-                        manager.setHighlightNeighbors(false);
-                        clearHighlight(manager.getCurrentNetworkView());
-                    }
-                }
-            });
-            // highlightBox.setAlignmentX( Component.LEFT_ALIGNMENT );
-            // highlightBox.setBorder(BorderFactory.createEmptyBorder(10,2,10,0));
-            upperPanel.add(highlightBox, upperGBC.right().insets(0, 10, 0, 0).noExpand());
-        }
-
-        upperPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 10, 0));
-
-        controlPanel.add(upperPanel, d.anchor("northwest").expandHoriz());
-
-        // controlPanel.add(new JLabel());
-
-        JPanel lowerPanel = new JPanel();
-        GridLayout layout2 = new GridLayout(2, 2);
-        layout2.setVgap(0);
-        lowerPanel.setLayout(layout2);
-        {
-            JButton getEnrichment = new JButton("Functional enrichment");
-            getEnrichment.setFont(labelFont);
-            lowerPanel.add(getEnrichment);
-            getEnrichment.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    GetEnrichmentTaskFactory tf = new GetEnrichmentTaskFactory(manager, true);
-                    ShowEnrichmentPanelTaskFactory showTf = manager.getShowEnrichmentPanelTaskFactory();
-                    tf.setShowEnrichmentPanelFactory(showTf);
-                    manager.execute(tf.createTaskIterator(currentNetwork), false);
-                }
-            });
-        }
-
-        {
-            JButton getPublications = new JButton("Enriched publications");
-            getPublications.setFont(labelFont);
-            lowerPanel.add(getPublications);
-            getPublications.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    GetPublicationsTaskFactory tf = new GetPublicationsTaskFactory(manager, true);
-                    ShowPublicationsPanelTaskFactory showTf = manager.getShowPublicationsPanelTaskFactory();
-                    tf.setShowPublicationsPanelFactory(showTf);
-                    manager.execute(tf.createTaskIterator(currentNetwork), false);
-                }
-            });
-        }
-
-        {
-            highlightQuery = new JButton("Select query");
-            highlightQuery.setFont(labelFont);
-
-            // See if we have anything in "query term"
-            if (!ModelUtils.haveQueryTerms(currentNetwork))
-                highlightQuery.setEnabled(false);
-
-            highlightQuery.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    ModelUtils.selectQueryTerms(currentNetwork);
-                }
-            });
-            lowerPanel.add(highlightQuery);
-        }
-        controlPanel.add(lowerPanel, d.down().anchor("west").expandHoriz());
+//
+//        upperPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 10, 0));
+//
+//        controlPanel.add(upperPanel, d.anchor("northwest").expandHoriz());
+//
+//        // controlPanel.add(new JLabel());
+//
+//        JPanel lowerPanel = new JPanel();
+//        GridLayout layout2 = new GridLayout(2, 2);
+//        layout2.setVgap(0);
+//        lowerPanel.setLayout(layout2);
+//        {
+//            JButton getEnrichment = new JButton("Functional enrichment");
+//            getEnrichment.setFont(labelFont);
+//            lowerPanel.add(getEnrichment);
+//            getEnrichment.addActionListener(new ActionListener() {
+//                public void actionPerformed(ActionEvent e) {
+//                    GetEnrichmentTaskFactory tf = new GetEnrichmentTaskFactory(manager, true);
+//                    ShowEnrichmentPanelTaskFactory showTf = manager.getShowEnrichmentPanelTaskFactory();
+//                    tf.setShowEnrichmentPanelFactory(showTf);
+//                    manager.execute(tf.createTaskIterator(currentNetwork), false);
+//                }
+//            });
+//        }
+//
+//        {
+//            JButton getPublications = new JButton("Enriched publications");
+//            getPublications.setFont(labelFont);
+//            lowerPanel.add(getPublications);
+//            getPublications.addActionListener(new ActionListener() {
+//                public void actionPerformed(ActionEvent e) {
+//                    GetPublicationsTaskFactory tf = new GetPublicationsTaskFactory(manager, true);
+//                    ShowPublicationsPanelTaskFactory showTf = manager.getShowPublicationsPanelTaskFactory();
+//                    tf.setShowPublicationsPanelFactory(showTf);
+//                    manager.execute(tf.createTaskIterator(currentNetwork), false);
+//                }
+//            });
+//        }
+//
+//        {
+//            highlightQuery = new JButton("Select query");
+//            highlightQuery.setFont(labelFont);
+//
+//            // See if we have anything in "query term"
+//            if (!ModelUtils.haveQueryTerms(currentNetwork))
+//                highlightQuery.setEnabled(false);
+//
+//            highlightQuery.addActionListener(new ActionListener() {
+//                public void actionPerformed(ActionEvent e) {
+//                    ModelUtils.selectQueryTerms(currentNetwork);
+//                }
+//            });
+//            lowerPanel.add(highlightQuery);
+//        }
+//        controlPanel.add(lowerPanel, d.down().anchor("west").expandHoriz());
 
         updateControls();
         controlPanel.setMaximumSize(new Dimension(300, 100));
@@ -480,11 +385,6 @@ public class IntactNodePanel extends AbstractStringPanel {
                 compartmentsPanel.removeAll();
             return;
         }
-
-        if (!ModelUtils.haveQueryTerms(currentNetwork))
-            highlightQuery.setEnabled(false);
-        else
-            highlightQuery.setEnabled(true);
 
         if (!filters.containsKey(currentNetwork)) {
             filters.put(currentNetwork, new HashMap<>());

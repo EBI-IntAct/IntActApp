@@ -1,12 +1,14 @@
 package uk.ac.ebi.intact.intactApp.internal.tasks;
 
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanel;
-import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.*;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowResultsPanelTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.ui.IntactCytoPanel;
+
+import java.awt.*;
+import java.util.Properties;
 
 public class ShowResultsPanelTask extends AbstractTask {
     final IntactManager manager;
@@ -37,25 +39,25 @@ public class ShowResultsPanelTask extends AbstractTask {
         CySwingApplication swingApplication = manager.getService(CySwingApplication.class);
         CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
 
-//        // If the panel is not already registered, create it
-//        if (show && cytoPanel.indexOfComponent("uk.ac.ebi.intact.intactApp.Intact") < 0) {
-//            CytoPanelComponent2 panel = new IntactCytoPanel(manager);
-//
-//            // Register it
-//            manager.registerService(panel, CytoPanelComponent.class, new Properties());
-//
-//            if (cytoPanel.getState() == CytoPanelState.HIDE)
-//                cytoPanel.setState(CytoPanelState.DOCK);
-//
-//        } else if (!show && cytoPanel.indexOfComponent("uk.ac.ebi.intact.intactApp.Intact") >= 0) {
-//            int compIndex = cytoPanel.indexOfComponent("uk.ac.ebi.intact.intactApp.Intact");
-//            Component panel = cytoPanel.getComponentAt(compIndex);
-//            if (panel instanceof CytoPanelComponent2) {
-//                // Unregister it
-//                manager.unregisterService(panel, CytoPanelComponent.class);
-//                manager.setCytoPanel(null);
-//            }
-//        }
+        // If the panel is not already registered, create it
+        if (show && cytoPanel.indexOfComponent("uk.ac.ebi.intact.intactApp.Intact") < 0) {
+            CytoPanelComponent2 panel = new IntactCytoPanel(manager);
+
+            // Register it
+            manager.registerService(panel, CytoPanelComponent.class, new Properties());
+
+            if (cytoPanel.getState() == CytoPanelState.HIDE)
+                cytoPanel.setState(CytoPanelState.DOCK);
+
+        } else if (!show && cytoPanel.indexOfComponent("uk.ac.ebi.intact.intactApp.Intact") >= 0) {
+            int compIndex = cytoPanel.indexOfComponent("uk.ac.ebi.intact.intactApp.Intact");
+            Component panel = cytoPanel.getComponentAt(compIndex);
+            if (panel instanceof CytoPanelComponent2) {
+                // Unregister it
+                manager.unregisterService(panel, CytoPanelComponent.class);
+                manager.setCytoPanel(null);
+            }
+        }
 
         factory.reregister();
     }

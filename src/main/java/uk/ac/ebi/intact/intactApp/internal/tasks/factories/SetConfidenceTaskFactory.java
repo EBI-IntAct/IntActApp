@@ -18,9 +18,9 @@ public class SetConfidenceTaskFactory extends AbstractNetworkTaskFactory {
         if (!manager.haveURIs() || net == null) return false;
 
         // Are we already a string network?
-        if (ModelUtils.isStringNetwork(net)) return false;
+        if (ModelUtils.isIntactNetwork(net)) return false;
 
-        return ModelUtils.isMergedStringNetwork(net);
+        return ModelUtils.isMergedIntactNetwork(net);
     }
 
     public TaskIterator createTaskIterator(CyNetwork net) {

@@ -110,7 +110,7 @@ public class StringifyTask extends AbstractTask implements ObservableTask, TaskO
             return;
         }
 
-        if (ModelUtils.isStringNetwork(net) && ModelUtils.isCurrentDataVersion(net)) {
+        if (ModelUtils.isIntactNetwork(net) && ModelUtils.isCurrentDataVersion(net)) {
             monitor.showMessage(TaskMonitor.Level.ERROR, "Network '" + net + "' is already a STRING network");
             return;
         }

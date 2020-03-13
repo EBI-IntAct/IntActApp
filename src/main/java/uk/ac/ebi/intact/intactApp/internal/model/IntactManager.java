@@ -230,7 +230,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
         // If we already have networks loaded, see if they are string networks
         for (CyNetwork network : registrar.getService(CyNetworkManager.class).getNetworkSet()) {
-            if (ModelUtils.isStringNetwork(network)) {
+            if (ModelUtils.isIntactNetwork(network)) {
                 IntactNetwork stringNet = new IntactNetwork(this);
                 addIntactNetwork(stringNet, network);
             }
@@ -665,7 +665,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         // This is a string network only if we have a confidence score in the network table,
         // "@id", "species", "canonical name", and "sequence" columns in the node table, and
         // a "score" column in the edge table
-        if (ModelUtils.isStringNetwork(network)) {
+        if (ModelUtils.isIntactNetwork(network)) {
             IntactNetwork intactNet = new IntactNetwork(this);
             addIntactNetwork(intactNet, network);
             showResultsPanel();
@@ -680,7 +680,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         Set<CyNetwork> networks = arg0.getLoadedSession().getNetworks();
         Set<CyNetwork> networksToUpgrade = new HashSet<>();
         for (CyNetwork network : networks) {
-            if (ModelUtils.isStringNetwork(network)) {
+            if (ModelUtils.isIntactNetwork(network)) {
                 if (ModelUtils.ifHaveStringNS(network)) {
                     IntactNetwork stringNet = new IntactNetwork(this);
                     addIntactNetwork(stringNet, network);

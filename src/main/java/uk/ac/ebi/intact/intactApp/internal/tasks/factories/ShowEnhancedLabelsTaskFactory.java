@@ -23,7 +23,7 @@ public class ShowEnhancedLabelsTaskFactory extends AbstractNetworkViewTaskFactor
     public boolean isReady(CyNetworkView netView) {
         if (netView == null)
             return false;
-        return ModelUtils.isStringNetwork(netView.getModel()) && manager.haveEnhancedGraphics();
+        return ModelUtils.isIntactNetwork(netView.getModel()) && manager.haveEnhancedGraphics();
     }
 
     public TaskIterator createTaskIterator(CyNetworkView netView) {
@@ -33,7 +33,7 @@ public class ShowEnhancedLabelsTaskFactory extends AbstractNetworkViewTaskFactor
     public void reregister() {
         manager.unregisterService(this, NetworkViewTaskFactory.class);
         Properties props = new Properties();
-        props.setProperty(PREFERRED_MENU, "Apps.STRING");
+        props.setProperty(PREFERRED_MENU, "Apps.IntAct");
         if (manager.showEnhancedLabels() && manager.haveEnhancedGraphics()) {
             props.setProperty(TITLE, "Don't show STRING style labels");
             props.setProperty(COMMAND_NAMESPACE, "string");

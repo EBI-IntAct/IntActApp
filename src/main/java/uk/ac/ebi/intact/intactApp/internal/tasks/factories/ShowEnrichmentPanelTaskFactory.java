@@ -32,7 +32,7 @@ public class ShowEnrichmentPanelTaskFactory extends AbstractTaskFactory {
     public void reregister() {
         manager.unregisterService(this, TaskFactory.class);
         Properties props = new Properties();
-        props.setProperty(PREFERRED_MENU, "Apps.STRING Enrichment");
+        props.setProperty(PREFERRED_MENU, "Apps.IntAct Enrichment");
         props.setProperty(COMMAND_NAMESPACE, "string");
         if (ShowEnrichmentPanelTask.isPanelRegistered(manager)) {
             props.setProperty(TITLE, "Hide enrichment panel");
@@ -63,6 +63,6 @@ public class ShowEnrichmentPanelTaskFactory extends AbstractTaskFactory {
         if (net == null)
             return false;
 
-        return ModelUtils.isStringNetwork(net);
+        return ModelUtils.isIntactNetwork(net);
     }
 }

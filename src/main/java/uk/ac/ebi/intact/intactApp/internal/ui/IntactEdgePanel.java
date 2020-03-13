@@ -17,19 +17,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Displays information about a protein taken from STRING
- *
- * @author Scooter Morris
- */
-public class IntactEdgePanel extends AbstractStringPanel {
+
+public class IntactEdgePanel extends AbstractIntactPanel {
     JPanel subScorePanel;
     JPanel scorePanel;
     private Map<CyNetwork, Map<String, Boolean>> colors;
 
     public IntactEdgePanel(final IntactManager manager) {
         super(manager);
-        filters.get(currentNetwork).put("score", new HashMap<>());
+        filters.get(currentNetwork).put("mi score", new HashMap<>());
 
         colors = new HashMap<>();
         colors.put(currentNetwork, new HashMap<>());
@@ -44,7 +40,7 @@ public class IntactEdgePanel extends AbstractStringPanel {
         {
             EasyGBC c = new EasyGBC();
             add(new JSeparator(SwingConstants.HORIZONTAL), c.anchor("west").expandHoriz());
-            JComponent scoreSlider = createFilterSlider("score", "Score", currentNetwork, true, 100.0);
+            JComponent scoreSlider = createFilterSlider("score", "MI-Score", currentNetwork, true, 100.0);
             {
                 scorePanel = new JPanel();
                 scorePanel.setLayout(new GridBagLayout());
@@ -166,11 +162,16 @@ public class IntactEdgePanel extends AbstractStringPanel {
     void doFilter(String type) {
         Map<String, Double> filter = filters.get(currentNetwork).get(type);
         CyNetworkView view = manager.getCurrentNetworkView();
+
+        String namespace = ModelUtils.INTACTDB_NAMESPACE;
+        if (manager.getIntactNetwork(currentNetwork).isCollapsed())
+            namespace = ModelUtils.COLLAPSED_NAMESPACE;
+
         for (CyEdge edge : currentNetwork.getEdgeList()) {
             CyRow edgeRow = currentNetwork.getRow(edge);
             boolean show = true;
             for (String lbl : filter.keySet()) {
-                Double v = edgeRow.get(ModelUtils.INTACTDB_NAMESPACE, lbl.toLowerCase(), Double.class);
+                Double v = edgeRow.get(namespace, lbl.toLowerCase(), Double.class);
                 double nv = filter.get(lbl);
                 if ((v == null && nv > 0) || v < nv) {
                     show = false;

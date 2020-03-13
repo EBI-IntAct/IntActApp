@@ -143,7 +143,7 @@ public class CyActivator extends AbstractCyActivator {
             collapseProperties.setProperty(COMMAND_NAMESPACE, "intact");
             collapseProperties.setProperty(COMMAND, "collapse");
 
-            collapseProperties.setProperty(PREFERRED_MENU, "Apps.Intact");
+            collapseProperties.setProperty(PREFERRED_MENU, "Apps.IntAct");
             collapseProperties.setProperty(TITLE, "Collapse edges");
             collapseProperties.setProperty(MENU_GRAVITY, "1.0");
             collapseProperties.setProperty(IN_MENU_BAR, "true");
@@ -155,7 +155,7 @@ public class CyActivator extends AbstractCyActivator {
             collapseProperties.setProperty(COMMAND_NAMESPACE, "intact");
             collapseProperties.setProperty(COMMAND, "expend");
 
-            collapseProperties.setProperty(PREFERRED_MENU, "Apps.Intact");
+            collapseProperties.setProperty(PREFERRED_MENU, "Apps.IntAct");
             collapseProperties.setProperty(TITLE, "Expend edges");
             collapseProperties.setProperty(MENU_GRAVITY, "1.0");
             collapseProperties.setProperty(IN_MENU_BAR, "true");
@@ -231,7 +231,7 @@ public class CyActivator extends AbstractCyActivator {
             SettingsTaskFactory settingsFactory =
                     new SettingsTaskFactory(manager);
             Properties props = new Properties();
-            props.setProperty(PREFERRED_MENU, "Apps.STRING");
+            props.setProperty(PREFERRED_MENU, "Apps.IntAct");
             props.setProperty(TITLE, "Settings");
             props.setProperty(MENU_GRAVITY, "100.0");
             props.setProperty(IN_MENU_BAR, "true");
@@ -249,21 +249,21 @@ public class CyActivator extends AbstractCyActivator {
             // Register our "Add Nodes" factory
             ExpandNetworkTaskFactory addNodes = new ExpandNetworkTaskFactory(manager);
             Properties props = new Properties();
-            props.setProperty(PREFERRED_MENU, "Apps.STRING");
+            props.setProperty(PREFERRED_MENU, "Apps.IntAct");
             props.setProperty(TITLE, "Expand network");
             props.setProperty(MENU_GRAVITY, "1.0");
             props.setProperty(IN_MENU_BAR, "true");
             registerService(bc, addNodes, NetworkTaskFactory.class, props);
 
             Properties props2 = new Properties();
-            props2.setProperty(PREFERRED_MENU, "Apps.STRING");
+            props2.setProperty(PREFERRED_MENU, "Apps.IntAct");
             props2.setProperty(TITLE, "Expand network");
             props2.setProperty(MENU_GRAVITY, "1.0");
             props2.setProperty(IN_MENU_BAR, "false");
             registerService(bc, addNodes, NetworkViewTaskFactory.class, props2);
 
             Properties props3 = new Properties();
-            props3.setProperty(PREFERRED_MENU, "Apps.STRING");
+            props3.setProperty(PREFERRED_MENU, "Apps.IntAct");
             props3.setProperty(TITLE, "Expand network");
             props3.setProperty(MENU_GRAVITY, "1.0");
             props3.setProperty(IN_MENU_BAR, "false");
@@ -273,7 +273,7 @@ public class CyActivator extends AbstractCyActivator {
         {
             ChangeConfidenceTaskFactory changeConfidence = new ChangeConfidenceTaskFactory(manager);
             Properties props = new Properties();
-            props.setProperty(PREFERRED_MENU, "Apps.STRING");
+            props.setProperty(PREFERRED_MENU, "Apps.IntAct");
             props.setProperty(TITLE, "Change confidence");
             props.setProperty(MENU_GRAVITY, "2.0");
             props.setProperty(IN_MENU_BAR, "true");
@@ -295,7 +295,7 @@ public class CyActivator extends AbstractCyActivator {
         {
             AddTermsTaskFactory addTerms = new AddTermsTaskFactory(manager);
             Properties props = new Properties();
-            props.setProperty(PREFERRED_MENU, "Apps.STRING");
+            props.setProperty(PREFERRED_MENU, "Apps.IntAct");
             props.setProperty(TITLE, "Query for additional nodes");
             props.setProperty(MENU_GRAVITY, "3.0");
             props.setProperty(IN_MENU_BAR, "true");
@@ -305,7 +305,7 @@ public class CyActivator extends AbstractCyActivator {
         {
             SetLabelAttributeTaskFactory setLabel = new SetLabelAttributeTaskFactory(manager);
             Properties props = new Properties();
-            props.setProperty(PREFERRED_MENU, "Apps.STRING");
+            props.setProperty(PREFERRED_MENU, "Apps.IntAct");
             props.setProperty(TITLE, "Set STRING label attribute");
             props.setProperty(MENU_GRAVITY, "10.0");
             props.setProperty(IN_MENU_BAR, "true");
@@ -315,7 +315,7 @@ public class CyActivator extends AbstractCyActivator {
         {
             SetConfidenceTaskFactory setConfidence = new SetConfidenceTaskFactory(manager);
             Properties props = new Properties();
-            props.setProperty(PREFERRED_MENU, "Apps.STRING");
+            props.setProperty(PREFERRED_MENU, "Apps.IntAct");
             props.setProperty(TITLE, "Set as STRING network");
             props.setProperty(MENU_GRAVITY, "6.0");
             props.setProperty(IN_MENU_BAR, "true");
@@ -335,7 +335,7 @@ public class CyActivator extends AbstractCyActivator {
         {
             StringifyTaskFactory stringify = new StringifyTaskFactory(manager);
             Properties props = new Properties();
-            props.setProperty(PREFERRED_MENU, "Apps.STRING");
+            props.setProperty(PREFERRED_MENU, "Apps.IntAct");
             props.setProperty(TITLE, "STRINGify network");
             props.setProperty(MENU_GRAVITY, "7.0");
             props.setProperty(IN_MENU_BAR, "true");
@@ -365,7 +365,7 @@ public class CyActivator extends AbstractCyActivator {
             // registerService(bc, exportEnrichment, NetworkTaskFactory.class, props);
 
             Properties props2 = new Properties();
-            props2.setProperty(PREFERRED_MENU, "Apps.STRING Enrichment");
+            props2.setProperty(PREFERRED_MENU, "Apps.IntAct Enrichment");
             props2.setProperty(TITLE, "Export enrichment results");
             props2.setProperty(MENU_GRAVITY, "3.0");
             props2.setProperty(IN_MENU_BAR, "true");
@@ -375,7 +375,7 @@ public class CyActivator extends AbstractCyActivator {
         {
             ExportPublicationsTaskFactory exportPublications = new ExportPublicationsTaskFactory(manager);
             Properties props = new Properties();
-            props.setProperty(PREFERRED_MENU, "Apps.STRING Enrichment");
+            props.setProperty(PREFERRED_MENU, "Apps.IntAct Enrichment");
             props.setProperty(TITLE, "Export publications results");
             props.setProperty(MENU_GRAVITY, "6.0");
             props.setProperty(IN_MENU_BAR, "true");
@@ -386,7 +386,7 @@ public class CyActivator extends AbstractCyActivator {
             GetEnrichmentTaskFactory getEnrichment = new GetEnrichmentTaskFactory(manager, true);
             {
                 Properties propsEnrichment = new Properties();
-                propsEnrichment.setProperty(PREFERRED_MENU, "Apps.STRING Enrichment");
+                propsEnrichment.setProperty(PREFERRED_MENU, "Apps.IntAct Enrichment");
                 propsEnrichment.setProperty(TITLE, "Retrieve functional enrichment");
                 propsEnrichment.setProperty(MENU_GRAVITY, "1.0");
                 propsEnrichment.setProperty(IN_MENU_BAR, "true");
@@ -402,7 +402,7 @@ public class CyActivator extends AbstractCyActivator {
             GetPublicationsTaskFactory getPublications = new GetPublicationsTaskFactory(manager, true);
             {
                 Properties propsPublications = new Properties();
-                propsPublications.setProperty(PREFERRED_MENU, "Apps.STRING Enrichment");
+                propsPublications.setProperty(PREFERRED_MENU, "Apps.IntAct Enrichment");
                 propsPublications.setProperty(TITLE, "Retrieve enriched publications");
                 propsPublications.setProperty(MENU_GRAVITY, "4.0");
                 propsPublications.setProperty(IN_MENU_BAR, "true");
@@ -479,7 +479,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			OpenEvidenceTaskFactory openEvidence = new OpenEvidenceTaskFactory(manager);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Apps.String");
+			props.setProperty(PREFERRED_MENU, "Apps.IntAct");
 			props.setProperty(TITLE, "Show evidence for association (if available)");
 			props.setProperty(MENU_GRAVITY, "2.0");
 			props.setProperty(IN_MENU_BAR, "true");
@@ -491,7 +491,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			FindProteinsTaskFactory findProteins = new FindProteinsTaskFactory(manager);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Apps.String");
+			props.setProperty(PREFERRED_MENU, "Apps.IntAct");
 			props.setProperty(TITLE, "Find proteins using text mining");
 			props.setProperty(MENU_GRAVITY, "4.0");
 			props.setProperty(IN_MENU_BAR, "true");

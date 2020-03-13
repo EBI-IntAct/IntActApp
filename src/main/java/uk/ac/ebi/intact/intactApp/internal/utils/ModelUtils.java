@@ -57,9 +57,9 @@ public class ModelUtils {
     public static String MI_SCORE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "mi score";
     public static String SHAPE = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "shape";
     public static String COLOR = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "color";
-    public static String SOURCE_SHAPE = STYLE_NAMESPACE + COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "source shape";
-    public static String TARGET_SHAPE = STYLE_NAMESPACE + COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "target shape";
-    public static String C_COLOR = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "color";
+    public static String SOURCE_SHAPE = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "source shape";
+    public static String TARGET_SHAPE = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "target shape";
+    public static String C_COLOR = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "collapsed color";
     public static String C_INTACT_IDS = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "intact ids";
     public static String C_MI_SCORE = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "mi score";
 
@@ -785,9 +785,9 @@ public class ModelUtils {
         return formattedColumnName;
     }
 
-    public static boolean isMergedStringNetwork(CyNetwork network) {
+    public static boolean isMergedIntactNetwork(CyNetwork network) {
         CyTable nodeTable = network.getDefaultNodeTable();
-        if (nodeTable.getColumn(ID) == null)
+        if (nodeTable.getColumn(INTACT_ID) == null)
             return false;
         // Enough to check for id in the node columns and score in the edge columns
         //if (nodeTable.getColumn(SPECIES) == null)
@@ -795,15 +795,11 @@ public class ModelUtils {
         //if (nodeTable.getColumn(CANONICAL) == null)
         //	return false;
         CyTable edgeTable = network.getDefaultEdgeTable();
-        return edgeTable.getColumn(SCORE) != null || edgeTable.getColumn(SCORE_NO_NAMESPACE) != null;
+        return edgeTable.getColumn(MI_SCORE) != null;
     }
 
-    public static boolean isStringNetwork(CyNetwork network) {
-        // This is a string network only if we have a confidence score in the network table,
-        // "@id" column in the node table, and a "score" column in the edge table
-        if (network == null || network.getRow(network).get(CONFIDENCE, Double.class) == null)
-            return false;
-        return isMergedStringNetwork(network);
+    public static boolean isIntactNetwork(CyNetwork network) {
+        return isMergedIntactNetwork(network);
     }
 
     // This method will tell us if we have the new side panel functionality (i.e. namespaces)
@@ -811,7 +807,7 @@ public class ModelUtils {
         if (network == null) return false;
         CyRow netRow = network.getRow(network);
         Collection<CyColumn> columns = network.getDefaultNodeTable().getColumns(INTACTDB_NAMESPACE);
-        return netRow.isSet(CONFIDENCE) && netRow.isSet(NET_SPECIES) && columns != null && columns.size() > 0;
+        return columns != null && columns.size() > 0;
     }
 
     public static boolean isCurrentDataVersion(CyNetwork network) {
@@ -821,7 +817,7 @@ public class ModelUtils {
     }
 
     public static boolean isStitchNetwork(CyNetwork network) {
-        return network != null && network.getDefaultNodeTable().getColumn(SMILES) != null;
+        return false;
     }
 
     public static String getExisting(CyNetwork network) {
@@ -1861,13 +1857,14 @@ public class ModelUtils {
             }
             createColumnIfNeeded(network.getDefaultEdgeTable(), Double.class, MI_SCORE);
             createColumnIfNeeded(network.getDefaultEdgeTable(), Boolean.class, DISRUPTED_BY_MUTATION);
+            createColumnIfNeeded(network.getDefaultEdgeTable(), Double.class, C_MI_SCORE);
+            createListColumnIfNeeded(network.getDefaultEdgeTable(), String.class, C_INTACT_IDS);
 
-            intactEdgeColumns = new ArrayList<>(Arrays.asList(SOURCE_SHAPE, TARGET_SHAPE, SHAPE, COLOR, C_COLOR));
+            intactEdgeColumns = new ArrayList<>(Arrays.asList(C_COLOR, COLOR, SHAPE, SOURCE_SHAPE, TARGET_SHAPE));
             for (String intactEdgeColumn : intactEdgeColumns) {
                 createColumnIfNeeded(network.getDefaultEdgeTable(), String.class, intactEdgeColumn);
             }
-            createColumnIfNeeded(network.getDefaultEdgeTable(), Double.class, C_MI_SCORE);
-            createListColumnIfNeeded(network.getDefaultEdgeTable(), String.class, C_INTACT_IDS);
+
 
             URL resource = Species.class.getResource("/getInteractions.json");
             InputStream stream = resource.openConnection().getInputStream();
@@ -2067,7 +2064,8 @@ public class ModelUtils {
     }
 
     private static String cleanJSONColorData(Object colorObject) {
-        return ((String) colorObject).replaceFirst("rgb\\(", "");
+        String tmp = ((String) colorObject).replaceFirst("rgb\\(", "");
+        return tmp.substring(0, tmp.length() - 1);
     }
 
     //////////////////////////////////////////////////////////////////////

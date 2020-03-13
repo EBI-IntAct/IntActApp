@@ -7,9 +7,10 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.SelectedNodesAndEdgesEvent;
 import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.CollapseTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.ExpendTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.utils.IconUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
-import uk.ac.ebi.intact.intactApp.internal.utils.TextIcon;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,8 +26,17 @@ public class IntactCytoPanel extends JPanel
         SetCurrentNetworkListener,
         SelectedNodesAndEdgesListener {
 
-    private static final Icon icon = new TextIcon(IconUtils.LAYERED_STRING_ICON, IconUtils.getIconFont(20.0f), IconUtils.STRING_COLORS, 16, 16);
+    private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/Gradient_over_Transparent/favicon_32x32.ico");
     final IntactManager manager;
+    private ButtonGroup viewTypes = new ButtonGroup();
+    private JPanel viewTypesPanel = new JPanel(new GridLayout(1,3));
+    private JRadioButton collapsedViewType = new JRadioButton("Collapse"),
+            expendedViewType = new JRadioButton("Expended"),
+            mutationViewType = new JRadioButton("Mutation");
+
+    private CollapseTaskFactory collapseTaskFactory;
+    private ExpendTaskFactory expendTaskFactory ;
+
     private JTabbedPane tabs;
     private IntactNodePanel nodePanel;
     private IntactEdgePanel edgePanel;
@@ -35,6 +45,24 @@ public class IntactCytoPanel extends JPanel
     public IntactCytoPanel(final IntactManager manager) {
         this.manager = manager;
         this.setLayout(new BorderLayout());
+
+        collapseTaskFactory = new CollapseTaskFactory(manager);
+        expendTaskFactory = new ExpendTaskFactory(manager);
+
+        viewTypes.add(collapsedViewType);
+        viewTypes.add(expendedViewType);
+        viewTypes.add(mutationViewType);
+
+        collapsedViewType.setSelected(true);
+        collapsedViewType.addActionListener(e -> manager.execute(collapseTaskFactory.createTaskIterator()));
+        expendedViewType.addActionListener(e -> manager.execute(expendTaskFactory.createTaskIterator()));
+
+        viewTypesPanel.add(collapsedViewType);
+        viewTypesPanel.add(expendedViewType);
+        viewTypesPanel.add(mutationViewType);
+        this.add(viewTypesPanel, BorderLayout.NORTH);
+
+
         tabs = new JTabbedPane(JTabbedPane.BOTTOM);
         nodePanel = new IntactNodePanel(manager);
         tabs.add("Nodes", nodePanel);
@@ -90,7 +118,7 @@ public class IntactCytoPanel extends JPanel
     }
 
     public String getTitle() {
-        return "STRING";
+        return "IntAct";
     }
 
     public void updateControls() {
