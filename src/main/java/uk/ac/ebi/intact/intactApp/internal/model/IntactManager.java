@@ -5,6 +5,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.event.CyEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.*;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
@@ -23,21 +24,26 @@ import org.cytoscape.util.color.PaletteProvider;
 import org.cytoscape.util.color.PaletteProviderManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.model.events.NetworkViewAddedEvent;
+import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskObserver;
 import org.json.simple.JSONObject;
+import uk.ac.ebi.intact.intactApp.internal.event.NetworkViewTypeChangedEvent;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.*;
 import uk.ac.ebi.intact.intactApp.internal.ui.IntactCytoPanel;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.styles.IntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.model.CollapsedIntactStyle;
-import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.model.ExpendedIntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.model.ExpandedIntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.model.MutationIntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice.CollapsedIntactWebserviceStyle;
-import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice.ExpendedIntactWebserviceStyle;
+import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice.ExpandedIntactWebserviceStyle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -47,7 +53,7 @@ import java.util.concurrent.Executors;
 
 // import org.jcolorbrewer.ColorBrewer;
 
-public class IntactManager implements NetworkAddedListener, SessionLoadedListener, NetworkAboutToBeDestroyedListener {
+public class IntactManager implements NetworkAddedListener, SessionLoadedListener, NetworkAboutToBeDestroyedListener, NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener {
     public static String CONFIGURI = "https://jensenlab.org/assets/stringapp/";
     public static String STRINGResolveURI = "http://version11.string-db.org/api/";
     public static String STITCHResolveURI = "http://stitch.embl.de/api/";
@@ -122,6 +128,8 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
 
     private static Map<String, IntactStyle> intactStyles = new HashMap<>();
+    private Map<CyNetworkView, IntactViewType> viewTypes = new HashMap<>();
+
 
     private boolean ignore = false;
 
@@ -243,13 +251,13 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
     private void setupStyles() {
         IntactStyle collapsed = new CollapsedIntactStyle(this);
-        IntactStyle expended = new ExpendedIntactStyle(this);
+        IntactStyle expanded = new ExpandedIntactStyle(this);
         IntactStyle mutation = new MutationIntactStyle(this);
 
         IntactStyle collapsedWebStyle = new CollapsedIntactWebserviceStyle(this);
-        IntactStyle expendedWeb = new ExpendedIntactWebserviceStyle(this);
+        IntactStyle expandedWeb = new ExpandedIntactWebserviceStyle(this);
 
-        for (IntactStyle style : new IntactStyle[]{collapsed, expended, mutation, collapsedWebStyle, expendedWeb}){
+        for (IntactStyle style : new IntactStyle[]{collapsed, expanded, mutation, collapsedWebStyle, expandedWeb}) {
             intactStyles.put(style.getStyleName(), style);
         }
     }
@@ -384,7 +392,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         CyNetworkView view = registrar.getService(CyNetworkViewFactory.class)
                 .createNetworkView(network);
         if (intactNetworkMap.containsKey(network)) {
-            intactNetworkMap.get(network).hideExpendedEdgesOnViewCreation(view);
+            intactNetworkMap.get(network).hideExpandedEdgesOnViewCreation(view);
             intactStyles.get(CollapsedIntactWebserviceStyle.TITLE).applyStyle(view);
         }
         return view;
@@ -1078,4 +1086,36 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         return new Color(r, g, b);
     }
 
+
+    @Override
+    public void handleEvent(NetworkViewAddedEvent e) {
+        CyNetworkView view = e.getNetworkView();
+        CyNetwork cyNetwork = view.getModel();
+        if (intactNetworkMap.containsKey(cyNetwork)) {
+            viewTypes.put(view, IntactViewType.COLLAPSED);
+        }
+    }
+
+
+    @Override
+    public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
+        viewTypes.remove(e.getNetworkView());
+    }
+
+    public void setNetworkViewType(CyNetworkView view, IntactViewType viewType) {
+        IntactViewType oldType = viewTypes.get(view);
+        fireEvent(new NetworkViewTypeChangedEvent(this, view, oldType, viewType));
+        viewTypes.put(view, viewType);
+    }
+
+    public IntactViewType getNetworkViewType(CyNetworkView view) {
+        if (viewTypes.containsKey(view)) {
+            return viewTypes.get(view);
+        }
+        return null;
+    }
+
+    private void fireEvent(final CyEvent<?> event) {
+        registrar.getService(CyEventHelper.class).fireEvent(event);
+    }
 }

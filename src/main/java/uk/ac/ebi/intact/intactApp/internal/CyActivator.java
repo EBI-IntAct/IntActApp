@@ -18,8 +18,9 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.*;
-import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.CollapseTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.ExpendTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.CollapseViewTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.ExpandViewTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.MutationViewTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.ui.DiseaseNetworkWebServiceClient;
 import uk.ac.ebi.intact.intactApp.internal.ui.IntactWebServiceClient;
 import uk.ac.ebi.intact.intactApp.internal.ui.StitchWebServiceClient;
@@ -138,28 +139,40 @@ public class CyActivator extends AbstractCyActivator {
             registerService(bc, getNetwork, TaskFactory.class, props);
         }
         {
-            CollapseTaskFactory collapseTaskFactory = new CollapseTaskFactory(manager);
-            Properties collapseProperties = new Properties();
-            collapseProperties.setProperty(COMMAND_NAMESPACE, "intact");
-            collapseProperties.setProperty(COMMAND, "collapse");
+            CollapseViewTaskFactory collapseViewTaskFactory = new CollapseViewTaskFactory(manager, null);
+            Properties properties = new Properties();
+            properties.setProperty(COMMAND_NAMESPACE, "intact");
+            properties.setProperty(COMMAND, "collapse");
 
-            collapseProperties.setProperty(PREFERRED_MENU, "Apps.IntAct");
-            collapseProperties.setProperty(TITLE, "Collapse edges");
-            collapseProperties.setProperty(MENU_GRAVITY, "1.0");
-            collapseProperties.setProperty(IN_MENU_BAR, "true");
-            registerService(bc, collapseTaskFactory, TaskFactory.class, collapseProperties);
+            properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
+            properties.setProperty(TITLE, "Collapsed edges view");
+            properties.setProperty(MENU_GRAVITY, "1.0");
+            properties.setProperty(IN_MENU_BAR, "true");
+            registerService(bc, collapseViewTaskFactory, TaskFactory.class, properties);
         }
         {
-            ExpendTaskFactory expendTaskFactory = new ExpendTaskFactory(manager);
-            Properties collapseProperties = new Properties();
-            collapseProperties.setProperty(COMMAND_NAMESPACE, "intact");
-            collapseProperties.setProperty(COMMAND, "expend");
+            ExpandViewTaskFactory expendTaskFactory = new ExpandViewTaskFactory(manager, null);
+            Properties properties = new Properties();
+            properties.setProperty(COMMAND_NAMESPACE, "intact");
+            properties.setProperty(COMMAND, "expend");
 
-            collapseProperties.setProperty(PREFERRED_MENU, "Apps.IntAct");
-            collapseProperties.setProperty(TITLE, "Expend edges");
-            collapseProperties.setProperty(MENU_GRAVITY, "1.0");
-            collapseProperties.setProperty(IN_MENU_BAR, "true");
-            registerService(bc, expendTaskFactory, TaskFactory.class, collapseProperties);
+            properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
+            properties.setProperty(TITLE, "Expanded edges view");
+            properties.setProperty(MENU_GRAVITY, "2.0");
+            properties.setProperty(IN_MENU_BAR, "true");
+            registerService(bc, expendTaskFactory, TaskFactory.class, properties);
+        }
+        {
+            MutationViewTaskFactory mutationViewTaskFactory = new MutationViewTaskFactory(manager, null);
+            Properties properties = new Properties();
+            properties.setProperty(COMMAND_NAMESPACE, "intact");
+            properties.setProperty(COMMAND, "mutation");
+
+            properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
+            properties.setProperty(TITLE, "Mutation view");
+            properties.setProperty(MENU_GRAVITY, "3.0");
+            properties.setProperty(IN_MENU_BAR, "true");
+            registerService(bc, mutationViewTaskFactory, TaskFactory.class, properties);
         }
 
 //        {

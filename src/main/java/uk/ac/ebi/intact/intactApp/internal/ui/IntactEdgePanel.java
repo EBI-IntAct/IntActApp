@@ -6,6 +6,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.IntactViewType;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
 import javax.swing.*;
@@ -164,7 +165,7 @@ public class IntactEdgePanel extends AbstractIntactPanel {
         CyNetworkView view = manager.getCurrentNetworkView();
 
         String namespace = ModelUtils.INTACTDB_NAMESPACE;
-        if (manager.getIntactNetwork(currentNetwork).isCollapsed())
+        if (manager.getNetworkViewType(view) == IntactViewType.COLLAPSED)
             namespace = ModelUtils.COLLAPSED_NAMESPACE;
 
         for (CyEdge edge : currentNetwork.getEdgeList()) {
