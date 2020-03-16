@@ -26,15 +26,20 @@ import java.util.Properties;
 public class IntactCytoPanel extends JPanel
         implements CytoPanelComponent2,
         SetCurrentNetworkListener,
-        SelectedNodesAndEdgesListener{
+        SelectedNodesAndEdgesListener {
 
     private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/Gradient_over_Transparent/favicon_32x32.ico");
     final IntactManager manager;
     private ButtonGroup viewTypes = new ButtonGroup();
-    private JPanel viewTypesPanel = new JPanel(new GridLayout(1, 3));
+    private JPanel viewTypesPanel = new JPanel(new GridLayout(3, 1)),
+            buttonsPanel = new JPanel(new GridBagLayout()),
+            upperPanel = new JPanel(new GridLayout(1, 2));
+
     private JRadioButton collapsedViewType = new JRadioButton("Collapse"),
             expandedViewType = new JRadioButton("Expanded"),
             mutationViewType = new JRadioButton("Mutation");
+
+    private JButton resetStylesButton = new JButton("Reset styles");
 
     private CollapseViewTaskFactory collapseViewTaskFactory;
     private ExpandViewTaskFactory expandViewTaskFactory;
@@ -62,10 +67,17 @@ public class IntactCytoPanel extends JPanel
         expandedViewType.addActionListener(e -> manager.execute(expandViewTaskFactory.createTaskIterator()));
         mutationViewType.addActionListener(e -> manager.execute(mutationViewTaskFactory.createTaskIterator()));
 
+        viewTypesPanel.setBorder(BorderFactory.createTitledBorder("View types :"));
         viewTypesPanel.add(collapsedViewType);
         viewTypesPanel.add(expandedViewType);
         viewTypesPanel.add(mutationViewType);
-        this.add(viewTypesPanel, BorderLayout.NORTH);
+        upperPanel.add(viewTypesPanel);
+
+        resetStylesButton.addActionListener(e -> manager.setupStyles());
+        buttonsPanel.add(resetStylesButton);
+
+        upperPanel.add(buttonsPanel);
+        this.add(upperPanel, BorderLayout.NORTH);
 
 
         tabs = new JTabbedPane(JTabbedPane.BOTTOM);

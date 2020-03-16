@@ -249,7 +249,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         setupStyles();
     }
 
-    private void setupStyles() {
+    public void setupStyles() {
         IntactStyle collapsed = new CollapsedIntactStyle(this);
         IntactStyle expanded = new ExpandedIntactStyle(this);
         IntactStyle mutation = new MutationIntactStyle(this);
