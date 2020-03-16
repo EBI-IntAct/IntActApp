@@ -27,7 +27,7 @@ public class ShowResultsPanelTaskFactory extends AbstractTaskFactory {
     public void reregister() {
         manager.unregisterService(this, TaskFactory.class);
         Properties props = new Properties();
-        props.setProperty(PREFERRED_MENU, "Apps.STRING");
+        props.setProperty(PREFERRED_MENU, "Apps.IntAct");
 
         if (ShowResultsPanelTask.isPanelRegistered(manager)) {
             props.setProperty(TITLE, "Hide results panel");
@@ -49,7 +49,7 @@ public class ShowResultsPanelTaskFactory extends AbstractTaskFactory {
         CyNetwork net = manager.getCurrentNetwork();
         if (net == null) return false;
 
-        return ModelUtils.isStringNetwork(net);
+        return ModelUtils.isIntactNetwork(net);
     }
 }
 

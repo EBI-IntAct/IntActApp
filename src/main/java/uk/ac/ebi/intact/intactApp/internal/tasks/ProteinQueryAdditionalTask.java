@@ -92,7 +92,7 @@ public class ProteinQueryAdditionalTask extends AbstractTask implements Observab
         if (network == null)
             network = manager.getCurrentNetwork();
 
-        if (network == null || !ModelUtils.isStringNetwork(network)) {
+        if (network == null || !ModelUtils.isIntactNetwork(network)) {
             monitor.showMessage(TaskMonitor.Level.ERROR, "Network is not a STRING network.");
             return;
         }

@@ -30,7 +30,7 @@ public class ShowImagesTaskFactory extends AbstractNetworkViewTaskFactory implem
     @Override
     public boolean isReady(CyNetworkView netView) {
         if (netView == null) return false;
-        return ModelUtils.isStringNetwork(netView.getModel());
+        return ModelUtils.isIntactNetwork(netView.getModel());
     }
 
     @Override
@@ -49,7 +49,7 @@ public class ShowImagesTaskFactory extends AbstractNetworkViewTaskFactory implem
     public void reregister() {
         manager.unregisterService(this, NetworkViewTaskFactory.class);
         Properties props = new Properties();
-        props.setProperty(PREFERRED_MENU, "Apps.STRING");
+        props.setProperty(PREFERRED_MENU, "Apps.IntAct");
         if (manager.showImage())
             props.setProperty(TITLE, "Don't show structure images");
         else

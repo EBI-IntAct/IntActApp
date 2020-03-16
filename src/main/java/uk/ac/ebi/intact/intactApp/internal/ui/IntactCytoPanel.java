@@ -6,10 +6,13 @@ import org.cytoscape.application.swing.*;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.SelectedNodesAndEdgesEvent;
 import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
+import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.CollapseViewTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.ExpandViewTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.MutationViewTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.utils.IconUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
-import uk.ac.ebi.intact.intactApp.internal.utils.TextIcon;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,10 +26,20 @@ import java.util.Properties;
 public class IntactCytoPanel extends JPanel
         implements CytoPanelComponent2,
         SetCurrentNetworkListener,
-        SelectedNodesAndEdgesListener {
+        SelectedNodesAndEdgesListener{
 
-    private static final Icon icon = new TextIcon(IconUtils.LAYERED_STRING_ICON, IconUtils.getIconFont(20.0f), IconUtils.STRING_COLORS, 16, 16);
+    private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/Gradient_over_Transparent/favicon_32x32.ico");
     final IntactManager manager;
+    private ButtonGroup viewTypes = new ButtonGroup();
+    private JPanel viewTypesPanel = new JPanel(new GridLayout(1, 3));
+    private JRadioButton collapsedViewType = new JRadioButton("Collapse"),
+            expandedViewType = new JRadioButton("Expanded"),
+            mutationViewType = new JRadioButton("Mutation");
+
+    private CollapseViewTaskFactory collapseViewTaskFactory;
+    private ExpandViewTaskFactory expandViewTaskFactory;
+    private MutationViewTaskFactory mutationViewTaskFactory;
+
     private JTabbedPane tabs;
     private IntactNodePanel nodePanel;
     private IntactEdgePanel edgePanel;
@@ -35,6 +48,26 @@ public class IntactCytoPanel extends JPanel
     public IntactCytoPanel(final IntactManager manager) {
         this.manager = manager;
         this.setLayout(new BorderLayout());
+
+        collapseViewTaskFactory = new CollapseViewTaskFactory(manager, null);
+        expandViewTaskFactory = new ExpandViewTaskFactory(manager, null);
+        mutationViewTaskFactory = new MutationViewTaskFactory(manager, null);
+
+        viewTypes.add(collapsedViewType);
+        viewTypes.add(expandedViewType);
+        viewTypes.add(mutationViewType);
+
+        collapsedViewType.setSelected(true);
+        collapsedViewType.addActionListener(e -> manager.execute(collapseViewTaskFactory.createTaskIterator()));
+        expandedViewType.addActionListener(e -> manager.execute(expandViewTaskFactory.createTaskIterator()));
+        mutationViewType.addActionListener(e -> manager.execute(mutationViewTaskFactory.createTaskIterator()));
+
+        viewTypesPanel.add(collapsedViewType);
+        viewTypesPanel.add(expandedViewType);
+        viewTypesPanel.add(mutationViewType);
+        this.add(viewTypesPanel, BorderLayout.NORTH);
+
+
         tabs = new JTabbedPane(JTabbedPane.BOTTOM);
         nodePanel = new IntactNodePanel(manager);
         tabs.add("Nodes", nodePanel);
@@ -90,7 +123,7 @@ public class IntactCytoPanel extends JPanel
     }
 
     public String getTitle() {
-        return "STRING";
+        return "IntAct";
     }
 
     public void updateControls() {
@@ -113,6 +146,19 @@ public class IntactCytoPanel extends JPanel
         if (ModelUtils.ifHaveStringNS(network)) {
             if (!registered) {
                 showCytoPanel();
+            }
+
+            CyNetworkView view = manager.getCurrentNetworkView();
+            switch (manager.getNetworkViewType(view)) {
+                case COLLAPSED:
+                    collapsedViewType.setSelected(true);
+                    break;
+                case EXPANDED:
+                    expandedViewType.setSelected(true);
+                    break;
+                case MUTATION:
+                    mutationViewType.setSelected(true);
+                    break;
             }
 
             // Tell tabs

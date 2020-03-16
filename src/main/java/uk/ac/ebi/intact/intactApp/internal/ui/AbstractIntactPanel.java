@@ -19,7 +19,7 @@ import java.util.Map;
  *
  * @author Scooter Morris
  */
-public abstract class AbstractStringPanel extends JPanel {
+public abstract class AbstractIntactPanel extends JPanel {
 
     protected final IntactManager manager;
     protected final OpenBrowser openBrowser;
@@ -29,7 +29,7 @@ public abstract class AbstractStringPanel extends JPanel {
     protected CyNetwork currentNetwork;
     protected Map<CyNetwork, Map<String, Map<String, Double>>> filters;
 
-    public AbstractStringPanel(final IntactManager manager) {
+    public AbstractIntactPanel(final IntactManager manager) {
         this.manager = manager;
         this.openBrowser = manager.getService(OpenBrowser.class);
         this.currentNetwork = manager.getCurrentNetwork();

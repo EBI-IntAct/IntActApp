@@ -33,7 +33,7 @@ public class HideChartsTaskFactory extends AbstractTaskFactory {
         if (net == null)
             return false;
 
-        if (!ModelUtils.isStringNetwork(net))
+        if (!ModelUtils.isIntactNetwork(net))
             return false;
 
         if (cytoPanel.indexOfComponent("uk.ac.ebi.intact.intactApp.Enrichment") < 0) {

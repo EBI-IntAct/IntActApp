@@ -16,7 +16,7 @@ public class SetLabelAttributeTaskFactory extends AbstractNetworkTaskFactory {
     }
 
     public boolean isReady(CyNetwork network) {
-        return (ModelUtils.isStringNetwork(network) && manager.showEnhancedLabels());
+        return (ModelUtils.isIntactNetwork(network) && manager.showEnhancedLabels());
     }
 
     public TaskIterator createTaskIterator(CyNetwork network) {

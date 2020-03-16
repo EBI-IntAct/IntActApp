@@ -10,9 +10,9 @@ import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
 import java.awt.*;
 
-public class ExpendedIntactWebserviceStyle extends IntactWebserviceStyle {
+public class ExpandedIntactWebserviceStyle extends IntactWebserviceStyle {
     public final static String TITLE = "IntAct - Evidence - Webservice";
-    public ExpendedIntactWebserviceStyle(IntactManager manager) {
+    public ExpandedIntactWebserviceStyle(IntactManager manager) {
         super(manager);
     }
 

@@ -14,6 +14,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.json.simple.JSONObject;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.intactApp.internal.utils.TableUtil;
 
 import java.util.*;
 
@@ -39,9 +40,8 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     private boolean removeOverlap;
 
     // Collapsed edges
-    private boolean collapsed = true;
     private Map<Couple, CyEdge> collapsedEdges;
-    private List<CyEdge> expendedEdges;
+    private List<CyEdge> expandedEdges;
     private Map<Couple, List<CyEdge>> coupleToEdges = new HashMap<>();
 
     public IntactNetwork(IntactManager manager) {
@@ -110,12 +110,24 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
 
         edgeTable = network.getDefaultEdgeTable();
         nodeTable = network.getDefaultNodeTable();
-        expendedEdges = new ArrayList<>(network.getEdgeList());
+
+        TableUtil.NullAndNonNullEdges identifiedOrNotEdges = TableUtil.splitNullAndNonNullEdges(network, ModelUtils.INTACT_ID);
+
+        expandedEdges = new ArrayList<>(identifiedOrNotEdges.nonNullEdges);
         collapsedEdges = new HashMap<>();
         coupleToEdges = new HashMap<>();
 
-        Couple.putEdgesToCouples(expendedEdges, coupleToEdges);
-        updateCollapsedEdges(coupleToEdges.keySet());
+        Couple.putEdgesToCouples(expandedEdges, coupleToEdges);
+
+        if (identifiedOrNotEdges.nullEdges.size() > 0) {
+            for (CyEdge existingEdge : identifiedOrNotEdges.nullEdges) {
+                Couple existingCouple = new Couple(existingEdge);
+                collapsedEdges.put(existingCouple, existingEdge);
+            }
+        } else {
+            updateCollapsedEdges(coupleToEdges.keySet());
+        }
+
 
 //        manager.registrar.registerService(this, AddedEdgesListener.class, new Properties());
 //        manager.registrar.registerService(this, AboutToRemoveEdgesListener.class, new Properties());
@@ -124,9 +136,9 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
 
     }
 
-    void hideExpendedEdgesOnViewCreation(CyNetworkView networkView) {
+    void hideExpandedEdgesOnViewCreation(CyNetworkView networkView) {
         HideTaskFactory hideTaskFactory = manager.getService(HideTaskFactory.class);
-        manager.execute(hideTaskFactory.createTaskIterator(networkView, null, expendedEdges));
+        manager.execute(hideTaskFactory.createTaskIterator(networkView, null, expandedEdges));
     }
 
     public double getOverlapCutoff() {
@@ -418,24 +430,17 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
         return new ArrayList<>(collapsedEdges.values());
     }
 
-    public List<CyEdge> getExpendedEdges() {
-        return new ArrayList<>(expendedEdges);
+    public List<CyEdge> getExpandedEdges() {
+        return new ArrayList<>(expandedEdges);
     }
 
-    public boolean isCollapsed() {
-        return collapsed;
-    }
-
-    public void setCollapsed(boolean collapsed) {
-        this.collapsed = collapsed;
-    }
 
 
     @Override
     public void handleEvent(AddedEdgesEvent e) {
         if (e.getSource() == network) {
             Collection<CyEdge> addedEdges = e.getPayloadCollection();
-            expendedEdges.addAll(addedEdges);
+            expandedEdges.addAll(addedEdges);
             Set<Couple> updatedCouples = Couple.putEdgesToCouples(addedEdges, coupleToEdges);
             updateCollapsedEdges(updatedCouples);
         }
@@ -446,7 +451,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     public void handleEvent(AboutToRemoveEdgesEvent e) {
         if (e.getSource() == network) {
             Collection<CyEdge> removedEdges = e.getEdges();
-            expendedEdges.removeAll(removedEdges);
+            expandedEdges.removeAll(removedEdges);
             Map<Couple, List<CyEdge>> couplesToRemove = new HashMap<>();
             Couple.putEdgesToCouples(removedEdges, couplesToRemove);
             couplesToRemove.forEach((couple, cyEdges) -> coupleToEdges.get(couple).removeAll(cyEdges));

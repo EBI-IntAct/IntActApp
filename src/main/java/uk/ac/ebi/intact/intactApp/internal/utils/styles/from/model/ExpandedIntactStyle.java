@@ -7,11 +7,11 @@ import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.utils.styles.IntactStyle;
 
-public class ExpendedIntactStyle extends IntactStyle {
+public class ExpandedIntactStyle extends IntactStyle {
 
     public static final String TITLE = "Intact - Evidence";
 
-    public ExpendedIntactStyle(IntactManager manager) {
+    public ExpandedIntactStyle(IntactManager manager) {
         super(manager);
     }
 

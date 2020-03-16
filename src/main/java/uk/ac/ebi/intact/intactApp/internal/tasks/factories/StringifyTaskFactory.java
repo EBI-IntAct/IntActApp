@@ -19,7 +19,7 @@ public class StringifyTaskFactory extends AbstractNetworkTaskFactory implements 
         if (!manager.haveURIs() || net == null) return false;
 
         // Are we already a string network?
-        return !ModelUtils.isStringNetwork(net);
+        return !ModelUtils.isIntactNetwork(net);
     }
 
     public TaskIterator createTaskIterator(CyNetwork net) {

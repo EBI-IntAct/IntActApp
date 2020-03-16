@@ -30,7 +30,7 @@ public class ChangeConfidenceTaskFactory extends AbstractNetworkTaskFactory impl
     public boolean isReady(CyNetwork network) {
         if (network == null)
             return false;
-        return ModelUtils.isStringNetwork(network);
+        return ModelUtils.isIntactNetwork(network);
     }
 
     public TaskIterator createTaskIterator(CyNetwork network) {
@@ -47,7 +47,7 @@ public class ChangeConfidenceTaskFactory extends AbstractNetworkTaskFactory impl
     public boolean isReady(CyNetworkView netView) {
         if (netView == null)
             return false;
-        return ModelUtils.isStringNetwork(netView.getModel());
+        return ModelUtils.isIntactNetwork(netView.getModel());
     }
 
     public TaskIterator createTaskIterator(CyNetworkView netView) {
