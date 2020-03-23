@@ -139,6 +139,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     void hideExpandedEdgesOnViewCreation(CyNetworkView networkView) {
         HideTaskFactory hideTaskFactory = manager.getService(HideTaskFactory.class);
         manager.execute(hideTaskFactory.createTaskIterator(networkView, null, expandedEdges));
+        manager.registerNetworkView(networkView);
     }
 
     public double getOverlapCutoff() {
@@ -418,6 +419,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
                 CyRow firstEdgeRow = network.getRow(coupleToEdges.get(couple).iterator().next());
                 summaryEdgeRow.set(ModelUtils.C_MI_SCORE, firstEdgeRow.get(ModelUtils.MI_SCORE, Double.class));
                 summaryEdgeRow.set(ModelUtils.C_COLOR, firstEdgeRow.get(ModelUtils.C_COLOR, String.class));
+                summaryEdgeRow.set(ModelUtils.C_IS_COLLAPSED, true);
             } else {
                 summaryEdge = collapsedEdges.get(couple);
                 network.removeEdges(Collections.singleton(summaryEdge));
@@ -433,7 +435,6 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     public List<CyEdge> getExpandedEdges() {
         return new ArrayList<>(expandedEdges);
     }
-
 
 
     @Override

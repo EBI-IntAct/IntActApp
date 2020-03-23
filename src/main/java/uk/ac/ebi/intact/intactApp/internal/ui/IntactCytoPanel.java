@@ -2,6 +2,8 @@ package uk.ac.ebi.intact.intactApp.internal.ui;
 
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.*;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.SelectedNodesAndEdgesEvent;
@@ -26,6 +28,7 @@ import java.util.Properties;
 public class IntactCytoPanel extends JPanel
         implements CytoPanelComponent2,
         SetCurrentNetworkListener,
+        SetCurrentNetworkViewListener,
         SelectedNodesAndEdgesListener {
 
     private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/Gradient_over_Transparent/favicon_32x32.ico");
@@ -54,9 +57,9 @@ public class IntactCytoPanel extends JPanel
         this.manager = manager;
         this.setLayout(new BorderLayout());
 
-        collapseViewTaskFactory = new CollapseViewTaskFactory(manager, null);
-        expandViewTaskFactory = new ExpandViewTaskFactory(manager, null);
-        mutationViewTaskFactory = new MutationViewTaskFactory(manager, null);
+        collapseViewTaskFactory = new CollapseViewTaskFactory(manager);
+        expandViewTaskFactory = new ExpandViewTaskFactory(manager);
+        mutationViewTaskFactory = new MutationViewTaskFactory(manager);
 
         viewTypes.add(collapsedViewType);
         viewTypes.add(expandedViewType);
@@ -67,7 +70,7 @@ public class IntactCytoPanel extends JPanel
         expandedViewType.addActionListener(e -> manager.execute(expandViewTaskFactory.createTaskIterator()));
         mutationViewType.addActionListener(e -> manager.execute(mutationViewTaskFactory.createTaskIterator()));
 
-        viewTypesPanel.setBorder(BorderFactory.createTitledBorder("View types :"));
+        viewTypesPanel.setBorder(BorderFactory.createTitledBorder("View types"));
         viewTypesPanel.add(collapsedViewType);
         viewTypesPanel.add(expandedViewType);
         viewTypesPanel.add(mutationViewType);
@@ -88,6 +91,7 @@ public class IntactCytoPanel extends JPanel
         this.add(tabs, BorderLayout.CENTER);
         manager.setCytoPanel(this);
         manager.registerService(this, SetCurrentNetworkListener.class, new Properties());
+        manager.registerService(this, SetCurrentNetworkViewListener.class, new Properties());
         manager.registerService(this, SelectedNodesAndEdgesListener.class, new Properties());
         registered = true;
         revalidate();
@@ -140,7 +144,6 @@ public class IntactCytoPanel extends JPanel
 
     public void updateControls() {
         nodePanel.updateControls();
-        edgePanel.updateSubPanel();
     }
 
     @Override
@@ -154,25 +157,11 @@ public class IntactCytoPanel extends JPanel
 
     @Override
     public void handleEvent(SetCurrentNetworkEvent event) {
-        CyNetwork network = event.getNetwork();
-        if (ModelUtils.ifHaveStringNS(network)) {
+        CyNetwork network = manager.getCurrentNetwork();
+        if (ModelUtils.ifHaveIntactNS(network)) {
             if (!registered) {
                 showCytoPanel();
             }
-
-            CyNetworkView view = manager.getCurrentNetworkView();
-            switch (manager.getNetworkViewType(view)) {
-                case COLLAPSED:
-                    collapsedViewType.setSelected(true);
-                    break;
-                case EXPANDED:
-                    expandedViewType.setSelected(true);
-                    break;
-                case MUTATION:
-                    mutationViewType.setSelected(true);
-                    break;
-            }
-
             // Tell tabs
             nodePanel.networkChanged(network);
             edgePanel.networkChanged(network);
@@ -181,4 +170,29 @@ public class IntactCytoPanel extends JPanel
         }
     }
 
+    private void updateRadioButtons(CyNetworkView view) {
+        switch (manager.getNetworkViewType(view)) {
+            case COLLAPSED:
+                collapsedViewType.setSelected(true);
+                break;
+            case EXPANDED:
+                expandedViewType.setSelected(true);
+                break;
+            case MUTATION:
+                mutationViewType.setSelected(true);
+                break;
+        }
+    }
+
+    /**
+     * Processes the specified event when fired.
+     *
+     * @param e The event that the listener is listening for.
+     */
+    @Override
+    public void handleEvent(SetCurrentNetworkViewEvent e) {
+        CyNetworkView view = e.getNetworkView();
+        if (view != null)
+            updateRadioButtons(view);
+    }
 }

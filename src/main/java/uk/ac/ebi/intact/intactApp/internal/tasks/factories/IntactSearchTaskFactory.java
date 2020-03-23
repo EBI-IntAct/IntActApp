@@ -151,18 +151,6 @@ public class IntactSearchTaskFactory extends AbstractNetworkSearchTaskFactory im
 
     @Override
     public void allFinished(FinishStatus finishStatus) {
-        if (optionsPanel.getLoadEnrichment()) {
-            GetEnrichmentTaskFactory tf = new GetEnrichmentTaskFactory(manager, true);
-            ShowEnrichmentPanelTaskFactory showTf = manager.getShowEnrichmentPanelTaskFactory();
-            tf.setShowEnrichmentPanelFactory(showTf);
-            TunableSetter setter = manager.getService(TunableSetter.class);
-            Map<String, Object> valueMap = new HashMap<>();
-            valueMap.put("cutoff", 0.05);
-            TaskIterator newIterator =
-                    setter.createTaskIterator(tf.createTaskIterator(manager.getCurrentNetwork()), valueMap);
-            // System.out.println("stringNetwork network = "+stringNetwork.getNetwork());
-            manager.execute(newIterator);
-        }
     }
 
 

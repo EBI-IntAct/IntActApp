@@ -1,7 +1,9 @@
 package uk.ac.ebi.intact.intactApp.internal.utils;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.*;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.*;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -11,16 +13,11 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.*;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
-import uk.ac.ebi.intact.intactApp.internal.model.ChartType;
-import uk.ac.ebi.intact.intactApp.internal.model.EnrichmentTerm;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
-import uk.ac.ebi.intact.intactApp.internal.model.Species;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ViewUtils {
     public static String STYLE_NAME = "STRING style";
@@ -207,10 +204,8 @@ public class ViewUtils {
                 }
             }
 
-            // Finally, disable the "standard" label passthrough and position
             {
                 stringStyle.removeVisualMappingFunction(BasicVisualLexicon.NODE_LABEL);
-                // stringStyle.removeVisualMappingFunction(lex.lookup(CyNode.class, "NODE_LABEL_POSITION"));
             }
         } else {
             stringStyle
@@ -225,289 +220,12 @@ public class ViewUtils {
                 stringStyle.addVisualMappingFunction(pMapping);
             }
 
-            // {
-            // VisualProperty labelPosition = lex.lookup(CyNode.class, "NODE_LABEL_POSITION");
-            // DiscreteMapping<String,Object> dMapping =
-            // (DiscreteMapping) discreteFactory.createVisualMappingFunction(ModelUtils.TYPE,
-            // String.class,
-            // labelPosition);
-            // Object top = labelPosition.parseSerializableString("N,S,c,0.00,0.00");
-            // Object upperRight = labelPosition.parseSerializableString("NE,S,c,0.00,0.00");
-            // dMapping.putMapValue("compound", top);
-            // dMapping.putMapValue("protein", upperRight);
-            // stringStyle.addVisualMappingFunction(dMapping);
-            // }
         }
     }
 
-    public static void updateGlassBallEffect(IntactManager manager, VisualStyle stringStyle,
-                                             CyNetwork net, boolean show) {
 
-        VisualMappingFunctionFactory passthroughFactory = manager
-                .getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
-        VisualLexicon lex = manager.getService(RenderingEngineManager.class)
-                .getDefaultVisualLexicon();
 
-        // Set up the passthrough mapping for the glass ball effect
-        if (show) {
-            {
-                VisualProperty customGraphics = lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1");
-                PassthroughMapping pMapping =
-                        (PassthroughMapping) passthroughFactory.createVisualMappingFunction(ModelUtils.STYLE,
-                                String.class, customGraphics);
-                stringStyle.addVisualMappingFunction(pMapping);
-            }
 
-        } else {
-            stringStyle
-                    .removeVisualMappingFunction(lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1"));
-            stringStyle.removeVisualMappingFunction(
-                    lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_POSITION_1"));
-        }
-    }
-
-    private static void updateColorMap(IntactManager manager, VisualStyle style, CyNetwork network) {
-        // Build the color list
-        DiscreteMapping<String, Color> dMapping = getIntactNodeColorMapping(manager, network);
-        style.addVisualMappingFunction(dMapping);
-    }
-
-    private static DiscreteMapping<String, Color> getIntactNodeColorMapping(IntactManager manager,
-                                                                            CyNetwork network) {
-        VisualMappingFunctionFactory discreteFactory = manager
-                .getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
-        if (discreteFactory == null) {
-            return null;
-        }
-
-        DiscreteMapping<String, Color> dMapping = (DiscreteMapping) discreteFactory
-                .createVisualMappingFunction(CyNetwork.NAME, String.class,
-                        BasicVisualLexicon.NODE_FILL_COLOR);
-
-        // Set the node colors around the color wheel
-        float h = 0.0f;
-        float s = 1.0f;
-        float stepSize = 1.0f / (float) network.getNodeCount();
-        for (CyNode node : network.getNodeList()) {
-            Color c = Color.getHSBColor(h, s, 1.0f);
-            h += stepSize;
-            if (s == 1.0f)
-                s = 0.5f;
-            else
-                s = 1.0f;
-            String name = network.getRow(node).get(CyNetwork.NAME, String.class);
-            dMapping.putMapValue(name, c);
-        }
-
-        return dMapping;
-    }
-
-    private static <K, V> boolean sameVisualMappingFunction(CyNetwork network,
-                                                            VisualMappingFunction<K, V> vmf, DiscreteMapping<String, Color> stringMapping) {
-        if (!(vmf instanceof DiscreteMapping<?, ?>)) {
-            return false;
-        }
-
-        if (!vmf.getMappingColumnName().equals(stringMapping.getMappingColumnName())) {
-            return false;
-        }
-
-        if (!vmf.getMappingColumnType().equals(stringMapping.getMappingColumnType())) {
-            return false;
-        }
-
-        for (CyNode node : network.getNodeList()) {
-            V vmfMappedValue = vmf.getMappedValue(network.getRow(node));
-            Color stringMappedValue = stringMapping.getMappedValue(network.getRow(node));
-
-            if (vmfMappedValue == null && stringMappedValue != null) {
-                return false;
-            } else if (vmfMappedValue != null && !vmfMappedValue.equals(stringMappedValue)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static void updateColorMapHost(IntactManager manager, VisualStyle style, CyNetwork net) {
-        VisualMappingFunctionFactory discreteFactory = manager
-                .getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
-
-        // get previous mapping
-        DiscreteMapping<String, Color> dMapping = (DiscreteMapping) style
-                .getVisualMappingFunction(BasicVisualLexicon.NODE_FILL_COLOR);
-        List<String> species = ModelUtils.getAllNetSpecies(net);
-        // get network species
-        Map<String, Color> mapValues = new HashMap<>();
-
-        // save previous color mapping
-        if (dMapping != null) {
-            Map<String, Color> mappedValues = dMapping.getAll();
-            for (String spKey : mappedValues.keySet()) {
-                if (species.contains(spKey)) {
-                    mapValues.put(spKey, mappedValues.get(spKey));
-                }
-            }
-        }
-        // make the new mapping after removing the old one
-        style.removeVisualMappingFunction(BasicVisualLexicon.NODE_FILL_COLOR);
-        dMapping = (DiscreteMapping) discreteFactory.createVisualMappingFunction(
-                ModelUtils.SPECIES, String.class, BasicVisualLexicon.NODE_FILL_COLOR);
-        // Set the species colors
-        for (String sp : species) {
-            if (!mapValues.containsKey(sp)) {
-                dMapping.putMapValue(sp, Color.decode(Species.getSpeciesColor(sp)));
-            } else {
-                dMapping.putMapValue(sp, mapValues.get(sp));
-            }
-        }
-
-        // DiscreteMapping<String,Color> dMapping =
-        // (DiscreteMapping) discreteFactory.createVisualMappingFunction("Name", String.class,
-        // BasicVisualLexicon.NODE_FILL_COLOR);
-        //
-        // // Set the node colors around the color wheel
-        // for (View<CyNode> nv: view.getNodeViews()) {
-        // Color c =
-        // Color.decode(view.getModel().getRow(nv.getModel()).get(ModelUtils.SPECIES_COLOR,
-        // String.class));
-        // String name = view.getModel().getRow(nv.getModel()).get(CyNetwork.NAME,
-        // String.class);
-        // dMapping.putMapValue(name, c);
-        // }
-        style.addVisualMappingFunction(dMapping);
-    }
-
-    public static void updateNodeColors(IntactManager manager,
-                                        CyNetwork net, CyNetworkView view, boolean host) {
-        // manager.flushEvents();
-        VisualMappingManager vmm = manager.getService(VisualMappingManager.class);
-        VisualMappingFunctionFactory discreteFactory = manager
-                .getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
-
-        VisualStyle style = null;
-        if (view != null)
-            style = vmm.getVisualStyle(view);
-        else {
-            String styleName = getStyleName(manager, net);
-            for (VisualStyle s : vmm.getAllVisualStyles()) {
-                if (s.getTitle().equals(styleName)) {
-                    style = s;
-                    break;
-                }
-            }
-        }
-
-        // Worst case -- can't find a style, so er just bail
-        if (style == null) return;
-
-        if (!style.getTitle().startsWith(STYLE_NAME_ORG_NAMESPACES)) {
-            VisualStyleFactory vsf = manager.getService(VisualStyleFactory.class);
-
-            VisualStyle stringStyle = vsf.createVisualStyle(vmm.getCurrentVisualStyle());
-            stringStyle.setTitle(STYLE_ORG + style.getTitle());
-            vmm.addVisualStyle(stringStyle);
-            style = stringStyle;
-        }
-
-        if (host) {
-            updateColorMapHost(manager, style, net);
-        } else {
-            updateColorMap(manager, style, net);
-        }
-        if (view != null)
-            vmm.setVisualStyle(style, view);
-        vmm.setCurrentVisualStyle(style);
-    }
-
-    public static void updatePieCharts(IntactManager manager, VisualStyle stringStyle,
-                                       CyNetwork net, boolean show) {
-
-        VisualMappingFunctionFactory passthroughFactory = manager
-                .getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
-        VisualLexicon lex = manager.getService(RenderingEngineManager.class)
-                .getDefaultVisualLexicon();
-        // Set up the passthrough mapping for the label
-        if (show) {
-            {
-                VisualProperty customGraphics = lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_4");
-                PassthroughMapping pMapping = (PassthroughMapping) passthroughFactory
-                        .createVisualMappingFunction(EnrichmentTerm.colEnrichmentPassthrough, String.class,
-                                customGraphics);
-                stringStyle.addVisualMappingFunction(pMapping);
-            }
-        } else {
-            stringStyle
-                    .removeVisualMappingFunction(lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_4"));
-
-            // Restore the glass ball, if appropriate
-            if (manager.showGlassBallEffect()) {
-                CyNetworkView netView = manager.getCurrentNetworkView();
-                VisualMappingManager vmm = manager.getService(VisualMappingManager.class);
-                ViewUtils.updateGlassBallEffect(manager, vmm.getVisualStyle(netView), net, true);
-            }
-        }
-    }
-
-    public static void drawCharts(IntactManager manager,
-                                  Map<EnrichmentTerm, String> selectedTerms,
-                                  ChartType type) {
-        CyNetwork network = manager.getCurrentNetwork();
-        if (network == null || selectedTerms.size() == 0)
-            return;
-
-        CyTable nodeTable = network.getDefaultNodeTable();
-        createColumns(nodeTable);
-
-        List<String> colorList = getColorList(selectedTerms);
-        List<String> shownTermNames = getTermNames(network, nodeTable, selectedTerms);
-
-        for (CyNode node : network.getNodeList()) {
-            List<Integer> nodeTermsIntegers =
-                    nodeTable.getRow(node.getSUID()).getList(EnrichmentTerm.colEnrichmentTermsIntegers, Integer.class);
-            String nodeColor = nodeColors(colorList, nodeTermsIntegers, type);
-            nodeTable.getRow(node.getSUID()).set(EnrichmentTerm.colEnrichmentPassthrough, nodeColor);
-            nodeTable.getRow(node.getSUID()).set(EnrichmentTerm.colEnrichmentTermsIntegers, nodeTermsIntegers);
-        }
-
-        // System.out.println(selectedTerms);
-        VisualMappingManager vmm = manager.getService(VisualMappingManager.class);
-        CyNetworkView netView = manager.getCurrentNetworkView();
-        if (netView != null) {
-            ViewUtils.updatePieCharts(manager, vmm.getVisualStyle(netView), network, true);
-
-            // Don't override the user if they have specifically disabled the glass ball effect
-            if (manager.showGlassBallEffect()) {
-                if (ChartType.PIE.equals(type) || ChartType.SPLIT_PIE.equals(type)) {
-                    ViewUtils.updateGlassBallEffect(manager, vmm.getVisualStyle(netView), network, false);
-                    // manager.setShowGlassBallEffect(false);
-                } else {
-                    ViewUtils.updateGlassBallEffect(manager, vmm.getVisualStyle(netView), network, true);
-                    // manager.setShowGlassBallEffect(true);
-                }
-                // manager.getShowGlassBallEffectTaskFactory().reregister();
-            }
-            netView.updateView();
-        }
-        // save in network table
-        CyTable netTable = network.getDefaultNetworkTable();
-        ModelUtils.createListColumnIfNeeded(netTable, String.class, ModelUtils.NET_ENRICHMENT_VISTEMRS);
-        netTable.getRow(network.getSUID()).set(ModelUtils.NET_ENRICHMENT_VISTEMRS, shownTermNames);
-
-        ModelUtils.createListColumnIfNeeded(netTable, String.class, ModelUtils.NET_ENRICHMENT_VISCOLORS);
-        netTable.getRow(network.getSUID()).set(ModelUtils.NET_ENRICHMENT_VISCOLORS, colorList);
-    }
-
-    private static void createColumns(CyTable nodeTable) {
-        // replace columns
-        ModelUtils.replaceListColumnIfNeeded(nodeTable, String.class,
-                EnrichmentTerm.colEnrichmentTermsNames);
-        ModelUtils.replaceListColumnIfNeeded(nodeTable, Integer.class,
-                EnrichmentTerm.colEnrichmentTermsIntegers);
-        ModelUtils.replaceColumnIfNeeded(nodeTable, String.class,
-                EnrichmentTerm.colEnrichmentPassthrough);
-    }
 
     public static void highlight(IntactManager manager, CyNetworkView view, List<CyNode> nodes) {
         CyNetwork net = view.getModel();
@@ -548,8 +266,6 @@ public class ViewUtils {
     }
 
     public static void clearHighlight(IntactManager manager, CyNetworkView view) {
-        // if (node == null) return;
-        // View<CyNode> nodeView = view.getNodeView(node);
         if (view == null) return;
 
         VisualLexicon lex = manager.getService(RenderingEngineManager.class).getDefaultVisualLexicon();
@@ -569,144 +285,8 @@ public class ViewUtils {
         }
     }
 
-    public static void hideStringColors(IntactManager manager, CyNetworkView view, boolean show) {
-        VisualStyle style = getStyle(manager, view);
-        if (style == null || !style.getTitle().contains(STYLE_NAME)) return;
 
-        // Don't overwrite a mapping the user added
-        VisualMappingFunction<?, Paint> function = style.getVisualMappingFunction(BasicVisualLexicon.NODE_FILL_COLOR);
 
-        if (function != null && function.getMappingColumnName() != CyNetwork.NAME)
-            return;
-
-        if (show) {
-            updateColorMap(manager, style, view.getModel());
-        } else {
-            style.removeVisualMappingFunction(BasicVisualLexicon.NODE_FILL_COLOR);
-        }
-
-        // alternative fix by Marc ... to check
-        // VisualMappingFunction<?,?> vmf =
-        // style.getVisualMappingFunction(BasicVisualLexicon.NODE_FILL_COLOR);
-        // // get the root network
-        // CyNetwork rootNetwork =
-        // manager.getService(CyRootNetworkManager.class).getRootNetwork(view.getModel()).getBaseNetwork();
-        //
-        // if (show) {
-        // // We update the colorMap only if there is no VisualMapping already applied
-        // if (vmf == null) {
-        // updateColorMap(manager, style, rootNetwork);
-        // } else {
-        // // We make sure that this is not a custom VisualMapping
-        // if (vmf != null && sameVisualMappingFunction(rootNetwork, vmf,
-        // getIntactNodeColorMapping(manager, rootNetwork))) {
-        // style.removeVisualMappingFunction(BasicVisualLexicon.NODE_FILL_COLOR);
-        // }
-        // }
-        // }
-    }
-
-    public static void hideSingletons(CyNetworkView view, boolean show) {
-        CyNetwork net = view.getModel();
-        for (View<CyNode> nv : view.getNodeViews()) {
-            CyNode node = nv.getModel();
-            List<CyEdge> edges = net.getAdjacentEdgeList(node, CyEdge.Type.ANY);
-            if (edges != null && edges.size() > 0) continue;
-            if (!show)
-                nv.setLockedValue(BasicVisualLexicon.NODE_VISIBLE, false);
-            else
-                nv.clearValueLock(BasicVisualLexicon.NODE_VISIBLE);
-        }
-    }
-
-    private static List<String> getColorList(Map<EnrichmentTerm, String> selectedTerms) {
-        List<String> colorList = new ArrayList<>();
-        for (EnrichmentTerm term : selectedTerms.keySet()) {
-            // Color color = selectedTerms.get(term);
-            String color = selectedTerms.get(term);
-            if (color != null) {
-                //String hex = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(),
-                //		color.getBlue());
-                //colorList += hex + ",";
-                colorList.add(color);
-            } else {
-                colorList.add("");
-            }
-        }
-        return colorList;
-    }
-
-    private static List<String> getTermNames(CyNetwork network, CyTable nodeTable,
-                                             Map<EnrichmentTerm, String> selectedTerms) {
-        List<String> shownTermNames = new ArrayList<>();
-        boolean firstTerm = true;
-        for (EnrichmentTerm term : selectedTerms.keySet()) {
-            String selTerm = term.getName();
-            shownTermNames.add(selTerm);
-            List<Long> enrichedNodeSUIDs = term.getNodesSUID();
-            for (CyNode node : network.getNodeList()) {
-                List<Integer> nodeTermsIntegers = nodeTable.getRow(node.getSUID())
-                        .getList(EnrichmentTerm.colEnrichmentTermsIntegers, Integer.class);
-                List<String> nodeTermsNames = nodeTable.getRow(node.getSUID())
-                        .getList(EnrichmentTerm.colEnrichmentTermsNames, String.class);
-                if (firstTerm || nodeTermsIntegers == null)
-                    nodeTermsIntegers = new ArrayList<>();
-                if (firstTerm || nodeTermsNames == null) {
-                    nodeTermsNames = new ArrayList<>();
-                }
-                if (enrichedNodeSUIDs.contains(node.getSUID())) {
-                    nodeTermsNames.add(selTerm);
-                    nodeTermsIntegers.add(1);
-                } else {
-                    nodeTermsNames.add("");
-                    nodeTermsIntegers.add(0);
-                }
-                nodeTable.getRow(node.getSUID()).set(EnrichmentTerm.colEnrichmentTermsIntegers, nodeTermsIntegers);
-                nodeTable.getRow(node.getSUID()).set(EnrichmentTerm.colEnrichmentTermsNames, nodeTermsNames);
-            }
-            if (firstTerm) firstTerm = false;
-        }
-        return shownTermNames;
-    }
-
-    private static String nodeColors(List<String> colors, List<Integer> nodeTermFlags, ChartType type) {
-        boolean foundTerm = false;
-        for (Integer term : nodeTermFlags) {
-            if (term > 0) {
-                foundTerm = true;
-                break;
-            }
-        }
-        if (!foundTerm) return null;
-
-        StringBuilder colorString = new StringBuilder();
-        if (type.equals(ChartType.FULL) || type.equals(ChartType.PIE)) {
-            for (String color : colors) {
-                colorString.append(color).append(",");
-            }
-        } else {
-            for (int i = 0; i < colors.size(); i++) {
-                if (nodeTermFlags.get(i) > 0) {
-                    if (type.equals(ChartType.TEETH))
-                        colorString.append(colors.get(i)).append("ff,");
-                    else
-                        colorString.append(colors.get(i)).append(",");
-                } else {
-                    if (type.equals(ChartType.TEETH))
-                        colorString.append("#ffffff00,");
-                    else
-                        colorString.append("#ffffff,");
-                    nodeTermFlags.set(i, 1);
-                }
-            }
-            if (!foundTerm) return null;
-        }
-        if (type.equals(ChartType.PIE) || type.equals(ChartType.SPLIT_PIE))
-            return PIE_CHART + colorString.substring(0, colorString.length() - 1) + "\"";
-        if (type.equals(ChartType.TEETH))
-            return CIRCOS_CHART2 + colorString.substring(0, colorString.length() - 1) + "\"";
-        return CIRCOS_CHART + colorString.substring(0, colorString.length() - 1) + "\"";
-    }
 
     public static VisualStyle getStyle(IntactManager manager, CyNetworkView view) {
         VisualMappingManager vmm = manager.getService(VisualMappingManager.class);

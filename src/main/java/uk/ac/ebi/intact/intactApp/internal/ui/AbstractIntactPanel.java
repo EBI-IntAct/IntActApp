@@ -6,11 +6,7 @@ import org.cytoscape.util.swing.OpenBrowser;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,20 +52,22 @@ public abstract class AbstractIntactPanel extends JPanel {
             JLabel label = new JLabel(text);
             label.setFont(labelFont);
             label.setPreferredSize(new Dimension(100, 20));
-            box.add(Box.createRigidArea(new Dimension(10, 0)));
+//            box.add(Box.createRigidArea(new Dimension(10, 0)));
             box.add(label);
             box.add(Box.createHorizontalGlue());
         }
         JSlider slider;
         slider = new JSlider(0, (int) max, (int) (value * 100));
 
-        slider.setPreferredSize(new Dimension(100, 20));
+//        slider.setPreferredSize(new Dimension(100, 20));
+        slider.setSize(new Dimension(80, 20));
         box.add(slider);
         // box.add(Box.createHorizontalGlue());
         JTextField textField;
         textField = new JTextField(String.format("%.2f", value), 4);
-        textField.setPreferredSize(new Dimension(30, 20));
-        textField.setMaximumSize(new Dimension(30, 20));
+//        textField.setPreferredSize(new Dimension(30, 20));
+        textField.setSize(new Dimension(15, 20));
+        textField.setMaximumSize(new Dimension(15, 20));
         textField.setFont(textFont);
         box.add(textField);
         // Hook it up
@@ -80,23 +78,19 @@ public abstract class AbstractIntactPanel extends JPanel {
 
     protected void addChangeListeners(String type, String label, JSlider slider,
                                       JTextField textField, double max) {
-        slider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                JSlider sl = (JSlider) e.getSource();
-                int value = sl.getValue();
-                double v = ((double) value) / 100.0;
-                textField.setText(String.format("%.2f", v));
-                addFilter(type, label, v);
-                doFilter(type);
-            }
+        slider.addChangeListener(e -> {
+            JSlider sl = (JSlider) e.getSource();
+            int value = sl.getValue();
+            double v = ((double) value) / 100.0;
+            textField.setText(String.format("%.2f", v));
+            addFilter(type, label, v);
+            doFilter(type);
         });
 
-        textField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JTextField field = (JTextField) e.getSource();
-                String text = field.getText();
-                slider.setValue((int) (Double.parseDouble(text) * 100.0));
-            }
+        textField.addActionListener(e -> {
+            JTextField field = (JTextField) e.getSource();
+            String text = field.getText();
+            slider.setValue((int) (Double.parseDouble(text) * 100.0));
         });
     }
 

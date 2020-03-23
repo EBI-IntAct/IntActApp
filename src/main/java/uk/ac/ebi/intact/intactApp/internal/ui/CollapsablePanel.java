@@ -1,13 +1,15 @@
 package uk.ac.ebi.intact.intactApp.internal.ui;
 
+import uk.ac.ebi.intact.intactApp.internal.utils.IconUtils;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class CollapsablePanel extends JPanel {
-    private static String RIGHT_ARROW = "\uF0DA";
-    private static String DOWN_ARROW = "\uF0D7";
+    private static ImageIcon RIGHT_ARROW = IconUtils.createImageIcon("/IntAct/DIGITAL/arrows/right_arrow.png");
+    private static ImageIcon DOWN_ARROW = IconUtils.createImageIcon("/IntAct/DIGITAL/arrows/down_arrow.png");
     Font awesomeFont;
 
     JPanel contentPanel_;
@@ -25,9 +27,9 @@ public class CollapsablePanel extends JPanel {
 
         headerPanel_ = new HeaderPanel(iconFont, text, collapsed, fontSize);
 
-        setBackground(new Color(200, 200, 220));
+        setBackground(new Color(255, 255, 255));
         contentPanel_ = panel;
-        // panel.setBorder(BorderFactory.createEtchedBorder());
+        contentPanel_.setBackground(new Color(255,255,255,0));
 
         add(headerPanel_, c.anchor("northwest").down().expandHoriz());
         add(contentPanel_, c.anchor("west").down().expandBoth());
@@ -94,14 +96,13 @@ public class CollapsablePanel extends JPanel {
             expandButton.setOpaque(false);
             expandButton.setFocusPainted(false);
             expandButton.setFont(iconFont);
+            expandButton.setPreferredSize(new Dimension(30,20));
             this.add(expandButton, c.anchor("west").noExpand());
             label = new JLabel(text);
-            label.setFont(font);
-            // label.setForeground(Color.BLUE);
+//            label.setFont(font);
             this.add(label, c.right().expandHoriz());
+            this.setBackground(new Color(255, 255, 255));
             this.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-            // this.setBorder(BorderFactory.createEtchedBorder());
-            this.setBackground(Color.LIGHT_GRAY);
             setPreferredSize(new Dimension(200, 20));
         }
 
@@ -114,8 +115,8 @@ public class CollapsablePanel extends JPanel {
             toggleSelection();
         }
 
-        public void setButton(String buttonState) {
-            expandButton.setText(buttonState);
+        public void setButton(Icon buttonState) {
+            expandButton.setIcon(buttonState);
         }
 
     }

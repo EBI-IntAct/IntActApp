@@ -5,9 +5,7 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.work.*;
 import uk.ac.ebi.intact.intactApp.internal.model.*;
 import uk.ac.ebi.intact.intactApp.internal.tasks.GetAnnotationsTask;
-import uk.ac.ebi.intact.intactApp.internal.tasks.factories.GetEnrichmentTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ImportNetworkTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowEnrichmentPanelTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TextUtils;
 
@@ -487,19 +485,6 @@ public class GetTermsPanel extends JPanel implements TaskObserver {
 
     @Override
     public void allFinished(FinishStatus finishStatus) {
-        //
-        if (optionsPanel.getLoadEnrichment()) {
-            GetEnrichmentTaskFactory tf = new GetEnrichmentTaskFactory(manager, true);
-            ShowEnrichmentPanelTaskFactory showTf = manager.getShowEnrichmentPanelTaskFactory();
-            tf.setShowEnrichmentPanelFactory(showTf);
-            TunableSetter setter = manager.getService(TunableSetter.class);
-            Map<String, Object> valueMap = new HashMap<>();
-            valueMap.put("cutoff", 0.05);
-            TaskIterator newIterator =
-                    setter.createTaskIterator(tf.createTaskIterator(manager.getCurrentNetwork()), valueMap);
-            // System.out.println("stringNetwork network = "+stringNetwork.getNetwork());
-            manager.execute(newIterator);
-        }
         optionsPanel.showSpeciesBox(true); // Turn this back on
     }
 

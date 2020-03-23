@@ -27,7 +27,7 @@ public class IntactNode {
     }
 
     public String getDisplayName() {
-        return ModelUtils.getString(intactNetwork.getNetwork(), intactNode, ModelUtils.DISPLAY);
+        return ModelUtils.getString(intactNetwork.getNetwork(), intactNode, CyNetwork.NAME);
     }
 
     public String getSpecies() {

@@ -5,7 +5,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
-import org.cytoscape.event.CyEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.*;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
@@ -26,24 +25,21 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
-import org.cytoscape.view.model.events.NetworkViewAddedEvent;
-import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskObserver;
 import org.json.simple.JSONObject;
-import uk.ac.ebi.intact.intactApp.internal.event.NetworkViewTypeChangedEvent;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.IntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.CollapsedIntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.ExpandedIntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.MutationIntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.from.webservice.CollapsedIntactWebserviceStyle;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.from.webservice.ExpandedIntactWebserviceStyle;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.*;
 import uk.ac.ebi.intact.intactApp.internal.ui.IntactCytoPanel;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
-import uk.ac.ebi.intact.intactApp.internal.utils.styles.IntactStyle;
-import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.model.CollapsedIntactStyle;
-import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.model.ExpandedIntactStyle;
-import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.model.MutationIntactStyle;
-import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice.CollapsedIntactWebserviceStyle;
-import uk.ac.ebi.intact.intactApp.internal.utils.styles.from.webservice.ExpandedIntactWebserviceStyle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,7 +49,7 @@ import java.util.concurrent.Executors;
 
 // import org.jcolorbrewer.ColorBrewer;
 
-public class IntactManager implements NetworkAddedListener, SessionLoadedListener, NetworkAboutToBeDestroyedListener, NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener {
+public class IntactManager implements NetworkAddedListener, SessionLoadedListener, NetworkAboutToBeDestroyedListener, NetworkViewAboutToBeDestroyedListener {
     public static String CONFIGURI = "https://jensenlab.org/assets/stringapp/";
     public static String STRINGResolveURI = "http://version11.string-db.org/api/";
     public static String STITCHResolveURI = "http://stitch.embl.de/api/";
@@ -89,16 +85,11 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     final SynchronousTaskManager<?> synchronousTaskManager;
     final CommandExecutorTaskFactory commandExecutorTaskFactory;
     final AvailableCommands availableCommands;
-
-    private ShowImagesTaskFactory imagesTaskFactory;
     private ShowEnhancedLabelsTaskFactory labelsTaskFactory;
-    private ShowEnrichmentPanelTaskFactory enrichmentTaskFactory;
-    private ShowPublicationsPanelTaskFactory publicationsTaskFactory;
 
     // These are various default values that are saved and restored from
     // the network table
     // TODO: move all of these to StringNetwork?
-    private ShowGlassBallEffectTaskFactory glassBallTaskFactory;
     private ShowResultsPanelTaskFactory resultsPanelTaskFactory;
     private Boolean haveChemViz = null;
     private Boolean haveCyBrowser = null;
@@ -108,9 +99,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     // Settings default values.  Network specific values are stored in StringNetwork
     private boolean showImage = true;
     private boolean showEnhancedLabels = true;
-    private boolean showGlassBallEffect = true;
-    private boolean showStringColors = true;
-    private boolean showSingletons = true;
     private boolean highlightNeighbors = false;
     private Species species;
     private double defaultConfidence = 0.40;
@@ -186,12 +174,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         }
         if (ModelUtils.hasProperty(configProps, ShowEnhancedLabels)) {
             setShowEnhancedLabels(ModelUtils.getBooleanProperty(configProps, ShowEnhancedLabels));
-        }
-        if (ModelUtils.hasProperty(configProps, ShowGlassBallEffect)) {
-            setShowGlassBallEffect(ModelUtils.getBooleanProperty(configProps, ShowGlassBallEffect));
-        }
-        if (ModelUtils.hasProperty(configProps, ShowSingletons)) {
-            setShowSingletons(ModelUtils.getBooleanProperty(configProps, ShowSingletons));
         }
         if (ModelUtils.hasProperty(configProps, HighlightNeighbors)) {
             setHighlightNeighbors(ModelUtils.getBooleanProperty(configProps, HighlightNeighbors));
@@ -428,29 +410,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         showEnhancedLabels = set;
     }
 
-    public boolean showGlassBallEffect() {
-        return showGlassBallEffect;
-    }
 
-    public void setShowGlassBallEffect(boolean set) {
-        showGlassBallEffect = set;
-    }
-
-    public boolean showStringColors() {
-        return showStringColors;
-    }
-
-    public void setShowStringColors(boolean set) {
-        showStringColors = set;
-    }
-
-    public boolean showSingletons() {
-        return showSingletons;
-    }
-
-    public void setShowSingletons(boolean set) {
-        showSingletons = set;
-    }
 
     public boolean highlightNeighbors() {
         return highlightNeighbors;
@@ -469,16 +429,8 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
             cytoPanel.updateControls();
     }
 
-    public ShowImagesTaskFactory getImagesTaskFactory() {
-        return imagesTaskFactory;
-    }
-
     public ShowEnhancedLabelsTaskFactory getEnhancedLabelsTaskFactory() {
         return labelsTaskFactory;
-    }
-
-    public ShowGlassBallEffectTaskFactory getGlassBallTaskFactory() {
-        return glassBallTaskFactory;
     }
 
     public Species getDefaultSpecies() {
@@ -637,9 +589,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         ModelUtils.setStringProperty(configProps, "confidence", Double.toString(overlapCutoff));
         ModelUtils.setStringProperty(configProps, "showImage", Boolean.toString(showImage));
         ModelUtils.setStringProperty(configProps, "showEnhancedLabels", Boolean.toString(showEnhancedLabels));
-        ModelUtils.setStringProperty(configProps, "showGlassBallEffect", Boolean.toString(showGlassBallEffect));
-        ModelUtils.setStringProperty(configProps, "showStringColors", Boolean.toString(showStringColors));
-        ModelUtils.setStringProperty(configProps, "showSingletons", Boolean.toString(showSingletons));
         ModelUtils.setStringProperty(configProps, "highlightNeighbors", Boolean.toString(highlightNeighbors));
 
         ModelUtils.setStringProperty(configProps, "species", getDefaultSpecies().toString());
@@ -689,7 +638,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         Set<CyNetwork> networksToUpgrade = new HashSet<>();
         for (CyNetwork network : networks) {
             if (ModelUtils.isIntactNetwork(network)) {
-                if (ModelUtils.ifHaveStringNS(network)) {
+                if (ModelUtils.ifHaveIntactNS(network)) {
                     IntactNetwork stringNet = new IntactNetwork(this);
                     addIntactNetwork(stringNet, network);
                 } else if (ModelUtils.getDataVersion(network) == null) {
@@ -697,15 +646,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
                 }
             }
         }
-
-        // if there are old string networks, figure out what to do
-        if (networksToUpgrade.size() > 0) {
-            // System.out.println("found networks to upgrade");
-            synchronousTaskManager.execute(new AddNamespacesTaskFactory(this).createTaskIterator(networksToUpgrade));
-        }
-
-        // load enrichment
-        reloadEnrichmentPanel();
 
         // check if enhanced labels should be shown or not
         if (labelsTaskFactory != null) {
@@ -721,34 +661,8 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
             labelsTaskFactory.reregister();
         }
 
-        // check if glass ball effect should be shown or not
-        if (glassBallTaskFactory != null) {
-            String sessionValueLabels = ModelUtils.getStringProperty(sessionProperties,
-                    ModelUtils.showGlassBallEffectFlag);
-            // System.out.println("show labels: " + sessionValueLabels);
-            if (sessionValueLabels != null) {
-                showGlassBallEffect = Boolean.parseBoolean(sessionValueLabels);
-            } else {
-                ModelUtils.setStringProperty(sessionProperties, ModelUtils.showGlassBallEffectFlag,
-                        showGlassBallEffect);
-            }
-            glassBallTaskFactory.reregister();
-        }
 
-        // check if structure images should be shown or not
-        if (imagesTaskFactory != null) {
-            String sessionValueImage = ModelUtils.getStringProperty(sessionProperties,
-                    ModelUtils.showStructureImagesFlag);
-            // System.out.println("show image: " + sessionValueImage);
-            if (sessionValueImage != null) {
-                showImage = Boolean.parseBoolean(sessionValueImage);
-            } else {
-                ModelUtils.setStringProperty(sessionProperties, ModelUtils.showStructureImagesFlag,
-                        showImage);
-            }
-            imagesTaskFactory.reregister();
-        }
-        if (ModelUtils.ifHaveStringNS(getCurrentNetwork()))
+        if (ModelUtils.ifHaveIntactNS(getCurrentNetwork()))
             showResultsPanel();
         else
             hideResultsPanel();
@@ -762,7 +676,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         for (CyTable table : oldTables) {
             tableManager.deleteTable(table.getSUID());
         }
-        reloadEnrichmentPanel();
         // remove as string network
         intactNetworkMap.remove(network);
     }
@@ -782,48 +695,8 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         }
     }
 
-    private void reloadEnrichmentPanel() {
-        CyTableManager tableManager = getService(CyTableManager.class);
-        Set<CyTable> tables = tableManager.getAllTables(true);
-        boolean showEnrichment = false;
-        boolean showPublications = false;
-        for (CyTable table : tables) {
-            if (table.getTitle().equals(EnrichmentTerm.TermCategory.PMID.getTable())) {
-                showPublications = true;
-            }
-            if (table.getTitle().equals(EnrichmentTerm.TermCategory.ALL.getTable())) {
-                showEnrichment = true;
-            }
-        }
-        if (publicationsTaskFactory != null) {
-            TaskIterator taskIt2 = null;
-            if (showPublications) {
-                taskIt2 = publicationsTaskFactory.createTaskIterator(true, false);
-            } else {
-                taskIt2 = publicationsTaskFactory.createTaskIterator(false, false);
-            }
-            synchronousTaskManager.execute(taskIt2);
-            publicationsTaskFactory.reregister();
-        }
-        if (enrichmentTaskFactory != null) {
-            TaskIterator taskIt = null;
-            if (showEnrichment) {
-                taskIt = enrichmentTaskFactory.createTaskIterator(true, false);
-            } else {
-                taskIt = enrichmentTaskFactory.createTaskIterator(false, false);
-            }
-            synchronousTaskManager.execute(taskIt);
-            enrichmentTaskFactory.reregister();
-        }
-    }
 
-    public ShowImagesTaskFactory getShowImagesTaskFactory() {
-        return imagesTaskFactory;
-    }
 
-    public void setShowImagesTaskFactory(ShowImagesTaskFactory factory) {
-        imagesTaskFactory = factory;
-    }
 
     public ShowEnhancedLabelsTaskFactory getShowEnhancedLabelsTaskFactory() {
         return labelsTaskFactory;
@@ -831,30 +704,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
     public void setShowEnhancedLabelsTaskFactory(ShowEnhancedLabelsTaskFactory factory) {
         labelsTaskFactory = factory;
-    }
-
-    public ShowGlassBallEffectTaskFactory getShowGlassBallEffectTaskFactory() {
-        return glassBallTaskFactory;
-    }
-
-    public void setShowGlassBallEffectTaskFactory(ShowGlassBallEffectTaskFactory factory) {
-        glassBallTaskFactory = factory;
-    }
-
-    public ShowEnrichmentPanelTaskFactory getShowEnrichmentPanelTaskFactory() {
-        return enrichmentTaskFactory;
-    }
-
-    public void setShowEnrichmentPanelTaskFactory(ShowEnrichmentPanelTaskFactory factory) {
-        enrichmentTaskFactory = factory;
-    }
-
-    public ShowPublicationsPanelTaskFactory getShowPublicationsPanelTaskFactory() {
-        return publicationsTaskFactory;
-    }
-
-    public void setShowPublicationsPanelTaskFactory(ShowPublicationsPanelTaskFactory factory) {
-        publicationsTaskFactory = factory;
     }
 
     public ShowResultsPanelTaskFactory getShowResultsPanelTaskFactory() {
@@ -1086,14 +935,9 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         return new Color(r, g, b);
     }
 
+    public void registerNetworkView(CyNetworkView view) {
+        viewTypes.put(view, IntactViewType.COLLAPSED);
 
-    @Override
-    public void handleEvent(NetworkViewAddedEvent e) {
-        CyNetworkView view = e.getNetworkView();
-        CyNetwork cyNetwork = view.getModel();
-        if (intactNetworkMap.containsKey(cyNetwork)) {
-            viewTypes.put(view, IntactViewType.COLLAPSED);
-        }
     }
 
 
@@ -1103,8 +947,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     }
 
     public void setNetworkViewType(CyNetworkView view, IntactViewType viewType) {
-        IntactViewType oldType = viewTypes.get(view);
-        fireEvent(new NetworkViewTypeChangedEvent(this, view, oldType, viewType));
         viewTypes.put(view, viewType);
     }
 
@@ -1112,10 +954,8 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         if (viewTypes.containsKey(view)) {
             return viewTypes.get(view);
         }
+
         return null;
     }
 
-    private void fireEvent(final CyEvent<?> event) {
-        registrar.getService(CyEventHelper.class).fireEvent(event);
-    }
 }

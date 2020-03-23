@@ -62,17 +62,11 @@ public class SettingsTask extends AbstractTask implements ObservableTask, Action
             exampleStringValue = "true",
             groups = {"View Defaults"}, gravity = 15.0)
     public boolean showEnhancedLabels = true;
-    @Tunable(description = "Enable STRING glass ball effect",
-            longDescription = "Enable STRING glass ball effect by default",
-            exampleStringValue = "true",
-            groups = {"View Defaults"}, gravity = 16.0)
-    public boolean showGlassBallEffect = true;
     @Tunable(description = "Edge channel color palettes",
             longDescription = "Set the palette to use for the channel colors",
             exampleStringValue = "STRING channel colors", groups = {"View Defaults"}, gravity = 17.0)
     public UserAction paletteChooser = new UserAction(this);
-    @ContainsTunables
-    public EnrichmentSettings enrichmentSettings;
+
     private IntactManager manager;
     private CyNetwork network;
     private Palette channelPalette = null;
@@ -83,7 +77,6 @@ public class SettingsTask extends AbstractTask implements ObservableTask, Action
         this.manager = manager;
         this.network = manager.getCurrentNetwork();
 
-        enrichmentSettings = new EnrichmentSettings(manager, network);
         species = new ListSingleSelection<>(Species.getSpecies());
         species.setSelectedValue(manager.getDefaultSpecies());
         defaultConfidence.setValue(manager.getDefaultConfidence());
@@ -91,7 +84,6 @@ public class SettingsTask extends AbstractTask implements ObservableTask, Action
         maxProteins.setValue(manager.getDefaultMaxProteins());
         showImage = manager.showImage();
         showEnhancedLabels = manager.showEnhancedLabels();
-        showGlassBallEffect = manager.showGlassBallEffect();
 
         // Set our custom palette provider
         stringProvider = new IntactChannelPaletteProvider();
@@ -126,19 +118,7 @@ public class SettingsTask extends AbstractTask implements ObservableTask, Action
             else
                 manager.setShowEnhancedLabels(showEnhancedLabels);
         }
-        if (manager.showImage() != showImage) {
-            if (currentView != null)
-                tm.execute(manager.getShowImagesTaskFactory().createTaskIterator(currentView));
-            else
-                manager.setShowImage(showImage);
-        }
 
-        if (manager.showGlassBallEffect() != showGlassBallEffect) {
-            if (currentView != null)
-                tm.execute(manager.getShowGlassBallEffectTaskFactory().createTaskIterator(currentView));
-            else
-                manager.setShowGlassBallEffect(showGlassBallEffect);
-        }
 
         manager.setDefaultSpecies(species.getSelectedValue());
         manager.setDefaultConfidence(defaultConfidence.getValue());
@@ -146,10 +126,6 @@ public class SettingsTask extends AbstractTask implements ObservableTask, Action
         manager.setDefaultMaxProteins(maxProteins.getValue());
         manager.setChannelColors(getChannelColorMap());
 
-        manager.setTopTerms(null, enrichmentSettings.nTerms.getValue());
-        manager.setOverlapCutoff(null, enrichmentSettings.overlapCutoff.getValue());
-        manager.setEnrichmentPalette(null, enrichmentSettings.defaultPalette.getSelectedValue());
-        manager.setChartType(null, enrichmentSettings.chartType.getSelectedValue());
         manager.updateSettings();
 
     }

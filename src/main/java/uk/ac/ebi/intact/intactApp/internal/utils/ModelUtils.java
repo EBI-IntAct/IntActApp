@@ -60,6 +60,7 @@ public class ModelUtils {
     public static String SOURCE_SHAPE = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "source shape";
     public static String TARGET_SHAPE = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "target shape";
     public static String C_COLOR = STYLE_NAMESPACE + NAMESPACE_SEPARATOR + "collapsed color";
+    public static String C_IS_COLLAPSED = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "is collapsed";
     public static String C_INTACT_IDS = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "intact ids";
     public static String C_MI_SCORE = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "mi score";
 
@@ -803,7 +804,7 @@ public class ModelUtils {
     }
 
     // This method will tell us if we have the new side panel functionality (i.e. namespaces)
-    public static boolean ifHaveStringNS(CyNetwork network) {
+    public static boolean ifHaveIntactNS(CyNetwork network) {
         if (network == null) return false;
         CyRow netRow = network.getRow(network);
         Collection<CyColumn> columns = network.getDefaultNodeTable().getColumns(INTACTDB_NAMESPACE);
@@ -1857,8 +1858,10 @@ public class ModelUtils {
             }
             createColumnIfNeeded(network.getDefaultEdgeTable(), Double.class, MI_SCORE);
             createColumnIfNeeded(network.getDefaultEdgeTable(), Boolean.class, DISRUPTED_BY_MUTATION);
+            createColumnIfNeeded(network.getDefaultEdgeTable(), Boolean.class, C_IS_COLLAPSED);
             createColumnIfNeeded(network.getDefaultEdgeTable(), Double.class, C_MI_SCORE);
             createListColumnIfNeeded(network.getDefaultEdgeTable(), String.class, C_INTACT_IDS);
+
 
             intactEdgeColumns = new ArrayList<>(Arrays.asList(C_COLOR, COLOR, SHAPE, SOURCE_SHAPE, TARGET_SHAPE));
             for (String intactEdgeColumn : intactEdgeColumns) {
@@ -2012,14 +2015,15 @@ public class ModelUtils {
 
         row.set(CyNetwork.NAME, nodeNameMap.get(source) + " (" + type + ") " + nodeNameMap.get(target));
         row.set(CyEdge.INTERACTION, type);
+        row.set(C_IS_COLLAPSED, false);
 
         boolean isDisruptedByMutation = (boolean) edgeJSON.get("disrupted_by_mutation");
         if (isDisruptedByMutation) {
             if (network.getRow(sourceNode).get(MUTATION, Boolean.class)) {
-                row.set(SOURCE_SHAPE, "Delta");
+                row.set(SOURCE_SHAPE, "Circle");
             }
             if (network.getRow(targetNode).get(MUTATION, Boolean.class)) {
-                row.set(TARGET_SHAPE, "Delta");
+                row.set(TARGET_SHAPE, "Circle");
             }
         }
 

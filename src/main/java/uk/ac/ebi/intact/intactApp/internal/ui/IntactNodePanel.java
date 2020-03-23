@@ -56,16 +56,11 @@ public class IntactNodePanel extends AbstractIntactPanel {
 
         EasyGBC c = new EasyGBC();
 
-        JPanel controlPanel = createControlPanel();
-        controlPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
-        add(controlPanel, c.anchor("west").down().noExpand());
-
         JPanel mainPanel = new JPanel();
         {
             mainPanel.setLayout(new GridBagLayout());
             mainPanel.setBackground(defaultBackground);
             EasyGBC d = new EasyGBC();
-            mainPanel.add(createTissuesPanel(), d.anchor("west").expandHoriz());
 
             mainPanel.add(createCompartmentsPanel(), d.down().anchor("west").expandHoriz());
             mainPanel.add(createNodesPanel(), d.down().anchor("west").expandHoriz());
@@ -159,34 +154,6 @@ public class IntactNodePanel extends AbstractIntactPanel {
         return controlPanel;
     }
 
-    private JPanel createTissuesPanel() {
-        tissuesPanel = new JPanel();
-        tissuesPanel.setLayout(new GridBagLayout());
-        EasyGBC c = new EasyGBC();
-
-        List<String> tissueList = ModelUtils.getTissueList(currentNetwork);
-        for (String tissue : tissueList) {
-            tissuesPanel.add(createFilterSlider("tissue", tissue, currentNetwork, true, 500.0),
-                    c.anchor("west").down().expandHoriz());
-        }
-
-        CollapsablePanel collapsablePanel = new CollapsablePanel(iconFont, "Tissue filters", tissuesPanel, true, 10);
-        collapsablePanel.setBorder(BorderFactory.createEtchedBorder());
-        return collapsablePanel;
-    }
-
-    private void updateTissuesPanel() {
-        if (tissuesPanel == null) return;
-        tissuesPanel.removeAll();
-        EasyGBC c = new EasyGBC();
-        List<String> tissueList = ModelUtils.getTissueList(currentNetwork);
-        for (String tissue : tissueList) {
-            tissuesPanel.add(createFilterSlider("tissue", tissue, currentNetwork, true, 500.0),
-                    c.anchor("west").down().expandHoriz());
-        }
-        return;
-    }
-
     private JPanel createCompartmentsPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
@@ -197,7 +164,7 @@ public class IntactNodePanel extends AbstractIntactPanel {
                     c.anchor("west").down().expandHoriz());
         }
         CollapsablePanel collapsablePanel = new CollapsablePanel(iconFont, "Compartment filters", panel, true, 10);
-        collapsablePanel.setBorder(BorderFactory.createEtchedBorder());
+//        collapsablePanel.setBorder(BorderFactory.createEtchedBorder());
         return collapsablePanel;
     }
 
@@ -229,7 +196,7 @@ public class IntactNodePanel extends AbstractIntactPanel {
         }
         nodesPanel.setAlignmentX(LEFT_ALIGNMENT);
         CollapsablePanel collapsablePanel = new CollapsablePanel(iconFont, "Selected nodes", nodesPanel, false, 10);
-        collapsablePanel.setBorder(BorderFactory.createEtchedBorder());
+//        collapsablePanel.setBorder(BorderFactory.createEtchedBorder());
         return collapsablePanel;
     }
 
@@ -277,11 +244,13 @@ public class IntactNodePanel extends AbstractIntactPanel {
         EasyGBC c = new EasyGBC();
         panel.setLayout(new GridBagLayout());
 
+        int leftBorder = 30;
+
         {
             JLabel lbl = new JLabel("Crosslinks");
             lbl.setFont(labelFont);
             lbl.setAlignmentX(LEFT_ALIGNMENT);
-            lbl.setBorder(BorderFactory.createEmptyBorder(0, 2, 5, 0));
+            lbl.setBorder(BorderFactory.createEmptyBorder(5, leftBorder, 5, 0));
             panel.add(lbl, c.anchor("west").down().noExpand());
 
             JPanel crosslinkPanel = new JPanel();
@@ -293,46 +262,9 @@ public class IntactNodePanel extends AbstractIntactPanel {
                 link.setFont(textFont);
                 crosslinkPanel.add(link);
             }
-            if (sNode.haveGeneCard()) {
-                JLabel link = new SwingLink("GeneCards", sNode.getGeneCardURL(), openBrowser);
-                link.setFont(textFont);
-                crosslinkPanel.add(link);
-            }
-            if (sNode.haveCompartments()) {
-                JLabel link = new SwingLink("COMPARTMENTS", sNode.getCompartmentsURL(), openBrowser);
-                link.setFont(textFont);
-                crosslinkPanel.add(link);
-            }
-            if (sNode.haveTissues()) {
-                JLabel link = new SwingLink("TISSUES", sNode.getTissuesURL(), openBrowser);
-                link.setFont(textFont);
-                crosslinkPanel.add(link);
-            }
-            if (sNode.haveDisease()) {
-                JLabel link = new SwingLink("DISEASES", sNode.getDiseaseURL(), openBrowser);
-                link.setFont(textFont);
-                crosslinkPanel.add(link);
-            }
-            if (sNode.havePharos()) {
-                JLabel link = new SwingLink("Pharos", sNode.getPharosURL(), openBrowser);
-                link.setFont(textFont);
-                crosslinkPanel.add(link);
-            }
-            if (sNode.havePubChem()) {
-                JLabel link = new SwingLink("PubChem", sNode.getPubChemURL(), openBrowser);
-                link.setFont(textFont);
-                crosslinkPanel.add(link);
-            }
 
-			/*
-			 * FIXME: Need to link to get to the STRING web site for this
-			{
-  			JLabel link = new SwingLink("STRING", sNode.getStringURL(), openBrowser);
-				link.setFont(textFont);
-				link.add(crosslinkPanel);
-			}
-			*/
             crosslinkPanel.setAlignmentX(LEFT_ALIGNMENT);
+            crosslinkPanel.setBackground(new Color(255,255,255,0));
             panel.add(crosslinkPanel, c.anchor("west").down().noExpand());
         }
 
@@ -340,38 +272,23 @@ public class IntactNodePanel extends AbstractIntactPanel {
             JLabel lbl = new JLabel("Description");
             lbl.setFont(labelFont);
             lbl.setAlignmentX(LEFT_ALIGNMENT);
-            lbl.setBorder(BorderFactory.createEmptyBorder(10, 2, 5, 0));
+            lbl.setBorder(BorderFactory.createEmptyBorder(10, leftBorder, 5, 0));
             panel.add(lbl, c.anchor("west").down().expandHoriz());
 
             JLabel description = new JLabel("<html><body style='width:250px;font-size:8px'>" + sNode.getDescription() + "</body></html>");
-            description.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+            description.setBorder(BorderFactory.createEmptyBorder(0, leftBorder + 5, 0, 0));
             description.setAlignmentX(LEFT_ALIGNMENT);
+            description.setBackground(new Color(255,255,255,0));
             panel.add(description, c.anchor("west").down().expandBoth());
 
         }
 
-        {
-            JLabel lbl = new JLabel("Structure");
-            lbl.setFont(labelFont);
-            lbl.setBorder(BorderFactory.createEmptyBorder(10, 2, 5, 0));
-            panel.add(lbl, c.anchor("west").down().expandHoriz());
-
-            // Now add our image
-            Image img = sNode.getStructureImage();
-            if (img != null) {
-                Image scaledImage = img.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
-                JLabel label = new JLabel(new ImageIcon(scaledImage));
-                // label.setPreferredSize(new Dimension(100,100));
-                // label.setMinimumSize(new Dimension(100,100));
-                label.setAlignmentX(LEFT_ALIGNMENT);
-                panel.add(label, c.anchor("west").down().noExpand());
-            }
-        }
-
         CollapsablePanel collapsablePanel = new CollapsablePanel(iconFont, sNode.getDisplayName(), panel, false, 10);
-        Border etchedBorder = BorderFactory.createEtchedBorder();
-        Border emptyBorder = BorderFactory.createEmptyBorder(0, 5, 0, 0);
-        collapsablePanel.setBorder(BorderFactory.createCompoundBorder(emptyBorder, etchedBorder));
+//        Border etchedBorder = BorderFactory.createEtchedBorder();
+        Border emptyBorder = BorderFactory.createEmptyBorder(0, 15, 0, 0);
+//        collapsablePanel.setBorder(BorderFactory.createCompoundBorder(emptyBorder, etchedBorder));
+        collapsablePanel.setBorder(emptyBorder);
+        collapsablePanel.setBackground(new Color(255,255,255,0));
         return collapsablePanel;
     }
 
@@ -400,20 +317,7 @@ public class IntactNodePanel extends AbstractIntactPanel {
             } else {
                 clearHighlight(networkView);
             }
-
-            if (manager.showSingletons()) {
-                ViewUtils.hideSingletons(networkView, true);
-            } else {
-                ViewUtils.hideSingletons(networkView, false);
-            }
-
-            if (ModelUtils.isStitchNetwork(currentNetwork)) {
-                ViewUtils.updateChemVizPassthrough(manager, networkView, manager.showImage());
-            }
-
-            ViewUtils.hideStringColors(manager, networkView, manager.showStringColors());
         }
-        updateTissuesPanel();
         updateCompartmentsPanel();
     }
 
