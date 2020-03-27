@@ -89,9 +89,6 @@ public class CyActivator extends AbstractCyActivator {
         }
 
 
-
-
-
         {
             GetNetworkTaskFactory getNetwork = new GetNetworkTaskFactory(manager);
             Properties props = new Properties();
@@ -202,8 +199,6 @@ public class CyActivator extends AbstractCyActivator {
 
 
         if (haveGUI) {
-
-
             {
                 ShowResultsPanelTaskFactory showResults = new ShowResultsPanelTaskFactory(manager);
                 showResults.reregister();

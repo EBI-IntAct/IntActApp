@@ -5,11 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
+import org.json.JSONObject;
+import org.json.XML;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 
 import java.awt.*;
 import java.io.IOException;
 import java.util.*;
+
+import static uk.ac.ebi.intact.intactApp.internal.io.HttpUtils.getRequestResultForUrl;
 
 /**
  * Created by anjali on 13/06/19.
@@ -24,14 +28,22 @@ public class OLSMapper {
 
 
     public static final Hashtable<Long, Paint> taxIdToPaint = new Hashtable<>() {{
-        put(562L, new Color(144, 163, 198));
-        put(4932L, new Color(107, 13, 10));
-        put(9606L, new Color(51, 94, 148));
-        put(10090L, new Color(88, 115, 29));
-        put(3702L, new Color(97, 74, 124));
-        put(7227L, new Color(47, 132, 156));
-        put(6239L, new Color(202, 115, 47));
-        put(-2L, new Color(141, 102, 102));
+        put(562L, new Color(137, 51, 54)); // Escherichia coli
+        put(4932L, new Color(74, 147, 121));  // Saccharomyces cerevisiae
+        put(9606L, new Color(51, 94, 148));  // Homo sapiens
+        put(10090L, new Color(28, 67, 156)); // Mus musculus
+        put(3702L, new Color(46, 93, 46));  // Arabidopsis thaliana
+        put(7227L, new Color(35, 97, 126)); // Drosophila melanogaster
+        put(6239L, new Color(50, 67, 131)); // Caenorhabditis elegans
+        put(-2L, new Color(141, 102, 102));  // Chemical Synthesis
+    }};
+    private static Hashtable<Long, Paint> kingdomColors = new Hashtable<>() {{
+        put(33090L, new Color(80, 162, 79)); // Viridiplantae (Plants)
+        put(33208L, new Color(86, 136, 192)); // Metazoa (Animals)
+        put(4751L, new Color(62, 181, 170)); // Fungi
+        put(2L, new Color(178, 53, 57)); // Bacteria
+        put(10239L, new Color(132, 100, 190)); // Viruses
+        put(2157L, new Color(238, 105, 53, 226)); // Archaea
     }};
 
     public static final Hashtable<String, Paint> edgeTypeToPaint = new Hashtable<>() {{
@@ -73,6 +85,7 @@ public class OLSMapper {
     }};
 
 
+
     public static void initializeTaxIdToPaint() {
         if (!taxIdsWorking) {
             taxIdsWorking = true;
@@ -112,8 +125,46 @@ public class OLSMapper {
                     e.printStackTrace();
                 }
             }
+
+
+            taxIdToPaint.putAll(kingdomColors);
             taxIdsReady = true;
         }
+    }
+
+    public synchronized static Map<Long, Paint> completeTaxIdColorsFromUnknownTaxIds(Set<Long> taxIdsToCheckAndAdd) {
+        Map<Long, Paint> addedTaxIds = new Hashtable<>();
+
+        if (taxIdsToCheckAndAdd == null)
+            return addedTaxIds;
+
+        taxIdsToCheckAndAdd.removeAll(taxIdToPaint.keySet());
+
+        if (taxIdsToCheckAndAdd.size() == 0)
+            return addedTaxIds;
+
+        try {
+            String resultText = getRequestResultForUrl("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&id=" + concatenateTaxIds(taxIdsToCheckAndAdd));
+            JSONObject jObject = XML.toJSONObject(resultText);
+            JsonNode taxons = new ObjectMapper().readTree(jObject.toString()).get("TaxaSet").get("Taxon");
+            for (JsonNode taxon: taxons) {
+                Long taxId = taxon.get("TaxId").longValue();
+                JsonNode lineage = taxon.get("LineageEx").get("Taxon");
+                for (JsonNode supTaxon : lineage) {
+                    Long supTaxId = supTaxon.get("TaxId").longValue();
+                    if (taxIdToPaint.containsKey(supTaxId)) {
+                        Paint paint = taxIdToPaint.get(supTaxId);
+                        taxIdToPaint.put(taxId, paint);
+                        addedTaxIds.put(taxId, paint);
+                        break;
+                    }
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return addedTaxIds;
     }
 
     public static void initializeNodeTypeToShape() {
@@ -177,8 +228,10 @@ public class OLSMapper {
     }
 
 
+
+
     public static String searchMIId(String toSearch) {
-        String jsonText = HttpUtils.getJsonTextForUrl(String.format("https://www.ebi.ac.uk/ols/api/search?q=%s&ontology=mi", toSearch.replaceAll(" ", "%20")));
+        String jsonText = getRequestResultForUrl(String.format("https://www.ebi.ac.uk/ols/api/search?q=%s&ontology=mi", toSearch.replaceAll(" ", "%20")));
         if (jsonText.length() > 0) {
             try {
                 JsonNode response = new ObjectMapper().readTree(jsonText).get("response");
@@ -192,6 +245,10 @@ public class OLSMapper {
             }
         }
         return null;
+    }
+
+    private static String concatenateTaxIds(Set<Long> taxIds) {
+        return taxIds.toString().replaceAll("[\\[\\]]", "").replaceAll(" ", "%20");
     }
 
     public static boolean speciesNotReady() {

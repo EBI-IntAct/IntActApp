@@ -159,10 +159,10 @@ public class HttpUtils {
         return builder.toString();
     }
 
-    public static String getJsonTextForUrl(String jsonQuery) {
+    public static String getRequestResultForUrl(String requestURL) {
         String jsonText = "";
         try {
-            URL url = new URL(jsonQuery);
+            URL url = new URL(requestURL);
             URLConnection olsConnection = url.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(olsConnection.getInputStream()));
             String inputLine;
@@ -179,7 +179,7 @@ public class HttpUtils {
     }
 
     public static JsonNode getJsonForUrl(String jsonQuery) {
-        String jsonText = getJsonTextForUrl(jsonQuery);
+        String jsonText = getRequestResultForUrl(jsonQuery);
         if (jsonText.length() > 0) {
             try {
                 return new ObjectMapper().readTree(jsonText);

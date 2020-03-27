@@ -17,6 +17,7 @@ import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
 
 import java.awt.*;
+import java.util.Map;
 
 public abstract class IntactStyle {
     protected VisualStyle style;
@@ -28,6 +29,8 @@ public abstract class IntactStyle {
     protected VisualMappingFunctionFactory passthroughFactory;
 
     private boolean newStyle;
+    protected DiscreteMapping<String, NodeShape> nodeTypeToShape;
+    protected DiscreteMapping<Long, Paint> taxIdToNodeColor;
 
     public IntactStyle(IntactManager manager) {
         this.manager = manager;
@@ -71,20 +74,24 @@ public abstract class IntactStyle {
     }
 
     protected void setNodeShapeStyle() {
-        DiscreteMapping<String, NodeShape> nodeTypeToShape = (DiscreteMapping<String, NodeShape>) discreteFactory.createVisualMappingFunction(ModelUtils.TYPE, String.class, BasicVisualLexicon.NODE_SHAPE);
+        nodeTypeToShape = (DiscreteMapping<String, NodeShape>) discreteFactory.createVisualMappingFunction(ModelUtils.TYPE, String.class, BasicVisualLexicon.NODE_SHAPE);
         nodeTypeToShape.putAll(OLSMapper.nodeTypeToShape);
 
         style.addVisualMappingFunction(nodeTypeToShape);
-        addMissingNodeShape(nodeTypeToShape);
+        addMissingNodeShape();
     }
 
-    private void addMissingNodeShape(DiscreteMapping<String, NodeShape> interactorTypeToShape) {
+    public void updateNodeTypeToShapeMapping(Map<String, NodeShape> toPut) {
+        nodeTypeToShape.putAll(toPut);
+    }
+
+    private void addMissingNodeShape() {
         new Thread(() -> {
             OLSMapper.initializeNodeTypeToShape();
-            while (OLSMapper.nodeTypesNotReady()){
+            while (OLSMapper.nodeTypesNotReady()) {
                 TimeUtils.sleep(100);
             }
-            interactorTypeToShape.putAll(OLSMapper.nodeTypeToShape);
+            updateNodeTypeToShapeMapping(OLSMapper.nodeTypeToShape);
         }).start();
     }
 
@@ -93,15 +100,12 @@ public abstract class IntactStyle {
     }
 
     protected void setNodePaintStyle() {
-        DiscreteMapping<Long, Paint> taxIdToNodeColor = (DiscreteMapping<Long, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.TAX_ID, Long.class, BasicVisualLexicon.NODE_FILL_COLOR);
+        taxIdToNodeColor = (DiscreteMapping<Long, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.TAX_ID, Long.class, BasicVisualLexicon.NODE_FILL_COLOR);
         style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, new Color(157, 177, 128));
         setNodePaintDiscreteMapping(taxIdToNodeColor);
     }
 
     protected void setNodeBorderPaintStyle() {
-        DiscreteMapping<Long, Paint> taxIdToNodeBorderColor = (DiscreteMapping<Long, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.TAX_ID, Long.class, BasicVisualLexicon.NODE_BORDER_PAINT);
-        style.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, new Color(157, 177, 128));
-        setNodePaintDiscreteMapping(taxIdToNodeBorderColor);
     }
 
 
@@ -127,16 +131,21 @@ public abstract class IntactStyle {
     private void addMissingNodePaint(DiscreteMapping<Long, Paint> taxIdToPaint) {
         new Thread(() -> {
             OLSMapper.initializeTaxIdToPaint();
-            while (OLSMapper.speciesNotReady()){
+            while (OLSMapper.speciesNotReady()) {
                 TimeUtils.sleep(100);
             }
             taxIdToPaint.putAll(OLSMapper.taxIdToPaint);
         }).start();
     }
 
+    public synchronized void updateTaxIdToNodePaintMapping(Map<Long, Paint> toPut) {
+        if (taxIdToNodeColor != null) {
+            taxIdToNodeColor.putAll(toPut);
+        }
+    }
 
-
-    protected void setEdgeLineTypeStyle() {}
+    protected void setEdgeLineTypeStyle() {
+    }
 
     protected abstract void setEdgePaintStyle();
 

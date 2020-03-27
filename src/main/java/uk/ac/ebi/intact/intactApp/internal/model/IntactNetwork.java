@@ -1,10 +1,7 @@
 package uk.ac.ebi.intact.intactApp.internal.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
+import org.cytoscape.model.*;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
 import org.cytoscape.model.events.AddedEdgesEvent;
@@ -13,9 +10,13 @@ import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.IntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.OLSMapper;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TableUtil;
 
+import java.awt.*;
+import java.util.List;
 import java.util.*;
 
 import static uk.ac.ebi.intact.intactApp.internal.utils.TableUtil.getColumnValuesOfEdges;
@@ -128,6 +129,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
             updateCollapsedEdges(coupleToEdges.keySet());
         }
 
+        completeMissingNodeColors(); // Todo Make it work even when loading from already created network
 
 //        manager.registrar.registerService(this, AddedEdgesListener.class, new Properties());
 //        manager.registrar.registerService(this, AboutToRemoveEdgesListener.class, new Properties());
@@ -140,6 +142,17 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
         HideTaskFactory hideTaskFactory = manager.getService(HideTaskFactory.class);
         manager.execute(hideTaskFactory.createTaskIterator(networkView, null, expandedEdges));
         manager.registerNetworkView(networkView);
+    }
+
+    public void completeMissingNodeColors() {
+        System.out.println("Completing missing colors");
+        new Thread(() -> {
+            CyColumn taxIdColumn = network.getDefaultNodeTable().getColumn(ModelUtils.TAX_ID);
+            Map<Long, Paint> addedTaxIds = OLSMapper.completeTaxIdColorsFromUnknownTaxIds(new HashSet<>(taxIdColumn.getValues(Long.class)));
+            for (IntactStyle style : manager.getIntactStyles().values()) {
+                style.updateTaxIdToNodePaintMapping(addedTaxIds);
+            }
+        }).start();
     }
 
     public double getOverlapCutoff() {

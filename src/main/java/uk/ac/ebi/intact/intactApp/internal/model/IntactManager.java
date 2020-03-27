@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.intactApp.internal.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
@@ -131,6 +132,9 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         commandExecutorTaskFactory = registrar.getService(CommandExecutorTaskFactory.class);
         cyEventHelper = registrar.getService(CyEventHelper.class);
         intactNetworkMap = new HashMap<>();
+
+        setupStyles();
+
         if (!haveEnhancedGraphics())
             showEnhancedLabels = false;
 
@@ -222,14 +226,13 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         // If we already have networks loaded, see if they are string networks
         for (CyNetwork network : registrar.getService(CyNetworkManager.class).getNetworkSet()) {
             if (ModelUtils.isIntactNetwork(network)) {
-                IntactNetwork stringNet = new IntactNetwork(this);
-                addIntactNetwork(stringNet, network);
+                IntactNetwork intactNetwork = new IntactNetwork(this);
+                addIntactNetwork(intactNetwork, network);
             }
         }
 
         // Get a session property file for the current session
         sessionProperties = ModelUtils.getPropertyService(this, SavePolicy.SESSION_FILE);
-        setupStyles();
     }
 
     public void setupStyles() {
@@ -243,6 +246,10 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         for (IntactStyle style : new IntactStyle[]{collapsed, expanded, mutation, collapsedWebStyle, expandedWeb}) {
             intactStyles.put(style.getStyleName(), style);
         }
+    }
+
+    public Map<String, IntactStyle> getIntactStyles() {
+        return new HashMap<>(intactStyles);
     }
 
     public void applyStyle(String styleName) {
@@ -261,15 +268,12 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
         // Run this in the background in case we have a timeout
         Executors.newCachedThreadPool().execute(() -> {
-            JsonNode uris;
+            JsonNode uris = NullNode.getInstance();
             // use alternative config URI if available and otherwise retrieve the default one
             // based on the app version
             if (alternativeCONFIGURI != null && alternativeCONFIGURI.length() > 0) {
                 uris = ModelUtils.getResultsFromJSON(
                         HttpUtils.getJSON(alternativeCONFIGURI, args, manager)
-                );
-            } else {
-                uris = ModelUtils.getResultsFromJSON(HttpUtils.getJSON(url, args, manager)
                 );
             }
             if (uris != null) {
@@ -367,7 +371,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
                 .createNetworkView(network);
         if (intactNetworkMap.containsKey(network)) {
             intactNetworkMap.get(network).hideExpandedEdgesOnViewCreation(view);
-            intactStyles.get(CollapsedIntactWebserviceStyle.TITLE).applyStyle(view);
+            intactStyles.get(CollapsedIntactStyle.TITLE).applyStyle(view);
         }
         return view;
     }
@@ -523,18 +527,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         return getDataAPIURL() + "network";
     }
 
-    public String getTextMiningURL() {
-        return getDataAPIURL() + "Textmining";
-    }
-
-    public String getEntityQueryURL() {
-        return getDataAPIURL() + "EntityQuery";
-    }
-
-    public String getIntegrationURL() {
-        return getDataAPIURL() + "Integration";
-    }
-
     public String getResolveURL(String useDATABASE) {
         if (useDATABASE.equals(Databases.STITCH.getAPIName()))
             return STITCHResolveURI;
@@ -618,6 +610,8 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
             IntactNetwork intactNet = new IntactNetwork(this);
             addIntactNetwork(intactNet, network);
             showResultsPanel();
+            intactNet.completeMissingNodeColors();
+
         }
     }
 
@@ -631,8 +625,9 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         for (CyNetwork network : networks) {
             if (ModelUtils.isIntactNetwork(network)) {
                 if (ModelUtils.ifHaveIntactNS(network)) {
-                    IntactNetwork stringNet = new IntactNetwork(this);
-                    addIntactNetwork(stringNet, network);
+                    IntactNetwork intactNetwork = new IntactNetwork(this);
+                    addIntactNetwork(intactNetwork, network);
+                    intactNetwork.completeMissingNodeColors();
                 } else if (ModelUtils.getDataVersion(network) == null) {
                     networksToUpgrade.add(network);
                 }
@@ -949,5 +944,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
         return null;
     }
+
+
 
 }
