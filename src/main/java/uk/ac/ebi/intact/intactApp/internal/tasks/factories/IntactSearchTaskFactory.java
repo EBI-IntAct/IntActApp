@@ -60,7 +60,7 @@ public class IntactSearchTaskFactory extends AbstractNetworkSearchTaskFactory im
         String terms = queryComponent.getQueryText();
         if (optionsPanel.getUseSmartDelimiters())
             terms = TextUtils.smartDelimit(terms);
-        // Strip off any blank lines as well as trailing spaces
+
 
         intactNetwork = new IntactNetwork(manager);
         int taxon = getTaxId();
@@ -193,8 +193,6 @@ public class IntactSearchTaskFactory extends AbstractNetworkSearchTaskFactory im
                     JDialog d = new JDialog();
                     d.setTitle("Resolve Ambiguous Terms");
                     d.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-                    // GetTermsPanel panel = new GetTermsPanel(manager, stringNetwork, Databases.STRING.getAPIName(),
-                    //                                         getSpecies(), false, getConfidence(), getAdditionalNodes());
                     GetTermsPanel panel = new GetTermsPanel(manager, intactNetwork,
                             Databases.STRING.getAPIName(), false, optionsPanel);
                     panel.createResolutionPanel();

@@ -5,7 +5,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
-import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -15,7 +14,9 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.OLSMapper;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
 
 import java.awt.*;
 
@@ -72,25 +73,31 @@ public abstract class IntactStyle {
     }
 
     protected void setNodeShapeStyle() {
-        DiscreteMapping<String, NodeShape> dMapping = (DiscreteMapping<String, NodeShape>) discreteFactory.createVisualMappingFunction(ModelUtils.TYPE, String.class, BasicVisualLexicon.NODE_SHAPE);
-        dMapping.putMapValue("small molecule", NodeShapeVisualProperty.TRIANGLE);
-        dMapping.putMapValue("protein", NodeShapeVisualProperty.ELLIPSE);
-        dMapping.putMapValue("gene", NodeShapeVisualProperty.ROUND_RECTANGLE);
-        dMapping.putMapValue("dna", BasicVisualLexicon.NODE_SHAPE.parseSerializableString("VEE"));
-        dMapping.putMapValue("rna", NodeShapeVisualProperty.DIAMOND);
-        dMapping.putMapValue("complex", NodeShapeVisualProperty.HEXAGON);
+        DiscreteMapping<String, NodeShape> nodeTypeToShape = (DiscreteMapping<String, NodeShape>) discreteFactory.createVisualMappingFunction(ModelUtils.TYPE, String.class, BasicVisualLexicon.NODE_SHAPE);
+        nodeTypeToShape.putAll(OLSMapper.nodeTypeToShape);
 
-        style.addVisualMappingFunction(dMapping);
+        style.addVisualMappingFunction(nodeTypeToShape);
+        addMissingNodeShape(nodeTypeToShape);
+    }
+
+    private void addMissingNodeShape(DiscreteMapping<String, NodeShape> interactorTypeToShape) {
+        new Thread(() -> {
+            OLSMapper.initializeNodeTypeToShape();
+            while (OLSMapper.nodeTypesNotReady()){
+                TimeUtils.sleep(100);
+            }
+            interactorTypeToShape.putAll(OLSMapper.nodeTypeToShape);
+        }).start();
+    }
+
+    protected void setSelectedNodePaint() {
+        style.setDefaultValue(BasicVisualLexicon.NODE_SELECTED_PAINT, new Color(204, 0, 51));
     }
 
     protected void setNodePaintStyle() {
         DiscreteMapping<Long, Paint> taxIdToNodeColor = (DiscreteMapping<Long, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.TAX_ID, Long.class, BasicVisualLexicon.NODE_FILL_COLOR);
         style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, new Color(157, 177, 128));
         setNodePaintDiscreteMapping(taxIdToNodeColor);
-    }
-
-    protected void setSelectedNodePaint() {
-        style.setDefaultValue(BasicVisualLexicon.NODE_SELECTED_PAINT, new Color(204,0, 51));
     }
 
     protected void setNodeBorderPaintStyle() {
@@ -106,7 +113,6 @@ public abstract class IntactStyle {
 
     private void setNodeLabel() {
         PassthroughMapping<String, String> nameToLabel = (PassthroughMapping<String, String>) passthroughFactory.createVisualMappingFunction(CyNetwork.NAME, String.class, BasicVisualLexicon.NODE_LABEL);
-
         style.addVisualMappingFunction(nameToLabel);
     }
 
@@ -114,18 +120,22 @@ public abstract class IntactStyle {
         style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, Color.WHITE);
     }
 
-    private void setNodePaintDiscreteMapping(DiscreteMapping<Long, Paint> dMapping) {
-        dMapping.putMapValue(9606L, new Color(51, 94, 148)); // Homo Sapiens
-        dMapping.putMapValue(4932L, new Color(107, 13, 10)); // Saccharomyces cerevisiae
-        dMapping.putMapValue(10090L, new Color(88, 115, 29)); // Mus musculus
-        dMapping.putMapValue(3702L, new Color(97, 74, 124)); // Arabidopsis thaliana (Mouse-ear cress)
-        dMapping.putMapValue(7227L, new Color(47, 132, 156)); // Drosophila melanogaster
-        dMapping.putMapValue(6239L, new Color(202, 115, 47)); // Caenorhabditis elegans
-        dMapping.putMapValue(562L, new Color(144, 163, 198)); // Escherichia coli
-        dMapping.putMapValue(-2L, new Color(141, 102, 102)); // chemical synthesis
-
-        style.addVisualMappingFunction(dMapping);
+    private void setNodePaintDiscreteMapping(DiscreteMapping<Long, Paint> taxIdToPaint) {
+        taxIdToPaint.putAll(OLSMapper.taxIdToPaint);
+        style.addVisualMappingFunction(taxIdToPaint);
+        addMissingNodePaint(taxIdToPaint);
     }
+
+    private void addMissingNodePaint(DiscreteMapping<Long, Paint> taxIdToPaint) {
+        new Thread(() -> {
+            OLSMapper.initializeTaxIdToPaint();
+            while (OLSMapper.speciesNotReady()){
+                TimeUtils.sleep(100);
+            }
+            taxIdToPaint.putAll(OLSMapper.taxIdToPaint);
+        }).start();
+    }
+
 
 
     protected void setEdgeLineTypeStyle() {
@@ -139,6 +149,7 @@ public abstract class IntactStyle {
     protected abstract void setEdgePaintStyle();
 
     protected void setEdgeWidth() {
+        style.setDefaultValue(BasicVisualLexicon.EDGE_WIDTH, 2.0);
     }
 
     protected void setEdgeSourceShape() {

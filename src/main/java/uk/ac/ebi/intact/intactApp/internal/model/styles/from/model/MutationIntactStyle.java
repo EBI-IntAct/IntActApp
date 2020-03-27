@@ -2,18 +2,16 @@ package uk.ac.ebi.intact.intactApp.internal.model.styles.from.model;
 
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
-import org.cytoscape.view.presentation.property.values.LineType;
+import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
-import uk.ac.ebi.intact.intactApp.internal.model.styles.from.webservice.IntactWebserviceStyle;
 
 import java.awt.*;
 
-public class MutationIntactStyle extends IntactWebserviceStyle {
+public class MutationIntactStyle extends ExpandedIntactStyle {
 
     public static final String TITLE = "Intact - Mutation";
 
@@ -38,22 +36,19 @@ public class MutationIntactStyle extends IntactWebserviceStyle {
         style.addVisualMappingFunction(mutationToNodeBorderWidth);
     }
 
-    @Override
-    protected void setEdgeLineTypeStyle() {
-        DiscreteMapping<String, LineType> shapeToLineType = (DiscreteMapping<String, LineType>) discreteFactory.createVisualMappingFunction("style::shape", String.class, BasicVisualLexicon.EDGE_LINE_TYPE);
-        shapeToLineType.putMapValue("solid", LineTypeVisualProperty.SOLID);
-        shapeToLineType.putMapValue("dashed", LineTypeVisualProperty.EQUAL_DASH);
-
-        style.addVisualMappingFunction(shapeToLineType);
-    }
 
     @Override
     protected void setEdgePaintStyle() {
-        DiscreteMapping<Boolean, Paint> disruptedToNodeColor = (DiscreteMapping<Boolean, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.DISRUPTED_BY_MUTATION, Boolean.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+        DiscreteMapping<Boolean, Paint> disruptedToNodeColor = (DiscreteMapping<Boolean, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.DISRUPTED_BY_MUTATION, Boolean.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
         disruptedToNodeColor.putMapValue(true, new Color(255, 0, 0));
         disruptedToNodeColor.putMapValue(false, new Color(126, 131, 137));
-
         style.addVisualMappingFunction(disruptedToNodeColor);
+
+        for (VisualPropertyDependency<?> vpd : style.getAllVisualPropertyDependencies()) {
+            if (vpd.getIdString().equals("arrowColorMatchesEdge"))
+                vpd.setDependency(true);
+        }
+
     }
 
     @Override

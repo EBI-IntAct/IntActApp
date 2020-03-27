@@ -1979,7 +1979,7 @@ public class ModelUtils {
                     row.set(MUTATION, nodeJSON.get(key));
                     break;
                 case "shape":
-                    row.set(SHAPE, nodeJSON.get(key));
+                    row.set(SHAPE, ((String)nodeJSON.get(key)).replaceAll("-", "_"));
                     break;
                 case "color":
                     row.set(COLOR, cleanJSONColorData(nodeJSON.get(key)));

@@ -7,7 +7,7 @@ import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactViewType;
-import uk.ac.ebi.intact.intactApp.internal.model.styles.from.webservice.CollapsedIntactWebserviceStyle;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.CollapsedIntactStyle;
 
 public class CollapseViewTask extends AbstractHiderTask {
 
@@ -20,7 +20,7 @@ public class CollapseViewTask extends AbstractHiderTask {
         IntactNetwork intactNetwork = manager.getIntactNetwork(manager.getCurrentNetwork());
         CyNetworkView view = manager.getCurrentNetworkView();
         if (manager.getNetworkViewType(view) != IntactViewType.COLLAPSED) {
-            manager.applyStyle(CollapsedIntactWebserviceStyle.TITLE, view);
+            manager.applyStyle(CollapsedIntactStyle.TITLE, view);
             insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(view, null, intactNetwork.getExpandedEdges()));
             insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(view, null, intactNetwork.getCollapsedEdges()));
 
