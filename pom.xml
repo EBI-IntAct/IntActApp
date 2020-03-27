@@ -5,12 +5,8 @@
     <properties>
         <bundle.symbolicName>intactApp</bundle.symbolicName>
         <bundle.namespace>uk.ac.ebi.intact.intactApp.internal</bundle.namespace>
-        <cytoscape.api.version>3.7.2</cytoscape.api.version>
-
-        <maven-bundle-plugin.version>3.0.1</maven-bundle-plugin.version>
+        <cytoscape.api.version>3.8.0</cytoscape.api.version>
         <osgi.api.version>4.2.0</osgi.api.version>
-
-
     </properties>
 
     <groupId>uk.ac.ebi.intact</groupId>
@@ -32,7 +28,7 @@
 
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>4.2.1</version>
                 <extensions>true</extensions>
                 <configuration>
                     <unpackBundle>false</unpackBundle>
@@ -44,8 +40,8 @@
                         </Export-Package>
                         <Private-Package>${bundle.namespace}.*,org.jcolorbrewer.*</Private-Package>
                         <Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
-                        <Import-Package>*</Import-Package>
-                        <Embed-Dependency>*;scope=!provided|test;groupId=!org.cytoscape</Embed-Dependency>
+                        <Import-Package>*;resolution:=optional</Import-Package>
+                        <Embed-Dependency>*;scope=!provided|!test</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Cytoscape-App-Dependencies>
                             enhancedGraphics;1.2.0
@@ -58,8 +54,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
         </plugins>
