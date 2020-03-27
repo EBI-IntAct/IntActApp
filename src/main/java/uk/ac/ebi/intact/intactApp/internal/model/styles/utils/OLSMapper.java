@@ -5,13 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
+import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 
 import java.awt.*;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.*;
 
 /**
@@ -88,29 +85,29 @@ public class OLSMapper {
                 try {
                     boolean hasNext = true;
                     while (hasNext) {
-                        String jsonText = getJsonForUrl(jsonQuery);// mainQry
-                        if (jsonText.length() > 0) {
-                            JsonNode json = new ObjectMapper().readTree(jsonText);
+                        JsonNode json = HttpUtils.getJsonForUrl(jsonQuery);
+                        if (json != null) {
                             if (json.get("page").get("totalElements").intValue() > 0) {
+
                                 JsonNode termChildren = json.get("_embedded").get("terms");
 
                                 for (final JsonNode objNode : termChildren) {
                                     String obo_id = objNode.get("obo_id").textValue();
                                     Long id = Long.parseLong(obo_id.substring(obo_id.indexOf(":") + 1));
                                     taxIdToPaint.put(id, paint);
-
                                 }
                             }
-
                             JsonNode nextPage = json.get("_links").get("next");
                             if (nextPage != null) {
                                 jsonQuery = nextPage.get("href").textValue();
                             } else {
                                 hasNext = false;
                             }
-
+                        } else {
+                            hasNext = false;
                         }
                     }
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -152,10 +149,8 @@ public class OLSMapper {
         try {
             boolean hasNext = true;
             while (hasNext) {
-                String jsonText = getJsonForUrl(jsonQuery);// mainQry
-                if (jsonText.length() > 0) {
-                    JsonNode json = new ObjectMapper().readTree(jsonText);
-                    System.out.println(jsonText);
+                JsonNode json = HttpUtils.getJsonForUrl(jsonQuery);
+                if (json != null) {
                     if (json.get("page").get("totalElements").intValue() > 0) {
 
                         JsonNode termChildren = json.get("_embedded").get("terms");
@@ -165,48 +160,28 @@ public class OLSMapper {
                             mapToFill.put(label, parentValue);
                         }
                     }
-
                     JsonNode nextPage = json.get("_links").get("next");
                     if (nextPage != null) {
                         jsonQuery = nextPage.get("href").textValue();
                     } else {
                         hasNext = false;
                     }
+                } else {
+                    hasNext = false;
                 }
-
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
 
-    public static String getJsonForUrl(String jsonQuery) {
-        String jsonText = "";
-        try {
-            URL url = new URL(jsonQuery);
-            URLConnection olsConnection = url.openConnection();
-            BufferedReader in = new BufferedReader(new InputStreamReader(olsConnection.getInputStream()));
-            String inputLine;
-            StringBuilder builder = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                builder.append(inputLine);
-            }
-            jsonText = builder.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return jsonText;
-    }
-
     public static String searchMIId(String toSearch) {
-        String jsonText = getJsonForUrl(String.format("https://www.ebi.ac.uk/ols/api/search?q=%s&ontology=mi", toSearch.replaceAll(" ", "%20")));
+        String jsonText = HttpUtils.getJsonTextForUrl(String.format("https://www.ebi.ac.uk/ols/api/search?q=%s&ontology=mi", toSearch.replaceAll(" ", "%20")));
         if (jsonText.length() > 0) {
             try {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode jsonNode = mapper.readTree(jsonText);
-                JsonNode response = jsonNode.get("response");
+                JsonNode response = new ObjectMapper().readTree(jsonText).get("response");
                 if (response.get("numFound").asInt() > 0) {
                     return response.get("docs").get(0).get("obo_id").textValue();
                 } else {

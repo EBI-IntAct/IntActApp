@@ -2,10 +2,8 @@ package uk.ac.ebi.intact.intactApp.internal.tasks.factories;
 
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
-import uk.ac.ebi.intact.intactApp.internal.model.Species;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.tasks.LoadInteractions;
-import uk.ac.ebi.intact.intactApp.internal.tasks.LoadSpeciesInteractions;
 import uk.ac.ebi.intact.intactApp.internal.tasks.LoadTermsTask;
 
 import java.util.List;
@@ -37,12 +35,7 @@ public class ImportNetworkTaskFactory extends AbstractTaskFactory {
     }
 
     public TaskIterator createTaskIterator() {
-        if (stringIds == null) {
-            return new TaskIterator(
-                    new LoadSpeciesInteractions(stringNet, species, taxon, confidence,
-                            Species.getSpeciesOfficialName(String.valueOf(taxon)),
-                            useDATABASE));
-        } else if (stringNet.getNetwork() == null) {
+        if (stringNet.getNetwork() == null) {
             return new TaskIterator(new LoadInteractions(stringNet, species, taxon,
                     confidence, additionalNodes, stringIds,
                     queryTermMap, "", useDATABASE));

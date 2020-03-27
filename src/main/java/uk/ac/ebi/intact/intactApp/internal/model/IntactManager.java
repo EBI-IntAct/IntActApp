@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.intactApp.internal.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
@@ -29,7 +30,6 @@ import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskObserver;
-import org.json.simple.JSONObject;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.IntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.CollapsedIntactStyle;
@@ -37,7 +37,8 @@ import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.ExpandedIntac
 import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.MutationIntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.from.webservice.CollapsedIntactWebserviceStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.from.webservice.ExpandedIntactWebserviceStyle;
-import uk.ac.ebi.intact.intactApp.internal.tasks.factories.*;
+import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowEnhancedLabelsTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowResultsPanelTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.ui.IntactCytoPanel;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
@@ -260,44 +261,44 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
         // Run this in the background in case we have a timeout
         Executors.newCachedThreadPool().execute(() -> {
-            JSONObject uris = null;
+            JsonNode uris;
             // use alternative config URI if available and otherwise retrieve the default one
             // based on the app version
             if (alternativeCONFIGURI != null && alternativeCONFIGURI.length() > 0) {
                 uris = ModelUtils.getResultsFromJSON(
-                        HttpUtils.getJSON(alternativeCONFIGURI, args, manager),
-                        JSONObject.class);
+                        HttpUtils.getJSON(alternativeCONFIGURI, args, manager)
+                );
             } else {
-                uris = ModelUtils.getResultsFromJSON(HttpUtils.getJSON(url, args, manager),
-                        JSONObject.class);
+                uris = ModelUtils.getResultsFromJSON(HttpUtils.getJSON(url, args, manager)
+                );
             }
             if (uris != null) {
-                if (uris.containsKey("URI")) {
-                    URI = uris.get("URI").toString();
+                if (uris.has("URI")) {
+                    URI = uris.get("URI").textValue();
                 }
-                if (uris.containsKey("STRINGResolveURI")) {
-                    STRINGResolveURI = uris.get("STRINGResolveURI").toString();
+                if (uris.has("STRINGResolveURI")) {
+                    STRINGResolveURI = uris.get("STRINGResolveURI").textValue();
                 }
-                if (uris.containsKey("STITCHResolveURI")) {
-                    STITCHResolveURI = uris.get("STITCHResolveURI").toString();
+                if (uris.has("STITCHResolveURI")) {
+                    STITCHResolveURI = uris.get("STITCHResolveURI").textValue();
                 }
-                if (uris.containsKey("VIRUSESResolveURI")) {
-                    VIRUSESResolveURI = uris.get("VIRUSESResolveURI").toString();
+                if (uris.has("VIRUSESResolveURI")) {
+                    VIRUSESResolveURI = uris.get("VIRUSESResolveURI").textValue();
                 }
-                if (uris.containsKey("DataVersion")) {
-                    DATAVERSION = uris.get("DataVersion").toString();
+                if (uris.has("DataVersion")) {
+                    DATAVERSION = uris.get("DataVersion").textValue();
                 }
-                if (uris.containsKey("messageUserError")) {
-                    error(uris.get("messageUserError").toString());
+                if (uris.has("messageUserError")) {
+                    error(uris.get("messageUserError").textValue());
                 }
-                if (uris.containsKey("messageUserCriticalError")) {
-                    critical(uris.get("messageUserCriticalError").toString());
+                if (uris.has("messageUserCriticalError")) {
+                    critical(uris.get("messageUserCriticalError").textValue());
                 }
-                if (uris.containsKey("messageUserWarning")) {
-                    warn(uris.get("messageUserWarning").toString());
+                if (uris.has("messageUserWarning")) {
+                    warn(uris.get("messageUserWarning").textValue());
                 }
-                if (uris.containsKey("messageUserInfo")) {
-                    info(uris.get("messageUserInfo").toString());
+                if (uris.has("messageUserInfo")) {
+                    info(uris.get("messageUserInfo").textValue());
                 }
             }
             haveURIs = true;
@@ -339,15 +340,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         }
         network.getRow(network).set(CyNetwork.NAME, name);
 
-        return network;
-    }
-
-    public CyNetwork createStringNetwork(String name, IntactNetwork stringNet,
-                                         String useDATABASE, String species) {
-        CyNetwork network = createNetwork(name);
-        ModelUtils.setDatabase(network, useDATABASE);
-        ModelUtils.setNetSpecies(network, species);
-        addIntactNetwork(stringNet, network);
         return network;
     }
 

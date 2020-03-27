@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.intactApp.internal.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -11,7 +12,6 @@ import org.cytoscape.model.events.AddedEdgesListener;
 import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.view.model.CyNetworkView;
-import org.json.simple.JSONObject;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TableUtil;
@@ -25,9 +25,9 @@ import static uk.ac.ebi.intact.intactApp.internal.utils.TableUtil.getColumnValue
 public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesListener {
     final IntactManager manager;
     CyNetwork network;
-    Map<String, List<String>> resolvedIdMap = null;
-    Map<String, List<Annotation>> annotations = null;
-    Map<String, String> settings = null;
+    Map<String, List<String>> resolvedIdMap;
+    Map<String, List<Annotation>> annotations;
+    Map<String, String> settings;
     CyTable edgeTable;
     CyTable nodeTable;
 
@@ -242,26 +242,17 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
 
     private Map<String, List<Annotation>> getAnnotationBatch(int taxon, final String encTerms,
                                                              String useDATABASE, boolean includeViruses) {
-        // always call the string API first to resolve all potential protein IDs
-        // new API
         String url = manager.getResolveURL(Databases.STRING.getAPIName()) + "json/get_string_ids";
-        // String url = manager.getResolveURL(Databases.STRING.getAPIName())+"json/resolveList";
         Map<String, String> args = new HashMap<>();
         args.put("species", Integer.toString(taxon));
         args.put("identifiers", encTerms);
-        // args.put("limit", "");
         args.put("caller_identity", IntactManager.CallerIdentity);
         manager.info("URL: " + url + "?species=" + taxon + "&caller_identity=" + IntactManager.CallerIdentity + "&identifiers=" + encTerms);
-        // Get the results
-        // System.out.println("Getting STRING term resolution");
-        JSONObject results = HttpUtils.postJSON(url, args, manager);
-        // System.out.println("Results: "+results);
+        JsonNode results = HttpUtils.postJSON(url, args, manager);
 
 
         if (results != null) {
-            // System.out.println("Got results");
             annotations = Annotation.getAnnotations(results, encTerms, annotations);
-            // System.out.println("Get annotations returns "+annotations.size());
         }
         results = null;
 
@@ -390,7 +381,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
         return ids;
     }
 
-    private void updateAnnotations(JSONObject results, String terms) {
+    private void updateAnnotations(JsonNode results, String terms) {
         Map<String, List<Annotation>> newAnnotations = Annotation.getAnnotations(results,
                 terms);
         for (String newAnn : newAnnotations.keySet()) {

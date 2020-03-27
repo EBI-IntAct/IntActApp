@@ -1,7 +1,6 @@
 package uk.ac.ebi.intact.intactApp.internal.model;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
 import java.util.*;
@@ -21,15 +20,15 @@ public class Annotation {
         this.annotation = annotation;
     }
 
-    public static Map<String, List<Annotation>> getAnnotations(JSONObject json, String queryTerms) {
+    public static Map<String, List<Annotation>> getAnnotations(JsonNode json, String queryTerms) {
         Map<String, List<Annotation>> map = new HashMap<>();
         return getAnnotations(json, queryTerms, map);
     }
 
-    public static Map<String, List<Annotation>> getAnnotations(JSONObject json, String queryTerms,
+    public static Map<String, List<Annotation>> getAnnotations(JsonNode json, String queryTerms,
                                                                Map<String, List<Annotation>> map) {
         String[] terms = queryTerms.trim().split("\n");
-        JSONArray annotationArray = ModelUtils.getResultsFromJSON(json, JSONArray.class);
+        JsonNode annotationArray = ModelUtils.getResultsFromJSON(json);
         Integer version = ModelUtils.getVersionFromJSON(json);
 
         // If we switch the API back to use a start of 0, this will need to change
@@ -37,36 +36,24 @@ public class Annotation {
         if (version != null && version == 1)
             queryIndexStart = -1;
 
-        for (Object annObject : annotationArray) {
-            JSONObject ann = (JSONObject) annObject;
+        for (JsonNode ann : annotationArray) {
             String annotation = null;
             String stringId = null;
             String preferredName = null;
             int taxId = -1;
             int queryIndex = -1;
 
-            if (ann.containsKey("preferredName"))
-                preferredName = (String) ann.get("preferredName");
-            if (ann.containsKey("annotation"))
-                annotation = (String) ann.get("annotation");
-            if (ann.containsKey("stringId"))
-                stringId = (String) ann.get("stringId");
-            if (ann.containsKey("ncbiTaxonId"))
-                taxId = ((Long) ann.get("ncbiTaxonId")).intValue();
-            if (ann.containsKey("queryIndex")) {
-                Object index = ann.get("queryIndex");
-                if (index instanceof Long) {
-                    queryIndex = ((Long) index).intValue();
-                } else {
-                    queryIndex = Integer.parseInt((String) index);
-                }
-
-                queryIndex = queryIndex - queryIndexStart;
+            if (ann.has("preferredName"))
+                preferredName =  ann.get("preferredName").textValue();
+            if (ann.has("annotation"))
+                annotation =  ann.get("annotation").textValue();
+            if (ann.has("stringId"))
+                stringId =  ann.get("stringId").textValue();
+            if (ann.has("ncbiTaxonId"))
+                taxId = ann.get("ncbiTaxonId").intValue();
+            if (ann.has("queryIndex")) {
+                queryIndex = ann.get("queryIndex").intValue() - queryIndexStart;
             }
-
-            // Temporary HACK
-            // if (stringId.startsWith("-1.CID1"))
-            // 	stringId = stringId.replaceFirst("-1.CID1","CIDm");
 
             Annotation newAnnotation = new Annotation(preferredName, stringId, taxId, terms[queryIndex], annotation);
             if (!map.containsKey(terms[queryIndex])) {

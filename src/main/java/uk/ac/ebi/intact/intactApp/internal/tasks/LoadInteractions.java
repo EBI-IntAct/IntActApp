@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.intactApp.internal.tasks;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
@@ -10,7 +11,6 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TunableSetter;
-import org.json.simple.JSONObject;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 import uk.ac.ebi.intact.intactApp.internal.model.Databases;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
@@ -82,7 +82,7 @@ public class LoadInteractions extends AbstractTask {
                 args.put("filter", taxonId + ".%%|CIDm%%");
             }
         }
-        JSONObject results = HttpUtils.postJSON(manager.getNetworkURL(), args, manager);
+        JsonNode results = HttpUtils.postJSON(manager.getNetworkURL(), args, manager);
 
         // This may change...
         CyNetwork network = ModelUtils.createIntactNetworkFromJSON(intactNet, species, results,
