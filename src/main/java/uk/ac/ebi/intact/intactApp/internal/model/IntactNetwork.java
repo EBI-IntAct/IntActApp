@@ -14,6 +14,7 @@ import uk.ac.ebi.intact.intactApp.internal.model.styles.IntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.OLSMapper;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TableUtil;
+import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
 
 import java.awt.*;
 import java.util.List;
@@ -129,7 +130,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
             updateCollapsedEdges(coupleToEdges.keySet());
         }
 
-        completeMissingNodeColors(); // Todo Make it work even when loading from already created network
+        completeMissingNodeColors();
 
 //        manager.registrar.registerService(this, AddedEdgesListener.class, new Properties());
 //        manager.registrar.registerService(this, AboutToRemoveEdgesListener.class, new Properties());
@@ -145,10 +146,13 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     }
 
     public void completeMissingNodeColors() {
-        System.out.println("Completing missing colors");
         new Thread(() -> {
             CyColumn taxIdColumn = network.getDefaultNodeTable().getColumn(ModelUtils.TAX_ID);
+            while (OLSMapper.speciesNotReady())
+                TimeUtils.sleep(500);
+
             Map<Long, Paint> addedTaxIds = OLSMapper.completeTaxIdColorsFromUnknownTaxIds(new HashSet<>(taxIdColumn.getValues(Long.class)));
+
             for (IntactStyle style : manager.getIntactStyles().values()) {
                 style.updateTaxIdToNodePaintMapping(addedTaxIds);
             }

@@ -126,8 +126,6 @@ public class OLSMapper {
                 }
             }
 
-
-            taxIdToPaint.putAll(kingdomColors);
             taxIdsReady = true;
         }
     }
@@ -149,12 +147,13 @@ public class OLSMapper {
             JsonNode taxons = new ObjectMapper().readTree(jObject.toString()).get("TaxaSet").get("Taxon");
             for (JsonNode taxon: taxons) {
                 Long taxId = taxon.get("TaxId").longValue();
+                System.out.println(taxId);
                 JsonNode lineage = taxon.get("LineageEx").get("Taxon");
                 for (JsonNode supTaxon : lineage) {
                     Long supTaxId = supTaxon.get("TaxId").longValue();
-                    if (taxIdToPaint.containsKey(supTaxId)) {
-                        Paint paint = taxIdToPaint.get(supTaxId);
-                        taxIdToPaint.put(taxId, paint);
+                    if (kingdomColors.containsKey(supTaxId)) {
+                        Paint paint = kingdomColors.get(supTaxId);
+                        kingdomColors.put(taxId, paint);
                         addedTaxIds.put(taxId, paint);
                         break;
                     }
