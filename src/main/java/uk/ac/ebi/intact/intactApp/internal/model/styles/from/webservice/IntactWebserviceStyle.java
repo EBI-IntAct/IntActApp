@@ -19,7 +19,7 @@ public abstract class IntactWebserviceStyle extends IntactStyle {
     }
 
     @Override
-    protected void setNodePaintStyle() {
+    public void setNodePaintStyle() {
         PassthroughMapping<String, Paint> colorToNodeColor = (PassthroughMapping<String, Paint>) passthroughFactory.createVisualMappingFunction(ModelUtils.COLOR, String.class, BasicVisualLexicon.NODE_FILL_COLOR);
 
         style.addVisualMappingFunction(colorToNodeColor);

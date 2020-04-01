@@ -99,10 +99,12 @@ public abstract class IntactStyle {
         style.setDefaultValue(BasicVisualLexicon.NODE_SELECTED_PAINT, new Color(204, 0, 51));
     }
 
-    protected void setNodePaintStyle() {
+    public void setNodePaintStyle() {
         taxIdToNodeColor = (DiscreteMapping<Long, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.TAX_ID, Long.class, BasicVisualLexicon.NODE_FILL_COLOR);
+        taxIdToNodeColor.putAll(OLSMapper.taxIdToPaint);
         style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, new Color(157, 177, 128));
-        setNodePaintDiscreteMapping(taxIdToNodeColor);
+        style.addVisualMappingFunction(taxIdToNodeColor);
+        addMissingNodePaint(taxIdToNodeColor);
     }
 
     protected void setNodeBorderPaintStyle() {
@@ -122,12 +124,6 @@ public abstract class IntactStyle {
         style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, Color.WHITE);
     }
 
-    private void setNodePaintDiscreteMapping(DiscreteMapping<Long, Paint> taxIdToPaint) {
-        taxIdToPaint.putAll(OLSMapper.taxIdToPaint);
-        style.addVisualMappingFunction(taxIdToPaint);
-        addMissingNodePaint(taxIdToPaint);
-    }
-
     private void addMissingNodePaint(DiscreteMapping<Long, Paint> taxIdToPaint) {
         new Thread(() -> {
             OLSMapper.initializeTaxIdToPaint();
@@ -138,7 +134,7 @@ public abstract class IntactStyle {
         }).start();
     }
 
-    public synchronized void updateTaxIdToNodePaintMapping(Map<Long, Paint> toPut) {
+    public void updateTaxIdToNodePaintMapping(Map<Long, Paint> toPut) {
         if (taxIdToNodeColor != null) {
             taxIdToNodeColor.putAll(toPut);
         }

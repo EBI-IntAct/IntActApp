@@ -25,6 +25,7 @@ import org.cytoscape.util.color.PaletteProvider;
 import org.cytoscape.util.color.PaletteProviderManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.work.SynchronousTaskManager;
@@ -38,6 +39,7 @@ import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.ExpandedIntac
 import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.MutationIntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.from.webservice.CollapsedIntactWebserviceStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.from.webservice.ExpandedIntactWebserviceStyle;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.OLSMapper;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowEnhancedLabelsTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowResultsPanelTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.ui.IntactCytoPanel;
@@ -223,11 +225,16 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
             setChannelColors(ModelUtils.getStringProperty(configProps, "channelColors"));
         }
 
+        CyNetworkViewManager networkViewManager = getService(CyNetworkViewManager.class);
+
         // If we already have networks loaded, see if they are string networks
         for (CyNetwork network : registrar.getService(CyNetworkManager.class).getNetworkSet()) {
             if (ModelUtils.isIntactNetwork(network)) {
                 IntactNetwork intactNetwork = new IntactNetwork(this);
                 addIntactNetwork(intactNetwork, network);
+                for (CyNetworkView view : networkViewManager.getNetworkViews(network)) {
+                    registerNetworkView(view);
+                }
             }
         }
 
@@ -347,6 +354,23 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         return network;
     }
 
+    public void updateStylesColorScheme(Long parentTaxId, Paint newColor) {
+        Map<Long, Paint> colorScheme = OLSMapper.updateKingdomColor(parentTaxId, newColor);
+        for (IntactStyle style : intactStyles.values()) {
+            style.updateTaxIdToNodePaintMapping(colorScheme);
+        }
+    }
+
+    public void resetStyles() {
+        OLSMapper.resetMappings();
+        for (IntactStyle style : intactStyles.values()) {
+            style.setNodePaintStyle();
+        }
+        for (IntactNetwork network: intactNetworkMap.values()) {
+            network.completeMissingNodeColors();
+        }
+    }
+
     public void addIntactNetwork(IntactNetwork intactNetwork, CyNetwork network) {
         intactNetworkMap.put(network, intactNetwork);
         intactNetwork.setNetwork(network);
@@ -405,7 +429,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     public void setShowEnhancedLabels(boolean set) {
         showEnhancedLabels = set;
     }
-
 
 
     public boolean highlightNeighbors() {
@@ -683,8 +706,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     }
 
 
-
-
     public ShowEnhancedLabelsTaskFactory getShowEnhancedLabelsTaskFactory() {
         return labelsTaskFactory;
     }
@@ -944,7 +965,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
         return null;
     }
-
 
 
 }

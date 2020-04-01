@@ -14,7 +14,6 @@ import uk.ac.ebi.intact.intactApp.internal.model.styles.IntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.OLSMapper;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TableUtil;
-import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
 
 import java.awt.*;
 import java.util.List;
@@ -148,8 +147,6 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     public void completeMissingNodeColors() {
         new Thread(() -> {
             CyColumn taxIdColumn = network.getDefaultNodeTable().getColumn(ModelUtils.TAX_ID);
-            while (OLSMapper.speciesNotReady())
-                TimeUtils.sleep(500);
 
             Map<Long, Paint> addedTaxIds = OLSMapper.completeTaxIdColorsFromUnknownTaxIds(new HashSet<>(taxIdColumn.getValues(Long.class)));
 
