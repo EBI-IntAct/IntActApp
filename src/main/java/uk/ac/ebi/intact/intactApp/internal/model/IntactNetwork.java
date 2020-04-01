@@ -398,7 +398,8 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     private void updateCollapsedEdges(Collection<Couple> couplesToUpdate) {
         for (Couple couple : couplesToUpdate) {
             CyEdge summaryEdge;
-            if (!coupleToEdges.get(couple).isEmpty()) {
+            List<CyEdge> similarEdges = coupleToEdges.get(couple);
+            if (!similarEdges.isEmpty()) {
                 if (!collapsedEdges.containsKey(couple)) {
                     summaryEdge = network.addEdge(couple.node1, couple.node2, false);
                     collapsedEdges.put(couple, summaryEdge);
@@ -406,11 +407,12 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
                     summaryEdge = collapsedEdges.get(couple);
                 }
                 CyRow summaryEdgeRow = network.getRow(summaryEdge);
-                summaryEdgeRow.set(ModelUtils.C_INTACT_IDS, getColumnValuesOfEdges(edgeTable, ModelUtils.INTACT_ID, String.class, coupleToEdges.get(couple), "???"));
-                CyRow firstEdgeRow = network.getRow(coupleToEdges.get(couple).iterator().next());
+                summaryEdgeRow.set(ModelUtils.C_INTACT_IDS, getColumnValuesOfEdges(edgeTable, ModelUtils.INTACT_ID, String.class, similarEdges, "???"));
+                CyRow firstEdgeRow = network.getRow(similarEdges.iterator().next());
                 summaryEdgeRow.set(ModelUtils.C_MI_SCORE, firstEdgeRow.get(ModelUtils.MI_SCORE, Double.class));
                 summaryEdgeRow.set(ModelUtils.C_COLOR, firstEdgeRow.get(ModelUtils.C_COLOR, String.class));
                 summaryEdgeRow.set(ModelUtils.C_IS_COLLAPSED, true);
+                summaryEdgeRow.set(ModelUtils.C_NB_EDGES, similarEdges.size());
             } else {
                 summaryEdge = collapsedEdges.get(couple);
                 network.removeEdges(Collections.singleton(summaryEdge));

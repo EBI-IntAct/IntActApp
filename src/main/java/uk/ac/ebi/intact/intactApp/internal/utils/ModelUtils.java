@@ -57,6 +57,7 @@ public class ModelUtils {
     public static String C_IS_COLLAPSED = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "is collapsed";
     public static String C_INTACT_IDS = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "intact ids";
     public static String C_MI_SCORE = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "mi score";
+    public static String C_NB_EDGES = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "nb collapsed edges";
 
 
     public static String DESCRIPTION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "description";
@@ -921,6 +922,7 @@ public class ModelUtils {
             createColumnIfNeeded(network.getDefaultEdgeTable(), Boolean.class, DISRUPTED_BY_MUTATION);
             createColumnIfNeeded(network.getDefaultEdgeTable(), Boolean.class, C_IS_COLLAPSED);
             createColumnIfNeeded(network.getDefaultEdgeTable(), Double.class, C_MI_SCORE);
+            createColumnIfNeeded(network.getDefaultEdgeTable(), Integer.class, C_NB_EDGES);
             createListColumnIfNeeded(network.getDefaultEdgeTable(), String.class, C_INTACT_IDS);
 
 

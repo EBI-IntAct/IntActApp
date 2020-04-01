@@ -17,7 +17,7 @@ public class CollapsedIntactStyle extends IntactStyle {
         super(manager);
     }
 
-    private static Color[] colors = {
+    public static final Color[] colors = {
             new Color(255, 255, 221),
             new Color(255, 255, 221),
             new Color(255, 248, 171),
@@ -33,6 +33,14 @@ public class CollapsedIntactStyle extends IntactStyle {
     };
 
     @Override
+    protected void setEdgeWidth() {
+        ContinuousMapping<Integer, Double> nbCollapsedEdgesToThickness = (ContinuousMapping<Integer, Double>) continuousFactory.createVisualMappingFunction(ModelUtils.C_NB_EDGES, Integer.class, BasicVisualLexicon.EDGE_WIDTH);
+        nbCollapsedEdgesToThickness.addPoint(1, new BoundaryRangeValues<>(2d,2d,2d));
+        nbCollapsedEdgesToThickness.addPoint(100, new BoundaryRangeValues<>(100d,100d,100d));
+        style.addVisualMappingFunction(nbCollapsedEdgesToThickness);
+    }
+
+    @Override
     protected void setEdgeLineTypeStyle() {
         style.setDefaultValue(BasicVisualLexicon.EDGE_LINE_TYPE, LineTypeVisualProperty.SOLID);
     }
@@ -44,6 +52,7 @@ public class CollapsedIntactStyle extends IntactStyle {
             miScoreToEdgeColor.addPoint(i / 10.0, new BoundaryRangeValues<>(colors[i], colors[i], colors[i + 1]));
             miScoreToEdgeColor.addPoint((i / 10.0) + 0.001, new BoundaryRangeValues<>(colors[i+1], colors[i+1], colors[i + 1]));
         }
+
         style.addVisualMappingFunction(miScoreToEdgeColor);
     }
 

@@ -2,30 +2,34 @@ package uk.ac.ebi.intact.intactApp.internal.ui;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactViewType;
+import uk.ac.ebi.intact.intactApp.internal.ui.range.slider.basic.MIScoreSliderUI;
+import uk.ac.ebi.intact.intactApp.internal.ui.range.slider.basic.RangeSlider;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
-public class IntactEdgePanel extends AbstractIntactPanel {
+public class IntactEdgePanel extends AbstractIntactPanel implements ChangeListener {
     JPanel scorePanel;
     private Map<CyNetwork, Map<String, Boolean>> colors;
+    private static Color bg = new Color(229, 229, 229);
 
     public IntactEdgePanel(final IntactManager manager) {
         super(manager);
         filters.get(currentNetwork).put("mi score", new HashMap<>());
-        setBackground(new Color(255,255,255,0));
+        setBackground(new Color(255, 255, 255, 0));
         colors = new HashMap<>();
         colors.put(currentNetwork, new HashMap<>());
 
@@ -38,13 +42,22 @@ public class IntactEdgePanel extends AbstractIntactPanel {
         setLayout(new GridBagLayout());
         {
             EasyGBC c = new EasyGBC();
-            add(new JSeparator(SwingConstants.HORIZONTAL), c.anchor("west").expandHoriz());
-            JComponent scoreSlider = createFilterSlider("mi score", "MI-Score", currentNetwork, true, 100.0);
             {
-                scorePanel = new JPanel();
-                scorePanel.setLayout(new GridBagLayout());
+                RangeSlider scoreSlider = new RangeSlider(0, 100);
+                scoreSlider.setUI(new MIScoreSliderUI(scoreSlider));
+                scoreSlider.setForeground(Color.LIGHT_GRAY);
+                scoreSlider.setValue(0);
+                scoreSlider.setUpperValue(100);
+                scoreSlider.addChangeListener(this);
+
+                scorePanel = new JPanel(new GridBagLayout());
+                scorePanel.setBackground(bg);
                 EasyGBC d = new EasyGBC();
-                scorePanel.add(scoreSlider, d.anchor("west").expandHoriz());
+                JLabel label = new JLabel("MI Score");
+
+                scoreSlider.setBackground(bg);
+                scorePanel.add(label, d.anchor("west").noExpand());
+                scorePanel.add(scoreSlider, d.right().anchor("west").expandHoriz());
             }
             add(scorePanel, c.down().anchor("west").expandHoriz());
         }
@@ -70,9 +83,7 @@ public class IntactEdgePanel extends AbstractIntactPanel {
             CyRow edgeRow = currentNetwork.getRow(edge);
             boolean show = true;
             for (String lbl : filter.keySet()) {
-//                    System.out.println(namespace + "::" + type);
                 Double v = edgeRow.get(namespace, type, Double.class);
-//                    System.out.println(v);
                 double nv = filter.get(lbl);
                 if ((v == null && nv > 0) || v < nv) {
                     show = false;
@@ -88,41 +99,10 @@ public class IntactEdgePanel extends AbstractIntactPanel {
         }
     }
 
-    void doColors() {
-        Map<String, Boolean> color = colors.get(currentNetwork);
-        Map<String, Color> colorMap = manager.getChannelColors();
-        CyNetworkView view = manager.getCurrentNetworkView();
-        for (CyEdge edge : currentNetwork.getEdgeList()) {
-            CyRow edgeRow = currentNetwork.getRow(edge);
-            double max = -1;
-            Color clr = null;
-            for (String lbl : color.keySet()) {
-                if (!color.get(lbl))
-                    continue;
-                Double v = edgeRow.get(ModelUtils.INTACTDB_NAMESPACE, lbl, Double.class);
-                if (v != null && v > max) {
-                    max = v;
-                    clr = colorMap.get(lbl);
-                }
-            }
-            if (clr == null)
-                view.getEdgeView(edge).clearValueLock(BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
-            else
-                view.getEdgeView(edge).setLockedValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, clr);
-        }
-    }
 
     private void updateScore() {
         scorePanel.removeAll();
-        JComponent scoreSlider = createFilterSlider("mi score", "MI-Score", currentNetwork, true, 100.0);
-
-
-        if (!filters.get(currentNetwork).containsKey("mi score")) {
-            filters.get(currentNetwork).put("mi score", new HashMap<>());
-        }
-
-        EasyGBC d = new EasyGBC();
-        scorePanel.add(scoreSlider, d.anchor("west").expandHoriz());
+        init();
     }
 
 
@@ -139,5 +119,50 @@ public class IntactEdgePanel extends AbstractIntactPanel {
     }
 
     public void selectedEdges(Collection<CyEdge> edges) {
+    }
+
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        RangeSlider slider = (RangeSlider) e.getSource();
+        double lower = slider.getValue() / 100d;
+        double upper = slider.getUpperValue() / 100d;
+        CyNetworkView view = manager.getCurrentNetworkView();
+        Set<CyEdge> hiddenEdges = new HashSet<>();
+
+        String namespace;
+        List<CyEdge> toFilter;
+        if (manager.getNetworkViewType(view) == IntactViewType.COLLAPSED) {
+            namespace = ModelUtils.COLLAPSED_NAMESPACE;
+            toFilter = manager.getIntactNetwork(currentNetwork).getCollapsedEdges();
+            hiddenEdges.addAll(manager.getIntactNetwork(currentNetwork).getExpandedEdges());
+        } else {
+            namespace = ModelUtils.INTACTDB_NAMESPACE;
+            toFilter = manager.getIntactNetwork(currentNetwork).getExpandedEdges();
+            hiddenEdges.addAll(manager.getIntactNetwork(currentNetwork).getCollapsedEdges());
+        }
+
+        for (CyEdge edge : toFilter) {
+            View<CyEdge> edgeView = view.getEdgeView(edge);
+            CyRow edgeRow = currentNetwork.getRow(edge);
+
+            double score = edgeRow.get(namespace, "mi score", Double.class);
+
+            if (score > lower && score < upper) {
+                hiddenEdges.remove(edge);
+                for (CyNode node : new CyNode[]{edge.getSource(), edge.getTarget()}) {
+                    view.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
+                }
+                edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true);
+            } else {
+                hiddenEdges.add(edge);
+                edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
+                for (CyNode node : new CyNode[]{edge.getSource(), edge.getTarget()}) {
+                    if (hiddenEdges.containsAll(currentNetwork.getAdjacentEdgeList(node, CyEdge.Type.ANY))) {
+                        view.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
+                    }
+                }
+            }
+        }
     }
 }
