@@ -42,8 +42,6 @@ public class IntactCytoPanel extends JPanel
             expandedViewType = new JRadioButton("Expanded"),
             mutationViewType = new JRadioButton("Mutation");
 
-    private JButton resetStylesButton = new JButton("Reset styles");
-
     private CollapseViewTaskFactory collapseViewTaskFactory;
     private ExpandViewTaskFactory expandViewTaskFactory;
     private MutationViewTaskFactory mutationViewTaskFactory;
@@ -51,6 +49,7 @@ public class IntactCytoPanel extends JPanel
     private JTabbedPane tabs;
     private IntactNodePanel nodePanel;
     private IntactEdgePanel edgePanel;
+    private IntactStylePanel stylePanel;
     private boolean registered = false;
 
     public IntactCytoPanel(final IntactManager manager) {
@@ -76,8 +75,7 @@ public class IntactCytoPanel extends JPanel
         viewTypesPanel.add(mutationViewType);
         upperPanel.add(viewTypesPanel);
 
-        resetStylesButton.addActionListener(e -> manager.setupStyles());
-        buttonsPanel.add(resetStylesButton);
+
 
         upperPanel.add(buttonsPanel);
         this.add(upperPanel, BorderLayout.NORTH);
@@ -88,6 +86,8 @@ public class IntactCytoPanel extends JPanel
         tabs.add("Nodes", nodePanel);
         edgePanel = new IntactEdgePanel(manager);
         tabs.add("Edges", edgePanel);
+        stylePanel = new IntactStylePanel(manager);
+        tabs.add("Styles", stylePanel);
         this.add(tabs, BorderLayout.CENTER);
         manager.setCytoPanel(this);
         manager.registerService(this, SetCurrentNetworkListener.class, new Properties());
