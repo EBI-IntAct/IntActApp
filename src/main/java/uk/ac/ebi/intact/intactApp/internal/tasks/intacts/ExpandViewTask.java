@@ -6,7 +6,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.intactApp.internal.model.IntactViewType;
+import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.ExpandedIntactStyle;
 
 public class ExpandViewTask extends AbstractHiderTask {
@@ -18,14 +18,15 @@ public class ExpandViewTask extends AbstractHiderTask {
     @Override
     public void run(TaskMonitor taskMonitor) {
         IntactNetwork intactNetwork = manager.getIntactNetwork(manager.getCurrentNetwork());
-        CyNetworkView view = manager.getCurrentNetworkView();
+        IntactNetworkView iView = manager.getCurrentIntactNetworkView();
 
-        if (manager.getNetworkViewType(view) != IntactViewType.EXPANDED) {
+        if (iView.getType() != IntactNetworkView.Type.EXPANDED) {
+            CyNetworkView view = iView.getView();
             manager.applyStyle(ExpandedIntactStyle.TITLE, view);
             insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(view, null, intactNetwork.getCollapsedEdges()));
             insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(view, null, intactNetwork.getExpandedEdges()));
 
-            manager.setNetworkViewType(view, IntactViewType.EXPANDED);
+            iView.setType(IntactNetworkView.Type.EXPANDED);
         }
     }
 }

@@ -4,7 +4,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
-import uk.ac.ebi.intact.intactApp.internal.ui.range.slider.basic.RangeSlider;
+import uk.ac.ebi.intact.intactApp.internal.ui.range.slider.RangeSlider;
 
 import javax.swing.*;
 import java.awt.*;

@@ -29,7 +29,7 @@ public class IntactCytoPanel extends JPanel
         implements CytoPanelComponent2,
         SetCurrentNetworkListener,
         SetCurrentNetworkViewListener,
-        SelectedNodesAndEdgesListener {
+        SelectedNodesAndEdgesListener{
 
     private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/Gradient_over_Transparent/favicon_32x32.ico");
     final IntactManager manager;
@@ -49,7 +49,7 @@ public class IntactCytoPanel extends JPanel
     private JTabbedPane tabs;
     private IntactNodePanel nodePanel;
     private IntactEdgePanel edgePanel;
-    private IntactStylePanel stylePanel;
+    private IntactLegendPanel legendPanel;
     private boolean registered = false;
 
     public IntactCytoPanel(final IntactManager manager) {
@@ -75,8 +75,6 @@ public class IntactCytoPanel extends JPanel
         viewTypesPanel.add(mutationViewType);
         upperPanel.add(viewTypesPanel);
 
-
-
         upperPanel.add(buttonsPanel);
         this.add(upperPanel, BorderLayout.NORTH);
 
@@ -86,8 +84,9 @@ public class IntactCytoPanel extends JPanel
         tabs.add("Nodes", nodePanel);
         edgePanel = new IntactEdgePanel(manager);
         tabs.add("Edges", edgePanel);
-        stylePanel = new IntactStylePanel(manager);
-        tabs.add("Styles", stylePanel);
+        legendPanel = new IntactLegendPanel(manager);
+        tabs.add("Legend", legendPanel);
+        tabs.getComponent(0).setBackground(Color.WHITE);
         this.add(tabs, BorderLayout.CENTER);
         manager.setCytoPanel(this);
         manager.registerService(this, SetCurrentNetworkListener.class, new Properties());
@@ -171,7 +170,7 @@ public class IntactCytoPanel extends JPanel
     }
 
     private void updateRadioButtons(CyNetworkView view) {
-        switch (manager.getNetworkViewType(view)) {
+        switch (manager.getIntactNetworkView(view).getType()) {
             case COLLAPSED:
                 collapsedViewType.setSelected(true);
                 break;
@@ -184,15 +183,14 @@ public class IntactCytoPanel extends JPanel
         }
     }
 
-    /**
-     * Processes the specified event when fired.
-     *
-     * @param e The event that the listener is listening for.
-     */
+
     @Override
     public void handleEvent(SetCurrentNetworkViewEvent e) {
         CyNetworkView view = e.getNetworkView();
-        if (view != null)
+        if (view != null) {
             updateRadioButtons(view);
+            edgePanel.networkViewChanged(view);
+        }
     }
+
 }

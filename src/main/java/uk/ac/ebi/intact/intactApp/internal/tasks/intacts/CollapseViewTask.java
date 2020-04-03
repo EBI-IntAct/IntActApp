@@ -6,7 +6,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.intactApp.internal.model.IntactViewType;
+import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.CollapsedIntactStyle;
 
 public class CollapseViewTask extends AbstractHiderTask {
@@ -17,14 +17,15 @@ public class CollapseViewTask extends AbstractHiderTask {
 
     @Override
     public void run(TaskMonitor taskMonitor) {
-        IntactNetwork intactNetwork = manager.getIntactNetwork(manager.getCurrentNetwork());
-        CyNetworkView view = manager.getCurrentNetworkView();
-        if (manager.getNetworkViewType(view) != IntactViewType.COLLAPSED) {
+        IntactNetwork iNetwork = manager.getIntactNetwork(manager.getCurrentNetwork());
+        IntactNetworkView iView = manager.getCurrentIntactNetworkView();
+        if (iView.getType() != IntactNetworkView.Type.COLLAPSED) {
+            CyNetworkView view = iView.getView();
             manager.applyStyle(CollapsedIntactStyle.TITLE, view);
-            insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(view, null, intactNetwork.getExpandedEdges()));
-            insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(view, null, intactNetwork.getCollapsedEdges()));
+            insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(view, null, iNetwork.getExpandedEdges()));
+            insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(view, null, iNetwork.getCollapsedEdges()));
 
-            manager.setNetworkViewType(view, IntactViewType.COLLAPSED);
+            iView.setType(IntactNetworkView.Type.COLLAPSED);
         }
     }
 }

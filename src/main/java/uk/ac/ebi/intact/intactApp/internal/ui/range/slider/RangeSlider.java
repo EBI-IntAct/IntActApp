@@ -1,6 +1,8 @@
-package uk.ac.ebi.intact.intactApp.internal.ui.range.slider.basic;
+package uk.ac.ebi.intact.intactApp.internal.ui.range.slider;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An extension of JSlider to select a range of values using two thumb controls.
@@ -12,6 +14,10 @@ import javax.swing.*;
  * returned by RangeSlider is simply the lower value plus the extent.</p>
  */
 public class RangeSlider extends JSlider {
+
+    protected RangeChangeEvent rangeChangeEvent = new RangeChangeEvent(this);
+    protected boolean fireRangeChanged = true;
+    private List<RangeChangeListener> rangeChangeListeners = new ArrayList<>();
 
     /**
      * Constructs a RangeSlider with default minimum and maximum values of 0
@@ -71,7 +77,7 @@ public class RangeSlider extends JSlider {
 
         // Compute new value and extent to maintain upper value.
         int oldExtent = getExtent();
-        int newValue = Math.min(Math.max(getMinimum(), value), oldValue + oldExtent);
+        int newValue = Math.max(getMinimum(), value);
         int newExtent = oldExtent + oldValue - newValue;
 
         // Set new value and extent, and fire a single change event.
@@ -96,5 +102,32 @@ public class RangeSlider extends JSlider {
         
         // Set extent to set upper value.
         setExtent(newExtent);
+    }
+
+    public void addRangeChangeListener(RangeChangeListener listener) {
+        rangeChangeListeners.add(listener);
+    }
+
+    public void removeRangeChangeListener(RangeChangeListener listener) {
+        rangeChangeListeners.remove(listener);
+    }
+
+    public void silentRangeChangeEvents() {
+        fireRangeChanged = false;
+    }
+
+    public void enableRangeChangeEvents () {
+        fireRangeChanged = true;
+    }
+
+
+    @Override
+    protected void fireStateChanged() {
+        if (fireRangeChanged) {
+            super.fireStateChanged();
+            for (RangeChangeListener listener: rangeChangeListeners) {
+                listener.rangeChanged(rangeChangeEvent);
+            }
+        }
     }
 }

@@ -8,27 +8,29 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
-import uk.ac.ebi.intact.intactApp.internal.model.IntactViewType;
-import uk.ac.ebi.intact.intactApp.internal.ui.range.slider.basic.MIScoreSliderUI;
-import uk.ac.ebi.intact.intactApp.internal.ui.range.slider.basic.RangeSlider;
+import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
+import uk.ac.ebi.intact.intactApp.internal.ui.range.slider.MIScoreSliderUI;
+import uk.ac.ebi.intact.intactApp.internal.ui.range.slider.RangeChangeEvent;
+import uk.ac.ebi.intact.intactApp.internal.ui.range.slider.RangeChangeListener;
+import uk.ac.ebi.intact.intactApp.internal.ui.range.slider.RangeSlider;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
 
 
-public class IntactEdgePanel extends AbstractIntactPanel implements ChangeListener {
+public class IntactEdgePanel extends AbstractIntactPanel implements RangeChangeListener {
     JPanel scorePanel;
     private Map<CyNetwork, Map<String, Boolean>> colors;
     private static Color bg = new Color(229, 229, 229);
+    private IntactNetworkView currentIView;
+    private RangeSlider scoreSlider;
 
     public IntactEdgePanel(final IntactManager manager) {
         super(manager);
-        filters.get(currentNetwork).put("mi score", new HashMap<>());
+
         setBackground(new Color(255, 255, 255, 0));
         colors = new HashMap<>();
         colors.put(currentNetwork, new HashMap<>());
@@ -43,12 +45,12 @@ public class IntactEdgePanel extends AbstractIntactPanel implements ChangeListen
         {
             EasyGBC c = new EasyGBC();
             {
-                RangeSlider scoreSlider = new RangeSlider(0, 100);
+                scoreSlider = new RangeSlider(0, 100);
                 scoreSlider.setUI(new MIScoreSliderUI(scoreSlider));
                 scoreSlider.setForeground(Color.LIGHT_GRAY);
                 scoreSlider.setValue(0);
                 scoreSlider.setUpperValue(100);
-                scoreSlider.addChangeListener(this);
+                scoreSlider.addRangeChangeListener(this);
 
                 scorePanel = new JPanel(new GridBagLayout());
                 scorePanel.setBackground(bg);
@@ -65,38 +67,6 @@ public class IntactEdgePanel extends AbstractIntactPanel implements ChangeListen
 
 
     void doFilter(String type) {
-        Map<String, Double> filter = filters.get(currentNetwork).get(type);
-        CyNetworkView view = manager.getCurrentNetworkView();
-
-        String namespace;
-        List<CyEdge> toFilter;
-        if (manager.getNetworkViewType(view) == IntactViewType.COLLAPSED) {
-            namespace = ModelUtils.COLLAPSED_NAMESPACE;
-            toFilter = manager.getIntactNetwork(currentNetwork).getCollapsedEdges();
-        } else {
-            namespace = ModelUtils.INTACTDB_NAMESPACE;
-            toFilter = manager.getIntactNetwork(currentNetwork).getExpandedEdges();
-        }
-
-        for (CyEdge edge : toFilter) {
-            View<CyEdge> edgeView = view.getEdgeView(edge);
-            CyRow edgeRow = currentNetwork.getRow(edge);
-            boolean show = true;
-            for (String lbl : filter.keySet()) {
-                Double v = edgeRow.get(namespace, type, Double.class);
-                double nv = filter.get(lbl);
-                if ((v == null && nv > 0) || v < nv) {
-                    show = false;
-                    break;
-                }
-            }
-            if (show) {
-                edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true);
-            } else {
-                edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
-            }
-
-        }
     }
 
 
@@ -108,31 +78,36 @@ public class IntactEdgePanel extends AbstractIntactPanel implements ChangeListen
 
     public void networkChanged(CyNetwork newNetwork) {
         this.currentNetwork = newNetwork;
-        if (!filters.containsKey(currentNetwork)) {
-            filters.put(currentNetwork, new HashMap<>());
-            filters.get(currentNetwork).put("score", new HashMap<>());
-        }
-        if (!colors.containsKey(currentNetwork)) {
-            colors.put(currentNetwork, new HashMap<>());
-        }
-        updateScore();
     }
 
     public void selectedEdges(Collection<CyEdge> edges) {
     }
 
+    public void networkViewChanged(CyNetworkView view) {
+        if (currentIView != null) {
+            scoreSlider.removeRangeChangeListener(currentIView);
+        }
+        scoreSlider.silentRangeChangeEvents();
+        currentIView = manager.getIntactNetworkView(view);
+        scoreSlider.addRangeChangeListener(currentIView);
+
+        IntactNetworkView.Range miScoreRange = currentIView.getMiScoreRange();
+        scoreSlider.setValue(miScoreRange.lowerValue);
+        scoreSlider.setUpperValue(miScoreRange.upperValue);
+        scoreSlider.enableRangeChangeEvents();
+    }
+
 
     @Override
-    public void stateChanged(ChangeEvent e) {
-        RangeSlider slider = (RangeSlider) e.getSource();
+    public void rangeChanged(RangeChangeEvent event) {
+        RangeSlider slider = event.getRangeSlider();
         double lower = slider.getValue() / 100d;
         double upper = slider.getUpperValue() / 100d;
-        CyNetworkView view = manager.getCurrentNetworkView();
         Set<CyEdge> hiddenEdges = new HashSet<>();
 
         String namespace;
         List<CyEdge> toFilter;
-        if (manager.getNetworkViewType(view) == IntactViewType.COLLAPSED) {
+        if (currentIView.getType() == IntactNetworkView.Type.COLLAPSED) {
             namespace = ModelUtils.COLLAPSED_NAMESPACE;
             toFilter = manager.getIntactNetwork(currentNetwork).getCollapsedEdges();
             hiddenEdges.addAll(manager.getIntactNetwork(currentNetwork).getExpandedEdges());
@@ -143,7 +118,7 @@ public class IntactEdgePanel extends AbstractIntactPanel implements ChangeListen
         }
 
         for (CyEdge edge : toFilter) {
-            View<CyEdge> edgeView = view.getEdgeView(edge);
+            View<CyEdge> edgeView = currentIView.getView().getEdgeView(edge);
             CyRow edgeRow = currentNetwork.getRow(edge);
 
             double score = edgeRow.get(namespace, "mi score", Double.class);
@@ -151,7 +126,7 @@ public class IntactEdgePanel extends AbstractIntactPanel implements ChangeListen
             if (score > lower && score < upper) {
                 hiddenEdges.remove(edge);
                 for (CyNode node : new CyNode[]{edge.getSource(), edge.getTarget()}) {
-                    view.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
+                    currentIView.getView().getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
                 }
                 edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true);
             } else {
@@ -159,7 +134,7 @@ public class IntactEdgePanel extends AbstractIntactPanel implements ChangeListen
                 edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
                 for (CyNode node : new CyNode[]{edge.getSource(), edge.getTarget()}) {
                     if (hiddenEdges.containsAll(currentNetwork.getAdjacentEdgeList(node, CyEdge.Type.ANY))) {
-                        view.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
+                        currentIView.getView().getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
                     }
                 }
             }

@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.intactApp.internal.ui.range.slider.basic;
+package uk.ac.ebi.intact.intactApp.internal.ui.range.slider;
 
 import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.CollapsedIntactStyle;
 

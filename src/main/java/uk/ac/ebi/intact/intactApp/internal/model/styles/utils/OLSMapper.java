@@ -17,36 +17,36 @@ import java.util.List;
 import java.util.*;
 
 import static uk.ac.ebi.intact.intactApp.internal.io.HttpUtils.getRequestResultForUrl;
+import static uk.ac.ebi.intact.intactApp.internal.model.styles.utils.Taxon.*;
 
 public class OLSMapper {
-    private static boolean taxIdsReady = false,
-            taxIdsWorking = false,
-            nodeTypesReady = false,
-            nodeTypesWorking = false,
-            edgeTypesReady = false,
-            edgeTypesWorking = false,
-            kingdomChildrenListsAvailable = false;
+    private static boolean taxIdsReady = false;
+    private static boolean taxIdsWorking = false;
+    private static boolean nodeTypesReady = false;
+    private static boolean nodeTypesWorking = false;
+    private static boolean edgeTypesReady = false;
+    private static boolean edgeTypesWorking = false;
 
 
     public static Hashtable<Long, Paint> taxIdToPaint = new Hashtable<>() {{
-        put(562L, new Color(137, 51, 54)); // Escherichia coli
-        put(4932L, new Color(74, 147, 121));  // Saccharomyces cerevisiae
-        put(9606L, new Color(51, 94, 148));  // Homo sapiens
-        put(10090L, new Color(28, 67, 156)); // Mus musculus
-        put(3702L, new Color(46, 93, 46));  // Arabidopsis thaliana
-        put(7227L, new Color(147, 92, 56)); // Drosophila melanogaster
-        put(6239L, new Color(174, 125, 52)); // Caenorhabditis elegans
-        put(-2L, new Color(141, 102, 102));  // Chemical Synthesis
+        put(E_COLI.taxId, new Color(137, 51, 54)); // Escherichia coli
+        put(S_CEREVISIAE.taxId, new Color(74, 147, 121));  // Saccharomyces cerevisiae
+        put(H_SAPIENS.taxId, new Color(51, 94, 148));  // Homo sapiens
+        put(M_MUSCULUS.taxId, new Color(28, 67, 156)); // Mus musculus
+        put(A_THALIANA.taxId, new Color(46, 93, 46));  // Arabidopsis thaliana
+        put(D_MELANOGASTER.taxId, new Color(147, 92, 56)); // Drosophila melanogaster
+        put(C_ELEGANS.taxId, new Color(174, 125, 52)); // Caenorhabditis elegans
+        put(CHEMICAL_SYNTHESIS.taxId, new Color(141, 102, 102));  // Chemical Synthesis
     }};
     public static Hashtable<Long, Paint> kingdomColors = new Hashtable<>() {{
-        put(33090L, new Color(80, 162, 79)); // Viridiplantae (Plants)
-        put(33208L, new Color(235, 144, 0)); // Metazoa (Animals)
-        put(40674L, new Color(86, 136, 192)); // Mammals
+        put(PLANTS.taxId, new Color(80, 162, 79)); // Viridiplantae (Plants)
+        put(ANIMALS.taxId, new Color(235, 144, 0)); // Metazoa (Animals)
+        put(MAMMALS.taxId, new Color(86, 136, 192)); // Mammals
 
-        put(4751L, new Color(62, 181, 170)); // Fungi
-        put(2L, new Color(178, 53, 57)); // Bacteria
-        put(10239L, new Color(132, 100, 190)); // Viruses
-        put(2157L, new Color(101, 101, 101, 255)); // Archaea
+        put(FUNGI.taxId, new Color(62, 181, 170)); // Fungi
+        put(BACTERIA.taxId, new Color(178, 53, 57)); // Bacteria
+        put(VIRUSES.taxId, new Color(132, 100, 190)); // Viruses
+        put(ARCHAEA.taxId, new Color(101, 101, 101)); // Archaea
     }};
 
     public static Hashtable<Long, Paint> originalTaxIdToPaint = new Hashtable<>(taxIdToPaint);
@@ -109,7 +109,6 @@ public class OLSMapper {
                 for (Long kingdomId : kingdomColors.keySet()) {
                     taxIdToChildrenTaxIds.put(kingdomId, new ArrayList<>());
                 }
-                kingdomChildrenListsAvailable = true;
 
 
                 try {

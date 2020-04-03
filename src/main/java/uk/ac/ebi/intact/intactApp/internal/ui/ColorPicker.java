@@ -28,7 +28,7 @@ public class ColorPicker extends JPanel implements MouseListener {
         this.italic = italic;
         colorPicker = this;
         init();
-        setBackground(IntactStylePanel.transparentBackground);
+        setBackground(IntactLegendPanel.transparent);
     }
 
     public void setCurrentColor(Color color) {
@@ -43,7 +43,8 @@ public class ColorPicker extends JPanel implements MouseListener {
         add(ball, BorderLayout.WEST);
 
         label = new JLabel(descriptor, SwingConstants.LEFT);
-        label.setBackground(IntactStylePanel.transparentBackground);
+        label.setVerticalAlignment(SwingConstants.CENTER);
+        label.setBackground(IntactLegendPanel.transparent);
         label.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
         if (italic) {
             label.setFont(new Font(label.getFont().getName(), Font.ITALIC, label.getFont().getSize()));

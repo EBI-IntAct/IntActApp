@@ -6,7 +6,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.intactApp.internal.model.IntactViewType;
+import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.MutationIntactStyle;
 
 public class MutationViewTask extends AbstractHiderTask {
@@ -18,15 +18,15 @@ public class MutationViewTask extends AbstractHiderTask {
     @Override
     public void run(TaskMonitor taskMonitor) {
         IntactNetwork intactNetwork = manager.getIntactNetwork(manager.getCurrentNetwork());
-        CyNetworkView view = manager.getCurrentNetworkView();
-
-        if (manager.getNetworkViewType(view) == IntactViewType.COLLAPSED) {
+        IntactNetworkView iView = manager.getCurrentIntactNetworkView();
+        CyNetworkView view = iView.getView();
+        if (iView.getType() == IntactNetworkView.Type.COLLAPSED) {
             insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(view, null, intactNetwork.getCollapsedEdges()));
             insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(view, null, intactNetwork.getExpandedEdges()));
         }
-        if (manager.getNetworkViewType(view) != IntactViewType.MUTATION) {
+        if (iView.getType() != IntactNetworkView.Type.MUTATION) {
             manager.applyStyle(MutationIntactStyle.TITLE, view);
-            manager.setNetworkViewType(view, IntactViewType.MUTATION);
+            iView.setType(IntactNetworkView.Type.MUTATION);
         }
     }
 }

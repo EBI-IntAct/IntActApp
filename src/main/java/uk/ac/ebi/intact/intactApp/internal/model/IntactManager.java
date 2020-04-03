@@ -93,12 +93,12 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
     // These are various default values that are saved and restored from
     // the network table
-    // TODO: move all of these to StringNetwork?
     private ShowResultsPanelTaskFactory resultsPanelTaskFactory;
     private Boolean haveChemViz = null;
     private Boolean haveCyBrowser = null;
     private boolean haveURIs = false;
     private Map<CyNetwork, IntactNetwork> intactNetworkMap;
+    private Map<CyNetworkView, IntactNetworkView> intactNetworkViewMap;
     private IntactCytoPanel cytoPanel = null;
     // Settings default values.  Network specific values are stored in StringNetwork
     private boolean showImage = true;
@@ -120,7 +120,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
 
     private static Map<String, IntactStyle> intactStyles = new HashMap<>();
-    private Map<CyNetworkView, IntactViewType> viewTypes = new HashMap<>();
 
 
     private boolean ignore = false;
@@ -134,6 +133,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         commandExecutorTaskFactory = registrar.getService(CommandExecutorTaskFactory.class);
         cyEventHelper = registrar.getService(CyEventHelper.class);
         intactNetworkMap = new HashMap<>();
+        intactNetworkViewMap = new HashMap<>();
 
         setupStyles();
 
@@ -634,7 +634,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
             addIntactNetwork(intactNet, network);
             showResultsPanel();
             intactNet.completeMissingNodeColors();
-
         }
     }
 
@@ -821,19 +820,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         setCategoryFilter(network, catList);
     }
 
-    /*
-    public ColorBrewer getBrewerPalette(CyNetwork network) {
-        if (network == null || !stringNetworkMap.containsKey(network))
-            return brewerPalette;
-        return stringNetworkMap.get(network).getBrewerPalette();
-    }
-    public void setBrewerPalette(CyNetwork network, ColorBrewer palette) {
-        if (network == null || !stringNetworkMap.containsKey(network)) {
-            brewerPalette = palette;
-        } else
-            stringNetworkMap.get(network).setBrewerPalette(palette);
-    }
-*/
     public Palette getEnrichmentPalette(CyNetwork network) {
         if (network == null || !intactNetworkMap.containsKey(network))
             return brewerPalette;
@@ -944,27 +930,23 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     }
 
     public void registerNetworkView(CyNetworkView view) {
-        viewTypes.put(view, IntactViewType.COLLAPSED);
-
+        intactNetworkViewMap.put(view, new IntactNetworkView(this, view));
     }
 
 
     @Override
     public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
-        viewTypes.remove(e.getNetworkView());
+        intactNetworkViewMap.remove(e.getNetworkView());
     }
 
-    public void setNetworkViewType(CyNetworkView view, IntactViewType viewType) {
-        viewTypes.put(view, viewType);
+    public IntactNetworkView getIntactNetworkView(CyNetworkView view) {
+        return intactNetworkViewMap.get(view);
     }
 
-    public IntactViewType getNetworkViewType(CyNetworkView view) {
-        if (viewTypes.containsKey(view)) {
-            return viewTypes.get(view);
-        }
-
-        return null;
+    public IntactNetworkView getCurrentIntactNetworkView() {
+        return intactNetworkViewMap.get(getCurrentNetworkView());
     }
+
 
 
 }
