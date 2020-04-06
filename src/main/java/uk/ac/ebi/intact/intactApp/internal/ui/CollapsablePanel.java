@@ -3,6 +3,7 @@ package uk.ac.ebi.intact.intactApp.internal.ui;
 import uk.ac.ebi.intact.intactApp.internal.utils.IconUtils;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicSeparatorUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,7 +11,6 @@ import java.awt.event.ActionListener;
 public class CollapsablePanel extends JPanel {
     private static ImageIcon RIGHT_ARROW = IconUtils.createImageIcon("/IntAct/DIGITAL/arrows/right_arrow.png");
     private static ImageIcon DOWN_ARROW = IconUtils.createImageIcon("/IntAct/DIGITAL/arrows/down_arrow.png");
-    Font awesomeFont;
 
     JPanel contentPanel_;
     HeaderPanel headerPanel_;
@@ -21,18 +21,33 @@ public class CollapsablePanel extends JPanel {
 
     public CollapsablePanel(Font iconFont, String text, JPanel panel, boolean collapsed, int fontSize) {
         super();
-        // setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setLayout(new GridBagLayout());
-        EasyGBC c = new EasyGBC();
+        setLayout(new BorderLayout());
 
         headerPanel_ = new HeaderPanel(iconFont, text, collapsed, fontSize);
 
         setBackground(new Color(255, 255, 255));
         contentPanel_ = panel;
-        contentPanel_.setBackground(new Color(255,255,255,0));
+        contentPanel_.setBackground(new Color(0,0,0, 0));
 
-        add(headerPanel_, c.anchor("northwest").down().expandHoriz());
-        add(contentPanel_, c.anchor("west").down().expandBoth());
+        add(headerPanel_, BorderLayout.NORTH);
+
+        JSeparator separator = new JSeparator(JSeparator.VERTICAL);
+        separator.setPreferredSize(new Dimension(30,1));
+        separator.setUI(new BasicSeparatorUI() {
+            @Override
+            public void paint(Graphics g, JComponent c) {
+                Dimension s = c.getSize();
+                int halfWidth = s.width / 2 - 1;
+                g.setColor( c.getForeground() );
+                g.drawLine( halfWidth, 0, halfWidth, s.height );
+
+                g.setColor( c.getBackground() );
+                g.drawLine( halfWidth + 1, 0, halfWidth + 1, s.height );
+            }
+        });
+
+        add(separator, BorderLayout.WEST);
+        add(contentPanel_, BorderLayout.CENTER);
         contentPanel_.setVisible(!collapsed);
     }
 

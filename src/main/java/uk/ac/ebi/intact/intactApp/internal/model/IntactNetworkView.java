@@ -7,6 +7,7 @@ import uk.ac.ebi.intact.intactApp.internal.ui.range.slider.RangeSlider;
 
 public class IntactNetworkView implements RangeChangeListener {
     private IntactManager manager;
+    private IntactNetwork network;
     private CyNetworkView view;
     private Type type = Type.COLLAPSED;
     private Range miScoreRange = new Range();
@@ -14,6 +15,11 @@ public class IntactNetworkView implements RangeChangeListener {
     public IntactNetworkView(IntactManager manager, CyNetworkView view) {
         this.manager = manager;
         this.view = view;
+        this.network = manager.getIntactNetwork(view.getModel());
+    }
+
+    public IntactNetwork getNetwork() {
+        return network;
     }
 
     public CyNetworkView getView() {

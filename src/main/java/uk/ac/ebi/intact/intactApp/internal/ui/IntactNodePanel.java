@@ -10,7 +10,6 @@ import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.ViewUtils;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -163,9 +162,7 @@ public class IntactNodePanel extends AbstractIntactPanel {
             panel.add(createFilterSlider("compartment", compartment, currentNetwork, true, 500.0),
                     c.anchor("west").down().expandHoriz());
         }
-        CollapsablePanel collapsablePanel = new CollapsablePanel(iconFont, "Compartment filters", panel, true, 10);
-//        collapsablePanel.setBorder(BorderFactory.createEtchedBorder());
-        return collapsablePanel;
+        return new CollapsablePanel(iconFont, "Compartment filters", panel, true, 10);
     }
 
     private void updateCompartmentsPanel() {
@@ -195,9 +192,7 @@ public class IntactNodePanel extends AbstractIntactPanel {
             }
         }
         nodesPanel.setAlignmentX(LEFT_ALIGNMENT);
-        CollapsablePanel collapsablePanel = new CollapsablePanel(iconFont, "Selected nodes", nodesPanel, false, 10);
-//        collapsablePanel.setBorder(BorderFactory.createEtchedBorder());
-        return collapsablePanel;
+        return new CollapsablePanel(iconFont, "Selected nodes", nodesPanel, false, 10);
     }
 
     // Hide all nodes who's values are less than "value"
@@ -244,13 +239,11 @@ public class IntactNodePanel extends AbstractIntactPanel {
         EasyGBC c = new EasyGBC();
         panel.setLayout(new GridBagLayout());
 
-        int leftBorder = 30;
-
         {
             JLabel lbl = new JLabel("Crosslinks");
             lbl.setFont(labelFont);
             lbl.setAlignmentX(LEFT_ALIGNMENT);
-            lbl.setBorder(BorderFactory.createEmptyBorder(5, leftBorder, 5, 0));
+            lbl.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
             panel.add(lbl, c.anchor("west").down().noExpand());
 
             JPanel crosslinkPanel = new JPanel();
@@ -272,11 +265,11 @@ public class IntactNodePanel extends AbstractIntactPanel {
             JLabel lbl = new JLabel("Description");
             lbl.setFont(labelFont);
             lbl.setAlignmentX(LEFT_ALIGNMENT);
-            lbl.setBorder(BorderFactory.createEmptyBorder(10, leftBorder, 5, 0));
+            lbl.setBorder(BorderFactory.createEmptyBorder(10, 0, 5, 0));
             panel.add(lbl, c.anchor("west").down().expandHoriz());
 
             JLabel description = new JLabel("<html><body style='width:250px;font-size:8px'>" + sNode.getDescription() + "</body></html>");
-            description.setBorder(BorderFactory.createEmptyBorder(0, leftBorder + 5, 0, 0));
+            description.setBorder(BorderFactory.createEmptyBorder(0,  5, 0, 0));
             description.setAlignmentX(LEFT_ALIGNMENT);
             description.setBackground(new Color(255,255,255,0));
             panel.add(description, c.anchor("west").down().expandBoth());
@@ -284,10 +277,6 @@ public class IntactNodePanel extends AbstractIntactPanel {
         }
 
         CollapsablePanel collapsablePanel = new CollapsablePanel(iconFont, sNode.getDisplayName(), panel, false, 10);
-//        Border etchedBorder = BorderFactory.createEtchedBorder();
-        Border emptyBorder = BorderFactory.createEmptyBorder(0, 15, 0, 0);
-//        collapsablePanel.setBorder(BorderFactory.createCompoundBorder(emptyBorder, etchedBorder));
-        collapsablePanel.setBorder(emptyBorder);
         collapsablePanel.setBackground(new Color(255,255,255,0));
         return collapsablePanel;
     }

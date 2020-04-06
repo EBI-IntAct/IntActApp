@@ -1,13 +1,15 @@
 package uk.ac.ebi.intact.intactApp.internal.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.cytoscape.model.*;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
 import org.cytoscape.model.events.AddedEdgesEvent;
 import org.cytoscape.model.events.AddedEdgesListener;
 import org.cytoscape.task.hide.HideTaskFactory;
-import org.cytoscape.util.color.Palette;
 import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.IntactStyle;
@@ -28,34 +30,22 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     CyNetwork network;
     Map<String, List<String>> resolvedIdMap;
     Map<String, List<Annotation>> annotations;
-    Map<String, String> settings;
     CyTable edgeTable;
     CyTable nodeTable;
 
-    // Enrichment table options for this network
-    private int topTerms;
-    private double overlapCutoff;
-    private Palette brewerPalette;
-    private List<EnrichmentTerm.TermCategory> categoryFilter;
-    private ChartType chartType;
-    private boolean removeOverlap;
 
     // Collapsed edges
     private Map<Couple, CyEdge> collapsedEdges;
     private List<CyEdge> expandedEdges;
     private Map<Couple, List<CyEdge>> coupleToEdges = new HashMap<>();
+    private Set<Long> taxIds = new HashSet<>();
+    private Map<String, Long> speciesNamesToIds = new HashMap<>();
+    private boolean missingNodesCompleted = false;
 
     public IntactNetwork(IntactManager manager) {
         this.manager = manager;
         resolvedIdMap = null;
         annotations = null;
-        topTerms = manager.getTopTerms(null);
-        overlapCutoff = manager.getOverlapCutoff(null);
-        brewerPalette = manager.getEnrichmentPalette(null);
-        categoryFilter = manager.getCategoryFilter(null);
-        removeOverlap = manager.getRemoveOverlap(null);
-        chartType = manager.getChartType(null);
-        settings = new HashMap<>();
     }
 
     public void reset() {
@@ -74,40 +64,6 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     public void setNetwork(CyNetwork network) {
 
         this.network = network;
-
-        // Load our options
-        settings = ModelUtils.getEnrichmentSettings(network);
-        if (settings.containsKey("overlapCutoff")) {
-            overlapCutoff = Double.parseDouble(settings.get("overlapCutoff"));
-        }
-        if (settings.containsKey("topTerms")) {
-            topTerms = Integer.parseInt(settings.get("topTerms"));
-        }
-        if (settings.containsKey("removeOverlap")) {
-            removeOverlap = Boolean.parseBoolean(settings.get("removeOverlap"));
-        }
-        if (settings.containsKey("categoryFilter")) {
-            List<String> strFilters = ModelUtils.stringToList(settings.get("categoryFilter"));
-            categoryFilter = new ArrayList<>();
-            for (String filter : strFilters) {
-                categoryFilter.add(Enum.valueOf(EnrichmentTerm.TermCategory.class, filter));
-            }
-        }
-
-        // FIXME
-		/*
-		if (settings.containsKey("brewerPalette")) {
-			brewerPalette = Enum.valueOf(ColorBrewer.class, settings.get("brewerPalette"));
-		}
-		*/
-        if (settings.containsKey("brewerPalette")) {
-            manager.setBrewerPalette(network, settings.get("brewerPalette"));
-        }
-        if (settings.containsKey("chartType")) {
-            chartType = Enum.valueOf(ChartType.class, settings.get("chartType"));
-        }
-
-        // INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT //
 
         edgeTable = network.getDefaultEdgeTable();
         nodeTable = network.getDefaultNodeTable();
@@ -131,11 +87,6 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
 
         completeMissingNodeColors();
 
-//        manager.registrar.registerService(this, AddedEdgesListener.class, new Properties());
-//        manager.registrar.registerService(this, AboutToRemoveEdgesListener.class, new Properties());
-
-        // INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT //
-
     }
 
     void hideExpandedEdgesOnViewCreation(CyNetworkView networkView) {
@@ -145,89 +96,34 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     }
 
     public void completeMissingNodeColors() {
-        new Thread(() -> {
-            CyColumn taxIdColumn = network.getDefaultNodeTable().getColumn(ModelUtils.TAX_ID);
+        if (!missingNodesCompleted) {
+            new Thread(() -> {
+                for (CyRow row: nodeTable.getAllRows()){
+                    Long taxId = row.get(ModelUtils.TAX_ID, Long.class);
+                    String specieName = row.get(ModelUtils.SPECIES, String.class);
+                    taxIds.add(taxId);
+                    speciesNamesToIds.put(specieName, taxId);
+                }
 
-            Map<Long, Paint> addedTaxIds = OLSMapper.completeTaxIdColorsFromUnknownTaxIds(new HashSet<>(taxIdColumn.getValues(Long.class)));
+                Map<Long, Paint> addedTaxIds = OLSMapper.completeTaxIdColorsFromUnknownTaxIds(new HashSet<>(taxIds));
 
-            for (IntactStyle style : manager.getIntactStyles().values()) {
-                style.updateTaxIdToNodePaintMapping(addedTaxIds);
-            }
-        }).start();
-    }
-
-    public double getOverlapCutoff() {
-        return overlapCutoff;
-    }
-
-    public void setOverlapCutoff(double cutoff) {
-        overlapCutoff = cutoff;
-        update();
-    }
-
-    public int getTopTerms() {
-        return topTerms;
-    }
-
-    public void setTopTerms(int tt) {
-        topTerms = tt;
-        update();
-    }
-
-    public List<EnrichmentTerm.TermCategory> getCategoryFilter() {
-        return categoryFilter;
-    }
-
-    public void setCategoryFilter(List<EnrichmentTerm.TermCategory> categories) {
-        categoryFilter = categories;
-        update();
-    }
-
-    public Palette getEnrichmentPalette() {
-        return brewerPalette;
-    }
-
-    public void setEnrichmentPalette(Palette palette) {
-        brewerPalette = palette;
-        update();
-    }
-
-    public ChartType getChartType() {
-        return chartType;
-    }
-
-    public void setChartType(ChartType type) {
-        chartType = type;
-        update();
-    }
-
-    public boolean getRemoveOverlap() {
-        return removeOverlap;
-    }
-
-    public void setRemoveOverlap(boolean remove) {
-        removeOverlap = remove;
-        update();
-    }
-
-
-    // Update our settings in the network table
-    private void update() {
-        settings.put("overlapCutoff", Double.toString(overlapCutoff));
-        settings.put("topTerms", Integer.toString(topTerms));
-        settings.put("removeOverlap", Boolean.toString(removeOverlap));
-        {
-            List<String> filters = new ArrayList<>();
-            for (EnrichmentTerm.TermCategory cat : categoryFilter) {
-                filters.add(cat.name());
-            }
-            settings.put("categoryFilter", ModelUtils.listToString(filters));
+                for (IntactStyle style : manager.getIntactStyles().values()) {
+                    style.updateTaxIdToNodePaintMapping(addedTaxIds);
+                }
+            }).start();
         }
-        settings.put("brewerPalette", brewerPalette.toString());
-        settings.put("chartType", chartType.name());
-        ModelUtils.updateEnrichmentSettings(network, settings);
-
+        missingNodesCompleted = true;
     }
+
+    public Set<Long> getTaxIds() {
+        return new HashSet<>(taxIds);
+    }
+
+    public Map<String, Long> getSpeciesNamesToIds() {
+        return new HashMap<>(speciesNamesToIds);
+    }
+
+
 
     public Map<String, List<Annotation>> getAnnotations() {
         return annotations;
@@ -236,11 +132,6 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     public Map<String, List<Annotation>> getAnnotations(int taxon, final String terms,
                                                         final String useDATABASE, boolean includeViruses) {
         String encTerms = terms.trim();
-        // try {
-        // encTerms = URLEncoder.encode(terms.trim(), "UTF-8");
-        // } catch (Exception e) {
-        // return new HashMap<String, List<Annotation>>();
-        // }
 
         // Split the terms up into groups of 5000
         String[] termsArray = encTerms.split("\n");

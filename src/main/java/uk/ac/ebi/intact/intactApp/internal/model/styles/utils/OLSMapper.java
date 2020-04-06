@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.*;
 
 import static uk.ac.ebi.intact.intactApp.internal.io.HttpUtils.getRequestResultForUrl;
-import static uk.ac.ebi.intact.intactApp.internal.model.styles.utils.Taxon.*;
+import static uk.ac.ebi.intact.intactApp.internal.model.styles.utils.Taxons.*;
 
 public class OLSMapper {
     private static boolean taxIdsReady = false;
@@ -52,7 +52,7 @@ public class OLSMapper {
     public static Hashtable<Long, Paint> originalTaxIdToPaint = new Hashtable<>(taxIdToPaint);
     public static Hashtable<Long, Paint> originalKingdomColors = new Hashtable<>(kingdomColors);
 
-    private static Hashtable<Long, List<Long>> taxIdToChildrenTaxIds = new Hashtable<>();
+    public static Hashtable<Long, List<Long>> taxIdToChildrenTaxIds = new Hashtable<>();
 
     public static final Hashtable<String, Paint> edgeTypeToPaint = new Hashtable<>() {{
         put("association", new Color(153, 153, 255));
@@ -97,6 +97,10 @@ public class OLSMapper {
         if (!taxIdsWorking) {
             taxIdsWorking = true;
 
+            for (Long kingdomId : kingdomColors.keySet()) {
+                taxIdToChildrenTaxIds.put(kingdomId, new ArrayList<>());
+            }
+
             for (Long parentSpecie : new ArrayList<>(taxIdToPaint.keySet())) {
                 Paint paint = taxIdToPaint.get(parentSpecie);
                 taxIdToChildrenTaxIds.put(parentSpecie, new ArrayList<>() {{
@@ -105,11 +109,6 @@ public class OLSMapper {
 
                 String jsonQuery = "https://www.ebi.ac.uk/ols/api/ontologies/ncbitaxon/terms/" +
                         "http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FNCBITaxon_" + parentSpecie + "/descendants?size=1000";
-
-                for (Long kingdomId : kingdomColors.keySet()) {
-                    taxIdToChildrenTaxIds.put(kingdomId, new ArrayList<>());
-                }
-
 
                 try {
                     boolean hasNext = true;
@@ -142,7 +141,6 @@ public class OLSMapper {
                     e.printStackTrace();
                 }
             }
-
 
             taxIdsReady = true;
         }

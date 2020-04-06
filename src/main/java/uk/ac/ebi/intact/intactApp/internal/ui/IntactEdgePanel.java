@@ -25,7 +25,6 @@ public class IntactEdgePanel extends AbstractIntactPanel implements RangeChangeL
     JPanel scorePanel;
     private Map<CyNetwork, Map<String, Boolean>> colors;
     private static Color bg = new Color(229, 229, 229);
-    private IntactNetworkView currentIView;
     private RangeSlider scoreSlider;
 
     public IntactEdgePanel(final IntactManager manager) {

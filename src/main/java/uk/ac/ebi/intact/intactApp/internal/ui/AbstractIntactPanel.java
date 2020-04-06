@@ -3,7 +3,9 @@ package uk.ac.ebi.intact.intactApp.internal.ui;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.ui.range.slider.RangeSlider;
 
 import javax.swing.*;
@@ -24,12 +26,14 @@ public abstract class AbstractIntactPanel extends JPanel {
     protected final Font labelFont;
     protected final Font textFont;
     protected CyNetwork currentNetwork;
+    protected IntactNetworkView currentIView;
     protected Map<CyNetwork, Map<String, Map<String, Double>>> filters;
 
     public AbstractIntactPanel(final IntactManager manager) {
         this.manager = manager;
         this.openBrowser = manager.getService(OpenBrowser.class);
         this.currentNetwork = manager.getCurrentNetwork();
+        currentIView = manager.getCurrentIntactNetworkView();
         IconManager iconManager = manager.getService(IconManager.class);
         iconFont = iconManager.getIconFont(17.0f);
         labelFont = new Font("SansSerif", Font.BOLD, 10);
@@ -87,6 +91,10 @@ public abstract class AbstractIntactPanel extends JPanel {
             String text = field.getText();
             slider.setValue((int) (Double.parseDouble(text) * 100.0));
         });
+    }
+
+    public void networkViewChanged(CyNetworkView view) {
+        currentIView = manager.getIntactNetworkView(view);
     }
 
     protected void addFilter(String type, String label, double value) {

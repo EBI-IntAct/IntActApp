@@ -864,7 +864,6 @@ public class ModelUtils {
         intactNetwork.getManager().ignoreAdd();
         CyNetwork network = createIntactNetworkFromJSON(intactNetwork.getManager(), species, object, queryTermMap, netName, useDATABASE);
         intactNetwork.getManager().listenToAdd();
-        intactNetwork.getManager().showResultsPanel();
         return network;
     }
 

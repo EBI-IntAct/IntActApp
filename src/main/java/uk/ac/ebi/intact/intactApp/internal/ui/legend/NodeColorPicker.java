@@ -1,6 +1,7 @@
-package uk.ac.ebi.intact.intactApp.internal.ui;
+package uk.ac.ebi.intact.intactApp.internal.ui.legend;
 
 import org.cytoscape.util.swing.CyColorChooser;
+import uk.ac.ebi.intact.intactApp.internal.ui.IntactLegendPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,21 +13,21 @@ import java.util.EventListener;
 import java.util.List;
 
 
-public class ColorPicker extends JPanel implements MouseListener {
-    private String descriptor;
-    private Color currentColor;
-    private final ColorPicker colorPicker;
-    private Ball ball;
-    private boolean italic;
+public class NodeColorPicker extends JPanel implements MouseListener {
+    protected String descriptor;
+    protected Color currentColor;
+    protected final NodeColorPicker nodeColorPicker;
+    protected Ball ball;
+    protected boolean italic;
 
-    private JLabel label;
-    private List<ColorChangedListener> listeners = new ArrayList<>();
+    protected JLabel label;
+    protected List<ColorChangedListener> listeners = new ArrayList<>();
 
-    public ColorPicker(String descriptor, Color currentColor, boolean italic) {
+    public NodeColorPicker(String descriptor, Color currentColor, boolean italic) {
         this.descriptor = descriptor;
         this.currentColor = currentColor;
         this.italic = italic;
-        colorPicker = this;
+        nodeColorPicker = this;
         init();
         setBackground(IntactLegendPanel.transparent);
     }
@@ -82,7 +83,7 @@ public class ColorPicker extends JPanel implements MouseListener {
             Dimension preferredSize = new Dimension(diameter, diameter);
             setPreferredSize(preferredSize);
             setMinimumSize(preferredSize);
-            addMouseListener(colorPicker);
+            addMouseListener(nodeColorPicker);
 //            setMaximumSize(preferredSize);
         }
 
@@ -103,12 +104,16 @@ public class ColorPicker extends JPanel implements MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        currentColor = CyColorChooser.showDialog(colorPicker, "Choose " + descriptor + " colors", currentColor);
-        ball.setColor(currentColor);
 
-        for (ColorChangedListener listener : listeners) {
-            listener.colorChanged(new ColorChangedEvent(this, ActionEvent.ACTION_PERFORMED, currentColor));
+        currentColor = CyColorChooser.showDialog(nodeColorPicker, "Choose " + descriptor + " colors", currentColor);
+        if (currentColor != null) {
+            ball.setColor(currentColor);
+
+            for (ColorChangedListener listener : listeners) {
+                listener.colorChanged(new ColorChangedEvent(this, ActionEvent.ACTION_PERFORMED, currentColor));
+            }
         }
+
     }
 
     @Override

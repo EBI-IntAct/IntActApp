@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.intactApp.internal.model.styles.utils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public enum Taxon {
+public enum Taxons {
     E_COLI(562L, "Escherichia coli", true),
     S_CEREVISIAE(4932L, "Saccharomyces cerevisiae", true),
     H_SAPIENS(9606L, "Homo sapiens", true),
@@ -23,30 +23,32 @@ public enum Taxon {
     public final long taxId;
     public final String descriptor;
     public final boolean isSpecies;
-    private static final Map<Long, Taxon> taxIdToTaxons = new HashMap<>();
+    private static final Map<Long, Taxons> taxIdToTaxons = new HashMap<>();
     static {
-        for (Taxon taxon: Taxon.values()) {
+        for (Taxons taxon: Taxons.values()) {
             taxIdToTaxons.put(taxon.taxId, taxon);
         }
     }
-    private static final List<Taxon> species =  Arrays.stream(Taxon.values()).filter(taxon -> taxon.isSpecies && taxon != CHEMICAL_SYNTHESIS).sorted(Comparator.comparing(o -> o.descriptor)).collect(Collectors.toList());
-    private static final List<Taxon> kingdoms =  Arrays.stream(Taxon.values()).filter(taxon -> !taxon.isSpecies).sorted(Comparator.comparing(o -> o.descriptor)).collect(Collectors.toList());
+    private static final List<Taxons> species =  Arrays.stream(Taxons.values()).filter(taxon -> taxon.isSpecies && taxon != CHEMICAL_SYNTHESIS).sorted(Comparator.comparing(o -> o.descriptor)).collect(Collectors.toList());
+    private static final List<Taxons> kingdoms =  Arrays.stream(Taxons.values()).filter(taxon -> !taxon.isSpecies).sorted(Comparator.comparing(o -> o.descriptor)).collect(Collectors.toList());
 
-    Taxon(long taxId, String descriptor, boolean isSpecies) {
+    Taxons(long taxId, String descriptor, boolean isSpecies) {
         this.taxId = taxId;
         this.descriptor = descriptor;
         this.isSpecies = isSpecies;
     }
 
-    public static List<Taxon> getSpecies() {
+    public static List<Taxons> getSpecies() {
         return new ArrayList<>(species);
     }
 
-    public static List<Taxon> getKingdoms() {
+    public static List<Taxons> getKingdoms() {
         return new ArrayList<>(kingdoms);
     }
 
-    public static Taxon getTaxon(long taxId) {
+    public static Taxons getTaxon(long taxId) {
         return taxIdToTaxons.get(taxId);
     }
+
+
 }

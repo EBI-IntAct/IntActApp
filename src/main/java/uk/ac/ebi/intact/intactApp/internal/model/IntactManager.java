@@ -19,7 +19,6 @@ import org.cytoscape.property.CyProperty.SavePolicy;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProvider;
 import org.cytoscape.util.color.PaletteProviderManager;
@@ -200,31 +199,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
             setDefaultMaxProteins(ModelUtils.getIntegerProperty(configProps, "maxProteins"));
         }
 
-        if (ModelUtils.hasProperty(configProps, "overlapCutoff")) {
-            setOverlapCutoff(null, ModelUtils.getDoubleProperty(configProps, "overlapCutoff"));
-        }
-        if (ModelUtils.hasProperty(configProps, "topTerms")) {
-            setTopTerms(null, ModelUtils.getIntegerProperty(configProps, "topTerms"));
-        }
-        if (ModelUtils.hasProperty(configProps, "chartType")) {
-            setChartType(null, ModelUtils.getStringProperty(configProps, "chartType"));
-        }
-        if (ModelUtils.hasProperty(configProps, "brewerPalette")) {
-            setBrewerPalette(null, ModelUtils.getStringProperty(configProps, "brewerPalette"));
-        }
-        if (ModelUtils.hasProperty(configProps, "enrichmentPalette")) {
-            setEnrichmentPalette(null, ModelUtils.getStringProperty(configProps, "enrichmentPalette"));
-        }
-        if (ModelUtils.hasProperty(configProps, "categoryFilter")) {
-            setCategoryFilter(null, ModelUtils.getStringProperty(configProps, "categoryFilter"));
-        }
-        if (ModelUtils.hasProperty(configProps, "removeOverlap")) {
-            setRemoveOverlap(null, ModelUtils.getBooleanProperty(configProps, "removeOverlap"));
-        }
-        if (ModelUtils.hasProperty(configProps, "channelColors")) {
-            setChannelColors(ModelUtils.getStringProperty(configProps, "channelColors"));
-        }
-
         CyNetworkViewManager networkViewManager = getService(CyNetworkViewManager.class);
 
         // If we already have networks loaded, see if they are string networks
@@ -232,6 +206,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
             if (ModelUtils.isIntactNetwork(network)) {
                 IntactNetwork intactNetwork = new IntactNetwork(this);
                 addIntactNetwork(intactNetwork, network);
+                intactNetwork.completeMissingNodeColors();
                 for (CyNetworkView view : networkViewManager.getNetworkViews(network)) {
                     registerNetworkView(view);
                 }
@@ -766,120 +741,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         return haveCyBrowser;
     }
 
-    // Getters and Setters for defaults
-    public double getOverlapCutoff(CyNetwork network) {
-        if (network == null || !intactNetworkMap.containsKey(network))
-            return overlapCutoff;
-        return intactNetworkMap.get(network).getOverlapCutoff();
-    }
-
-    public void setOverlapCutoff(CyNetwork network, double cutoff) {
-        if (network == null || !intactNetworkMap.containsKey(network)) {
-            overlapCutoff = cutoff;
-            return;
-        }
-        intactNetworkMap.get(network).setOverlapCutoff(cutoff);
-    }
-
-    public int getTopTerms(CyNetwork network) {
-        if (network == null || !intactNetworkMap.containsKey(network))
-            return topTerms;
-        return intactNetworkMap.get(network).getTopTerms();
-    }
-
-    public void setTopTerms(CyNetwork network, int topN) {
-        if (network == null || !intactNetworkMap.containsKey(network))
-            topTerms = topN;
-        else
-            intactNetworkMap.get(network).setTopTerms(topN);
-    }
-
-    public List<EnrichmentTerm.TermCategory> getCategoryFilter(CyNetwork network) {
-        if (network == null || !intactNetworkMap.containsKey(network))
-            return categoryFilter;
-        return intactNetworkMap.get(network).getCategoryFilter();
-    }
-
-    public void setCategoryFilter(CyNetwork network, List<EnrichmentTerm.TermCategory> categories) {
-        if (network == null || !intactNetworkMap.containsKey(network)) {
-            categoryFilter = categories;
-        } else
-            intactNetworkMap.get(network).setCategoryFilter(categories);
-    }
-
-    public void setCategoryFilter(CyNetwork network, String categories) {
-        List<EnrichmentTerm.TermCategory> catList = new ArrayList<>();
-        if (categories == null) return;
-        String[] catArray = categories.split(",");
-        for (String c : catArray) {
-            try {
-                catList.add(Enum.valueOf(EnrichmentTerm.TermCategory.class, c));
-            } catch (Exception e) {
-            }
-        }
-        setCategoryFilter(network, catList);
-    }
-
-    public Palette getEnrichmentPalette(CyNetwork network) {
-        if (network == null || !intactNetworkMap.containsKey(network))
-            return brewerPalette;
-        return intactNetworkMap.get(network).getEnrichmentPalette();
-    }
-
-    public void setEnrichmentPalette(CyNetwork network, Palette palette) {
-        if (network == null || !intactNetworkMap.containsKey(network))
-            brewerPalette = palette;
-        else
-            intactNetworkMap.get(network).setEnrichmentPalette(palette);
-    }
-
-    public void setEnrichmentPalette(CyNetwork network, String palette) {
-        PaletteProviderManager pm = registrar.getService(PaletteProviderManager.class);
-        for (PaletteProvider provider : pm.getPaletteProviders(BrewerType.QUALITATIVE, false)) {
-            for (Object id : provider.listPaletteIdentifiers(BrewerType.QUALITATIVE, false)) {
-                Palette p = provider.getPalette(id);
-                if (p.toString().equals(palette))
-                    setEnrichmentPalette(network, p);
-            }
-        }
-    }
-
-    // Retained for backwards compatability
-    public void setBrewerPalette(CyNetwork network, String palette) {
-        if (palette.startsWith("ColorBrewer "))
-            setEnrichmentPalette(network, palette);
-        setEnrichmentPalette(network, "ColorBrewer " + palette);
-    }
-
-    public ChartType getChartType(CyNetwork network) {
-        if (network == null || !intactNetworkMap.containsKey(network))
-            return chartType;
-        return intactNetworkMap.get(network).getChartType();
-    }
-
-    public void setChartType(CyNetwork network, ChartType type) {
-        if (network == null || !intactNetworkMap.containsKey(network)) {
-            chartType = type;
-        } else
-            intactNetworkMap.get(network).setChartType(type);
-    }
-
-    public void setChartType(CyNetwork network, String type) {
-        setChartType(network, Enum.valueOf(ChartType.class, type));
-    }
-
-    public boolean getRemoveOverlap(CyNetwork network) {
-        if (network == null || !intactNetworkMap.containsKey(network))
-            return removeOverlap;
-        return intactNetworkMap.get(network).getRemoveOverlap();
-    }
-
-    public void setRemoveOverlap(CyNetwork network, boolean remove) {
-        if (network == null || !intactNetworkMap.containsKey(network)) {
-            removeOverlap = remove;
-        } else
-            intactNetworkMap.get(network).setRemoveOverlap(remove);
-    }
 
     public Map<String, Color> getChannelColors() {
         return channelColors;

@@ -190,6 +190,7 @@ public class IntactCytoPanel extends JPanel
         if (view != null) {
             updateRadioButtons(view);
             edgePanel.networkViewChanged(view);
+            legendPanel.networkViewChanged(view);
         }
     }
 
