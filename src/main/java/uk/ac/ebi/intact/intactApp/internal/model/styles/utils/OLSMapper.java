@@ -30,20 +30,21 @@ public class OLSMapper {
 
     public static Hashtable<Long, Paint> taxIdToPaint = new Hashtable<>() {{
         put(E_COLI.taxId, new Color(137, 51, 54)); // Escherichia coli
-        put(S_CEREVISIAE.taxId, new Color(74, 147, 121));  // Saccharomyces cerevisiae
+        put(S_CEREVISIAE.taxId, new Color(174, 125, 52));  // Saccharomyces cerevisiae
         put(H_SAPIENS.taxId, new Color(51, 94, 148));  // Homo sapiens
         put(M_MUSCULUS.taxId, new Color(28, 67, 156)); // Mus musculus
+        put(D_MELANOGASTER.taxId, new Color(50, 147, 143)); // Drosophila melanogaster
+        put(C_ELEGANS.taxId, new Color(74, 147, 121)); // Caenorhabditis elegans
         put(A_THALIANA.taxId, new Color(46, 93, 46));  // Arabidopsis thaliana
-        put(D_MELANOGASTER.taxId, new Color(147, 92, 56)); // Drosophila melanogaster
-        put(C_ELEGANS.taxId, new Color(174, 125, 52)); // Caenorhabditis elegans
+
         put(CHEMICAL_SYNTHESIS.taxId, new Color(141, 102, 102));  // Chemical Synthesis
     }};
     public static Hashtable<Long, Paint> kingdomColors = new Hashtable<>() {{
         put(PLANTS.taxId, new Color(80, 162, 79)); // Viridiplantae (Plants)
-        put(ANIMALS.taxId, new Color(235, 144, 0)); // Metazoa (Animals)
         put(MAMMALS.taxId, new Color(86, 136, 192)); // Mammals
+        put(ANIMALS.taxId,  new Color(62, 181, 170)); // Metazoa (Animals)
 
-        put(FUNGI.taxId, new Color(62, 181, 170)); // Fungi
+        put(FUNGI.taxId, new Color(235, 144, 0)); // Fungi
         put(BACTERIA.taxId, new Color(178, 53, 57)); // Bacteria
         put(VIRUSES.taxId, new Color(132, 100, 190)); // Viruses
         put(ARCHAEA.taxId, new Color(101, 101, 101)); // Archaea
