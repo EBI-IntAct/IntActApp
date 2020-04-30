@@ -63,7 +63,7 @@ public class LoadTermsTask extends AbstractTask {
             conf = "1.0";
 
         // String url = "http://api.jensenlab.org/network?entities="+URLEncoder.encode(ids.trim())+"&score="+conf;
-        Map<String, String> args = new HashMap<>();
+        Map<Object, Object> args = new HashMap<>();
         // args.put("database", useDATABASE);
         // TODO: Is it OK to always use stitch?
         args.put("database", Databases.STITCH.getAPIName());

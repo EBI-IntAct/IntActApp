@@ -186,6 +186,7 @@
             <version>${cytoscape.api.version}</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>org.ops4j.pax.logging</groupId>
             <artifactId>pax-logging-api</artifactId>
@@ -230,6 +231,11 @@
             <artifactId>json</artifactId>
             <version>20190722</version>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.9</version>
         </dependency>
 
     </dependencies>

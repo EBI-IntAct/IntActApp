@@ -75,6 +75,14 @@ public class CyActivator extends AbstractCyActivator {
         // Get configuration and messages for user from server
         manager.updateURIsFromConfig();
 
+        // TODO Switch properties with first loaded IntactNetwork, and reset it back when deleting the last one
+//        // Load Property if available.
+//        CyProperty<Properties> cyProp = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+//        final Properties props = cyProp.getProperties();
+//        final String selectionListProp = props.getProperty(PROP_NAME);
+//        props.setProperty()
+
+
         {
             // Register our network added listener and session loaded listener
             registerService(bc, manager, NetworkAddedListener.class, new Properties());
@@ -88,34 +96,6 @@ public class CyActivator extends AbstractCyActivator {
             registerAllServices(bc, client, new Properties());
         }
 
-
-        {
-            GetNetworkTaskFactory getNetwork = new GetNetworkTaskFactory(manager);
-            Properties props = new Properties();
-            props.setProperty(COMMAND_NAMESPACE, "string");
-            props.setProperty(COMMAND, "protein query");
-            props.setProperty(COMMAND_DESCRIPTION,
-                    "Create a STRING network from multiple protein names/identifiers");
-            props.setProperty(COMMAND_LONG_DESCRIPTION,
-                    "Enter protein names or identifiers to query the STRING " +
-                            "database for protein-protein interactions.\n" +
-                            "<br/>STRING is a database of known and predicted protein " +
-                            "interactions.  The interactions include direct (physical) " +
-                            "and indirect (functional) associations; they are derived from " +
-                            "four sources: \n" +
-                            "* Genomic Context\n" +
-                            "* High-throughput Experiments\n" +
-                            "* (Conserved) Coexpression\n" +
-                            "* Previous Knowledge\n\n" +
-                            "STRING quantitatively integrates " +
-                            "interaction data from these sources for a large number " +
-                            "of organisms, and transfers information between these " +
-                            "organisms where applicable.");
-            props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-            props.setProperty(COMMAND_EXAMPLE_JSON, JSON_EXAMPLE);
-
-            registerService(bc, getNetwork, TaskFactory.class, props);
-        }
         {
             CollapseViewTaskFactory collapseViewTaskFactory = new CollapseViewTaskFactory(manager);
             Properties properties = new Properties();
@@ -152,7 +132,6 @@ public class CyActivator extends AbstractCyActivator {
             properties.setProperty(IN_MENU_BAR, "true");
             registerService(bc, mutationViewTaskFactory, TaskFactory.class, properties);
         }
-
 
 
         {
@@ -194,8 +173,6 @@ public class CyActivator extends AbstractCyActivator {
             props.setProperty(IN_MENU_BAR, "true");
             registerService(bc, addTerms, NetworkTaskFactory.class, props);
         }
-
-
 
 
         if (haveGUI) {

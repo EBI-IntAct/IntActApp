@@ -7,15 +7,12 @@ import org.cytoscape.work.*;
 import uk.ac.ebi.intact.intactApp.internal.model.Databases;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.intactApp.internal.tasks.GetAnnotationsTask;
-import uk.ac.ebi.intact.intactApp.internal.ui.GetTermsPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.SearchOptionsPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.SearchQueryComponent;
 import uk.ac.ebi.intact.intactApp.internal.utils.IconUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TextUtils;
 
 import javax.swing.*;
-import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -64,7 +61,17 @@ public class IntactSearchTaskFactory extends AbstractNetworkSearchTaskFactory im
 
         intactNetwork = new IntactNetwork(manager);
         int taxon = getTaxId();
-        return new TaskIterator(new GetAnnotationsTask(intactNetwork, taxon, terms, Databases.STRING.getAPIName()));
+
+        Map<String, String> queryTermMap = new HashMap<>();
+        List<String> stringIds = List.of(terms.split("\n"));
+        queryTermMap.put(stringIds.get(0), stringIds.get(0));
+        // System.out.println("Importing "+stringIds);
+        TaskFactory factory = new ImportNetworkTaskFactory(intactNetwork, getSpecies(),
+                taxon, 1, 0, stringIds,
+                queryTermMap, Databases.STRING.getAPIName());
+
+        return factory.createTaskIterator();
+//        return new TaskIterator(new GetAnnotationsTask(intactNetwork, taxon, terms, Databases.STRING.getAPIName()));
     }
 
     @Override
@@ -156,53 +163,47 @@ public class IntactSearchTaskFactory extends AbstractNetworkSearchTaskFactory im
 
     @Override
     public void taskFinished(ObservableTask task) {
-        if (!(task instanceof GetAnnotationsTask)) {
-            return;
-        }
-        GetAnnotationsTask annTask = (GetAnnotationsTask) task;
-
-        final int taxon = annTask.getTaxon();
-        if (intactNetwork.getAnnotations() == null || intactNetwork.getAnnotations().size() == 0) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    JOptionPane.showMessageDialog(null, "Your query returned no results",
-                            "No results", JOptionPane.ERROR_MESSAGE);
-                }
-            });
-            return;
-        }
-        boolean noAmbiguity = intactNetwork.resolveAnnotations();
-        if (noAmbiguity) {
-            int additionalNodes = getAdditionalNodes();
-            // This mimics the String web site behavior
-            if (intactNetwork.getResolvedTerms() == 1 && additionalNodes == 0) {
-                additionalNodes = 10;
-                logger.warn("STRING Protein: Only one protein was selected -- additional interactions set to 10");
-            }
-
-            final int addNodes = additionalNodes;
-
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    importNetwork(taxon, getConfidence(), addNodes);
-                }
-            });
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    JDialog d = new JDialog();
-                    d.setTitle("Resolve Ambiguous Terms");
-                    d.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-                    GetTermsPanel panel = new GetTermsPanel(manager, intactNetwork,
-                            Databases.STRING.getAPIName(), false, optionsPanel);
-                    panel.createResolutionPanel();
-                    d.setContentPane(panel);
-                    d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-                    d.pack();
-                    d.setVisible(true);
-                }
-            });
-        }
+//        if (!(task instanceof GetAnnotationsTask)) {
+//            return;
+//        }
+//        GetAnnotationsTask annTask = (GetAnnotationsTask) task;
+//
+//        final int taxon = annTask.getTaxon();
+//        if (intactNetwork.getAnnotations() == null || intactNetwork.getAnnotations().size() == 0) {
+//            SwingUtilities.invokeLater(new Runnable() {
+//                public void run() {
+//                    JOptionPane.showMessageDialog(null, "Your query returned no results",
+//                            "No results", JOptionPane.ERROR_MESSAGE);
+//                }
+//            });
+//            return;
+//        }
+//        boolean noAmbiguity = intactNetwork.resolveAnnotations();
+//        if (noAmbiguity) {
+//            int additionalNodes = getAdditionalNodes();
+//            // This mimics the String web site behavior
+//            if (intactNetwork.getResolvedTerms() == 1 && additionalNodes == 0) {
+//                additionalNodes = 10;
+//                logger.warn("STRING Protein: Only one protein was selected -- additional interactions set to 10");
+//            }
+//
+//            final int addNodes = additionalNodes;
+//
+//            SwingUtilities.invokeLater(() -> importNetwork(taxon, getConfidence(), addNodes));
+//        } else {
+//            SwingUtilities.invokeLater(() -> {
+//                JDialog d = new JDialog();
+//                d.setTitle("Resolve Ambiguous Terms");
+//                d.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+//                GetTermsPanel panel = new GetTermsPanel(manager, intactNetwork,
+//                        Databases.STRING.getAPIName(), false, optionsPanel);
+//                panel.createResolutionPanel();
+//                d.setContentPane(panel);
+//                d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+//                d.pack();
+//                d.setVisible(true);
+//            });
+//        }
     }
 
     void importNetwork(int taxon, int confidence, int additionalNodes) {

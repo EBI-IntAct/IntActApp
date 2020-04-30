@@ -17,8 +17,8 @@ public class IntactNode {
     final IntactNetwork intactNetwork;
     final CyNode intactNode;
 
-    public IntactNode(final IntactNetwork sNet, final CyNode sNode) {
-        intactNetwork = sNet;
+    public IntactNode(final IntactNetwork iNet, final CyNode sNode) {
+        intactNetwork = iNet;
         intactNode = sNode;
     }
 

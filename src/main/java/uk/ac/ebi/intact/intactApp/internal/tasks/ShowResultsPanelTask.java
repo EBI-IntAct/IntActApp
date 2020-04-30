@@ -5,7 +5,7 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowResultsPanelTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.ui.IntactCytoPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.DetailPanel;
 
 import java.awt.*;
 import java.util.Properties;
@@ -41,7 +41,7 @@ public class ShowResultsPanelTask extends AbstractTask {
 
         // If the panel is not already registered, create it
         if (show && cytoPanel.indexOfComponent("uk.ac.ebi.intact.intactApp.Intact") < 0) {
-            CytoPanelComponent2 panel = new IntactCytoPanel(manager);
+            CytoPanelComponent2 panel = new DetailPanel(manager);
 
             // Register it
             manager.registerService(panel, CytoPanelComponent.class, new Properties());
