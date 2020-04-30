@@ -4,6 +4,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.OpenBrowser;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNode;
+import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
 import uk.ac.ebi.intact.intactApp.internal.utils.OpenCyBrowser;
 
 import javax.swing.*;

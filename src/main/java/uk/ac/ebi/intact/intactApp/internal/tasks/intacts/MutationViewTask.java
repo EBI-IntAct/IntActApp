@@ -7,7 +7,7 @@ import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.MutationIntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.MutationIntactStyle;
 
 public class MutationViewTask extends AbstractHiderTask {
 

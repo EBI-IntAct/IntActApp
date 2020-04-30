@@ -3,6 +3,7 @@ package uk.ac.ebi.intact.intactApp.internal.ui;
 import uk.ac.ebi.intact.intactApp.internal.model.Species;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
+import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;

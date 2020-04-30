@@ -12,7 +12,6 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TunableSetter;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
-import uk.ac.ebi.intact.intactApp.internal.model.Databases;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
@@ -26,14 +25,14 @@ public class LoadInteractions extends AbstractTask {
     final int taxonId;
     final int confidence;
     final int additionalNodes;
-    final List<String> stringIds;
+    final List<String> intactIds;
     final Map<String, String> queryTermMap;
     final String netName;
     final String useDATABASE;
 
     public LoadInteractions(final IntactNetwork intactNet, final String species, final int taxonId,
                             final int confidence, final int additionalNodes,
-                            final List<String> stringIds,
+                            final List<String> intactIds,
                             final Map<String, String> queryTermMap,
                             final String netName,
                             final String useDATABASE) {
@@ -41,7 +40,7 @@ public class LoadInteractions extends AbstractTask {
         this.taxonId = taxonId;
         this.additionalNodes = additionalNodes;
         this.confidence = confidence;
-        this.stringIds = stringIds;
+        this.intactIds = intactIds;
         this.species = species;
         this.queryTermMap = queryTermMap;
         this.netName = netName;
@@ -49,62 +48,23 @@ public class LoadInteractions extends AbstractTask {
     }
 
     public void run(TaskMonitor monitor) {
-        if (useDATABASE.equals(Databases.STRING.getAPIName()))
-            monitor.setTitle("Loading data from STRING for " + stringIds.size() + " identifiers.");
-        else if (useDATABASE.equals(Databases.STITCH.getAPIName()))
-            monitor.setTitle("Loading data from STITCH for " + stringIds.size() + " identifiers.");
         IntactManager manager = intactNet.getManager();
-        StringBuilder ids = null;
-        for (String id : stringIds) {
-            if (ids == null)
-                ids = new StringBuilder(id);
-            else
-                ids.append("\n").append(id);
-        }
-
-        String conf = "0." + confidence;
-        if (confidence == 100)
-            conf = "1.0";
 
         // String url = "http://api.jensenlab.org/network?entities="+URLEncoder.encode(ids.trim())+"&score="+conf;
-        Map<String, String> args = new HashMap<>();
-        // args.put("database", useDATABASE);
-        // TODO: Is it OK to always use stitch?
-        args.put("database", Databases.STITCH.getAPIName());
-        args.put("entities", ids.toString().trim());
-        args.put("score", conf);
-        args.put("caller_identity", IntactManager.CallerIdentity);
-        if (additionalNodes > 0) {
-            args.put("additional", Integer.toString(additionalNodes));
-            if (useDATABASE.equals(Databases.STRING.getAPIName())) {
-                args.put("filter", taxonId + ".%%");
-            } else {
-                args.put("filter", taxonId + ".%%|CIDm%%");
-            }
-        }
-        JsonNode results = HttpUtils.postJSON(manager.getNetworkURL(), args, manager);
+        Map<Object, Object> args = new HashMap<>();
+        args.put("identifiers", intactIds);
+
+        JsonNode results = HttpUtils.postJSON("https://wwwdev.ebi.ac.uk/intact/ws/graph/network/data", args, manager);
+//        JsonNode results = HttpUtils.postJSON("http://localhost:8083/intact/ws/graph/interaction/cytoscape", args, manager);
 
         // This may change...
-        CyNetwork network = ModelUtils.createIntactNetworkFromJSON(intactNet, species, results,
-                queryTermMap, netName, useDATABASE);
+        CyNetwork network = ModelUtils.createIntactNetworkFromJSON(intactNet, results, queryTermMap, netName);
 
         if (network == null) {
             monitor.showMessage(TaskMonitor.Level.ERROR, "String returned no results");
             return;
         }
 
-        // Rename network collection to have the same name as network
-        // EditNetworkTitleTaskFactory editNetworkTitle = (EditNetworkTitleTaskFactory) manager
-        //		.getService(EditNetworkTitleTaskFactory.class);
-        //insertTasksAfterCurrentTask(editNetworkTitle.createTaskIterator(network,
-        //		network.getRow(network).get(CyNetwork.NAME, String.class)));
-
-        // Set our confidence score
-        ModelUtils.setConfidence(network, ((double) confidence) / 100.0);
-        ModelUtils.setDatabase(network, useDATABASE);
-        ModelUtils.setNetSpecies(network, species);
-        ModelUtils.setDataVersion(network, manager.getDataVersion());
-        ModelUtils.setNetURI(network, manager.getNetworkURL());
         manager.addIntactNetwork(intactNet, network);
 
         // System.out.println("Results: "+results.toString());

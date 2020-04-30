@@ -3,18 +3,24 @@ package uk.ac.ebi.intact.intactApp.internal.io;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cytoscape.io.util.StreamUtil;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 
 import java.io.*;
 import java.net.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 public class HttpUtils {
+    private static final HttpClient httpClient = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_1_1)
+            .build();
+
     public static JsonNode getJSON(String url, Map<String, String> queryMap,
                                    IntactManager manager) {
 
@@ -48,39 +54,22 @@ public class HttpUtils {
         return jsonObject;
     }
 
-    public static JsonNode postJSON(String url, Map<String, String> queryMap,
+    public static JsonNode postJSON(String url, Map<Object, Object> data,
                                     IntactManager manager) {
-
-        // Set up our connection
-        ObjectNode jsonObject = new ObjectNode(JsonNodeFactory.instance);
-
-
-        URLConnection connection;
         try {
-            connection = executeWithRedirect(manager, url, queryMap);
-            InputStream entityStream = connection.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(entityStream));
 
-            reader.mark(2097152); // Set a mark so that if we get a parse failure, we can recover the error
+            HttpRequest request = HttpRequest.newBuilder()
+                    .POST(buildFormDataFromMap(data))
+                    .uri(URI.create(url))
+                    .setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .header("accept", "application/json")
+                    .build();
 
-            try {
-                jsonObject.set(IntactManager.RESULT, new ObjectMapper().readTree(reader));
-            } catch (Exception parseFailure) {
-                // Get back to the start of the error
-                reader.reset();
-                StringBuilder errorString = new StringBuilder();
-                String line;
-                try {
-                    while ((line = reader.readLine()) != null) {
-                        errorString.append(line);
-                    }
-                } catch (Exception ioe) {
-                    // ignore
-                }
-                manager.error("Exception reading JSON from STRING: " + parseFailure.getMessage());
-                System.out.println("Exception reading JSON from STRING: " + parseFailure.getMessage() + "\n Text: " + errorString);
-                return null;
-            }
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return new ObjectMapper().readTree(response.body());
+
 
         } catch (Exception e) {
             // e.printStackTrace();
@@ -88,7 +77,6 @@ public class HttpUtils {
             return null;
         }
 
-        return jsonObject;
     }
 
 
@@ -188,6 +176,30 @@ public class HttpUtils {
             }
         }
         return null;
+    }
+
+    private static HttpRequest.BodyPublisher buildFormDataFromMap(Map<Object, Object> data) {
+        var builder = new StringBuilder();
+        for (Map.Entry<Object, Object> entry : data.entrySet()) {
+            if (builder.length() > 0) {
+                builder.append("&");
+            }
+            if (entry.getValue() instanceof List) {
+                for (Object element : (List) entry.getValue()) {
+                    builder.append(URLEncoder.encode(entry.getKey().toString(), StandardCharsets.UTF_8));
+                    builder.append("=");
+                    builder.append(URLEncoder.encode(element.toString(), StandardCharsets.UTF_8));
+                    builder.append("&");
+                }
+                builder.deleteCharAt(builder.length() - 1);
+            } else {
+                builder.append(URLEncoder.encode(entry.getKey().toString(), StandardCharsets.UTF_8));
+                builder.append("=");
+                builder.append(URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8));
+            }
+        }
+        System.out.println(builder.toString());
+        return HttpRequest.BodyPublishers.ofString(builder.toString());
     }
 
 }

@@ -6,6 +6,7 @@ import org.cytoscape.work.*;
 import uk.ac.ebi.intact.intactApp.internal.model.*;
 import uk.ac.ebi.intact.intactApp.internal.tasks.GetAnnotationsTask;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ImportNetworkTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TextUtils;
 

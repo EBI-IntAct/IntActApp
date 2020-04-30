@@ -13,7 +13,7 @@ import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.IntactStyle;
-import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.OLSMapper;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.StyleMapper;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TableUtil;
 
@@ -32,15 +32,20 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     Map<String, List<Annotation>> annotations;
     CyTable edgeTable;
     CyTable nodeTable;
+    CyTable featuresTable;
+    CyTable xRefsTable;
 
 
     // Collapsed edges
     private Map<Couple, CyEdge> collapsedEdges;
     private List<CyEdge> expandedEdges;
     private Map<Couple, List<CyEdge>> coupleToEdges = new HashMap<>();
-    private Set<Long> taxIds = new HashSet<>();
-    private Map<String, Long> speciesNamesToIds = new HashMap<>();
-    private boolean missingNodesCompleted = false;
+    private final Set<Long> taxIds = new HashSet<>();
+    private final Set<String> interactorTypes = new HashSet<>();
+    private final Map<String, Long> speciesNameToId = new HashMap<>();
+    private final Map<Long, String> speciesIdToName = new HashMap<>();
+    private boolean styleCompleted = false;
+
 
     public IntactNetwork(IntactManager manager) {
         this.manager = manager;
@@ -96,31 +101,54 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     }
 
     public void completeMissingNodeColors() {
-        if (!missingNodesCompleted) {
-            new Thread(() -> {
-                for (CyRow row: nodeTable.getAllRows()){
-                    Long taxId = row.get(ModelUtils.TAX_ID, Long.class);
-                    String specieName = row.get(ModelUtils.SPECIES, String.class);
-                    taxIds.add(taxId);
-                    speciesNamesToIds.put(specieName, taxId);
-                }
 
-                Map<Long, Paint> addedTaxIds = OLSMapper.completeTaxIdColorsFromUnknownTaxIds(new HashSet<>(taxIds));
+        new Thread(() -> {
+            for (CyRow row : nodeTable.getAllRows()) {
+                interactorTypes.add(row.get(ModelUtils.TYPE, String.class));
+                Long taxId = row.get(ModelUtils.TAX_ID, Long.class);
+                taxIds.add(taxId);
+                String specieName = row.get(ModelUtils.SPECIES, String.class);
+                speciesNameToId.put(specieName, taxId);
+                speciesIdToName.put(taxId, specieName);
+            }
 
-                for (IntactStyle style : manager.getIntactStyles().values()) {
-                    style.updateTaxIdToNodePaintMapping(addedTaxIds);
-                }
-            }).start();
-        }
-        missingNodesCompleted = true;
+            Map<Long, Paint> addedTaxIds = StyleMapper.completeTaxIdColorsFromUnknownTaxIds(getTaxIds());
+
+            for (IntactStyle style : manager.getIntactStyles().values()) {
+                style.updateTaxIdToNodePaintMapping(addedTaxIds);
+            }
+            styleCompleted = true;
+        }).start();
+    }
+
+    public boolean isStyleCompleted() {
+        return styleCompleted;
+    }
+
+    public Set<String> getInteractorTypes() {
+        return interactorTypes;
     }
 
     public Set<Long> getTaxIds() {
         return new HashSet<>(taxIds);
     }
 
-    public Map<String, Long> getSpeciesNamesToIds() {
-        return new HashMap<>(speciesNamesToIds);
+    public String getSpeciesName(Long taxId) {
+        return speciesIdToName.getOrDefault(taxId, null);
+    }
+
+    public Long getSpeciesId(String speciesName) {
+        return speciesNameToId.getOrDefault(speciesName, null);
+    }
+
+    public Set<String> getNonDefinedTaxon(){
+        Set<Long> availableTaxIds = new HashSet<>(taxIds);
+        availableTaxIds.removeAll(StyleMapper.taxIdToPaint.keySet());
+        Set<String> nonDefinedTaxon = new HashSet<>();
+        for (Long availableTaxId: availableTaxIds) {
+            nonDefinedTaxon.add(speciesIdToName.get(availableTaxId));
+        }
+        return nonDefinedTaxon;
     }
 
 
@@ -153,8 +181,8 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
         args.put("identifiers", encTerms);
         args.put("caller_identity", IntactManager.CallerIdentity);
         manager.info("URL: " + url + "?species=" + taxon + "&caller_identity=" + IntactManager.CallerIdentity + "&identifiers=" + encTerms);
-        JsonNode results = HttpUtils.postJSON(url, args, manager);
-
+        JsonNode results = HttpUtils.getJSON(url, args, manager);
+        System.out.println(results);
 
         if (results != null) {
             annotations = Annotation.getAnnotations(results, encTerms, annotations);
@@ -172,7 +200,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
             manager.info("URL: " + url + "?species=" + taxon + "&caller_identity=" + IntactManager.CallerIdentity + "&identifiers=" + HttpUtils.truncate(encTerms));
             // Get the results
             // System.out.println("Getting STITCH term resolution");
-            results = HttpUtils.postJSON(url, args, manager);
+            results = HttpUtils.getJSON(url, args, manager);
 
             if (results != null) {
                 updateAnnotations(results, encTerms);
@@ -195,7 +223,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
                     + IntactManager.CallerIdentity + "&identifiers=" + HttpUtils.truncate(encTerms));
             // Get the results
             // System.out.println("Getting VIRUSES term resolution");
-            results = HttpUtils.postJSON(url, args, manager);
+            results = HttpUtils.getJSON(url, args, manager);
 
             if (results != null) {
                 updateAnnotations(results, encTerms);
@@ -315,7 +343,6 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
                 summaryEdgeRow.set(ModelUtils.C_INTACT_IDS, getColumnValuesOfEdges(edgeTable, ModelUtils.INTACT_ID, String.class, similarEdges, "???"));
                 CyRow firstEdgeRow = network.getRow(similarEdges.iterator().next());
                 summaryEdgeRow.set(ModelUtils.C_MI_SCORE, firstEdgeRow.get(ModelUtils.MI_SCORE, Double.class));
-                summaryEdgeRow.set(ModelUtils.C_COLOR, firstEdgeRow.get(ModelUtils.C_COLOR, String.class));
                 summaryEdgeRow.set(ModelUtils.C_IS_COLLAPSED, true);
                 summaryEdgeRow.set(ModelUtils.C_NB_EDGES, similarEdges.size());
             } else {
@@ -359,4 +386,21 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     }
 
     // INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT //
+
+
+    public CyTable getFeaturesTable() {
+        return featuresTable;
+    }
+
+    public void setFeaturesTable(CyTable featuresTable) {
+        this.featuresTable = featuresTable;
+    }
+
+    public CyTable getXRefsTable() {
+        return xRefsTable;
+    }
+
+    public void setXRefsTable(CyTable xRefsTable) {
+        this.xRefsTable = xRefsTable;
+    }
 }

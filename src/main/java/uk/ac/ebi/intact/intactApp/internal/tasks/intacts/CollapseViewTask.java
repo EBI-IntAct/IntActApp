@@ -7,7 +7,7 @@ import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.intactApp.internal.model.styles.from.model.CollapsedIntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.CollapsedIntactStyle;
 
 public class CollapseViewTask extends AbstractHiderTask {
 
