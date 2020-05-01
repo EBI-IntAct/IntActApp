@@ -1,8 +1,8 @@
 package uk.ac.ebi.intact.intactApp.internal.model;
 
 import org.cytoscape.view.model.CyNetworkView;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.RangeChangeEvent;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.RangeChangeListener;
+import uk.ac.ebi.intact.intactApp.internal.model.events.RangeChangeEvent;
+import uk.ac.ebi.intact.intactApp.internal.model.events.RangeChangeListener;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.RangeSlider;
 
 public class IntactNetworkView implements RangeChangeListener {
