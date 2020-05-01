@@ -14,13 +14,12 @@ import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
 import javax.swing.*;
 import java.awt.*;
 
-public class LegendDetailPanel extends AbstractDetailPanel {
+public class LegendDetailPanel extends AbstractDetailPanel  {
     private final NodeLegendPanel nodePanel;
     private final EdgeLegendPanel edgePanel;
 
     public LegendDetailPanel(final IntactManager manager) {
         super(manager);
-        setBackground(backgroundColor);
         JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBackground(backgroundColor);
         JScrollPane scrollPane = new JScrollPane(mainPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -34,6 +33,7 @@ public class LegendDetailPanel extends AbstractDetailPanel {
         mainPanel.add(createResetStyleButton(), layoutHelper.anchor("north"));
         mainPanel.add(nodePanel, layoutHelper.down().anchor("west").expandHoriz());
         mainPanel.add(edgePanel, layoutHelper.down().anchor("west").expandHoriz());
+        mainPanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
         add(scrollPane, new EasyGBC().down().anchor("west").expandBoth());
         filterCurrentLegends();
     }
@@ -49,11 +49,6 @@ public class LegendDetailPanel extends AbstractDetailPanel {
         return resetStylesButton;
     }
 
-    private void filterCurrentLegends() {
-        nodePanel.filterCurrentLegend();
-        edgePanel.filterCurrentLegend();
-    }
-
     @Override
     protected void doFilter(String type) {
     }
@@ -65,11 +60,18 @@ public class LegendDetailPanel extends AbstractDetailPanel {
         filterCurrentLegends();
 
         viewTypeChanged(currentIView.getType());
+        nodePanel.networkViewChanged(currentIView);
+        edgePanel.networkViewChanged(currentIView);
+    }
+
+    private void filterCurrentLegends() {
+        nodePanel.filterCurrentLegend();
+        edgePanel.filterCurrentLegend();
     }
 
     public void viewTypeChanged(IntactNetworkView.Type newType) {
-        edgePanel.viewTypeChanged(newType);
         nodePanel.viewTypeChanged(newType);
+        edgePanel.viewTypeChanged(newType);
     }
 
     public void networkChanged(IntactNetwork newNetwork) {

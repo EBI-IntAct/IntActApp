@@ -12,8 +12,8 @@ import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.AbstractDetailPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.MIScoreSliderUI;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.RangeChangeEvent;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.RangeChangeListener;
+import uk.ac.ebi.intact.intactApp.internal.model.events.RangeChangeEvent;
+import uk.ac.ebi.intact.intactApp.internal.model.events.RangeChangeListener;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.RangeSlider;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 

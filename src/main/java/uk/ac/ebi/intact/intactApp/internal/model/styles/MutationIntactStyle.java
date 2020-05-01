@@ -40,7 +40,7 @@ public class MutationIntactStyle extends ExpandedIntactStyle {
 
     @Override
     protected void setEdgePaintStyle() {
-        DiscreteMapping<Boolean, Paint> disruptedToNodeColor = (DiscreteMapping<Boolean, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.DISRUPTED_BY_MUTATION, Boolean.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
+        DiscreteMapping<Boolean, Paint> disruptedToNodeColor = (DiscreteMapping<Boolean, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.AFFECTED_BY_MUTATION, Boolean.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
         disruptedToNodeColor.putMapValue(true, mutatedColor);
         disruptedToNodeColor.putMapValue(false, wildColor);
         style.addVisualMappingFunction(disruptedToNodeColor);
@@ -62,7 +62,7 @@ public class MutationIntactStyle extends ExpandedIntactStyle {
 
     @Override
     protected void setEdgeWidth() {
-        DiscreteMapping<Boolean, Double> disruptedToNodeBorderWidth = (DiscreteMapping<Boolean, Double>) discreteFactory.createVisualMappingFunction(ModelUtils.DISRUPTED_BY_MUTATION, Boolean.class, BasicVisualLexicon.EDGE_WIDTH);
+        DiscreteMapping<Boolean, Double> disruptedToNodeBorderWidth = (DiscreteMapping<Boolean, Double>) discreteFactory.createVisualMappingFunction(ModelUtils.AFFECTED_BY_MUTATION, Boolean.class, BasicVisualLexicon.EDGE_WIDTH);
         disruptedToNodeBorderWidth.putMapValue(true, 4.0);
         disruptedToNodeBorderWidth.putMapValue(false, 1.0);
 

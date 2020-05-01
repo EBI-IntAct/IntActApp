@@ -1,4 +1,6 @@
-package uk.ac.ebi.intact.intactApp.internal.ui.components.slider;
+package uk.ac.ebi.intact.intactApp.internal.model.events;
+
+import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.RangeSlider;
 
 import java.util.EventObject;
 

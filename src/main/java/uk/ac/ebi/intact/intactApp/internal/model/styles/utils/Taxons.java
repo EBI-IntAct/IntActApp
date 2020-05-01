@@ -12,13 +12,14 @@ public enum Taxons {
     D_MELANOGASTER(7227L, "Drosophila melanogaster",true),
     C_ELEGANS(6239L, "Caenorhabditis elegans",true),
     CHEMICAL_SYNTHESIS(-2L, "Chemical Synthesis",true),
-    PLANTS(33090L, "Plants", false),
+    PLANTS(33090L, "Other plants", false),
     ANIMALS(33208L, "Other animals",false),
-    MAMMALS(40674L, "Mammals", false),
-    FUNGI(4751L, "Fungi", false),
-    BACTERIA(2L, "Bacteria",false),
-    VIRUSES(10239L, "Viruses",false),
-    ARCHAEA(2157L, "Archaea", false);
+    MAMMALS(40674L, "Other mammals", false),
+    FUNGI(4751L, "Other fungi", false),
+    BACTERIA(2L, "Other bacteria",false),
+    VIRUSES(10239L, "Other viruses",false),
+    ARCHAEA(2157L, "Other archaea", false),
+    ARTIFICIAL(81077L, "Other artificial constructs",false);
 
     public final long taxId;
     public final String descriptor;

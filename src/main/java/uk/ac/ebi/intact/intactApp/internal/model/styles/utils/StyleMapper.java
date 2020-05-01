@@ -47,7 +47,8 @@ public class StyleMapper {
         put(FUNGI.taxId, new Color(235, 144, 0)); // Fungi
         put(BACTERIA.taxId, new Color(178, 53, 57)); // Bacteria
         put(VIRUSES.taxId, new Color(132, 100, 190)); // Viruses
-        put(ARCHAEA.taxId, new Color(101, 101, 101)); // Archaea
+        put(ARCHAEA.taxId, new Color(172, 71, 101)); // Archaea
+        put(ARTIFICIAL.taxId, new Color(101, 101, 101));
     }};
 
     public static Hashtable<Long, Paint> originalTaxIdToPaint = new Hashtable<>(taxIdToPaint);
@@ -185,8 +186,8 @@ public class StyleMapper {
 
                 for (int i = lineage.size() - 1; i >= 0; i--) {
                     Long supTaxId = lineage.get(i).get("TaxId").longValue();
-                    if (kingdomColors.containsKey(supTaxId)) {
-                        Paint paint = kingdomColors.get(supTaxId);
+                    if (originalKingdomColors.containsKey(supTaxId)) {
+                        Paint paint = originalKingdomColors.get(supTaxId);
                         kingdomColors.put(taxId, paint);
                         taxIdToChildrenTaxIds.get(supTaxId).add(taxId);
                         addedTaxIds.put(taxId, paint);

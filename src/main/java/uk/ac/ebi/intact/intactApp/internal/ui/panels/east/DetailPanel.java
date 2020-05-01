@@ -11,10 +11,11 @@ import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
+import uk.ac.ebi.intact.intactApp.internal.model.events.IntactNetworkCreatedEvent;
+import uk.ac.ebi.intact.intactApp.internal.model.events.IntactNetworkCreatedListener;
 import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.CollapseViewTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.ExpandViewTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.MutationViewTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.ToggleSwitch;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detailElements.EdgeDetailPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detailElements.LegendDetailPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detailElements.NodeDetailPanel;
@@ -25,16 +26,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Properties;
 
-/**
- * Displays information about a protein taken from IntAct
- *
- * @author Scooter Morris
- */
 public class DetailPanel extends JPanel
         implements CytoPanelComponent2,
         SetCurrentNetworkListener,
         SetCurrentNetworkViewListener,
-        SelectedNodesAndEdgesListener {
+        SelectedNodesAndEdgesListener,
+        IntactNetworkCreatedListener {
 
     private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/Gradient_over_Transparent/favicon_32x32.ico");
     final IntactManager manager;
@@ -51,13 +48,14 @@ public class DetailPanel extends JPanel
     private MutationViewTaskFactory mutationViewTaskFactory;
 
     private JTabbedPane tabs;
-    private NodeDetailPanel nodePanel;
-    private EdgeDetailPanel edgePanel;
+    private final NodeDetailPanel nodePanel;
+    private final EdgeDetailPanel edgePanel;
     private LegendDetailPanel legendPanel;
     private boolean registered = false;
 
     public DetailPanel(final IntactManager manager) {
         this.manager = manager;
+        manager.addListener(this);
         this.setLayout(new BorderLayout());
 
         collapseViewTaskFactory = new CollapseViewTaskFactory(manager);
@@ -88,17 +86,17 @@ public class DetailPanel extends JPanel
         viewTypesPanel.add(mutationViewType);
         upperPanel.add(viewTypesPanel);
 
-        ToggleSwitch toggleFancy = new ToggleSwitch(true, new Color(59, 136, 253));
-        toggleFancy.addChangeListener(e -> manager.toggleFancyStyles());
-        JPanel buttonsPanel = new JPanel();
-        Box fastFancyBox = Box.createHorizontalBox();
-        fastFancyBox.add(new JLabel("Fast"));
-        fastFancyBox.add(Box.createHorizontalStrut(4));
-        fastFancyBox.add(toggleFancy);
-        fastFancyBox.add(Box.createHorizontalStrut(4));
-        fastFancyBox.add(new JLabel("Fancy"));
-        buttonsPanel.add(fastFancyBox);
-        upperPanel.add(buttonsPanel);
+//        ToggleSwitch toggleFancy = new ToggleSwitch(true, new Color(59, 136, 253));
+//        toggleFancy.addChangeListener(e -> manager.toggleFancyStyles());
+//        JPanel buttonsPanel = new JPanel();
+//        Box fastFancyBox = Box.createHorizontalBox();
+//        fastFancyBox.add(new JLabel("Fast"));
+//        fastFancyBox.add(Box.createHorizontalStrut(4));
+//        fastFancyBox.add(toggleFancy);
+//        fastFancyBox.add(Box.createHorizontalStrut(4));
+//        fastFancyBox.add(new JLabel("Fancy"));
+//        buttonsPanel.add(fastFancyBox);
+//        upperPanel.add(buttonsPanel);
         this.add(upperPanel, BorderLayout.NORTH);
 
 
@@ -221,4 +219,14 @@ public class DetailPanel extends JPanel
         }
     }
 
+    @Override
+    public void handleEvent(IntactNetworkCreatedEvent event) {
+        if (!registered) {
+            showCytoPanel();
+        }
+        // Tell tabs
+        nodePanel.networkChanged(event.getNewINetwork());
+        edgePanel.networkChanged(event.getNewINetwork());
+        legendPanel.networkChanged(event.getNewINetwork());
+    }
 }

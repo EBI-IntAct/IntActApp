@@ -99,6 +99,9 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
                                 (StyleMapper.taxIdToChildrenTaxIds.containsKey(taxId) && !Collections.disjoint(networkTaxIds, StyleMapper.taxIdToChildrenTaxIds.get(taxId)))
                 );
             }
+
+            addNodeColorPanel.setVisible(!currentINetwork.getNonDefinedTaxon().isEmpty());
+
         }).start();
     }
 }

@@ -52,8 +52,9 @@ public class CollapsablePanel extends JPanel {
 
         add(separator, BorderLayout.WEST);
         add(content, BorderLayout.CENTER);
-        setBackground(panel.getBackground());
+//        add(new JSeparator(), BorderLayout.SOUTH);
         content.setVisible(!collapsed);
+        setBackground(panel.getBackground());
     }
 
     public void setLabel(String label) {

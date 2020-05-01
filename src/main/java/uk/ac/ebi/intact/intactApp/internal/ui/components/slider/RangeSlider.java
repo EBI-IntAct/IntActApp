@@ -1,5 +1,8 @@
 package uk.ac.ebi.intact.intactApp.internal.ui.components.slider;
 
+import uk.ac.ebi.intact.intactApp.internal.model.events.RangeChangeEvent;
+import uk.ac.ebi.intact.intactApp.internal.model.events.RangeChangeListener;
+
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;

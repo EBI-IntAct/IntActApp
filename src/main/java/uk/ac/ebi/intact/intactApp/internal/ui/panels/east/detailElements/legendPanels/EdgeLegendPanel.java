@@ -28,12 +28,6 @@ public class EdgeLegendPanel extends AbstractLegendPanel {
     public void filterCurrentLegend() {
     }
 
-    @Override
-    public void networkViewChanged(IntactNetworkView newINetworkView) {
-        super.networkViewChanged(newINetworkView);
-        viewTypeChanged(newINetworkView.getType());
-    }
-
     public void viewTypeChanged(IntactNetworkView.Type newType) {
         if (currentIView.getType() != newType) {
             content.removeAll();

@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.intactApp.internal.ui.components.slider;
+package uk.ac.ebi.intact.intactApp.internal.model.events;
 
 import java.util.EventListener;
 
