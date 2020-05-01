@@ -71,7 +71,7 @@ public class ModelUtils {
     public static String HOST_ORGANISM = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Host organism";
     public static String HOST_ORGANISM_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Host organism tax id";
     public static String PUBMED_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "PubMed id";
-    public static String DISRUPTED_BY_MUTATION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "disrupted by mutation";
+    public static String AFFECTED_BY_MUTATION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "affected by mutation";
     public static String MI_SCORE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "mi score";
 
     public static String SOURCE_BIOLOGICAL_ROLE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "source biological role";
@@ -954,7 +954,7 @@ public class ModelUtils {
                 createColumnIfNeeded(defaultEdgeTable, String.class, intactEdgeColumn);
             }
 
-            createColumnIfNeeded(network.getDefaultEdgeTable(), Boolean.class, DISRUPTED_BY_MUTATION, false);
+            createColumnIfNeeded(network.getDefaultEdgeTable(), Boolean.class, AFFECTED_BY_MUTATION, false);
 
             createColumnIfNeeded(defaultEdgeTable, Boolean.class, C_IS_COLLAPSED);
             createColumnIfNeeded(defaultEdgeTable, Double.class, C_MI_SCORE);
@@ -1126,6 +1126,7 @@ public class ModelUtils {
         CyRow row = network.getRow(newNode);
         String nodeName = nodeJSON.get("interactor_name").textValue();
         row.set(CyNetwork.NAME, nodeName);
+        row.set(MUTATION, false);
 
         nodeJSON.fields().forEachRemaining(entry -> {
             JsonNode value = entry.getValue();
@@ -1206,6 +1207,7 @@ public class ModelUtils {
 
         row.set(CyNetwork.NAME, nodeNameMap.get(sourceId) + " (" + type + ") " + nodeNameMap.get(targetId));
         row.set(CyEdge.INTERACTION, type);
+        row.set(AFFECTED_BY_MUTATION, false);
         row.set(C_IS_COLLAPSED, false);
         fillParticipantData(featuresTable, network, source, sourceNode, edge, row, SOURCE_BIOLOGICAL_ROLE, SOURCE_BIOLOGICAL_ROLE_MI_ID);
         if (!selfInteracting) {
@@ -1290,9 +1292,10 @@ public class ModelUtils {
                 featureRow.set(FEATURE_TYPE_MI_ID, feature_type_mi_identifier);
 
                 if (feature_type_mi_identifier != null) {
-                    edgeRow.set(DISRUPTED_BY_MUTATION, impactfulMutationsMIId.contains(feature_type_mi_identifier));
+//                    edgeRow.set(AFFECTED_BY_MUTATION, mutationsMIId.contains(feature_type_mi_identifier));
                     if (mutationsMIId.contains(feature_type_mi_identifier)) {
                         network.getRow(participantNode).set(MUTATION, true);
+                        edgeRow.set(AFFECTED_BY_MUTATION, true);
                     }
                 }
             }
@@ -1304,7 +1307,7 @@ public class ModelUtils {
         return tmp.substring(0, tmp.length() - 1);
     }
 
-    public static void buildIntactNetworkFromExistingOne(IntactNetwork iNetwork) {
+    public static void buildIntactNetworkTableFromExistingOne(IntactNetwork iNetwork) {
         CyNetwork network = iNetwork.getNetwork();
         CyRow networkRow = network.getDefaultNetworkTable().getRow(network.getSUID());
         CyTableManager tableManager = iNetwork.getManager().getService(CyTableManager.class);
