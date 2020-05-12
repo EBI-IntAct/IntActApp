@@ -1,10 +1,7 @@
 package uk.ac.ebi.intact.intactApp.internal.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
+import org.cytoscape.model.*;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
 import org.cytoscape.model.events.AddedEdgesEvent;
@@ -33,7 +30,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     CyTable edgeTable;
     CyTable nodeTable;
     CyTable featuresTable;
-    CyTable xRefsTable;
+    CyTable identifiersTable;
 
 
     // Collapsed edges
@@ -73,7 +70,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
         edgeTable = network.getDefaultEdgeTable();
         nodeTable = network.getDefaultNodeTable();
 
-        TableUtil.NullAndNonNullEdges identifiedOrNotEdges = TableUtil.splitNullAndNonNullEdges(network, ModelUtils.INTACT_ID);
+        TableUtil.NullAndNonNullEdges identifiedOrNotEdges = TableUtil.splitNullAndNonNullEdges(network, ModelUtils.INTACT_AC);
 
         expandedEdges = new ArrayList<>(identifiedOrNotEdges.nonNullEdges);
         collapsedEdges = new HashMap<>();
@@ -91,17 +88,15 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
         }
 
         completeMissingNodeColors();
-
     }
 
     void hideExpandedEdgesOnViewCreation(CyNetworkView networkView) {
         HideTaskFactory hideTaskFactory = manager.getService(HideTaskFactory.class);
         manager.execute(hideTaskFactory.createTaskIterator(networkView, null, expandedEdges));
-        manager.registerNetworkView(networkView);
+        manager.addNetworkView(networkView);
     }
 
     public void completeMissingNodeColors() {
-
         new Thread(() -> {
             for (CyRow row : nodeTable.getAllRows()) {
                 interactorTypes.add(row.get(ModelUtils.TYPE, String.class));
@@ -141,16 +136,15 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
         return speciesNameToId.getOrDefault(speciesName, null);
     }
 
-    public Set<String> getNonDefinedTaxon(){
+    public Set<String> getNonDefinedTaxon() {
         Set<Long> availableTaxIds = new HashSet<>(taxIds);
         availableTaxIds.removeAll(StyleMapper.taxIdToPaint.keySet());
         Set<String> nonDefinedTaxon = new HashSet<>();
-        for (Long availableTaxId: availableTaxIds) {
+        for (Long availableTaxId : availableTaxIds) {
             nonDefinedTaxon.add(speciesIdToName.get(availableTaxId));
         }
         return nonDefinedTaxon;
     }
-
 
 
     public Map<String, List<Annotation>> getAnnotations() {
@@ -340,11 +334,13 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
                     summaryEdge = collapsedEdges.get(couple);
                 }
                 CyRow summaryEdgeRow = network.getRow(summaryEdge);
-                summaryEdgeRow.set(ModelUtils.C_INTACT_IDS, getColumnValuesOfEdges(edgeTable, ModelUtils.INTACT_ID, String.class, similarEdges, "???"));
+                summaryEdgeRow.set(ModelUtils.C_INTACT_IDS, getColumnValuesOfEdges(edgeTable, ModelUtils.INTACT_ID, Long.class, similarEdges, "???"));
                 CyRow firstEdgeRow = network.getRow(similarEdges.iterator().next());
-                summaryEdgeRow.set(ModelUtils.C_MI_SCORE, firstEdgeRow.get(ModelUtils.MI_SCORE, Double.class));
+                summaryEdgeRow.set(ModelUtils.MI_SCORE, firstEdgeRow.get(ModelUtils.MI_SCORE, Double.class));
                 summaryEdgeRow.set(ModelUtils.C_IS_COLLAPSED, true);
                 summaryEdgeRow.set(ModelUtils.C_NB_EDGES, similarEdges.size());
+                summaryEdgeRow.set(CyNetwork.NAME, ModelUtils.getName(network, couple.node1) + " (interact with) " + ModelUtils.getName(network, couple.node2));
+
             } else {
                 summaryEdge = collapsedEdges.get(couple);
                 network.removeEdges(Collections.singleton(summaryEdge));
@@ -359,6 +355,14 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
 
     public List<CyEdge> getExpandedEdges() {
         return new ArrayList<>(expandedEdges);
+    }
+
+    public List<CyEdge> getEvidenceEdges(CyEdge edge) {
+        return coupleToEdges.get(new Couple(edge));
+    }
+
+    public CyEdge getCollapsedEdge(CyEdge edge) {
+        return collapsedEdges.get(new Couple(edge));
     }
 
 
@@ -394,13 +398,53 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
 
     public void setFeaturesTable(CyTable featuresTable) {
         this.featuresTable = featuresTable;
+        if (network != null) {
+            network.getRow(network).set(ModelUtils.FEATURES_TABLE_REF, featuresTable.getSUID());
+        }
     }
 
-    public CyTable getXRefsTable() {
-        return xRefsTable;
+    public CyTable getIdentifiersTable() {
+        return identifiersTable;
     }
 
-    public void setXRefsTable(CyTable xRefsTable) {
-        this.xRefsTable = xRefsTable;
+    public void setIdentifiersTable(CyTable identifiersTable) {
+        this.identifiersTable = identifiersTable;
+        if (network != null)
+            network.getRow(network).set(ModelUtils.IDENTIFIERS_TABLE_REF, identifiersTable.getSUID());
+    }
+
+    public List<CyEdge> getSelectedEdges() {
+        List<CyEdge> selectedEdges = new ArrayList<>();
+        for (CyEdge edge : network.getEdgeList()) {
+            if (network.getRow(edge).get(CyNetwork.SELECTED, Boolean.class)) {
+                selectedEdges.add(edge);
+            }
+        }
+        return selectedEdges;
+    }
+
+    public List<CyNode> getSelectedNodes() {
+        List<CyNode> selectedNodes = new ArrayList<>();
+        for (CyNode node : network.getNodeList()) {
+            if (network.getRow(node).get(CyNetwork.SELECTED, Boolean.class)) {
+                selectedNodes.add(node);
+            }
+        }
+        return selectedNodes;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        IntactNetwork that = (IntactNetwork) o;
+
+        return network.equals(that.network);
+    }
+
+    @Override
+    public int hashCode() {
+        return network.hashCode();
     }
 }

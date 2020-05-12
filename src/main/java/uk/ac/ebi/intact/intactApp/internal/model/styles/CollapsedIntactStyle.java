@@ -5,12 +5,14 @@ import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
 import java.awt.*;
 
 public class CollapsedIntactStyle extends IntactStyle {
     public final static String TITLE = "Intact - Collapsed";
+    public final static IntactNetworkView.Type type = IntactNetworkView.Type.COLLAPSED;
     public static final int edgeWidthValue1 = 1;
     public static final int edgeWidthValue2 = 25;
     public static final double edgeWidth1 = 2d;
@@ -51,7 +53,7 @@ public class CollapsedIntactStyle extends IntactStyle {
 
     @Override
     protected void setEdgePaintStyle() {
-        ContinuousMapping<Double, Paint> miScoreToEdgeColor = (ContinuousMapping<Double, Paint>) continuousFactory.createVisualMappingFunction(ModelUtils.C_MI_SCORE, Double.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+        ContinuousMapping<Double, Paint> miScoreToEdgeColor = (ContinuousMapping<Double, Paint>) continuousFactory.createVisualMappingFunction(ModelUtils.MI_SCORE, Double.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
         for (int i = 0; i < colors.length - 1; i++) {
             miScoreToEdgeColor.addPoint(i / 10.0, new BoundaryRangeValues<>(colors[i], colors[i], colors[i + 1]));
             miScoreToEdgeColor.addPoint((i / 10.0) + 0.001, new BoundaryRangeValues<>(colors[i + 1], colors[i + 1], colors[i + 1]));
@@ -63,5 +65,15 @@ public class CollapsedIntactStyle extends IntactStyle {
     @Override
     public String getStyleName() {
         return TITLE;
+    }
+
+    @Override
+    public IntactNetworkView.Type getStyleViewType() {
+        return type;
+    }
+
+
+    public static Color getColor(double miScore) {
+        return colors[1 + (int) Math.floor(miScore * 10)];
     }
 }

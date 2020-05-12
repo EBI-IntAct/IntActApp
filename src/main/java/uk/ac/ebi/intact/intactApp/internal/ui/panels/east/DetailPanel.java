@@ -13,17 +13,21 @@ import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.events.IntactNetworkCreatedEvent;
 import uk.ac.ebi.intact.intactApp.internal.model.events.IntactNetworkCreatedListener;
+import uk.ac.ebi.intact.intactApp.internal.model.events.IntactViewTypeChangedEvent;
+import uk.ac.ebi.intact.intactApp.internal.model.events.IntactViewTypeChangedListener;
 import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.CollapseViewTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.ExpandViewTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.MutationViewTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detailElements.EdgeDetailPanel;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detailElements.LegendDetailPanel;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detailElements.NodeDetailPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.EdgeDetailPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.LegendDetailPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.NodeDetailPanel;
 import uk.ac.ebi.intact.intactApp.internal.utils.IconUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.Instant;
 import java.util.Properties;
 
 public class DetailPanel extends JPanel
@@ -31,59 +35,53 @@ public class DetailPanel extends JPanel
         SetCurrentNetworkListener,
         SetCurrentNetworkViewListener,
         SelectedNodesAndEdgesListener,
-        IntactNetworkCreatedListener {
+        IntactNetworkCreatedListener,
+        IntactViewTypeChangedListener {
 
     private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/Gradient_over_Transparent/favicon_32x32.ico");
     final IntactManager manager;
-    private ButtonGroup viewTypes = new ButtonGroup();
-    private JPanel viewTypesPanel = new JPanel(new GridLayout(3, 1));
-    private JPanel upperPanel = new JPanel(new GridLayout(1, 2));
 
-    private JRadioButton collapsedViewType = new JRadioButton("Collapse"),
-            expandedViewType = new JRadioButton("Expanded"),
-            mutationViewType = new JRadioButton("Mutation");
+    private final JRadioButton collapsedViewType = new JRadioButton("Collapse");
+    private final JRadioButton expandedViewType = new JRadioButton("Expanded");
+    private final JRadioButton mutationViewType = new JRadioButton("Mutation");
 
-    private CollapseViewTaskFactory collapseViewTaskFactory;
-    private ExpandViewTaskFactory expandViewTaskFactory;
-    private MutationViewTaskFactory mutationViewTaskFactory;
+    private final CollapseViewTaskFactory collapseViewTaskFactory;
+    private final ExpandViewTaskFactory expandViewTaskFactory;
+    private final MutationViewTaskFactory mutationViewTaskFactory;
 
-    private JTabbedPane tabs;
     private final NodeDetailPanel nodePanel;
     private final EdgeDetailPanel edgePanel;
-    private LegendDetailPanel legendPanel;
+    private final LegendDetailPanel legendPanel;
     private boolean registered = false;
+
+
 
     public DetailPanel(final IntactManager manager) {
         this.manager = manager;
-        manager.addListener(this);
+        manager.addIntactNetworkCreatedListener(this);
+        manager.addIntactViewTypeChangedListener(this);
         this.setLayout(new BorderLayout());
 
         collapseViewTaskFactory = new CollapseViewTaskFactory(manager);
         expandViewTaskFactory = new ExpandViewTaskFactory(manager);
         mutationViewTaskFactory = new MutationViewTaskFactory(manager);
 
+        ButtonGroup viewTypes = new ButtonGroup();
         viewTypes.add(collapsedViewType);
         viewTypes.add(expandedViewType);
         viewTypes.add(mutationViewType);
 
         collapsedViewType.setSelected(true);
-        collapsedViewType.addActionListener(e -> {
-            manager.execute(collapseViewTaskFactory.createTaskIterator());
-            legendPanel.viewTypeChanged(IntactNetworkView.Type.COLLAPSED);
-        });
-        expandedViewType.addActionListener(e -> {
-            manager.execute(expandViewTaskFactory.createTaskIterator());
-            legendPanel.viewTypeChanged(IntactNetworkView.Type.EXPANDED);
-        });
-        mutationViewType.addActionListener(e -> {
-            manager.execute(mutationViewTaskFactory.createTaskIterator());
-            legendPanel.viewTypeChanged(IntactNetworkView.Type.MUTATION);
-        });
+        collapsedViewType.addActionListener(e -> manager.execute(collapseViewTaskFactory.createTaskIterator()));
+        expandedViewType.addActionListener(e -> manager.execute(expandViewTaskFactory.createTaskIterator()));
+        mutationViewType.addActionListener(e -> manager.execute(mutationViewTaskFactory.createTaskIterator()));
 
+        JPanel viewTypesPanel = new JPanel(new GridLayout(3, 1));
         viewTypesPanel.setBorder(BorderFactory.createTitledBorder("View types"));
         viewTypesPanel.add(collapsedViewType);
         viewTypesPanel.add(expandedViewType);
         viewTypesPanel.add(mutationViewType);
+        JPanel upperPanel = new JPanel(new GridLayout(1, 2));
         upperPanel.add(viewTypesPanel);
 
 //        ToggleSwitch toggleFancy = new ToggleSwitch(true, new Color(59, 136, 253));
@@ -100,7 +98,7 @@ public class DetailPanel extends JPanel
         this.add(upperPanel, BorderLayout.NORTH);
 
 
-        tabs = new JTabbedPane(JTabbedPane.BOTTOM);
+        JTabbedPane tabs = new JTabbedPane(JTabbedPane.BOTTOM);
         nodePanel = new NodeDetailPanel(manager);
         tabs.add("Nodes", nodePanel);
         edgePanel = new EdgeDetailPanel(manager);
@@ -165,37 +163,47 @@ public class DetailPanel extends JPanel
         return "IntAct";
     }
 
-    public void updateControls() {
-        nodePanel.updateControls();
-    }
+
+    private Instant lastSelection = Instant.now();
 
     @Override
     public void handleEvent(SelectedNodesAndEdgesEvent event) {
         if (!registered) return;
-        // Pass selected nodes to nodeTab
-        nodePanel.selectedNodes(event.getSelectedNodes());
-        // Pass selected edges to edgeTab
-        edgePanel.selectedEdges(event.getSelectedEdges());
+        if (Instant.now().minusMillis(500).isAfter(lastSelection)) {
+
+            if (nodePanel.selectionRunning || edgePanel.selectionRunning) {
+                nodePanel.selectionRunning = false;
+                edgePanel.selectionRunning = false;
+                TimeUtils.sleep(200);
+            }
+            lastSelection = Instant.now();
+
+            new Thread(() -> nodePanel.selectedNodes(event.getSelectedNodes())).start();
+            new Thread(() -> edgePanel.selectedEdges(event.getSelectedEdges())).start();
+        }
     }
 
     private void updateRadioButtons(CyNetworkView view) {
-        switch (manager.getIntactNetworkView(view).getType()) {
-            case COLLAPSED:
-                collapsedViewType.setSelected(true);
-                break;
-            case EXPANDED:
-                expandedViewType.setSelected(true);
-                break;
-            case MUTATION:
-                mutationViewType.setSelected(true);
-                break;
+        IntactNetworkView intactNetworkView = manager.getIntactNetworkView(view);
+        if (intactNetworkView != null) {
+            switch (intactNetworkView.getType()) {
+                case COLLAPSED:
+                    collapsedViewType.setSelected(true);
+                    break;
+                case EXPANDED:
+                    expandedViewType.setSelected(true);
+                    break;
+                case MUTATION:
+                    mutationViewType.setSelected(true);
+                    break;
+            }
         }
     }
 
     @Override
     public void handleEvent(SetCurrentNetworkEvent event) {
         IntactNetwork network = manager.getIntactNetwork(event.getNetwork());
-        if (ModelUtils.ifHaveIntactNS(network.getNetwork())) {
+        if (network != null && ModelUtils.ifHaveIntactNS(network.getNetwork())) {
             if (!registered) {
                 showCytoPanel();
             }
@@ -224,9 +232,28 @@ public class DetailPanel extends JPanel
         if (!registered) {
             showCytoPanel();
         }
-        // Tell tabs
-        nodePanel.networkChanged(event.getNewINetwork());
-        edgePanel.networkChanged(event.getNewINetwork());
-        legendPanel.networkChanged(event.getNewINetwork());
+        if (nodePanel != null) {
+            // Tell tabs
+            nodePanel.networkChanged(event.getNewINetwork());
+            edgePanel.networkChanged(event.getNewINetwork());
+            legendPanel.networkChanged(event.getNewINetwork());
+        }
+    }
+
+    @Override
+    public void handleEvent(IntactViewTypeChangedEvent event) {
+        legendPanel.viewTypeChanged(event.newType);
+        edgePanel.viewTypeChanged();
+        switch (event.newType) {
+            case COLLAPSED:
+                collapsedViewType.setSelected(true);
+                break;
+            case EXPANDED:
+                expandedViewType.setSelected(true);
+                break;
+            case MUTATION:
+                mutationViewType.setSelected(true);
+                break;
+        }
     }
 }

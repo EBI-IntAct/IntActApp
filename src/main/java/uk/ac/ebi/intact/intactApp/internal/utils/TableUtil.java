@@ -20,7 +20,8 @@ public class TableUtil {
         NullAndNonNullEdges result = new NullAndNonNullEdges();
 
         for (CyEdge edge: network.getEdgeList()) {
-            if (network.getRow(edge).get(filteredColumnName, Object.class) != null) {
+            String value = network.getRow(edge).get(filteredColumnName, String.class);
+            if (value != null && !value.isBlank()) {
                 result.nonNullEdges.add(edge);
             } else {
                 result.nullEdges.add(edge);

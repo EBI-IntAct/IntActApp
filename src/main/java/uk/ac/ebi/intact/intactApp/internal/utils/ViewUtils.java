@@ -12,7 +12,6 @@ import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.*;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
-import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 
 import java.awt.*;
@@ -146,86 +145,6 @@ public class ViewUtils {
         vmm.addVisualStyle(stringStyle);
         return stringStyle;
     }
-
-    public static void updateChemVizPassthrough(IntactManager manager, CyNetworkView view, boolean show) {
-        VisualStyle stringStyle = getStyle(manager, view);
-
-        VisualMappingFunctionFactory passthroughFactory =
-                manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
-        VisualLexicon lex = manager.getService(RenderingEngineManager.class).getDefaultVisualLexicon();
-
-        if (show && manager.haveChemViz()) {
-            VisualProperty customGraphics = lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_2");
-            PassthroughMapping pMapping =
-                    (PassthroughMapping) passthroughFactory.createVisualMappingFunction(ModelUtils.CV_STYLE,
-                            String.class, customGraphics);
-            stringStyle.addVisualMappingFunction(pMapping);
-        } else {
-            stringStyle
-                    .removeVisualMappingFunction(lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_2"));
-        }
-    }
-
-    public static void updateEnhancedLabels(IntactManager manager, VisualStyle stringStyle,
-                                            CyNetwork net, boolean show) {
-
-        boolean useStitch = false;
-        if (net.getDefaultNodeTable().getColumn(ModelUtils.TYPE) != null)
-            useStitch = true;
-
-        VisualMappingFunctionFactory discreteFactory =
-                manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
-        VisualMappingFunctionFactory passthroughFactory =
-                manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
-        VisualLexicon lex = manager.getService(RenderingEngineManager.class).getDefaultVisualLexicon();
-        // Set up the passthrough mapping for the label
-        if (show && manager.haveEnhancedGraphics()) {
-            {
-                VisualProperty customGraphics = lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_3");
-                PassthroughMapping pMapping =
-                        (PassthroughMapping) passthroughFactory.createVisualMappingFunction(ModelUtils.ELABEL_STYLE,
-                                String.class, customGraphics);
-                stringStyle.addVisualMappingFunction(pMapping);
-            }
-
-            // Set up our labels to be in the upper right quadrant
-            {
-                VisualProperty customGraphicsP = lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_POSITION_3");
-                Object upperRight = customGraphicsP.parseSerializableString("NE,C,c,0.00,0.00");
-                stringStyle.setDefaultValue(customGraphicsP, upperRight);
-                if (useStitch) {
-                    Object top = customGraphicsP.parseSerializableString("N,C,c,0.00,-5.00");
-                    DiscreteMapping<String, Object> dMapping =
-                            (DiscreteMapping) discreteFactory.createVisualMappingFunction(ModelUtils.TYPE, String.class,
-                                    customGraphicsP);
-                    dMapping.putMapValue("compound", top);
-                    dMapping.putMapValue("protein", upperRight);
-                    stringStyle.addVisualMappingFunction(dMapping);
-                }
-            }
-
-            {
-                stringStyle.removeVisualMappingFunction(BasicVisualLexicon.NODE_LABEL);
-            }
-        } else {
-            stringStyle
-                    .removeVisualMappingFunction(lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_3"));
-            stringStyle.removeVisualMappingFunction(
-                    lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_POSITION_3"));
-
-            {
-                PassthroughMapping pMapping = (PassthroughMapping) passthroughFactory
-                        .createVisualMappingFunction(ModelUtils.DISPLAY, String.class,
-                                BasicVisualLexicon.NODE_LABEL);
-                stringStyle.addVisualMappingFunction(pMapping);
-            }
-
-        }
-    }
-
-
-
-
 
     public static void highlight(IntactManager manager, CyNetworkView view, List<CyNode> nodes) {
         CyNetwork net = view.getModel();

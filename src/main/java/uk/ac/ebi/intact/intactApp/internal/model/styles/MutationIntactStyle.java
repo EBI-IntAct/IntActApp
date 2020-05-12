@@ -4,6 +4,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
 import java.awt.*;
@@ -11,6 +12,7 @@ import java.awt.*;
 public class MutationIntactStyle extends ExpandedIntactStyle {
 
     public static final String TITLE = "Intact - Mutation";
+    public final static IntactNetworkView.Type type = IntactNetworkView.Type.MUTATION;
     public static final Color mutatedColor = new Color(255, 0, 0);
     public static final Color wildColor = new Color(126, 131, 137);
 
@@ -55,10 +57,6 @@ public class MutationIntactStyle extends ExpandedIntactStyle {
 
     }
 
-    @Override
-    public String getStyleName() {
-        return TITLE;
-    }
 
     @Override
     protected void setEdgeWidth() {
@@ -82,5 +80,16 @@ public class MutationIntactStyle extends ExpandedIntactStyle {
 //        style.setDefaultValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.NONE);
 //        style.addVisualMappingFunction(valueToTargetShape);
 //    }
+
+    @Override
+    public String getStyleName() {
+        return TITLE;
+    }
+
+    @Override
+    public IntactNetworkView.Type getStyleViewType() {
+        return type;
+    }
+
 
 }

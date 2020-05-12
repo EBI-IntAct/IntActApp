@@ -28,10 +28,10 @@ public class ContinuousEdgeWidthLegend extends JComponent {
 
     @Override
     protected void paintComponent(Graphics g) {
+
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
-
         Insets insets = new Insets(0, 0, 0, 0);
         insets = getInsets(insets);
         g2.translate(insets.left, insets.top);

@@ -7,8 +7,8 @@ import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 public class IntactNetworkCreatedEvent extends AbstractCyEvent<IntactManager> {
     private final IntactNetwork newINetwork;
 
-    public IntactNetworkCreatedEvent(IntactManager source, Class<?> listenerClass, IntactNetwork newINetwork) {
-        super(source, listenerClass);
+    public IntactNetworkCreatedEvent(IntactManager source, IntactNetwork newINetwork) {
+        super(source, IntactNetworkCreatedListener.class);
         this.newINetwork = newINetwork;
     }
 

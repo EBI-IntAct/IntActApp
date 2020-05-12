@@ -9,7 +9,6 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -21,8 +20,6 @@ import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.ExpandViewTas
 import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.MutationViewTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.ui.IntactWebServiceClient;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
-import uk.ac.ebi.intact.intactApp.internal.view.StringCustomGraphicsFactory;
-import uk.ac.ebi.intact.intactApp.internal.view.StringLayer;
 
 import java.util.Properties;
 
@@ -140,7 +137,7 @@ public class CyActivator extends AbstractCyActivator {
             versionProps.setProperty(COMMAND_NAMESPACE, "string");
             versionProps.setProperty(COMMAND, "version");
             versionProps.setProperty(COMMAND_DESCRIPTION,
-                    "Returns the version of StringApp");
+                    "Returns the version of IntActApp");
             versionProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
             versionProps.setProperty(COMMAND_EXAMPLE_JSON, "{\"version\":\"2.1.0\"}");
             registerService(bc, versionFactory, TaskFactory.class, versionProps);
@@ -188,20 +185,6 @@ public class CyActivator extends AbstractCyActivator {
                     manager.execute(showResults.createTaskIterator(), true);
                 }
             }
-        }
-
-        {
-            // Register our "show enhanced labels" toggle
-            ShowEnhancedLabelsTaskFactory showEnhancedLabelsTF = new ShowEnhancedLabelsTaskFactory(manager);
-            showEnhancedLabelsTF.reregister();
-            manager.setShowEnhancedLabelsTaskFactory(showEnhancedLabelsTF);
-        }
-
-        {
-            // Register our custom graphics
-            CyCustomGraphicsFactory<StringLayer> stringLookFactory = new StringCustomGraphicsFactory(manager);
-            Properties stringProps = new Properties();
-            registerService(bc, stringLookFactory, CyCustomGraphicsFactory.class, stringProps);
         }
 
         // Register our Network search factories

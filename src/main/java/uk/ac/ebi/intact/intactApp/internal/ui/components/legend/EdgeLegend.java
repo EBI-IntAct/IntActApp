@@ -55,7 +55,7 @@ public class EdgeLegend extends JComponent {
         }
 
         int halfHeight = getHeight() / 2;
-        g2.drawLine(0, halfHeight, length, halfHeight);
+        g2.drawLine(0, halfHeight, getWidth(), halfHeight);
 
     }
 
@@ -90,5 +90,10 @@ public class EdgeLegend extends JComponent {
 
     public void setLength(int length) {
         this.length = length;
+        Dimension size = new Dimension(length, 20);
+        setMinimumSize(size);
+        setPreferredSize(size);
+        setMaximumSize(size);
+        setSize(size);
     }
 }

@@ -11,16 +11,12 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import uk.ac.ebi.intact.intactApp.internal.model.EnrichmentTerm;
-import uk.ac.ebi.intact.intactApp.internal.model.EnrichmentTerm.TermCategory;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.Species;
+import uk.ac.ebi.intact.intactApp.internal.model.core.FeatureClassifier;
 
-import java.awt.*;
-import java.util.List;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ModelUtils {
@@ -32,13 +28,13 @@ public class ModelUtils {
     public static String INTACTDB_NAMESPACE = "IntAct Database";
     public static String COLLAPSED_NAMESPACE = "Collapsed";
     public static String FEATURE_NAMESPACE = "Feature";
-    public static String XREF_NAMESPACE = "Cross Reference";
+    public static String IDENTIFIER_NAMESPACE = "Identifier";
     public static String TABLE_NAMESPACE = "Table";
     public static String NAMESPACE_SEPARATOR = "::";
 
     // Network tables column
-    public static final String FEATURES_TABLE_REF = TABLE_NAMESPACE + NAMESPACE_SEPARATOR + "Features";
-    public static final String XREFS_TABLE_REF = TABLE_NAMESPACE + NAMESPACE_SEPARATOR + "XRefs";
+    public static final String FEATURES_TABLE_REF = "Features.SUID";
+    public static final String IDENTIFIERS_TABLE_REF = "Identifiers.SUID";
 
     // Feature table columns
     public static final String FEATURE_TYPE = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Type";
@@ -46,59 +42,50 @@ public class ModelUtils {
     public static final String FEATURE_NAME = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Name";
 
     // Xrefs table columns
-    public static final String XREF_ID = XREF_NAMESPACE + NAMESPACE_SEPARATOR + "Identifier";
-    public static final String XREF_DB_NAME = XREF_NAMESPACE + NAMESPACE_SEPARATOR + "Database Name";
-    public static final String XREF_DB_MI_ID = XREF_NAMESPACE + NAMESPACE_SEPARATOR + "Database MI Identifier";
+    public static final String IDENTIFIER_ID = IDENTIFIER_NAMESPACE + NAMESPACE_SEPARATOR + "Identifier";
+    public static final String IDENTIFIER_DB_NAME = IDENTIFIER_NAMESPACE + NAMESPACE_SEPARATOR + "Database Name";
+    public static final String IDENTIFIER_DB_MI_ID = IDENTIFIER_NAMESPACE + NAMESPACE_SEPARATOR + "Database MI Id";
 
     // Node information
-    public static String CANONICAL = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "canonical name";
-    public static String DISPLAY = "display name";
-    public static String CV_STYLE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "chemViz Passthrough";
     public static String ELABEL_STYLE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "enhancedLabel Passthrough";
-    public static String ID = "@id";
 
 
-    public static String INTACT_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "id";
-    public static String PREFERRED_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "preferred id";
-    public static String PREFERRED_ID_DB = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "preferred id database";
-    public static String TAX_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "tax id";
-    public static String MUTATION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "mutation";
+    public static String INTACT_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Id";
+    public static String INTACT_AC = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Accession Id";
+    public static String PREFERRED_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Preferred Id";
+    public static String PREFERRED_ID_DB = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Preferred Id Database";
+    public static String TAX_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Tax Id";
+    public static String MUTATION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Mutation";
 
-    public static String INTERACTION_TYPE_MI_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "detection method";
-    public static String DETECTION_METHOD = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "detection method";
-    public static String DETECTION_METHOD_MI_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "detection method MI id";
+    public static String INTERACTION_TYPE_MI_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Interaction type MI Id";
+    public static String DETECTION_METHOD = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Detection method";
+    public static String DETECTION_METHOD_MI_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Detection method MI id";
     public static String EXPANSION_TYPE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Expansion type";
     public static String HOST_ORGANISM = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Host organism";
     public static String HOST_ORGANISM_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Host organism tax id";
     public static String PUBMED_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "PubMed id";
-    public static String AFFECTED_BY_MUTATION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "affected by mutation";
-    public static String MI_SCORE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "mi score";
+    public static String AFFECTED_BY_MUTATION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Affected by mutation";
+    public static String MI_SCORE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "MI Score";
 
-    public static String SOURCE_BIOLOGICAL_ROLE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "source biological role";
-    public static String SOURCE_BIOLOGICAL_ROLE_MI_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "source biological role MI id";
-    public static String TARGET_BIOLOGICAL_ROLE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "target biological role";
-    public static String TARGET_BIOLOGICAL_ROLE_MI_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "target biological role MI id";
+    public static String SOURCE_BIOLOGICAL_ROLE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Source biological role";
+    public static String SOURCE_BIOLOGICAL_ROLE_MI_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Source biological role MI id";
+    public static String TARGET_BIOLOGICAL_ROLE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Target biological role";
+    public static String TARGET_BIOLOGICAL_ROLE_MI_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Target biological role MI id";
 
 
     public static String C_IS_COLLAPSED = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "is collapsed";
     public static String C_INTACT_IDS = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "intact ids";
-    public static String C_MI_SCORE = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "mi score";
     public static String C_NB_EDGES = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "# evidences";
 
-
-    public static String DESCRIPTION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "description";
     public static String QUERYTERM = "query term";
     public static String SPECIES = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "species";
     public static String STRINGID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "database identifier";
-    public static String STYLE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "STRING style";
     public static String TYPE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Interactor type";
     public static String TYPE_MI_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Interactor type mi id";
     public static String TYPE_MOD_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Interactor type mod id";
     public static String TYPE_PAR_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Interactor type par id";
 
     public static String COMPARTMENT_NAMESPACE = "compartment";
-    private static long featureSUID = Long.MIN_VALUE;
-    private static long xRefsSUID = Long.MIN_VALUE;
 
     // public static String TM_LINKOUT = "TextMining Linkout";
     public static List<String> ignoreKeys = new ArrayList<>(Arrays.asList("@id", "description",
@@ -144,6 +131,8 @@ public class ModelUtils {
                     + "appears to be an old STRING network. Would you like to get <br />"
                     + "the latest STRING network for the nodes in your network?</html>";
     public static String REQUERY_TITLE = "Re-query network?";
+
+    private static IntactManager manager;
 
     public static boolean haveQueryTerms(CyNetwork network) {
         if (network == null) return false;
@@ -221,20 +210,10 @@ public class ModelUtils {
         return network.getRow(network).get(CONFIDENCE, Double.class);
     }
 
-    public static void setDatabase(CyNetwork network, String database) {
-        createColumnIfNeeded(network.getDefaultNetworkTable(), String.class, DATABASE);
-        network.getRow(network).set(DATABASE, database);
-    }
-
     public static String getDatabase(CyNetwork network) {
         if (network.getDefaultNetworkTable().getColumn(DATABASE) == null)
             return null;
         return network.getRow(network).get(DATABASE, String.class);
-    }
-
-    public static void setDataVersion(CyNetwork network, String dataVersion) {
-        createColumnIfNeeded(network.getDefaultNetworkTable(), String.class, NET_DATAVERSION);
-        network.getRow(network).set(NET_DATAVERSION, dataVersion);
     }
 
     public static String getDataVersion(CyNetwork network) {
@@ -243,44 +222,10 @@ public class ModelUtils {
         return network.getRow(network).get(NET_DATAVERSION, String.class);
     }
 
-    public static void setNetURI(CyNetwork network, String netURI) {
-        createColumnIfNeeded(network.getDefaultNetworkTable(), String.class, NET_URI);
-        network.getRow(network).set(NET_URI, netURI);
-    }
-
-    public static void setNetSpecies(CyNetwork network, String species) {
-        createColumnIfNeeded(network.getDefaultNetworkTable(), String.class, NET_SPECIES);
-        network.getRow(network).set(NET_SPECIES, species);
-    }
-
     public static String getNetSpecies(CyNetwork network) {
         if (network.getDefaultNetworkTable().getColumn(NET_SPECIES) == null)
             return null;
         return network.getRow(network).get(NET_SPECIES, String.class);
-    }
-
-    public static String getMostCommonNetSpecies(CyNetwork net) {
-        Map<String, Integer> species = new HashMap<>();
-        for (CyNode node : net.getNodeList()) {
-            String nSpecies = net.getRow(node).get(SPECIES, String.class);
-            if (nSpecies == null || nSpecies.equals(""))
-                continue;
-            if (!species.containsKey(nSpecies)) {
-                species.put(nSpecies, 1);
-            } else {
-                int count = species.get(nSpecies) + 1;
-                species.put(nSpecies, count);
-            }
-        }
-        String netSpecies = "";
-        int maxCount = 0;
-        for (Map.Entry<String, Integer> tempSp : species.entrySet()) {
-            if (netSpecies.equals("") || tempSp.getValue() > maxCount) {
-                netSpecies = tempSp.getKey();
-                maxCount = tempSp.getValue();
-            }
-        }
-        return netSpecies;
     }
 
     public static List<String> getAllNetSpecies(CyNetwork net) {
@@ -289,20 +234,6 @@ public class ModelUtils {
             String nSpecies = net.getRow(node).get(SPECIES, String.class);
             if (nSpecies != null && !nSpecies.equals("") && !species.contains(nSpecies))
                 species.add(nSpecies);
-        }
-        return species;
-    }
-
-    public static List<String> getEnrichmentNetSpecies(CyNetwork net) {
-        List<String> species = new ArrayList<>();
-        for (CyNode node : net.getNodeList()) {
-            String nSpecies = net.getRow(node).get(SPECIES, String.class);
-            if (nSpecies != null && !nSpecies.equals("") && !species.contains(nSpecies)) {
-                Species theSpecies = Species.getSpecies(nSpecies);
-                // TODO: This is kind of a hack for now and will be updated once we get the kingdom data from the server
-                if (theSpecies != null && (theSpecies.getType().equals("core") || theSpecies.getType().equals("periphery")))
-                    species.add(nSpecies);
-            }
         }
         return species;
     }
@@ -349,10 +280,6 @@ public class ModelUtils {
                 .equals(IntactManager.DATAVERSION);
     }
 
-    public static boolean isStitchNetwork(CyNetwork network) {
-        return false;
-    }
-
     public static String getExisting(CyNetwork network) {
         StringBuilder str = new StringBuilder();
         for (CyNode node : network.getNodeList()) {
@@ -361,41 +288,6 @@ public class ModelUtils {
                 str.append(stringID).append("\n");
         }
         return str.toString();
-    }
-
-    public static String getSelected(CyNetwork network, View<CyNode> nodeView) {
-        StringBuilder selectedStr = new StringBuilder();
-        if (nodeView != null) {
-            String stringID = network.getRow(nodeView.getModel()).get(STRINGID, String.class);
-            selectedStr.append(stringID).append("\n");
-        }
-
-        for (CyNode node : network.getNodeList()) {
-            if (network.getRow(node).get(CyNetwork.SELECTED, Boolean.class)) {
-                String stringID = network.getRow(node).get(STRINGID, String.class);
-                if (stringID != null && stringID.length() > 0)
-                    selectedStr.append(stringID).append("\n");
-            }
-        }
-        return selectedStr.toString();
-    }
-
-    public static boolean isCompound(CyNetwork net, CyNode node) {
-        if (net == null || node == null)
-            return false;
-
-        String ns = net.getRow(node).get(ID, String.class);
-        return getType(ns).equals("compound");
-    }
-
-    private static String getType(String id) {
-        // Get the namespace
-        String namespace = id.substring(0, id.indexOf(":"));
-        if (namespace.equals("stringdb"))
-            return "protein";
-        if (namespace.equals("stitchdb"))
-            return "compound";
-        return "unknown";
     }
 
     public static void createColumnIfNeeded(CyTable table, Class<?> clazz, String columnName) {
@@ -441,7 +333,6 @@ public class ModelUtils {
     }
 
     public static String getString(CyNetwork network, CyIdentifiable ident, String column) {
-        // System.out.println("network = "+network+", ident = "+ident+" column = "+column);
         if (network.getRow(ident, CyNetwork.DEFAULT_ATTRS) != null)
             return network.getRow(ident, CyNetwork.DEFAULT_ATTRS).get(column, String.class);
         return null;
@@ -485,99 +376,6 @@ public class ModelUtils {
         if (json == null || !json.has(IntactManager.APIVERSION))
             return null;
         return json.get(IntactManager.APIVERSION).intValue();
-    }
-
-    public static Set<CyTable> getEnrichmentTables(IntactManager manager, CyNetwork network) {
-        CyTableManager tableManager = manager.getService(CyTableManager.class);
-        Set<CyTable> netTables = new HashSet<>();
-        Set<String> tableNames = new HashSet<>(TermCategory.getTables());
-        Set<CyTable> currTables = tableManager.getAllTables(true);
-        for (CyTable current : currTables) {
-            if (tableNames.contains(current.getTitle())
-                    && current.getColumn(EnrichmentTerm.colNetworkSUID) != null
-                    && current.getAllRows().size() > 0) {
-                CyRow tempRow = current.getAllRows().get(0);
-                if (tempRow.get(EnrichmentTerm.colNetworkSUID, Long.class) != null && tempRow
-                        .get(EnrichmentTerm.colNetworkSUID, Long.class).equals(network.getSUID())) {
-                    netTables.add(current);
-                }
-            }
-        }
-        return netTables;
-    }
-
-    public static CyTable getEnrichmentTable(IntactManager manager, CyNetwork network, String name) {
-        CyTableManager tableManager = manager.getService(CyTableManager.class);
-        Set<CyTable> currTables = tableManager.getAllTables(true);
-        for (CyTable current : currTables) {
-            if (name.equals(current.getTitle())
-                    && current.getColumn(EnrichmentTerm.colNetworkSUID) != null
-                    && current.getAllRows().size() > 0) {
-                CyRow tempRow = current.getAllRows().get(0);
-                if (tempRow.get(EnrichmentTerm.colNetworkSUID, Long.class) != null && tempRow
-                        .get(EnrichmentTerm.colNetworkSUID, Long.class).equals(network.getSUID())) {
-                    return current;
-                }
-            }
-        }
-        return null;
-    }
-
-
-    public static void deleteEnrichmentTables(CyNetwork network, IntactManager manager, boolean publOnly) {
-        CyTableManager tableManager = manager.getService(CyTableManager.class);
-        Set<CyTable> oldTables = ModelUtils.getEnrichmentTables(manager, network);
-        for (CyTable table : oldTables) {
-            if (publOnly && !table.getTitle().equals(TermCategory.PMID.getTable())) {
-                continue;
-            }
-            tableManager.deleteTable(table.getSUID());
-            manager.flushEvents();
-        }
-    }
-
-    public static void setupEnrichmentTable(CyTable enrichmentTable) {
-        if (enrichmentTable.getColumn(EnrichmentTerm.colGenesSUID) == null) {
-            enrichmentTable.createListColumn(EnrichmentTerm.colGenesSUID, Long.class, false);
-        }
-        if (enrichmentTable.getColumn(EnrichmentTerm.colNetworkSUID) == null) {
-            enrichmentTable.createColumn(EnrichmentTerm.colNetworkSUID, Long.class, false);
-        }
-        if (enrichmentTable.getColumn(EnrichmentTerm.colName) == null) {
-            enrichmentTable.createColumn(EnrichmentTerm.colName, String.class, false);
-        }
-        if (enrichmentTable.getColumn(EnrichmentTerm.colYear) == null) {
-            enrichmentTable.createColumn(EnrichmentTerm.colYear, Integer.class, false);
-        }
-        if (enrichmentTable.getColumn(EnrichmentTerm.colIDPubl) == null) {
-            enrichmentTable.createColumn(EnrichmentTerm.colIDPubl, String.class, false);
-        }
-        if (enrichmentTable.getColumn(EnrichmentTerm.colDescription) == null) {
-            enrichmentTable.createColumn(EnrichmentTerm.colDescription, String.class, false);
-        }
-        if (enrichmentTable.getColumn(EnrichmentTerm.colCategory) == null) {
-            enrichmentTable.createColumn(EnrichmentTerm.colCategory, String.class, false);
-        }
-        if (enrichmentTable.getColumn(EnrichmentTerm.colFDR) == null) {
-            enrichmentTable.createColumn(EnrichmentTerm.colFDR, Double.class, false);
-        }
-        if (enrichmentTable.getColumn(EnrichmentTerm.colGenesBG) == null) {
-            enrichmentTable.createColumn(EnrichmentTerm.colGenesBG, Integer.class, false);
-        }
-        if (enrichmentTable.getColumn(EnrichmentTerm.colGenesCount) == null) {
-            enrichmentTable.createColumn(EnrichmentTerm.colGenesCount, Integer.class, false);
-        }
-        if (enrichmentTable.getColumn(EnrichmentTerm.colGenes) == null) {
-            enrichmentTable.createListColumn(EnrichmentTerm.colGenes, String.class, false);
-        }
-        // if (table.getColumn(EnrichmentTerm.colShowChart) == null) {
-        //	table.createColumn(EnrichmentTerm.colShowChart, Boolean.class, false);
-        // }
-        if (enrichmentTable.getColumn(EnrichmentTerm.colChartColor) == null) {
-            enrichmentTable.createColumn(EnrichmentTerm.colChartColor, String.class, false);
-        }
-        // table.createColumn(EnrichmentTerm.colPvalue, Double.class, false);
-        // table.createColumn(EnrichmentTerm.colBonferroni, Double.class, false);
     }
 
 
@@ -861,38 +659,6 @@ public class ModelUtils {
 
     /////////////////////////////////////////////////////////////////////
 
-
-    public static Map<String, List<JsonNode>> groupByJSON(JsonNode toSplit, String keyGroup) {
-        Map<String, List<JsonNode>> groups = new HashMap<>();
-        if (keyGroup == null || keyGroup.equals("")) {
-            keyGroup = "group";
-        }
-
-        for (JsonNode element : toSplit) {
-            String group = element.get(keyGroup).textValue();
-            if (!groups.containsKey(group)) {
-                List<JsonNode> elementsOfGroup = new ArrayList<>();
-                elementsOfGroup.add(element.get("data"));
-                groups.put(group, elementsOfGroup);
-            } else {
-                groups.get(group).add(element.get("data"));
-            }
-        }
-
-        return groups;
-    }
-
-    private static Pattern rgbPattern = Pattern.compile("rgb\\((\\d+), ?(\\d+), ?(\\d+) ?\\)");
-
-    public static Color parseColorRGB(String rgbColor) {
-        Matcher m = rgbPattern.matcher(rgbColor);
-        if (m.find()) {
-            return new Color(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3)));
-        } else {
-            return Color.LIGHT_GRAY;
-        }
-    }
-
     public static CyNetwork createIntactNetworkFromJSON(IntactNetwork intactNetwork, JsonNode object, Map<String, String> queryTermMap, String netName) {
         intactNetwork.getManager().ignoreAdd();
         CyNetwork network = createIntactNetworkFromJSON(intactNetwork.getManager(), intactNetwork, object, queryTermMap, netName);
@@ -904,6 +670,7 @@ public class ModelUtils {
 //        JsonNode results = getResultsFromJSON(object);
 //        if (results == null)
 //            return null;
+        ModelUtils.manager = manager;
 
         // Get a network name
         String defaultName = "IntAct Network";
@@ -943,9 +710,10 @@ public class ModelUtils {
             createColumnIfNeeded(defaultNodeTable, Boolean.class, MUTATION, false);
             createColumnIfNeeded(defaultNodeTable, String.class, ELABEL_STYLE);
 
+            createColumnIfNeeded(defaultEdgeTable, Long.class, INTACT_ID);
             createColumnIfNeeded(defaultEdgeTable, String.class, INTERACTION_TYPE_MI_ID);
             createColumnIfNeeded(defaultEdgeTable, Double.class, MI_SCORE);
-            for (String intactEdgeColumn : Arrays.asList(DETECTION_METHOD, DETECTION_METHOD_MI_ID, INTACT_ID, HOST_ORGANISM)) {
+            for (String intactEdgeColumn : Arrays.asList(DETECTION_METHOD, DETECTION_METHOD_MI_ID, INTACT_AC, HOST_ORGANISM)) {
                 createColumnIfNeeded(defaultEdgeTable, String.class, intactEdgeColumn);
             }
             createColumnIfNeeded(defaultEdgeTable, Long.class, HOST_ORGANISM_ID);
@@ -957,9 +725,8 @@ public class ModelUtils {
             createColumnIfNeeded(network.getDefaultEdgeTable(), Boolean.class, AFFECTED_BY_MUTATION, false);
 
             createColumnIfNeeded(defaultEdgeTable, Boolean.class, C_IS_COLLAPSED);
-            createColumnIfNeeded(defaultEdgeTable, Double.class, C_MI_SCORE);
             createColumnIfNeeded(defaultEdgeTable, Integer.class, C_NB_EDGES);
-            createListColumnIfNeeded(defaultEdgeTable, String.class, C_INTACT_IDS);
+            createListColumnIfNeeded(defaultEdgeTable, Long.class, C_INTACT_IDS);
 
             // Features and xRefs tables
 
@@ -969,12 +736,12 @@ public class ModelUtils {
 
             CyTableFactory tableFactory = manager.getService(CyTableFactory.class);
             CyTable featuresTable = tableFactory.createTable("Features of " + networkName, "pk", Long.class, true, true);
-            CyTable xRefsTable = tableFactory.createTable("CrossRefs of " + networkName, "pk", Long.class, true, true);
+            CyTable xRefsTable = tableFactory.createTable("Identifiers of " + networkName, "pk", Long.class, true, true);
 
             tableManager.addTable(featuresTable);
             intactNetwork.setFeaturesTable(featuresTable);
             tableManager.addTable(xRefsTable);
-            intactNetwork.setXRefsTable(xRefsTable);
+            intactNetwork.setIdentifiersTable(xRefsTable);
 
             featuresTable.createColumn(FEATURE_TYPE, String.class, true);
             featuresTable.createColumn(FEATURE_TYPE_MI_ID, String.class, true);
@@ -995,16 +762,16 @@ public class ModelUtils {
             featuresTable.addVirtualColumn("Edge::Name", CyNetwork.NAME, edgeLocalTable, EDGE_REF, false);
             featuresTable.addVirtualColumn("Edge::Detection Method", DETECTION_METHOD, edgeLocalTable, EDGE_REF, false);
             featuresTable.addVirtualColumn("Edge::MI Score", MI_SCORE, edgeLocalTable, EDGE_REF, false);
-            featuresTable.addVirtualColumn("Edge::Host Organism",HOST_ORGANISM, edgeLocalTable, EDGE_REF, false);
+            featuresTable.addVirtualColumn("Edge::Host Organism", HOST_ORGANISM, edgeLocalTable, EDGE_REF, false);
             featuresTable.addVirtualColumn("Edge::Host Organism Tax Id", HOST_ORGANISM_ID, edgeLocalTable, EDGE_REF, false);
             featuresTable.addVirtualColumn("Edge::PubMed Identifier", PUBMED_ID, edgeLocalTable, EDGE_REF, false);
             featuresTable.addVirtualColumn("Edge::Source Biological Role", SOURCE_BIOLOGICAL_ROLE, edgeLocalTable, EDGE_REF, false);
             featuresTable.addVirtualColumn("Edge::Target Biological Role", TARGET_BIOLOGICAL_ROLE, edgeLocalTable, EDGE_REF, false);
 
             xRefsTable.createColumn(NODE_REF, Long.class, true);
-            xRefsTable.createColumn(XREF_ID, String.class, true);
-            xRefsTable.createColumn(XREF_DB_NAME, String.class, true);
-            xRefsTable.createColumn(XREF_DB_MI_ID, String.class, true);
+            xRefsTable.createColumn(IDENTIFIER_ID, String.class, true);
+            xRefsTable.createColumn(IDENTIFIER_DB_NAME, String.class, true);
+            xRefsTable.createColumn(IDENTIFIER_DB_MI_ID, String.class, true);
 //            xRefsTable.addVirtualColumns(nodeLocalTable, NODE_REF, false);
             xRefsTable.addVirtualColumn("Node::Name", CyNetwork.NAME, nodeLocalTable, NODE_REF, false);
             xRefsTable.addVirtualColumn("Node::Preferred Identifier", PREFERRED_ID, nodeLocalTable, NODE_REF, false);
@@ -1015,10 +782,10 @@ public class ModelUtils {
 
             CyTable defaultNetworkTable = network.getDefaultNetworkTable();
             defaultNetworkTable.createColumn(FEATURES_TABLE_REF, Long.class, true);
-            defaultNetworkTable.createColumn(XREFS_TABLE_REF, Long.class, true);
+            defaultNetworkTable.createColumn(IDENTIFIERS_TABLE_REF, Long.class, true);
             CyRow networkRow = defaultNetworkTable.getRow(network.getSUID());
             networkRow.set(FEATURES_TABLE_REF, featuresTable.getSUID());
-            networkRow.set(XREFS_TABLE_REF, xRefsTable.getSUID());
+            networkRow.set(IDENTIFIERS_TABLE_REF, xRefsTable.getSUID());
 
 
             JsonNode nodesJSON = json.get("nodes");
@@ -1114,8 +881,7 @@ public class ModelUtils {
     }
 
 
-    private static CyNode createIntactNode(CyNetwork network, JsonNode nodeJSON,
-                                           Map<String, CyNode> intactIdToNode, Map<String, String> nodeNameMap, CyTable xRefsTable) {
+    private static CyNode createIntactNode(CyNetwork network, JsonNode nodeJSON, Map<String, CyNode> intactIdToNode, Map<String, String> nodeNameMap, CyTable xRefsTable) {
 
         String intactId = nodeJSON.get("id").textValue();
 
@@ -1160,11 +926,11 @@ public class ModelUtils {
                     break;
                 case "identifiers":
                     for (JsonNode xref : value) {
-                        CyRow xRefRow = xRefsTable.getRow(xRefsSUID++);
+                        CyRow xRefRow = xRefsTable.getRow(SUIDFactory.getNextSUID());
                         xRefRow.set(NODE_REF, newNode.getSUID());
-                        xRefRow.set(XREF_ID, xref.get("xref_id").textValue());
-                        xRefRow.set(XREF_DB_NAME, xref.get("xref_database_name").textValue());
-                        xRefRow.set(XREF_DB_MI_ID, xref.get("xref_database_mi").textValue());
+                        xRefRow.set(IDENTIFIER_ID, xref.get("xref_id").textValue());
+                        xRefRow.set(IDENTIFIER_DB_NAME, xref.get("xref_database_name").textValue());
+                        xRefRow.set(IDENTIFIER_DB_MI_ID, xref.get("xref_database_mi").textValue());
                     }
                 case "interactor_name":
                 case "label":
@@ -1230,11 +996,13 @@ public class ModelUtils {
         edgeJSON.fields().forEachRemaining(entry -> {
             JsonNode value = entry.getValue();
             switch (entry.getKey()) {
-                case "id":
                 case "source":
                 case "target":
                 case "interaction_type":
                     return;
+                case "id":
+                    row.set(INTACT_ID, value.longValue());
+                    break;
                 case "interaction_type_mi_identifier":
                     row.set(INTERACTION_TYPE_MI_ID, value.textValue());
                     break;
@@ -1245,7 +1013,7 @@ public class ModelUtils {
                     row.set(DETECTION_METHOD_MI_ID, value.textValue());
                     break;
                 case "ac":
-                    row.set(INTACT_ID, value.textValue());
+                    row.set(INTACT_AC, value.textValue());
                     break;
                 case "mi_score":
                     row.set(MI_SCORE, value.doubleValue());
@@ -1268,22 +1036,13 @@ public class ModelUtils {
         });
     }
 
-    private static final Set<String> impactfulMutationsMIId = Set.of("MI:1128", "MI:1129", "MI:0573", "MI:0119", "MI:2227", "MI:1130", "MI:1133", "MI:0382", "MI:1131", "MI:1132", "MI:2333");
-    private static final Set<String> mutationsMIId = new HashSet<>();
-
-    static {
-        mutationsMIId.addAll(impactfulMutationsMIId);
-        mutationsMIId.add("MI:2226");
-        mutationsMIId.add("MI:0118");
-    }
-
 
     private static void fillParticipantData(CyTable featuresTable, CyNetwork network, JsonNode participantJson, CyNode participantNode, CyEdge edge, CyRow edgeRow, String participantBiologicalRole, String participantBoiologicalRoleMIId) {
         edgeRow.set(participantBiologicalRole, participantJson.get("participant_biological_role_name").textValue());
         edgeRow.set(participantBoiologicalRoleMIId, participantJson.get("participant_biological_role_mi_identifier").textValue());
         for (JsonNode feature : participantJson.get("participant_features")) {
             if (!feature.get("feature_type").isNull()) {
-                CyRow featureRow = featuresTable.getRow(featureSUID++);
+                CyRow featureRow = featuresTable.getRow(SUIDFactory.getNextSUID());
                 featureRow.set(NODE_REF, participantNode.getSUID());
                 featureRow.set(EDGE_REF, edge.getSUID());
                 featureRow.set(FEATURE_NAME, feature.get("feature_name").textValue());
@@ -1292,8 +1051,7 @@ public class ModelUtils {
                 featureRow.set(FEATURE_TYPE_MI_ID, feature_type_mi_identifier);
 
                 if (feature_type_mi_identifier != null) {
-//                    edgeRow.set(AFFECTED_BY_MUTATION, mutationsMIId.contains(feature_type_mi_identifier));
-                    if (mutationsMIId.contains(feature_type_mi_identifier)) {
+                    if (FeatureClassifier.mutation.contains(feature_type_mi_identifier)) {
                         network.getRow(participantNode).set(MUTATION, true);
                         edgeRow.set(AFFECTED_BY_MUTATION, true);
                     }
@@ -1310,10 +1068,16 @@ public class ModelUtils {
     public static void buildIntactNetworkTableFromExistingOne(IntactNetwork iNetwork) {
         CyNetwork network = iNetwork.getNetwork();
         CyRow networkRow = network.getDefaultNetworkTable().getRow(network.getSUID());
-        CyTableManager tableManager = iNetwork.getManager().getService(CyTableManager.class);
-        iNetwork.setXRefsTable(tableManager.getTable(networkRow.get(XREFS_TABLE_REF, Long.class)));
-        iNetwork.setFeaturesTable(tableManager.getTable(networkRow.get(FEATURES_TABLE_REF, Long.class)));
+        IntactManager manager = iNetwork.getManager();
+        CyTableManager tableManager = manager.getService(CyTableManager.class);
+        Long identifiersSUID = networkRow.get(IDENTIFIERS_TABLE_REF, Long.class);
 
+        if (identifiersSUID != null) {
+            iNetwork.setIdentifiersTable(tableManager.getTable(identifiersSUID));
+            iNetwork.setFeaturesTable(tableManager.getTable(networkRow.get(FEATURES_TABLE_REF, Long.class)));
+        } else {
+            System.out.println("Identifiers and features SUID not found");
+        }
     }
 
     //////////////////////////////////////////////////////////////////////

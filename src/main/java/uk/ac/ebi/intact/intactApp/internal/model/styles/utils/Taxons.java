@@ -19,7 +19,7 @@ public enum Taxons {
     BACTERIA(2L, "Other bacteria",false),
     VIRUSES(10239L, "Other viruses",false),
     ARCHAEA(2157L, "Other archaea", false),
-    ARTIFICIAL(81077L, "Other artificial constructs",false);
+    ARTIFICIAL(81077L, "Other artificial molecules",false);
 
     public final long taxId;
     public final String descriptor;

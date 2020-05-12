@@ -15,6 +15,8 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import static uk.ac.ebi.intact.intactApp.internal.io.HttpUtils.getRequestResultForUrl;
@@ -28,7 +30,7 @@ public class StyleMapper {
     private static boolean edgeTypesReady = false;
     private static boolean edgeTypesWorking = false;
 
-
+    private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
     public static Hashtable<Long, Paint> taxIdToPaint = new Hashtable<>() {{
         put(E_COLI.taxId, new Color(137, 51, 54)); // Escherichia coli
         put(S_CEREVISIAE.taxId, new Color(174, 125, 52));  // Saccharomyces cerevisiae
@@ -98,22 +100,25 @@ public class StyleMapper {
         put("colocalization", "MI_0403");
     }};
 
-
     public static void initializeTaxIdToPaint() {
-        if (!taxIdsWorking) {
-            taxIdsWorking = true;
+        executor.execute(() -> {
+            if (!taxIdsWorking) {
+                taxIdsWorking = true;
 
-            for (Long kingdomId : kingdomColors.keySet()) {
-                taxIdToChildrenTaxIds.put(kingdomId, new ArrayList<>());
+                for (Long kingdomId : kingdomColors.keySet()) {
+                    taxIdToChildrenTaxIds.put(kingdomId, new ArrayList<>());
+                }
+                taxIdToChildrenTaxIds.get(ARTIFICIAL.taxId).add(-1L);
+                taxIdToPaint.put(-1L, kingdomColors.get(ARTIFICIAL.taxId));
+
+                for (Long parentSpecie : new ArrayList<>(taxIdToPaint.keySet())) {
+                    Paint paint = taxIdToPaint.get(parentSpecie);
+                    addDescendantsColors(parentSpecie, (Color) paint);
+                }
+
+                taxIdsReady = true;
             }
-
-            for (Long parentSpecie : new ArrayList<>(taxIdToPaint.keySet())) {
-                Paint paint = taxIdToPaint.get(parentSpecie);
-                addDescendantsColors(parentSpecie, (Color) paint);
-            }
-
-            taxIdsReady = true;
-        }
+        });
     }
 
     public static void addDescendantsColors(Long parentSpecie, Color paint) {
@@ -221,29 +226,33 @@ public class StyleMapper {
     }
 
     public static void initializeNodeTypeToShape() {
-        if (!nodeTypesWorking) {
-            nodeTypesWorking = true;
-            for (String miType : new ArrayList<>(nodeTypeToShape.keySet())) {
-                setChildrenValues(nodeTypeToShape, miType, nodeTypeToShape.get(miType), nodeTypeToParent);
+        executor.execute(() -> {
+            if (!nodeTypesWorking) {
+                nodeTypesWorking = true;
+                for (String miType : new ArrayList<>(nodeTypeToShape.keySet())) {
+                    setChildrenValues(nodeTypeToShape, miType, nodeTypeToShape.get(miType), nodeTypeToParent);
+                }
+                nodeTypesReady = true;
             }
-            nodeTypesReady = true;
-        }
+        });
     }
 
     public static void initializeEdgeTypeToPaint() {
-        if (!edgeTypesWorking) {
-            edgeTypesWorking = true;
+        executor.execute(() -> {
+            if (!edgeTypesWorking) {
+                edgeTypesWorking = true;
 
-            Map<String, Paint> originalColors = new Hashtable<>(edgeTypeToPaint);
+                Map<String, Paint> originalColors = new Hashtable<>(edgeTypeToPaint);
 
-            for (String miType : Arrays.asList("direct interaction", "phosphorylation reaction", "dephosphorylation reaction")) {
-                setChildrenValues(edgeTypeToPaint, miType, originalColors.get(miType), edgeTypeToParent);
+                for (String miType : List.of("direct interaction", "phosphorylation reaction", "dephosphorylation reaction")) {
+                    setChildrenValues(edgeTypeToPaint, miType, originalColors.get(miType), edgeTypeToParent);
+                }
+                edgeTypeToPaint.putAll(originalColors);
+
+
+                edgeTypesReady = true;
             }
-            edgeTypeToPaint.putAll(originalColors);
-
-
-            edgeTypesReady = true;
-        }
+        });
     }
 
     private static <T> void setChildrenValues(Map<String, T> mapToFill, String parentLabel, T parentValue, Map<String, List<String>> parentToChildLabelMap) {
@@ -261,8 +270,9 @@ public class StyleMapper {
 
                         List<String> children = new ArrayList<>();
                         for (final JsonNode objNode : termChildren) {
-                            String label = objNode.get("label").textValue().replaceAll(" reaction", "");
+                            String label = objNode.get("label").textValue();
                             mapToFill.put(label, parentValue);
+                            mapToFill.put(label.replaceAll(" reaction", ""), parentValue);
                             children.add(label);
                         }
                         parentToChildLabelMap.put(parentLabel, children);

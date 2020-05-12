@@ -16,6 +16,7 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.StyleMapper;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
@@ -24,6 +25,7 @@ import java.awt.*;
 import java.util.Map;
 
 public abstract class IntactStyle {
+    public static final Color defaultNodeColor = new Color(157, 177, 128);
     protected VisualStyle style;
     protected IntactManager manager;
     protected CyEventHelper eventHelper;
@@ -104,7 +106,6 @@ public abstract class IntactStyle {
 
     private void addMissingNodeShape() {
         new Thread(() -> {
-            StyleMapper.initializeNodeTypeToShape();
             while (StyleMapper.nodeTypesNotReady()) {
                 TimeUtils.sleep(100);
             }
@@ -113,13 +114,13 @@ public abstract class IntactStyle {
     }
 
     protected void setSelectedNodePaint() {
-        style.setDefaultValue(BasicVisualLexicon.NODE_SELECTED_PAINT, new Color(204, 0, 51));
+//        style.setDefaultValue(BasicVisualLexicon.NODE_SELECTED_PAINT, new Color(204, 0, 51));
     }
 
     public void setNodePaintStyle() {
         taxIdToNodeColor = (DiscreteMapping<Long, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.TAX_ID, Long.class, BasicVisualLexicon.NODE_FILL_COLOR);
         taxIdToNodeColor.putAll(StyleMapper.taxIdToPaint);
-        style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, new Color(157, 177, 128));
+        style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, defaultNodeColor);
         style.addVisualMappingFunction(taxIdToNodeColor);
         addMissingNodePaint(taxIdToNodeColor);
     }
@@ -187,7 +188,6 @@ public abstract class IntactStyle {
 
     private void addMissingNodePaint(DiscreteMapping<Long, Paint> taxIdToPaint) {
         new Thread(() -> {
-            StyleMapper.initializeTaxIdToPaint();
             while (StyleMapper.speciesNotReady()) {
                 TimeUtils.sleep(100);
             }
@@ -239,6 +239,7 @@ public abstract class IntactStyle {
     }
 
     public abstract String getStyleName();
+    public abstract IntactNetworkView.Type getStyleViewType();
 
 }
 

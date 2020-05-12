@@ -6,6 +6,7 @@ import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.StyleMapper;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
@@ -15,6 +16,8 @@ import java.awt.*;
 public class ExpandedIntactStyle extends IntactStyle {
 
     public static final String TITLE = "Intact - Evidence";
+    public final static IntactNetworkView.Type type = IntactNetworkView.Type.EXPANDED;
+
 
     public ExpandedIntactStyle(IntactManager manager) {
         super(manager);
@@ -40,7 +43,6 @@ public class ExpandedIntactStyle extends IntactStyle {
 
     private void addMissingEdgePaint(DiscreteMapping<String, Paint> interactionTypeToColor) {
         new Thread(() -> {
-            StyleMapper.initializeEdgeTypeToPaint();
             while (StyleMapper.edgeTypesNotReady()) {
                 TimeUtils.sleep(100);
             }
@@ -53,5 +55,9 @@ public class ExpandedIntactStyle extends IntactStyle {
     @Override
     public String getStyleName() {
         return TITLE;
+    }
+    @Override
+    public IntactNetworkView.Type getStyleViewType() {
+        return type;
     }
 }

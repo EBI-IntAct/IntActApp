@@ -54,10 +54,8 @@ public class HttpUtils {
         return jsonObject;
     }
 
-    public static JsonNode postJSON(String url, Map<Object, Object> data,
-                                    IntactManager manager) {
+    public static JsonNode postJSON(String url, Map<Object, Object> data, IntactManager manager) {
         try {
-
             HttpRequest request = HttpRequest.newBuilder()
                     .POST(buildFormDataFromMap(data))
                     .uri(URI.create(url))
@@ -66,10 +64,7 @@ public class HttpUtils {
                     .header("accept", "application/json")
                     .build();
 
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return new ObjectMapper().readTree(response.body());
-
+            return new ObjectMapper().readTree(httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body());
 
         } catch (Exception e) {
             // e.printStackTrace();
@@ -198,7 +193,6 @@ public class HttpUtils {
                 builder.append(URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8));
             }
         }
-        System.out.println(builder.toString());
         return HttpRequest.BodyPublishers.ofString(builder.toString());
     }
 

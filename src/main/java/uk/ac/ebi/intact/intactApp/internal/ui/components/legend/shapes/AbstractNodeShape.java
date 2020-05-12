@@ -4,16 +4,24 @@ import javax.swing.*;
 import java.awt.*;
 
 
-abstract class AbstractNodeShape extends JComponent {
+public abstract class AbstractNodeShape extends JComponent {
+	private int originalWidth;
+	private int originalHeight;
 	protected int width;
 	protected int height;
 	protected Color color;
+	private int borderThickness = 0;
+	private Color borderColor;
 
 	public AbstractNodeShape(int width, int height, Color color) {
+		this.originalWidth = width;
 		this.width = width;
+		this.originalHeight = height;
 		this.height = height;
 		this.color = color;
+		this.borderColor = color;
 	}
+
 
 	@Override
 	protected void paintComponent(Graphics g) {
@@ -23,8 +31,13 @@ abstract class AbstractNodeShape extends JComponent {
 		g2.setPaint(color);
 		Insets insets = new Insets(0, 0, 0, 0);
 		insets = getInsets(insets);
-		g2.translate(insets.left, insets.top);
+		g2.translate(insets.left + borderThickness / 2, insets.top + borderThickness / 2);
 		g2.fill(getShape());
+		if (borderThickness > 0) {
+			g2.setStroke(new BasicStroke(borderThickness));
+			g2.setPaint(borderColor);
+			g2.draw(getShape());
+		}
 	}
 
 	abstract protected Shape getShape();
@@ -33,6 +46,32 @@ abstract class AbstractNodeShape extends JComponent {
 	public Dimension getPreferredSize() {
 		Insets insets = new Insets(0, 0, 0, 0);
 		insets = getInsets(insets);
-		return new Dimension(insets.left + width + insets.right, insets.top + height + insets.bottom);
+		return new Dimension(insets.left + originalWidth + insets.right + borderThickness / 2, insets.top + originalHeight + insets.bottom + borderThickness / 2);
+	}
+
+	public int getBorderThickness() {
+		return borderThickness;
+	}
+
+	public void setBorderThickness(int borderThickness) {
+		this.borderThickness = borderThickness;
+		this.width = originalWidth - borderThickness;
+		this.height = originalHeight - borderThickness;
+	}
+
+	public Color getBorderColor() {
+		return borderColor;
+	}
+
+	public void setBorderColor(Color borderColor) {
+		this.borderColor = borderColor;
+	}
+
+	public Color getColor() {
+		return color;
+	}
+
+	public void setColor(Color color) {
+		this.color = color;
 	}
 }

@@ -52,8 +52,8 @@ public class CollapsablePanel extends JPanel {
 
         add(separator, BorderLayout.WEST);
         add(content, BorderLayout.CENTER);
-//        add(new JSeparator(), BorderLayout.SOUTH);
         content.setVisible(!collapsed);
+        separator.setVisible(!collapsed);
         setBackground(panel.getBackground());
     }
 
@@ -84,9 +84,11 @@ public class CollapsablePanel extends JPanel {
         if (content.isShowing()) {
             headerPanel.setButton(RIGHT_ARROW);
             content.setVisible(false);
+            separator.setVisible(false);
         } else {
-            content.setVisible(true);
             headerPanel.setButton(DOWN_ARROW);
+            content.setVisible(true);
+            separator.setVisible(true);
         }
 
         validate();
