@@ -1,25 +1,31 @@
 package uk.ac.ebi.intact.intactApp.internal.io;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.NullNode;
 import org.cytoscape.io.util.StreamUtil;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 public class HttpUtils {
-    @SuppressWarnings("unchecked")
-    public static JSONObject getJSON(String url, Map<String, String> queryMap,
-                                     IntactManager manager) {
+    private static final HttpClient httpClient = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_1_1)
+            .build();
+
+    public static JsonNode getJSON(String url, Map<String, String> queryMap,
+                                   IntactManager manager) {
 
         // Set up our connection
-        URL trueURL = null;
+        URL trueURL;
         try {
             if (queryMap.size() > 0) {
                 String args = HttpUtils.getStringArguments(queryMap);
@@ -31,115 +37,59 @@ public class HttpUtils {
             }
         } catch (MalformedURLException e) {
             manager.info("URL malformed");
-            return new JSONObject();
+            return NullNode.getInstance();
         }
 
-        JSONObject jsonObject = new JSONObject();
+        JsonNode jsonObject = NullNode.getInstance();
 
         try {
             URLConnection connection = manager.getService(StreamUtil.class).getURLConnection(trueURL);
 
             InputStream entityStream = connection.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(entityStream));
-            JSONParser parser = new JSONParser();
-            Object obj = parser.parse(reader);
-            jsonObject.put(IntactManager.RESULT, obj);
+            jsonObject = new ObjectMapper().readTree(entityStream);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-        }
-        return jsonObject;
-    }
-
-    public static Object testJSON(String url, Map<String, String> queryMap, IntactManager manager,
-                                  String json) {
-        Object jsonObject = null;
-        try {
-            JSONParser parser = new JSONParser();
-            jsonObject = parser.parse(json);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return jsonObject;
     }
 
-    @SuppressWarnings("unchecked")
-    public static JSONObject postJSON(String url, Map<String, String> queryMap,
-                                      IntactManager manager) {
-
-        // Set up our connection
-        JSONObject jsonObject = new JSONObject();
-
-        String args = HttpUtils.getStringArguments(queryMap);
-        // manager.info("URL: " + url + "?" + truncate(args));
-        // System.out.println("URL: " + url + "?" + truncate(args));
-        // System.out.println("URL: " + url + "?" + args);
-
-        URLConnection connection = null;
+    public static JsonNode postJSON(String url, Map<Object, Object> data, IntactManager manager) {
         try {
-            connection = executeWithRedirect(manager, url, queryMap);
-            addVersion(connection, jsonObject);
-            InputStream entityStream = connection.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(entityStream));
+            HttpRequest request = HttpRequest.newBuilder()
+                    .POST(buildFormDataFromMap(data))
+                    .uri(URI.create(url))
+                    .setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .header("accept", "application/json")
+                    .build();
 
-            reader.mark(2097152); // Set a mark so that if we get a parse failure, we can recover the error
-
-            JSONParser parser = new JSONParser();
-            try {
-                Object obj = parser.parse(reader);
-                jsonObject.put(IntactManager.RESULT, obj);
-            } catch (Exception parseFailure) {
-                // Get back to the start of the error
-                reader.reset();
-                StringBuilder errorString = new StringBuilder();
-                String line;
-                try {
-                    while ((line = reader.readLine()) != null) {
-                        // System.out.println(line);
-                        errorString.append(line);
-                    }
-                } catch (Exception ioe) {
-                    // ignore
-                }
-                manager.error("Exception reading JSON from STRING: " + parseFailure.getMessage());
-                System.out.println("Exception reading JSON from STRING: " + parseFailure.getMessage() + "\n Text: " + errorString);
-                return null;
-            }
+            return new ObjectMapper().readTree(httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body());
 
         } catch (Exception e) {
             // e.printStackTrace();
             manager.error("Unexpected error when parsing JSON from server: " + e.getMessage());
             return null;
-        } finally {
         }
-        return jsonObject;
+
     }
 
 
     public static String getStringArguments(Map<String, String> args) {
-        String s = null;
+        StringBuilder s = null;
         try {
             for (String key : args.keySet()) {
-                if (s != null)
-                    s += "&" + key + "=" + URLEncoder.encode(args.get(key), StandardCharsets.UTF_8.displayName());
+                if (s == null)
+                    s = new StringBuilder(key + "=" + URLEncoder.encode(args.get(key), StandardCharsets.UTF_8.displayName()));
                 else
-                    s = key + "=" + URLEncoder.encode(args.get(key), StandardCharsets.UTF_8.displayName());
+                    s.append("&").append(key).append("=").append(URLEncoder.encode(args.get(key), StandardCharsets.UTF_8.displayName()));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return s;
+        return s != null ? s.toString() : "";
     }
 
-
-    @SuppressWarnings("unchecked")
-    public static void addVersion(URLConnection connection, JSONObject object) {
-        String api = connection.getHeaderField(IntactManager.APIVERSION);
-        if (api != null && api.length() > 0) {
-            object.put(IntactManager.APIVERSION, Integer.parseInt(api));
-        }
-    }
 
     public static String truncate(String str) {
         if (str.length() > 1000)
@@ -173,7 +123,7 @@ public class HttpUtils {
                 return executeWithRedirect(manager, connection.getHeaderField("Location"), queryMap);
             case HttpURLConnection.HTTP_INTERNAL_ERROR:
             case HttpURLConnection.HTTP_BAD_REQUEST:
-                readStream(connection.getErrorStream());
+                manager.error(readStream(connection.getErrorStream()));
                 return connection;
         }
 
@@ -187,10 +137,63 @@ public class HttpUtils {
             while ((line = in.readLine()) != null) {
                 builder.append(line); // + "\r\n"(no need, json has no line breaks!)
             }
-            in.close();
         }
         System.out.println("JSON error response: " + builder.toString());
         return builder.toString();
+    }
+
+    public static String getRequestResultForUrl(String requestURL) {
+        String jsonText = "";
+        try {
+            URL url = new URL(requestURL);
+            URLConnection olsConnection = url.openConnection();
+            BufferedReader in = new BufferedReader(new InputStreamReader(olsConnection.getInputStream()));
+            String inputLine;
+            StringBuilder builder = new StringBuilder();
+            while ((inputLine = in.readLine()) != null) {
+                builder.append(inputLine);
+            }
+            jsonText = builder.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return jsonText;
+    }
+
+    public static JsonNode getJsonForUrl(String jsonQuery) {
+        String jsonText = getRequestResultForUrl(jsonQuery);
+        if (jsonText.length() > 0) {
+            try {
+                return new ObjectMapper().readTree(jsonText);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    private static HttpRequest.BodyPublisher buildFormDataFromMap(Map<Object, Object> data) {
+        var builder = new StringBuilder();
+        for (Map.Entry<Object, Object> entry : data.entrySet()) {
+            if (builder.length() > 0) {
+                builder.append("&");
+            }
+            if (entry.getValue() instanceof List) {
+                for (Object element : (List) entry.getValue()) {
+                    builder.append(URLEncoder.encode(entry.getKey().toString(), StandardCharsets.UTF_8));
+                    builder.append("=");
+                    builder.append(URLEncoder.encode(element.toString(), StandardCharsets.UTF_8));
+                    builder.append("&");
+                }
+                builder.deleteCharAt(builder.length() - 1);
+            } else {
+                builder.append(URLEncoder.encode(entry.getKey().toString(), StandardCharsets.UTF_8));
+                builder.append("=");
+                builder.append(URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8));
+            }
+        }
+        return HttpRequest.BodyPublishers.ofString(builder.toString());
     }
 
 }

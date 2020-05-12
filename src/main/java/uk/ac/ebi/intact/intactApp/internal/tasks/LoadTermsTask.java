@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.intactApp.internal.tasks;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -9,7 +10,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.*;
-import org.json.simple.JSONObject;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 import uk.ac.ebi.intact.intactApp.internal.model.Databases;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
@@ -63,7 +63,7 @@ public class LoadTermsTask extends AbstractTask {
             conf = "1.0";
 
         // String url = "http://api.jensenlab.org/network?entities="+URLEncoder.encode(ids.trim())+"&score="+conf;
-        Map<String, String> args = new HashMap<>();
+        Map<Object, Object> args = new HashMap<>();
         // args.put("database", useDATABASE);
         // TODO: Is it OK to always use stitch?
         args.put("database", Databases.STITCH.getAPIName());
@@ -81,7 +81,7 @@ public class LoadTermsTask extends AbstractTask {
 
         monitor.setStatusMessage("Getting additional terms from " + manager.getNetworkURL());
 
-        JSONObject results = HttpUtils.postJSON(manager.getNetworkURL(), args, manager);
+        JsonNode results = HttpUtils.postJSON(manager.getNetworkURL(), args, manager);
 
         if (results == null) {
             monitor.showMessage(TaskMonitor.Level.ERROR, "String returned no results");

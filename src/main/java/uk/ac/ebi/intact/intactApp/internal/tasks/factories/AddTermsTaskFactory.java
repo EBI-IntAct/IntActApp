@@ -21,7 +21,7 @@ public class AddTermsTaskFactory extends AbstractNetworkTaskFactory
     }
 
     public boolean isReady(CyNetwork network) {
-        return manager.haveURIs() && ModelUtils.isStringNetwork(network);
+        return manager.haveURIs() && ModelUtils.isIntactNetwork(network);
     }
 
     public TaskIterator createTaskIterator(CyNetwork network) {
@@ -36,7 +36,7 @@ public class AddTermsTaskFactory extends AbstractNetworkTaskFactory
     }
 
     public boolean isReady(CyNetworkView netView) {
-        return manager.haveURIs() && ModelUtils.isStringNetwork(netView.getModel());
+        return manager.haveURIs() && ModelUtils.isIntactNetwork(netView.getModel());
     }
 
     public TaskIterator createTaskIterator(CyNetworkView netView) {

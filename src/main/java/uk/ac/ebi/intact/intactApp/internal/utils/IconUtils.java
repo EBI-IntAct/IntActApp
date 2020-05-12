@@ -2,6 +2,8 @@ package uk.ac.ebi.intact.intactApp.internal.utils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 public abstract class IconUtils {
@@ -14,7 +16,7 @@ public abstract class IconUtils {
     public static final String STRING_ICON_LAYER_3 = "\uE906";
     public static final String STRING_ICON_LAYER_4 = "\uE907";
     // Search Icons -- extra layers
-    public static final String DISEASE_LAYER ="\uE908";
+    public static final String DISEASE_LAYER = "\uE908";
     public static final String ENRICH_LAYER = "\uE909";
     public static final String PUBMED_LAYER = "\uE90A";
     public static final String STITCH_LAYER = "\uE90B";
@@ -64,5 +66,21 @@ public abstract class IconUtils {
             System.err.println("Couldn't find file: " + path);
             return null;
         }
+    }
+
+    public static File createFile(String path) {
+        ClassLoader cl = IconUtils.class.getClassLoader();
+        URL url = cl.getResource(path);
+        if (url != null) {
+            try {
+                return new File(url.toURI());
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+                System.err.println("Couldn't convert to URI : " + url);
+            }
+        } else {
+            System.err.println("Couldn't find file: " + path);
+        }
+        return null;
     }
 }

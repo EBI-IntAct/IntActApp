@@ -1,45 +1,53 @@
 package uk.ac.ebi.intact.intactApp.internal.model;
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.util.color.Palette;
-import org.json.simple.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.cytoscape.model.*;
+import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
+import org.cytoscape.model.events.AboutToRemoveEdgesListener;
+import org.cytoscape.model.events.AddedEdgesEvent;
+import org.cytoscape.model.events.AddedEdgesListener;
+import org.cytoscape.task.hide.HideTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.IntactStyle;
+import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.StyleMapper;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.intactApp.internal.utils.TableUtil;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.awt.*;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static uk.ac.ebi.intact.intactApp.internal.utils.TableUtil.getColumnValuesOfEdges;
 
 // import org.jcolorbrewer.ColorBrewer;
 
-public class IntactNetwork {
+public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesListener {
     final IntactManager manager;
     CyNetwork network;
-    Map<String, List<String>> resolvedIdMap = null;
-    Map<String, List<Annotation>> annotations = null;
-    Map<String, String> settings = null;
+    Map<String, List<String>> resolvedIdMap;
+    Map<String, List<Annotation>> annotations;
+    CyTable edgeTable;
+    CyTable nodeTable;
+    CyTable featuresTable;
+    CyTable identifiersTable;
 
-    // Enrichment table options for this network
-    private int topTerms = -1;
-    private double overlapCutoff = -1;
-    private Palette brewerPalette = null;
-    private List<EnrichmentTerm.TermCategory> categoryFilter = null;
-    private ChartType chartType = null;
-    private boolean removeOverlap = false;
+
+    // Collapsed edges
+    private Map<Couple, CyEdge> collapsedEdges;
+    private List<CyEdge> expandedEdges;
+    private Map<Couple, List<CyEdge>> coupleToEdges = new HashMap<>();
+    private final Set<Long> taxIds = new HashSet<>();
+    private final Set<String> interactorTypes = new HashSet<>();
+    private final Map<String, Long> speciesNameToId = new HashMap<>();
+    private final Map<Long, String> speciesIdToName = new HashMap<>();
+    private boolean styleCompleted = false;
 
 
     public IntactNetwork(IntactManager manager) {
         this.manager = manager;
         resolvedIdMap = null;
         annotations = null;
-        topTerms = manager.getTopTerms(null);
-        overlapCutoff = manager.getOverlapCutoff(null);
-        brewerPalette = manager.getEnrichmentPalette(null);
-        categoryFilter = manager.getCategoryFilter(null);
-        removeOverlap = manager.getRemoveOverlap(null);
-        chartType = manager.getChartType(null);
-        settings = new HashMap<>();
     }
 
     public void reset() {
@@ -56,113 +64,88 @@ public class IntactNetwork {
     }
 
     public void setNetwork(CyNetwork network) {
+
         this.network = network;
 
-        // Load our options
-        settings = ModelUtils.getEnrichmentSettings(network);
-        if (settings.containsKey("overlapCutoff")) {
-            overlapCutoff = Double.parseDouble(settings.get("overlapCutoff"));
-        }
-        if (settings.containsKey("topTerms")) {
-            topTerms = Integer.parseInt(settings.get("topTerms"));
-        }
-        if (settings.containsKey("removeOverlap")) {
-            removeOverlap = Boolean.parseBoolean(settings.get("removeOverlap"));
-        }
-        if (settings.containsKey("categoryFilter")) {
-            List<String> strFilters = ModelUtils.stringToList(settings.get("categoryFilter"));
-            categoryFilter = new ArrayList<>();
-            for (String filter : strFilters) {
-                categoryFilter.add(Enum.valueOf(EnrichmentTerm.TermCategory.class, filter));
+        edgeTable = network.getDefaultEdgeTable();
+        nodeTable = network.getDefaultNodeTable();
+
+        TableUtil.NullAndNonNullEdges identifiedOrNotEdges = TableUtil.splitNullAndNonNullEdges(network, ModelUtils.INTACT_AC);
+
+        expandedEdges = new ArrayList<>(identifiedOrNotEdges.nonNullEdges);
+        collapsedEdges = new HashMap<>();
+        coupleToEdges = new HashMap<>();
+
+        Couple.putEdgesToCouples(expandedEdges, coupleToEdges);
+
+        if (identifiedOrNotEdges.nullEdges.size() > 0) {
+            for (CyEdge existingEdge : identifiedOrNotEdges.nullEdges) {
+                Couple existingCouple = new Couple(existingEdge);
+                collapsedEdges.put(existingCouple, existingEdge);
             }
+        } else {
+            updateCollapsedEdges(coupleToEdges.keySet());
         }
 
-        // FIXME
-		/*
-		if (settings.containsKey("brewerPalette")) {
-			brewerPalette = Enum.valueOf(ColorBrewer.class, settings.get("brewerPalette"));
-		}
-		*/
-        if (settings.containsKey("brewerPalette")) {
-            manager.setBrewerPalette(network, settings.get("brewerPalette"));
-        }
-        if (settings.containsKey("chartType")) {
-            chartType = Enum.valueOf(ChartType.class, settings.get("chartType"));
-        }
+        completeMissingNodeColors();
     }
 
-    public double getOverlapCutoff() {
-        return overlapCutoff;
+    void hideExpandedEdgesOnViewCreation(CyNetworkView networkView) {
+        HideTaskFactory hideTaskFactory = manager.getService(HideTaskFactory.class);
+        manager.execute(hideTaskFactory.createTaskIterator(networkView, null, expandedEdges));
+        manager.addNetworkView(networkView);
     }
 
-    public void setOverlapCutoff(double cutoff) {
-        overlapCutoff = cutoff;
-        update();
-    }
-
-    public int getTopTerms() {
-        return topTerms;
-    }
-
-    public void setTopTerms(int tt) {
-        topTerms = tt;
-        update();
-    }
-
-    public List<EnrichmentTerm.TermCategory> getCategoryFilter() {
-        return categoryFilter;
-    }
-
-    public void setCategoryFilter(List<EnrichmentTerm.TermCategory> categories) {
-        categoryFilter = categories;
-        update();
-    }
-
-    public Palette getEnrichmentPalette() {
-        return brewerPalette;
-    }
-
-    public void setEnrichmentPalette(Palette palette) {
-        brewerPalette = palette;
-        update();
-    }
-
-    public ChartType getChartType() {
-        return chartType;
-    }
-
-    public void setChartType(ChartType type) {
-        chartType = type;
-        update();
-    }
-
-    public boolean getRemoveOverlap() {
-        return removeOverlap;
-    }
-
-    public void setRemoveOverlap(boolean remove) {
-        removeOverlap = remove;
-        update();
-    }
-
-
-    // Update our settings in the network table
-    private void update() {
-        settings.put("overlapCutoff", Double.toString(overlapCutoff));
-        settings.put("topTerms", Integer.toString(topTerms));
-        settings.put("removeOverlap", Boolean.toString(removeOverlap));
-        {
-            List<String> filters = new ArrayList<>();
-            for (EnrichmentTerm.TermCategory cat : categoryFilter) {
-                filters.add(cat.name());
+    public void completeMissingNodeColors() {
+        new Thread(() -> {
+            for (CyRow row : nodeTable.getAllRows()) {
+                interactorTypes.add(row.get(ModelUtils.TYPE, String.class));
+                Long taxId = row.get(ModelUtils.TAX_ID, Long.class);
+                taxIds.add(taxId);
+                String specieName = row.get(ModelUtils.SPECIES, String.class);
+                speciesNameToId.put(specieName, taxId);
+                speciesIdToName.put(taxId, specieName);
             }
-            settings.put("categoryFilter", ModelUtils.listToString(filters));
-        }
-        settings.put("brewerPalette", brewerPalette.toString());
-        settings.put("chartType", chartType.name());
-        ModelUtils.updateEnrichmentSettings(network, settings);
 
+            Map<Long, Paint> addedTaxIds = StyleMapper.completeTaxIdColorsFromUnknownTaxIds(getTaxIds());
+
+            for (IntactStyle style : manager.getIntactStyles().values()) {
+                style.updateTaxIdToNodePaintMapping(addedTaxIds);
+            }
+            styleCompleted = true;
+        }).start();
     }
+
+    public boolean isStyleCompleted() {
+        return styleCompleted;
+    }
+
+    public Set<String> getInteractorTypes() {
+        return interactorTypes;
+    }
+
+    public Set<Long> getTaxIds() {
+        return new HashSet<>(taxIds);
+    }
+
+    public String getSpeciesName(Long taxId) {
+        return speciesIdToName.getOrDefault(taxId, null);
+    }
+
+    public Long getSpeciesId(String speciesName) {
+        return speciesNameToId.getOrDefault(speciesName, null);
+    }
+
+    public Set<String> getNonDefinedTaxon() {
+        Set<Long> availableTaxIds = new HashSet<>(taxIds);
+        availableTaxIds.removeAll(StyleMapper.taxIdToPaint.keySet());
+        Set<String> nonDefinedTaxon = new HashSet<>();
+        for (Long availableTaxId : availableTaxIds) {
+            nonDefinedTaxon.add(speciesIdToName.get(availableTaxId));
+        }
+        return nonDefinedTaxon;
+    }
+
 
     public Map<String, List<Annotation>> getAnnotations() {
         return annotations;
@@ -171,11 +154,6 @@ public class IntactNetwork {
     public Map<String, List<Annotation>> getAnnotations(int taxon, final String terms,
                                                         final String useDATABASE, boolean includeViruses) {
         String encTerms = terms.trim();
-        // try {
-        // encTerms = URLEncoder.encode(terms.trim(), "UTF-8");
-        // } catch (Exception e) {
-        // return new HashMap<String, List<Annotation>>();
-        // }
 
         // Split the terms up into groups of 5000
         String[] termsArray = encTerms.split("\n");
@@ -191,26 +169,17 @@ public class IntactNetwork {
 
     private Map<String, List<Annotation>> getAnnotationBatch(int taxon, final String encTerms,
                                                              String useDATABASE, boolean includeViruses) {
-        // always call the string API first to resolve all potential protein IDs
-        // new API
         String url = manager.getResolveURL(Databases.STRING.getAPIName()) + "json/get_string_ids";
-        // String url = manager.getResolveURL(Databases.STRING.getAPIName())+"json/resolveList";
         Map<String, String> args = new HashMap<>();
         args.put("species", Integer.toString(taxon));
         args.put("identifiers", encTerms);
-        // args.put("limit", "");
         args.put("caller_identity", IntactManager.CallerIdentity);
         manager.info("URL: " + url + "?species=" + taxon + "&caller_identity=" + IntactManager.CallerIdentity + "&identifiers=" + encTerms);
-        // Get the results
-        // System.out.println("Getting STRING term resolution");
-        JSONObject results = HttpUtils.postJSON(url, args, manager);
-        // System.out.println("Results: "+results);
-
+        JsonNode results = HttpUtils.getJSON(url, args, manager);
+        System.out.println(results);
 
         if (results != null) {
-            // System.out.println("Got results");
             annotations = Annotation.getAnnotations(results, encTerms, annotations);
-            // System.out.println("Get annotations returns "+annotations.size());
         }
         results = null;
 
@@ -225,7 +194,7 @@ public class IntactNetwork {
             manager.info("URL: " + url + "?species=" + taxon + "&caller_identity=" + IntactManager.CallerIdentity + "&identifiers=" + HttpUtils.truncate(encTerms));
             // Get the results
             // System.out.println("Getting STITCH term resolution");
-            results = HttpUtils.postJSON(url, args, manager);
+            results = HttpUtils.getJSON(url, args, manager);
 
             if (results != null) {
                 updateAnnotations(results, encTerms);
@@ -248,7 +217,7 @@ public class IntactNetwork {
                     + IntactManager.CallerIdentity + "&identifiers=" + HttpUtils.truncate(encTerms));
             // Get the results
             // System.out.println("Getting VIRUSES term resolution");
-            results = HttpUtils.postJSON(url, args, manager);
+            results = HttpUtils.getJSON(url, args, manager);
 
             if (results != null) {
                 updateAnnotations(results, encTerms);
@@ -339,7 +308,7 @@ public class IntactNetwork {
         return ids;
     }
 
-    private void updateAnnotations(JSONObject results, String terms) {
+    private void updateAnnotations(JsonNode results, String terms) {
         Map<String, List<Annotation>> newAnnotations = Annotation.getAnnotations(results,
                 terms);
         for (String newAnn : newAnnotations.keySet()) {
@@ -351,4 +320,131 @@ public class IntactNetwork {
         }
     }
 
+    // INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT //
+
+    private void updateCollapsedEdges(Collection<Couple> couplesToUpdate) {
+        for (Couple couple : couplesToUpdate) {
+            CyEdge summaryEdge;
+            List<CyEdge> similarEdges = coupleToEdges.get(couple);
+            if (!similarEdges.isEmpty()) {
+                if (!collapsedEdges.containsKey(couple)) {
+                    summaryEdge = network.addEdge(couple.node1, couple.node2, false);
+                    collapsedEdges.put(couple, summaryEdge);
+                } else {
+                    summaryEdge = collapsedEdges.get(couple);
+                }
+                CyRow summaryEdgeRow = network.getRow(summaryEdge);
+                summaryEdgeRow.set(ModelUtils.C_INTACT_IDS, getColumnValuesOfEdges(edgeTable, ModelUtils.INTACT_ID, Long.class, similarEdges, "???"));
+                CyRow firstEdgeRow = network.getRow(similarEdges.iterator().next());
+                summaryEdgeRow.set(ModelUtils.MI_SCORE, firstEdgeRow.get(ModelUtils.MI_SCORE, Double.class));
+                summaryEdgeRow.set(ModelUtils.C_IS_COLLAPSED, true);
+                summaryEdgeRow.set(ModelUtils.C_NB_EDGES, similarEdges.size());
+                summaryEdgeRow.set(CyNetwork.NAME, ModelUtils.getName(network, couple.node1) + " (interact with) " + ModelUtils.getName(network, couple.node2));
+
+            } else {
+                summaryEdge = collapsedEdges.get(couple);
+                network.removeEdges(Collections.singleton(summaryEdge));
+            }
+        }
+    }
+
+
+    public List<CyEdge> getCollapsedEdges() {
+        return new ArrayList<>(collapsedEdges.values());
+    }
+
+    public List<CyEdge> getExpandedEdges() {
+        return new ArrayList<>(expandedEdges);
+    }
+
+    public List<CyEdge> getEvidenceEdges(CyEdge edge) {
+        return coupleToEdges.get(new Couple(edge));
+    }
+
+    public CyEdge getCollapsedEdge(CyEdge edge) {
+        return collapsedEdges.get(new Couple(edge));
+    }
+
+
+    @Override
+    public void handleEvent(AddedEdgesEvent e) {
+        if (e.getSource() == network) {
+            Collection<CyEdge> addedEdges = e.getPayloadCollection();
+            expandedEdges.addAll(addedEdges);
+            Set<Couple> updatedCouples = Couple.putEdgesToCouples(addedEdges, coupleToEdges);
+            updateCollapsedEdges(updatedCouples);
+        }
+    }
+
+
+    @Override
+    public void handleEvent(AboutToRemoveEdgesEvent e) {
+        if (e.getSource() == network) {
+            Collection<CyEdge> removedEdges = e.getEdges();
+            expandedEdges.removeAll(removedEdges);
+            Map<Couple, List<CyEdge>> couplesToRemove = new HashMap<>();
+            Couple.putEdgesToCouples(removedEdges, couplesToRemove);
+            couplesToRemove.forEach((couple, cyEdges) -> coupleToEdges.get(couple).removeAll(cyEdges));
+            updateCollapsedEdges(couplesToRemove.keySet());
+        }
+    }
+
+    // INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT //
+
+
+    public CyTable getFeaturesTable() {
+        return featuresTable;
+    }
+
+    public void setFeaturesTable(CyTable featuresTable) {
+        this.featuresTable = featuresTable;
+        if (network != null) {
+            network.getRow(network).set(ModelUtils.FEATURES_TABLE_REF, featuresTable.getSUID());
+        }
+    }
+
+    public CyTable getIdentifiersTable() {
+        return identifiersTable;
+    }
+
+    public void setIdentifiersTable(CyTable identifiersTable) {
+        this.identifiersTable = identifiersTable;
+        if (network != null)
+            network.getRow(network).set(ModelUtils.IDENTIFIERS_TABLE_REF, identifiersTable.getSUID());
+    }
+
+    public List<CyEdge> getSelectedEdges() {
+        List<CyEdge> selectedEdges = new ArrayList<>();
+        for (CyEdge edge : network.getEdgeList()) {
+            if (network.getRow(edge).get(CyNetwork.SELECTED, Boolean.class)) {
+                selectedEdges.add(edge);
+            }
+        }
+        return selectedEdges;
+    }
+
+    public List<CyNode> getSelectedNodes() {
+        List<CyNode> selectedNodes = new ArrayList<>();
+        for (CyNode node : network.getNodeList()) {
+            if (network.getRow(node).get(CyNetwork.SELECTED, Boolean.class)) {
+                selectedNodes.add(node);
+            }
+        }
+        return selectedNodes;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        IntactNetwork that = (IntactNetwork) o;
+
+        return network.equals(that.network);
+    }
+
+    @Override
+    public int hashCode() {
+        return network.hashCode();
+    }
 }
