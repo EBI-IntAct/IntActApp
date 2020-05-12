@@ -14,7 +14,7 @@
     <packaging>bundle</packaging>
     <name>${bundle.symbolicName}</name>
 
-    <version>1.0.0</version>
+    <version>0.0.1-SNAPSHOT</version>
 
     <scm>
         <connection>scm:git:https://github.com/EliotRagueneau/IntactApp.git</connection>
