@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import static uk.ac.ebi.intact.intactApp.internal.ui.panels.east.AbstractDetailPanel.backgroundColor;
 
 public class NodeDiagram extends JPanel {
-    private final JPanel shapePanel = new JPanel();
+    private final JPanel shapePanel = new JPanel(new GridBagLayout());
 
     public NodeDiagram(IntactNode iNode, List<Feature> features) {
         this.setBackground(new Color(0,0,0,0));
@@ -55,7 +55,7 @@ public class NodeDiagram extends JPanel {
 
         shapePanel.setAlignmentX(CENTER_ALIGNMENT);
         shapePanel.setAlignmentY(CENTER_ALIGNMENT);
-        shapePanel.add(shape);
+        shapePanel.add(shape, new GridBagConstraints());
         this.add(shapePanel);
     }
 

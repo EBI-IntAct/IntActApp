@@ -240,7 +240,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
         private final EdgeDetails edgeDetails;
 
         public EdgePanel(IntactEdge edge) {
-            super("", selectedEdges == null || !selectedEdges.collapseAllButton.isExpanded());
+            super("", !(selectedEdges == null || selectedEdges.collapseAllButton.isExpanded()));
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
             content.setAlignmentX(LEFT_ALIGNMENT);
             setBackground(backgroundColor);

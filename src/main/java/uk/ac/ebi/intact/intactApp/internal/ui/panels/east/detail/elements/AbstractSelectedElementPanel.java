@@ -43,7 +43,7 @@ public abstract class AbstractSelectedElementPanel extends JPanel {
         content.setAlignmentX(LEFT_ALIGNMENT);
         content.setAlignmentY(TOP_ALIGNMENT);
         content.setBackground(backgroundColor);
-        add(content, layoutHelper.anchor("west").down().expandHoriz());
+        add(content, layoutHelper.anchor("west").down().expandBoth());
     }
 
     protected abstract void fillContent();

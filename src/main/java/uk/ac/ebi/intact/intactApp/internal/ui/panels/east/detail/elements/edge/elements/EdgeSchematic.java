@@ -9,19 +9,22 @@ import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEvidenceEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.CollapsedIntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.StyleMapper;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.diagrams.NodeDiagram;
+import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.List;
 import java.util.Map;
 
 public class EdgeSchematic extends AbstractEdgeElement {
-    private final JPanel nodesPanel = new JPanel(new GridLayout(1, 2, 2, 0));
-    private final JPanel edgePanel = new JPanel();
+    private final JPanel nodesPanel = new JPanel(new GridBagLayout());
+    private final JPanel edgePanel = new JPanel(new GridBagLayout());
     public final static Color transparentColor = new Color(0, 0, 0, 0);
 
     public EdgeSchematic(IntactEdge iEdge, OpenBrowser openBrowser) {
         super(null, iEdge, openBrowser);
+        setBorder(new EmptyBorder(0,4,0,4));
         fillContent();
     }
 
@@ -46,21 +49,22 @@ public class EdgeSchematic extends AbstractEdgeElement {
         nodesPanel.setOpaque(false);
 
         Map<IntactNode, List<Feature>> features = edge.getFeatures();
+        EasyGBC c = new EasyGBC();
 
         NodeDiagram sourceDiagram = new NodeDiagram(edge.source, features.get(edge.source));
         sourceDiagram.setOpaque(false);
         sourceDiagram.setBackground(transparentColor);
-        nodesPanel.add(sourceDiagram);
+        nodesPanel.add(sourceDiagram, c.expandBoth());
 
         NodeDiagram targetDiagram = new NodeDiagram(edge.target, features.get(edge.target));
         targetDiagram.setOpaque(false);
         targetDiagram.setBackground(transparentColor);
-        nodesPanel.add(targetDiagram);
+        nodesPanel.add(targetDiagram, c.down().expandBoth());
 
         content.add(nodesPanel);
     }
 
-    private class EdgeDiagram extends JComponent {
+    private static class EdgeDiagram extends JComponent {
         Paint color;
         boolean dashed;
         int thickness;
@@ -82,22 +86,22 @@ public class EdgeSchematic extends AbstractEdgeElement {
                 g2.setStroke(new BasicStroke(thickness));
             }
 
-            int halfHeight = getHeight() / 2;
-            int quarterWidth = getWidth() / 4;
-            g2.drawLine(quarterWidth + 10, halfHeight, getWidth() - quarterWidth - 10, halfHeight);
+//            int halfHeight = getHeight() / 2;
+//            int quarterWidth = getWidth() / 4;
+
+            int halfWidth = getWidth() / 2;
+            int quarterHeight = getHeight() / 4;
+            g2.drawLine(halfWidth, quarterHeight + 10, halfWidth, getHeight() - quarterHeight - 10);
         }
     }
 
 
-
     private void drawEdgePanel(EdgeDiagram edgeDiagram) {
-        edgePanel.setLayout(new BorderLayout());
         edgePanel.setOpaque(false);
         edgeDiagram.setOpaque(true);
-        edgePanel.add(edgeDiagram, BorderLayout.CENTER);
+        edgePanel.add(edgeDiagram, new EasyGBC().expandBoth());
         content.add(edgePanel);
     }
-
 
 
 }

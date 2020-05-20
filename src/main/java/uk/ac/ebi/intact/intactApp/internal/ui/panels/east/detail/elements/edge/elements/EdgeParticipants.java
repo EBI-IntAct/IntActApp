@@ -86,10 +86,10 @@ public class EdgeParticipants extends AbstractEdgeElement {
         content.setLayout(new GridBagLayout());
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
-        JPanel participantsPanel = new JPanel(new GridLayout(1, 2, 2, 0));
+        JPanel participantsPanel = new JPanel(new GridLayout(2, 1, 0, 3));
         EasyGBC d = new EasyGBC();
-        mainPanel.add(new EdgeSchematic(edge, openBrowser), d.anchor("north").expandHoriz());
-        mainPanel.add(participantsPanel, d.down().expandHoriz());
+        mainPanel.add(new EdgeSchematic(edge, openBrowser), d.anchor("west").expandVert());
+        mainPanel.add(participantsPanel, d.right().expandBoth());
 
         MatteBorder outsideBorder = BorderFactory.createMatteBorder(2, 2, 2, 2, nodePanelBorder);
         MatteBorder insideBorder = BorderFactory.createMatteBorder(4, 4, 4, 4, nodePanelBg);
