@@ -29,6 +29,7 @@ public class EdgeSchematic extends AbstractEdgeElement {
     protected void fillCollapsedEdgeContent(IntactCollapsedEdge edge) {
         drawNodes(edge);
         int thickness = edge.edges.size() + 2;
+        thickness = Integer.min(thickness, 25);
         EdgeDiagram edgeDiagram = new EdgeDiagram(CollapsedIntactStyle.getColor(edge.miScore), thickness, false);
         drawEdgePanel(edgeDiagram);
     }
@@ -83,7 +84,7 @@ public class EdgeSchematic extends AbstractEdgeElement {
 
             int halfHeight = getHeight() / 2;
             int quarterWidth = getWidth() / 4;
-            g2.drawLine(quarterWidth, halfHeight, getWidth() - quarterWidth, halfHeight);
+            g2.drawLine(quarterWidth + 10, halfHeight, getWidth() - quarterWidth - 10, halfHeight);
         }
     }
 

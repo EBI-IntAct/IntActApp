@@ -30,8 +30,10 @@ public abstract class AbstractDetailPanel extends JPanel {
     protected IntactNetwork currentINetwork;
     protected IntactNetworkView currentIView;
     protected Map<CyNetwork, Map<String, Map<String, Double>>> filters = new HashMap<>();
+    protected final LimitExceededPanel limitExceededPanel;
 
-    public AbstractDetailPanel(final IntactManager manager) {
+
+    public AbstractDetailPanel(final IntactManager manager, int selectionLimit, String limitOfWhat) {
         this.manager = manager;
         this.openBrowser = manager.getService(OpenBrowser.class);
         this.currentINetwork = manager.getCurrentIntactNetwork();
@@ -39,6 +41,7 @@ public abstract class AbstractDetailPanel extends JPanel {
         setBackground(backgroundColor);
         IconManager iconManager = manager.getService(IconManager.class);
         iconFont = iconManager.getIconFont(17.0f);
+        limitExceededPanel = new LimitExceededPanel(limitOfWhat, selectionLimit);
         //        filters.put(currentINetwork.getNetwork(), new HashMap<>());
     }
 
@@ -99,5 +102,34 @@ public abstract class AbstractDetailPanel extends JPanel {
 
         if (value == 0)
             filter.remove(label);
+    }
+
+    protected static class LimitExceededPanel extends JPanel {
+        public LimitExceededPanel(String limitOfWhat, int limit) {
+            setLayout(new GridLayout(2, 1));
+            Font font = textFont.deriveFont(15f);
+            JLabel label = new JLabel(String.format("More than %d %s selected", limit, limitOfWhat));
+            label.setForeground(Color.WHITE);
+            label.setFont(font);
+            label.setHorizontalAlignment(JLabel.CENTER);
+            add(label);
+            JLabel label1 = new JLabel(String.format("For details on other %s, please select less %s", limitOfWhat, limitOfWhat));
+            label1.setFont(font);
+            label1.setForeground(Color.WHITE);
+            label1.setHorizontalAlignment(JLabel.CENTER);
+            add(label1);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            int height = getHeight();
+            g2.setPaint(new LinearGradientPaint(0, 0, 0, height,
+                    new float[]{0.0f, 1f},
+                    new Color[]{new Color(66, 42, 146), new Color(134, 56, 148),}));
+            g2.fillRoundRect(0, 0, getWidth(), height, 10, 10);
+        }
     }
 }

@@ -5,6 +5,8 @@ import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.*;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.events.SelectedNodesAndEdgesEvent;
 import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -21,6 +23,7 @@ import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.MutationViewT
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.EdgeDetailPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.LegendDetailPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.NodeDetailPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.VersionPanel;
 import uk.ac.ebi.intact.intactApp.internal.utils.IconUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
@@ -28,6 +31,7 @@ import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Properties;
 
 public class DetailPanel extends JPanel
@@ -53,7 +57,7 @@ public class DetailPanel extends JPanel
     private final EdgeDetailPanel edgePanel;
     private final LegendDetailPanel legendPanel;
     private boolean registered = false;
-
+    private final JTabbedPane tabs = new JTabbedPane(JTabbedPane.BOTTOM);
 
 
     public DetailPanel(final IntactManager manager) {
@@ -98,15 +102,15 @@ public class DetailPanel extends JPanel
         this.add(upperPanel, BorderLayout.NORTH);
 
 
-        JTabbedPane tabs = new JTabbedPane(JTabbedPane.BOTTOM);
+        legendPanel = new LegendDetailPanel(manager);
+        tabs.add("Legend", legendPanel);
         nodePanel = new NodeDetailPanel(manager);
         tabs.add("Nodes", nodePanel);
         edgePanel = new EdgeDetailPanel(manager);
         tabs.add("Edges", edgePanel);
-        legendPanel = new LegendDetailPanel(manager);
-        tabs.add("Legend", legendPanel);
-        tabs.getComponent(0).setBackground(Color.WHITE);
+
         this.add(tabs, BorderLayout.CENTER);
+        this.add(new VersionPanel(), BorderLayout.SOUTH);
         manager.setCytoPanel(this);
         manager.registerService(this, SetCurrentNetworkListener.class, new Properties());
         manager.registerService(this, SetCurrentNetworkViewListener.class, new Properties());
@@ -177,9 +181,24 @@ public class DetailPanel extends JPanel
                 TimeUtils.sleep(200);
             }
             lastSelection = Instant.now();
+            Collection<CyNode> selectedNodes = event.getSelectedNodes();
+            Collection<CyEdge> selectedEdges = event.getSelectedEdges();
+            boolean nodesSelected = !selectedNodes.isEmpty();
+            boolean edgesSelected = !selectedEdges.isEmpty();
+            if (nodesSelected && edgesSelected && tabs.getSelectedComponent() == legendPanel) {
+                tabs.setSelectedComponent(nodePanel);
+            } else if (nodesSelected && selectedEdges.isEmpty()) {
+                tabs.setSelectedComponent(nodePanel);
+            } else if (selectedNodes.isEmpty() && edgesSelected) {
+                tabs.setSelectedComponent(edgePanel);
+            }
 
-            new Thread(() -> nodePanel.selectedNodes(event.getSelectedNodes())).start();
-            new Thread(() -> edgePanel.selectedEdges(event.getSelectedEdges())).start();
+            new Thread(() -> {
+                nodePanel.selectedNodes(selectedNodes);
+            }).start();
+            new Thread(() -> {
+                edgePanel.selectedEdges(selectedEdges);
+            }).start();
         }
     }
 

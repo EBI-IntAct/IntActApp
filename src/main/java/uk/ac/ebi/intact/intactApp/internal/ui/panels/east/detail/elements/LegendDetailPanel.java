@@ -19,7 +19,7 @@ public class LegendDetailPanel extends AbstractDetailPanel {
     private final EdgeLegendPanel edgePanel;
 
     public LegendDetailPanel(final IntactManager manager) {
-        super(manager);
+        super(manager,0,"legend");
         JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBackground(backgroundColor);
         JScrollPane scrollPane = new JScrollPane(mainPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);

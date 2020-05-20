@@ -13,7 +13,7 @@ public class MutationIntactStyle extends ExpandedIntactStyle {
 
     public static final String TITLE = "Intact - Mutation";
     public final static IntactNetworkView.Type type = IntactNetworkView.Type.MUTATION;
-    public static final Color mutatedColor = new Color(255, 0, 0);
+    public static final Color mutatedColor = new Color(255, 0, 161);
     public static final Color wildColor = new Color(126, 131, 137);
 
     public MutationIntactStyle(IntactManager manager) {

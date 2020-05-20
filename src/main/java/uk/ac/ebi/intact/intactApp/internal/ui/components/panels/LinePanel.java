@@ -1,0 +1,16 @@
+package uk.ac.ebi.intact.intactApp.internal.ui.components.panels;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class LinePanel extends JPanel {
+    public LinePanel() {
+        setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        setAlignmentX(LEFT_ALIGNMENT);
+    }
+
+    public LinePanel(Color backgroundColor) {
+        this();
+        setBackground(backgroundColor);
+    }
+}

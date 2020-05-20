@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements;
 
+import com.google.common.collect.Comparators;
 import org.cytoscape.model.*;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -7,20 +8,22 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.CollapsablePanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.AbstractDetailPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeBasics;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeDetails;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeFeatures;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeSchematic;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeSummary;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeXRefs.NodeIdentifiers;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeXRefs.NodeXRefs;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.identifiers.NodeIdentifiers;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
-import uk.ac.ebi.intact.intactApp.internal.utils.ViewUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Comparator.*;
 
 /**
  * Displays information about a protein taken from STRING
@@ -28,25 +31,20 @@ import java.util.*;
  * @author Scooter Morris
  */
 public class NodeDetailPanel extends AbstractDetailPanel {
-
     private JPanel nodesPanel = null;
-    private final int MAXIMUM_SELECTED_NODE_SHOWN = 100;
-
-
-    private Color defaultBackground;
-
+    private CollapsablePanel selectedNodes;
+    private static final int MAXIMUM_SELECTED_NODE_SHOWN = 100;
+    private final EasyGBC layoutHelper = new EasyGBC();
     public volatile boolean selectionRunning;
-    private final Map<CyNode, NodePanel> nodeToPanel = new HashMap<>();
-    private final EasyGBC layoutHelper;
-    // private List<CyNode> highlightNodes = null;
-    // private JCheckBox highlightCheck = null;
+    private final Map<String, NodePanel> nodeIdToNodePanel = new HashMap<>();
+
+//    private final CollapseAllButton collapseAllButton = new CollapseAllButton(true, nodeIdToNodePanel.values());
 
     public NodeDetailPanel(final IntactManager manager) {
-        super(manager);
+        super(manager, MAXIMUM_SELECTED_NODE_SHOWN, "nodes");
         init();
         revalidate();
         repaint();
-        layoutHelper = new EasyGBC();
     }
 
 
@@ -75,23 +73,18 @@ public class NodeDetailPanel extends AbstractDetailPanel {
         nodesPanel = new JPanel();
         nodesPanel.setBackground(backgroundColor);
         nodesPanel.setLayout(new GridBagLayout());
-        EasyGBC c = new EasyGBC();
 
-        if (currentINetwork != null) {
-            List<CyNode> nodes = CyTableUtil.getNodesInState(currentINetwork.getNetwork(), CyNetwork.SELECTED, true);
-            int counter = 0;
-            for (CyNode node : nodes) {
-                if (counter++ > MAXIMUM_SELECTED_NODE_SHOWN)
-                    break;
-                NodePanel newPanel = new NodePanel(node);
-                newPanel.setAlignmentX(LEFT_ALIGNMENT);
+        selectedNodes(CyTableUtil.getNodesInState(currentINetwork.getNetwork(), CyNetwork.SELECTED, true));
 
-                nodesPanel.add(newPanel, c.anchor("west").down().expandHoriz());
-                nodeToPanel.put(node, newPanel);
-            }
-        }
         nodesPanel.setAlignmentX(LEFT_ALIGNMENT);
-        return new CollapsablePanel("Selected nodes", nodesPanel, false, 10);
+        selectedNodes = new CollapsablePanel("Selected nodes", nodesPanel, false);
+//        LinePanel headerLine = new LinePanel(backgroundColor);
+//        JLabel label = new JLabel(" Selected nodes  ");
+//        label.setFont(textFont.deriveFont(15f));
+//        headerLine.add(label);
+//        headerLine.add(collapseAllButton);
+//        selectedNodes.setHeader(headerLine);
+        return selectedNodes;
     }
 
     // Hide all nodes who's values are less than "value"
@@ -132,30 +125,6 @@ public class NodeDetailPanel extends AbstractDetailPanel {
         }
     }
 
-    private class NodePanel extends CollapsablePanel {
-
-        private final NodeSummary nodeSummary;
-
-        public NodePanel(CyNode node) {
-            super("", false);
-            content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-            content.setAlignmentX(LEFT_ALIGNMENT);
-            setBackground(backgroundColor);
-            IntactNode iNode = new IntactNode(currentINetwork, node);
-            setLabel(iNode.name);
-            content.add(new NodeSchematic(iNode, iNode.getFeatures(), openBrowser));
-            content.add(new NodeBasics(iNode, openBrowser));
-            nodeSummary = new NodeSummary(iNode, iNode.getFeatures(), openBrowser, true, true, true);
-            content.add(nodeSummary);
-            content.add(new NodeIdentifiers(iNode, openBrowser));
-            content.add(new NodeXRefs(iNode, openBrowser));
-        }
-
-        public void delete() {
-            nodeSummary.deleteEdgeSelectionCheckboxes();
-        }
-    }
-
 
     private boolean checkCurrentNetwork() {
         if (currentINetwork == null) {
@@ -174,26 +143,37 @@ public class NodeDetailPanel extends AbstractDetailPanel {
     public void selectedNodes(Collection<CyNode> nodes) {
         if (checkCurrentNetwork()) {
             selectionRunning = true;
-            int counterNode = 0;
-            for (CyNode node : nodes) {
-                if (!selectionRunning || counterNode++ > MAXIMUM_SELECTED_NODE_SHOWN) {
+
+            List<IntactNode> iNodes = nodes.stream()
+                    .map(node -> new IntactNode(currentINetwork, node))
+                    .collect(Comparators.least(MAXIMUM_SELECTED_NODE_SHOWN, nullsLast((comparing(o -> o.name, nullsLast(naturalOrder()))))));
+
+            List<String> nodesIds = iNodes.stream().map(iNode -> iNode.id).collect(Collectors.toList());
+
+            for (IntactNode node : iNodes) {
+                if (!selectionRunning) {
                     break;
                 }
-                if (!nodeToPanel.containsKey(node)) {
+
+                if (!nodeIdToNodePanel.containsKey(node.id)) {
                     NodePanel newPanel = new NodePanel(node);
                     newPanel.setAlignmentX(LEFT_ALIGNMENT);
                     nodesPanel.add(newPanel, layoutHelper.anchor("west").down().expandHoriz());
-                    nodeToPanel.put(node, newPanel);
-
+                    nodeIdToNodePanel.put(node.id, newPanel);
                 }
             }
-            HashSet<CyNode> unselectedNodes = new HashSet<>(nodeToPanel.keySet());
-            unselectedNodes.removeAll(nodes);
-            for (CyNode unselectedNode : unselectedNodes) {
-                NodePanel nodePanel = nodeToPanel.get(unselectedNode);
+            if (nodes.size() < MAXIMUM_SELECTED_NODE_SHOWN) {
+                nodesPanel.remove(limitExceededPanel);
+            } else {
+                nodesPanel.add(limitExceededPanel, layoutHelper.anchor("west").down().expandHoriz());
+            }
+            HashSet<String> unselectedNodes = new HashSet<>(nodeIdToNodePanel.keySet());
+            unselectedNodes.removeAll(nodesIds);
+            for (String unselectedNodeId : unselectedNodes) {
+                NodePanel nodePanel = nodeIdToNodePanel.get(unselectedNodeId);
                 nodePanel.delete();
                 nodesPanel.remove(nodePanel);
-                nodeToPanel.remove(unselectedNode);
+                nodeIdToNodePanel.remove(unselectedNodeId);
             }
 
             selectionRunning = false;
@@ -203,20 +183,63 @@ public class NodeDetailPanel extends AbstractDetailPanel {
         repaint();
     }
 
-    private void doHighlight(CyNetworkView networkView) {
+    private class NodePanel extends CollapsablePanel {
 
-        if (networkView != null) {
-            List<CyNode> nodes = CyTableUtil.getNodesInState(networkView.getModel(), CyNetwork.SELECTED, Boolean.TRUE);
-            if (nodes == null || nodes.size() == 0) {
-                return;
-            }
+        private final NodeFeatures nodeFeatures;
+        final NodeDetails nodeDetails;
+        final IntactNode node;
 
-            ViewUtils.clearHighlight(manager, networkView);
-            ViewUtils.highlight(manager, networkView, nodes);
+        public NodePanel(IntactNode node) {
+            super("", !(selectedNodes == null || selectedNodes.collapseAllButton.isExpanded()));
+            this.node = node;
+            content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+            content.setAlignmentX(LEFT_ALIGNMENT);
+            setBackground(backgroundColor);
+            setHeader(new NodeSchematic(node, node.getFeatures(), openBrowser));
+            content.add(new NodeBasics(node, openBrowser));
+            nodeFeatures = new NodeFeatures(node, node.getFeatures(), openBrowser, true, true);
+            content.add(nodeFeatures);
+            content.add(new NodeIdentifiers(node, openBrowser));
+            nodeDetails = new NodeDetails(node, openBrowser);
+            content.add(nodeDetails);
+        }
+
+        public void delete() {
+            nodeFeatures.deleteEdgeSelectionCheckboxes();
         }
     }
 
-    private void clearHighlight(CyNetworkView networkView) {
-        ViewUtils.clearHighlight(manager, networkView);
-    }
+//    private void completeNodeDetails(List<String> nodeIds) {
+//        executor.execute(() -> {
+//            Map<Object, Object> postData = new HashMap<>();
+//            postData.put("ids", nodeIds);
+//            Instant begin = Instant.now();
+//            JsonNode nodeDetails = HttpUtils.postJSON("https://wwwdev.ebi.ac.uk/intact/ws/graph/network/node/details", postData, manager);
+//            System.out.println("Query answered in " + Duration.between(begin, Instant.now()).toMillis());
+//            if (nodeDetails != null) {
+//                for (JsonNode nodeDetail : nodeDetails) {
+//                    String nodeId = nodeDetail.get("id").textValue();
+//                    NodePanel nodePanel = nodeIdToNodePanel.get(nodeId);
+//
+//                    JsonNode aliases = nodeDetail.get("aliases");
+//                    List<Identifier> xrefs = new ArrayList<>();
+//                    for (JsonNode xref : nodeDetail.get("xrefs")) {
+//                        JsonNode database = xref.get("database");
+//
+//                        String databaseName = database.get("shortName").textValue();
+//                        OntologyIdentifier databaseIdentifier = new OntologyIdentifier(database.get("identifier").textValue());
+//
+//                        String identifier = xref.get("identifier").textValue();
+//                        String qualifier = xref.get("qualifier").textValue();
+//
+//                        xrefs.add(new Identifier(nodePanel.node, databaseName, databaseIdentifier, identifier, qualifier));
+//                    }
+//                }
+//            }
+//            System.out.println("Query result parsed in " + Duration.between(begin, Instant.now()).toMillis());
+//        });
+//    }
 }
+
+
+

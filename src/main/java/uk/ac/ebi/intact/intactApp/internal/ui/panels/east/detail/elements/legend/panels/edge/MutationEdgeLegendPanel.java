@@ -1,8 +1,9 @@
 package uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.legend.panels.edge;
 
 import uk.ac.ebi.intact.intactApp.internal.model.styles.MutationIntactStyle;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.CollapsablePanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.legend.EdgeLegend;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
@@ -25,8 +26,7 @@ public class MutationEdgeLegendPanel extends AbstractEdgeLegendPanel {
         panel.setBackground(backgroundColor);
 
         {
-            JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            linePanel.setBackground(backgroundColor);
+            LinePanel linePanel = new LinePanel(backgroundColor);
             EdgeLegend dashed = new EdgeLegend(EdgeLegend.LineType.DASHED);
             dashed.setPaint(MutationIntactStyle.wildColor);
             dashed.setThickness(2);
@@ -48,8 +48,7 @@ public class MutationEdgeLegendPanel extends AbstractEdgeLegendPanel {
         panel.setBackground(backgroundColor);
 
         {
-            JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            linePanel.setBackground(backgroundColor);
+            LinePanel linePanel = new LinePanel(backgroundColor);
             EdgeLegend mutated = new EdgeLegend(MutationIntactStyle.mutatedColor);
             linePanel.add(mutated);
             JLabel label = new JLabel("Affected by mutation");

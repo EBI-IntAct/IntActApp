@@ -15,6 +15,7 @@ import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.Species;
 import uk.ac.ebi.intact.intactApp.internal.model.core.FeatureClassifier;
+import uk.ac.ebi.intact.intactApp.internal.model.core.ontology.OntologyIdentifier;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -37,14 +38,20 @@ public class ModelUtils {
     public static final String IDENTIFIERS_TABLE_REF = "Identifiers.SUID";
 
     // Feature table columns
-    public static final String FEATURE_TYPE = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Type";
-    public static final String FEATURE_TYPE_MI_ID = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Type MI Identifier";
+    public static final String FEATURE_AC = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Accession";
     public static final String FEATURE_NAME = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Name";
+    public static final String FEATURE_TYPE = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Type";
+    public static final String FEATURE_TYPE_MI_ID = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Type MI Id";
+    public static final String FEATURE_TYPE_MOD_ID = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Type Mod Id";
+    public static final String FEATURE_TYPE_PAR_ID = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Type Par Id";
 
     // Xrefs table columns
+    public static final String IDENTIFIER_AC = IDENTIFIER_NAMESPACE + NAMESPACE_SEPARATOR + "Accession";
     public static final String IDENTIFIER_ID = IDENTIFIER_NAMESPACE + NAMESPACE_SEPARATOR + "Identifier";
     public static final String IDENTIFIER_DB_NAME = IDENTIFIER_NAMESPACE + NAMESPACE_SEPARATOR + "Database Name";
     public static final String IDENTIFIER_DB_MI_ID = IDENTIFIER_NAMESPACE + NAMESPACE_SEPARATOR + "Database MI Id";
+    public static final String IDENTIFIER_QUALIFIER = IDENTIFIER_NAMESPACE + NAMESPACE_SEPARATOR + "Qualifier";
+    public static final String IDENTIFIER_QUALIFIER_ID = IDENTIFIER_NAMESPACE + NAMESPACE_SEPARATOR + "Qualifier MI Id";
 
     // Node information
     public static String ELABEL_STYLE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "enhancedLabel Passthrough";
@@ -54,8 +61,10 @@ public class ModelUtils {
     public static String INTACT_AC = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Accession Id";
     public static String PREFERRED_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Preferred Id";
     public static String PREFERRED_ID_DB = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Preferred Id Database";
+    public static String PREFERRED_ID_DB_MI_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Preferred Id Database MI ID";
     public static String TAX_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Tax Id";
     public static String MUTATION = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Mutation";
+    public static String FULL_NAME = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Full name";
 
     public static String INTERACTION_TYPE_MI_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Interaction type MI Id";
     public static String DETECTION_METHOD = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Detection method";
@@ -82,17 +91,15 @@ public class ModelUtils {
     public static String STRINGID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "database identifier";
     public static String TYPE = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Interactor type";
     public static String TYPE_MI_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Interactor type mi id";
-    public static String TYPE_MOD_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Interactor type mod id";
-    public static String TYPE_PAR_ID = INTACTDB_NAMESPACE + NAMESPACE_SEPARATOR + "Interactor type par id";
 
     public static String COMPARTMENT_NAMESPACE = "compartment";
 
     // public static String TM_LINKOUT = "TextMining Linkout";
     public static List<String> ignoreKeys = new ArrayList<>(Arrays.asList("@id", "description",
-            "id", "preferred_id", "preferred_id_db", "type", "type_mi_id", "species", "interactor_name", "label", "taxId",
+            "id", "preferred_id", "preferred_id_database_name", "preferred_id_database_mi_identifier", "type", "type_mi_id", "species", "interactor_name", "label", "taxId",
             "source", "target", "ac", "interaction_detection_method", "interaction_type", "mi_score", "disrupted_by_mutation",
             "expansion_type", "host_organism", "host_organism_tax_id", "interaction_detection_method_mi_identifier", "interaction_type_mi_identifier",
-            "type_mi_dentifier", "type_mod_identifier", "type_par_identifier", "identifiers", "pubmed_id"
+            "type_mi_identifier", "type_mod_identifier", "type_par_identifier", "identifiers", "pubmed_id", "full_name"
     ));
     public static List<String> namespacedNodeAttributes = new ArrayList<>(Arrays.asList("canonical name", "full name", "chemViz Passthrough",
             "enhancedLabel Passthrough", "description", "disease score", "namespace", "sequence", "smiles", "species", "database identifier",
@@ -703,7 +710,7 @@ public class ModelUtils {
             CyTable defaultNodeTable = network.getDefaultNodeTable();
             CyTable defaultEdgeTable = network.getDefaultEdgeTable();
 
-            for (String intactNodeColumn : Arrays.asList(INTACT_ID, PREFERRED_ID, PREFERRED_ID_DB, TYPE, TYPE_MI_ID, TYPE_MOD_ID, TYPE_PAR_ID, SPECIES)) {
+            for (String intactNodeColumn : Arrays.asList(INTACT_ID, PREFERRED_ID, PREFERRED_ID_DB, PREFERRED_ID_DB_MI_ID, TYPE, TYPE_MI_ID, SPECIES, FULL_NAME)) {
                 createColumnIfNeeded(defaultNodeTable, String.class, intactNodeColumn);
             }
             createColumnIfNeeded(defaultNodeTable, Long.class, TAX_ID);
@@ -735,8 +742,8 @@ public class ModelUtils {
             CyTableManager tableManager = manager.getService(CyTableManager.class);
 
             CyTableFactory tableFactory = manager.getService(CyTableFactory.class);
-            CyTable featuresTable = tableFactory.createTable("Features of " + networkName, "pk", Long.class, true, true);
-            CyTable xRefsTable = tableFactory.createTable("Identifiers of " + networkName, "pk", Long.class, true, true);
+            CyTable featuresTable = tableFactory.createTable("Features of " + networkName, FEATURE_AC, String.class, true, true);
+            CyTable xRefsTable = tableFactory.createTable("Identifiers of " + networkName, IDENTIFIER_AC, String.class, true, true);
 
             tableManager.addTable(featuresTable);
             intactNetwork.setFeaturesTable(featuresTable);
@@ -745,6 +752,8 @@ public class ModelUtils {
 
             featuresTable.createColumn(FEATURE_TYPE, String.class, true);
             featuresTable.createColumn(FEATURE_TYPE_MI_ID, String.class, true);
+            featuresTable.createColumn(FEATURE_TYPE_MOD_ID, String.class, true);
+            featuresTable.createColumn(FEATURE_TYPE_PAR_ID, String.class, true);
             featuresTable.createColumn(FEATURE_NAME, String.class, true);
             featuresTable.createColumn(NODE_REF, Long.class, true);
 //            featuresTable.addVirtualColumns(network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS), NODE_REF, false);
@@ -772,6 +781,8 @@ public class ModelUtils {
             xRefsTable.createColumn(IDENTIFIER_ID, String.class, true);
             xRefsTable.createColumn(IDENTIFIER_DB_NAME, String.class, true);
             xRefsTable.createColumn(IDENTIFIER_DB_MI_ID, String.class, true);
+            xRefsTable.createColumn(IDENTIFIER_QUALIFIER, String.class, true);
+            xRefsTable.createColumn(IDENTIFIER_QUALIFIER_ID, String.class, true);
 //            xRefsTable.addVirtualColumns(nodeLocalTable, NODE_REF, false);
             xRefsTable.addVirtualColumn("Node::Name", CyNetwork.NAME, nodeLocalTable, NODE_REF, false);
             xRefsTable.addVirtualColumn("Node::Preferred Identifier", PREFERRED_ID, nodeLocalTable, NODE_REF, false);
@@ -903,14 +914,8 @@ public class ModelUtils {
                 case "type":
                     row.set(TYPE, value.textValue());
                     break;
-                case "type_mi_dentifier":
+                case "type_mi_identifier":
                     row.set(TYPE_MI_ID, value.textValue());
-                    break;
-                case "type_mod_identifier":
-                    row.set(TYPE_MOD_ID, value.textValue());
-                    break;
-                case "type_par_identifier":
-                    row.set(TYPE_PAR_ID, value.textValue());
                     break;
                 case "species":
                     row.set(SPECIES, value.textValue());
@@ -918,22 +923,32 @@ public class ModelUtils {
                 case "preferred_id":
                     row.set(PREFERRED_ID, value.textValue());
                     break;
-//                case "preferred_id_db":
-//                    row.set(PREFERRED_ID_DB, value.textValue().split("[()]")[1]);
-//                    break;
+                case "preferred_id_database_name":
+                    row.set(PREFERRED_ID_DB, value.textValue());
+                    break;
+                case "preferred_id_database_mi_identifier":
+                    row.set(PREFERRED_ID_DB_MI_ID, value.textValue());
+                    break;
+                case "full_name":
+                    row.set(FULL_NAME, value.textValue());
+                    break;
                 case "taxId":
                     row.set(TAX_ID, value.longValue());
                     break;
                 case "identifiers":
                     for (JsonNode xref : value) {
-                        CyRow xRefRow = xRefsTable.getRow(SUIDFactory.getNextSUID());
+                        String xrefAc = xref.get("xref_ac").textValue();
+                        String xrefId = xref.get("xref_id").textValue();
+                        CyRow xRefRow = xRefsTable.getRow(xrefAc != null ? xrefAc : xrefId);
                         xRefRow.set(NODE_REF, newNode.getSUID());
-                        xRefRow.set(IDENTIFIER_ID, xref.get("xref_id").textValue());
+                        xRefRow.set(IDENTIFIER_ID, xrefId);
                         xRefRow.set(IDENTIFIER_DB_NAME, xref.get("xref_database_name").textValue());
                         xRefRow.set(IDENTIFIER_DB_MI_ID, xref.get("xref_database_mi").textValue());
                     }
                 case "interactor_name":
                 case "label":
+                case "type_mod_identifier":
+                case "type_par_identifier":
                 case "parent":
                     return;
                 default:
@@ -942,7 +957,7 @@ public class ModelUtils {
             }
         });
 
-        row.set(ELABEL_STYLE, "label: attribute=\"name\" labelsize=12 labelAlignment=center outline=true outlineColor=black outlineTransparency=95 outlineWidth=5 background=false color=white dropShadow=false");
+        row.set(ELABEL_STYLE, "label: attribute=\"name\" labelsize=12 labelAlignment=center outline=true outlineColor=black outlineTransparency=130 outlineWidth=5 background=false color=white dropShadow=false");
 
         intactIdToNode.put(intactId, newNode);
         nodeNameMap.put(intactId, nodeName);
@@ -1042,27 +1057,30 @@ public class ModelUtils {
         edgeRow.set(participantBoiologicalRoleMIId, participantJson.get("participant_biological_role_mi_identifier").textValue());
         for (JsonNode feature : participantJson.get("participant_features")) {
             if (!feature.get("feature_type").isNull()) {
-                CyRow featureRow = featuresTable.getRow(SUIDFactory.getNextSUID());
+                String featureAc = feature.get("feature_ac").textValue();
+                CyRow featureRow = featuresTable.getRow(featureAc);
                 featureRow.set(NODE_REF, participantNode.getSUID());
                 featureRow.set(EDGE_REF, edge.getSUID());
                 featureRow.set(FEATURE_NAME, feature.get("feature_name").textValue());
                 featureRow.set(FEATURE_TYPE, feature.get("feature_type").textValue());
-                String feature_type_mi_identifier = feature.get("feature_type_mi_identifier").textValue();
-                featureRow.set(FEATURE_TYPE_MI_ID, feature_type_mi_identifier);
 
-                if (feature_type_mi_identifier != null) {
-                    if (FeatureClassifier.mutation.contains(feature_type_mi_identifier)) {
+                String feature_type_mi_identifier = feature.get("feature_type_mi_identifier").textValue();
+                String feature_type_par_identifier = feature.get("feature_type_par_identifier").textValue();
+                String feature_type_mod_identifier = feature.get("feature_type_mod_identifier").textValue();
+
+                featureRow.set(FEATURE_TYPE_MI_ID, feature_type_mi_identifier);
+                featureRow.set(FEATURE_TYPE_MOD_ID, feature_type_mod_identifier);
+                featureRow.set(FEATURE_TYPE_PAR_ID, feature_type_par_identifier);
+
+                OntologyIdentifier featureTypeId = TableUtil.getOntologyIdentifier(feature_type_mi_identifier, feature_type_mod_identifier, feature_type_par_identifier);
+                if (featureTypeId.id != null) {
+                    if (FeatureClassifier.mutation.contains(featureTypeId)) {
                         network.getRow(participantNode).set(MUTATION, true);
                         edgeRow.set(AFFECTED_BY_MUTATION, true);
                     }
                 }
             }
         }
-    }
-
-    private static String cleanJSONColorData(Object colorObject) {
-        String tmp = ((String) colorObject).replaceFirst("rgb\\(", "");
-        return tmp.substring(0, tmp.length() - 1);
     }
 
     public static void buildIntactNetworkTableFromExistingOne(IntactNetwork iNetwork) {

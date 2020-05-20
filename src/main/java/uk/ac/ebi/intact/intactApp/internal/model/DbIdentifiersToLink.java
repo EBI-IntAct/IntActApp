@@ -3,6 +3,7 @@ package uk.ac.ebi.intact.intactApp.internal.model;
 import com.fasterxml.jackson.databind.JsonNode;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 import uk.ac.ebi.intact.intactApp.internal.model.core.Identifier;
+import uk.ac.ebi.intact.intactApp.internal.model.core.ontology.OntologyIdentifier;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ public class DbIdentifiersToLink {
         HGNC("hgnc", "HGNC", s -> "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/" + s),
         COMPLEX_PORTAL("complex portal", "Complex Portal", s -> "https://www.ebi.ac.uk/complexportal/complex/" + s),
         MINT("mint", "MINT", s -> "https://mint.bio.uniroma2.it/index.php/results-interactions/?id=" + s),
+        INTERPRO("interpro", "InterPro", s -> "https://www.ebi.ac.uk/interpro/entry/InterPro/" + s),
         UNIPARC("uniparc", "UniParc", s -> "https://www.uniprot.org/uniparc/" + s + "?sort=score");
 
         String name;
@@ -39,8 +41,8 @@ public class DbIdentifiersToLink {
     }
 
     private static final Map<String, Database> dbNameToDatabase = new HashMap<>();
-    private static final Map<String, String> unknownDatabaseMIIdToSearchURLRegex = new HashMap<>();
-    private static final Set<String> unresolvedUnknownDatabaseMIId = new HashSet<>();
+    private static final Map<OntologyIdentifier, String> unknownDatabaseMIIdToSearchURLRegex = new HashMap<>();
+    private static final Set<OntologyIdentifier> unresolvedUnknownDatabaseMIId = new HashSet<>();
 
     static {
         for (Database database : Database.values()) {
@@ -57,7 +59,7 @@ public class DbIdentifiersToLink {
             return "";
         } else {
             try {
-                JsonNode root = HttpUtils.getJsonForUrl("https://www.ebi.ac.uk/ols/api/ontologies/mi/terms?iri=http://purl.obolibrary.org/obo/" + identifier.databaseIdentifier.replaceAll(":","_"));
+                JsonNode root = HttpUtils.getJsonForUrl(identifier.databaseIdentifier.getDetailsURL());
                 if (root != null) {
                     for (JsonNode info : root.get("_embedded").get("terms").get(0).get("obo_xref")) {
                         if (info.get("database").textValue().equals("search-url")) {

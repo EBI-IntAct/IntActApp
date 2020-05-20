@@ -2,6 +2,7 @@ package uk.ac.ebi.intact.intactApp.internal.model;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
+import uk.ac.ebi.intact.intactApp.internal.utils.CollectionUtils;
 
 import java.util.*;
 
@@ -14,13 +15,7 @@ public class Couple {
         for (CyEdge edge : edges) {
             Couple couple = new Couple(edge);
             newCouples.add(couple);
-            if (coupleToEdges.containsKey(couple)) {
-                coupleToEdges.get(couple).add(edge);
-            } else {
-                List<CyEdge> similarEdges = new ArrayList<>();
-                similarEdges.add(edge);
-                coupleToEdges.put(couple, similarEdges);
-            }
+            CollectionUtils.addToGroups(coupleToEdges, edge, cyEdge -> couple);
         }
         return newCouples;
     }

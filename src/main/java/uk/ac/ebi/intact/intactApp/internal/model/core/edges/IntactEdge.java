@@ -17,6 +17,7 @@ public abstract class IntactEdge {
     public final CyEdge edge;
     public final String name;
     public final double miScore;
+    public boolean collapsed;
     public final CyRow edgeRow;
     public final IntactNode source;
     public final IntactNode target;
