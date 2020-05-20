@@ -6,20 +6,24 @@ import org.cytoscape.model.CyRow;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEvidenceEdge;
-import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.intactApp.internal.model.core.ontology.OntologyIdentifier;
+import uk.ac.ebi.intact.intactApp.internal.model.core.ontology.SourceOntology;
+import uk.ac.ebi.intact.intactApp.internal.utils.TableUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils.*;
 
 public class IntactNode {
     public final IntactNetwork iNetwork;
     public final CyNode node;
     public final String id;
     public final String name;
+    public final String fullName;
     public final String type;
-    public final String preferredId;
-    public final String preferredIdDb;
+    public final Identifier preferredId;
     public final String species;
     public final long taxId;
 
@@ -28,17 +32,20 @@ public class IntactNode {
         this.node = node;
         CyRow nodeRow = iNetwork.getNetwork().getRow(node);
         name = nodeRow.get(CyNetwork.NAME, String.class);
-        id = nodeRow.get(ModelUtils.INTACT_ID, String.class);
-        type = nodeRow.get(ModelUtils.TYPE, String.class);
-        preferredId = nodeRow.get(ModelUtils.PREFERRED_ID, String.class);
-        preferredIdDb = nodeRow.get(ModelUtils.PREFERRED_ID_DB, String.class);
-        species = nodeRow.get(ModelUtils.SPECIES, String.class);
-        taxId = nodeRow.get(ModelUtils.TAX_ID, Long.class);
+        fullName = nodeRow.get(FULL_NAME, String.class);
+        id = nodeRow.get(INTACT_ID, String.class);
+        type = nodeRow.get(TYPE, String.class);
+        String preferredIdDbName = nodeRow.get(PREFERRED_ID_DB, String.class);
+        OntologyIdentifier preferredIdDbMIId = new OntologyIdentifier(nodeRow.get(PREFERRED_ID_DB_MI_ID, String.class), SourceOntology.MI);
+        String preferredId = nodeRow.get(PREFERRED_ID, String.class);
+        this.preferredId = new Identifier(this, preferredIdDbName, preferredIdDbMIId, preferredId, "preferred id");
+        species = nodeRow.get(SPECIES, String.class);
+        taxId = nodeRow.get(TAX_ID, Long.class);
     }
 
     public List<Identifier> getIdentifiers() {
         List<Identifier> identifiers = new ArrayList<>();
-        for (CyRow idRow : iNetwork.getIdentifiersTable().getMatchingRows(ModelUtils.NODE_REF, node.getSUID())) {
+        for (CyRow idRow : iNetwork.getIdentifiersTable().getMatchingRows(NODE_REF, node.getSUID())) {
             identifiers.add(new Identifier(this, idRow));
         }
         return identifiers;
@@ -46,13 +53,13 @@ public class IntactNode {
 
     public List<Feature> getFeatures() {
         List<Feature> features = new ArrayList<>();
-        for (CyRow featureRow : iNetwork.getFeaturesTable().getMatchingRows(ModelUtils.NODE_REF, node.getSUID())) {
-            String type = featureRow.get(ModelUtils.FEATURE_TYPE, String.class);
-            String typeMIId = featureRow.get(ModelUtils.FEATURE_TYPE_MI_ID, String.class);
-            String name = featureRow.get(ModelUtils.FEATURE_NAME, String.class);
-            IntactEvidenceEdge edge = (IntactEvidenceEdge) IntactEdge.createIntactEdge(iNetwork, iNetwork.getNetwork().getEdge(featureRow.get(ModelUtils.EDGE_REF, Long.class)));
-            if (featureRow.get(ModelUtils.NODE_REF, Long.class).equals(node.getSUID())) {
-                features.add(new Feature(edge, this, type, typeMIId, name));
+        for (CyRow featureRow : iNetwork.getFeaturesTable().getMatchingRows(NODE_REF, node.getSUID())) {
+            String type = featureRow.get(FEATURE_TYPE, String.class);
+            OntologyIdentifier typeId = TableUtil.getOntologyIdentifier(featureRow, FEATURE_TYPE_MI_ID, FEATURE_TYPE_MOD_ID, FEATURE_TYPE_PAR_ID);
+            String name = featureRow.get(FEATURE_NAME, String.class);
+            IntactEvidenceEdge edge = (IntactEvidenceEdge) IntactEdge.createIntactEdge(iNetwork, iNetwork.getNetwork().getEdge(featureRow.get(EDGE_REF, Long.class)));
+            if (featureRow.get(NODE_REF, Long.class).equals(node.getSUID())) {
+                features.add(new Feature(edge, this, type, typeId, name));
             }
         }
         return features;

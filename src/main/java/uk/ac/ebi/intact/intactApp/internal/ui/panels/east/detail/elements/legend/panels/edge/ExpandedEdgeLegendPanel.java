@@ -2,8 +2,9 @@ package uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.legen
 
 import org.apache.commons.lang3.StringUtils;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.StyleMapper;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.CollapsablePanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.legend.EdgeLegend;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
@@ -25,8 +26,7 @@ public class ExpandedEdgeLegendPanel extends AbstractEdgeLegendPanel {
         EasyGBC d = new EasyGBC();
         panel.setBackground(backgroundColor);
         {
-            JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            linePanel.setBackground(backgroundColor);
+            JPanel linePanel = new LinePanel(backgroundColor);
             linePanel.add(new EdgeLegend(EdgeLegend.LineType.DASHED));
             JLabel label = new JLabel("Spoke expanded");
             label.setBorder(new EmptyBorder(0, 4, 0, 0));
@@ -46,8 +46,7 @@ public class ExpandedEdgeLegendPanel extends AbstractEdgeLegendPanel {
         String[] types = {"colocalization", "association", "physical association", "direct interaction", "phosphorylation", "dephosphorylation"};
 
         for (String type : types) {
-            JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            linePanel.setBackground(backgroundColor);
+            JPanel linePanel = new LinePanel(backgroundColor);
             linePanel.add(new EdgeLegend(StyleMapper.edgeTypeToPaint.get(type)));
             JLabel label = new JLabel(StringUtils.capitalize(type));
             label.setBorder(new EmptyBorder(0, 4, 0, 0));

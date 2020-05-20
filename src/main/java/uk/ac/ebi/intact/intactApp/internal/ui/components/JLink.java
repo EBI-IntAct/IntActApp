@@ -14,7 +14,7 @@ public class JLink extends JTextField {
     private URI uri;
     private boolean visited = false;
     private static final Color baseColor = new Color(134, 56, 148);
-    private static final Color visitedColor = new Color(66, 42, 146);
+    private static final Color visitedColor = new Color(39, 25, 91);
     private static final Color hoverColor = new Color(129, 20, 56);
 
     private static final Font DEFAULT_FONT;

@@ -9,6 +9,7 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.json.JSONObject;
 import org.json.XML;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
+import uk.ac.ebi.intact.intactApp.internal.model.core.ontology.SourceOntology;
 import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
 
 import java.awt.*;
@@ -75,8 +76,8 @@ public class StyleMapper {
         put("gene", NodeShapeVisualProperty.ROUND_RECTANGLE);
         put("dna", BasicVisualLexicon.NODE_SHAPE.parseSerializableString("VEE"));
         put("rna", NodeShapeVisualProperty.DIAMOND);
-        put("complex", NodeShapeVisualProperty.HEXAGON);
         put("peptide", NodeShapeVisualProperty.OCTAGON);
+        put("complex", NodeShapeVisualProperty.HEXAGON);
     }};
 
     public static final Hashtable<String, NodeShape> originalNodeTypeToShape = new Hashtable<>(nodeTypeToShape);
@@ -86,11 +87,13 @@ public class StyleMapper {
 
     public static final Map<String, String> typesToIds = new HashMap<>() {{
         put("bioactive entity", "MI_1100");
-        put("rna", "MI_0320");
-        put("dna", "MI_0319");
-        put("gene", "MI_0250");
         put("protein", "MI_0326");
+        put("gene", "MI_0250");
+        put("dna", "MI_0319");
+        put("rna", "MI_0320");
         put("peptide", "MI_0327");
+        put("complex", "MI_0314");
+
 
         put("direct interaction", "MI_0407");
         put("phosphorylation reaction", "MI_0217");
@@ -256,8 +259,7 @@ public class StyleMapper {
     }
 
     private static <T> void setChildrenValues(Map<String, T> mapToFill, String parentLabel, T parentValue, Map<String, List<String>> parentToChildLabelMap) {
-        String jsonQuery = "https://www.ebi.ac.uk/ols/api/ontologies/mi/terms/" +
-                "http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F" + typesToIds.get(parentLabel) + "/descendants?size=1000";
+        String jsonQuery = SourceOntology.MI.getDescendantsURL(typesToIds.get(parentLabel));
 
         try {
             boolean hasNext = true;

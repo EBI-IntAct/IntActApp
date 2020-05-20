@@ -4,13 +4,13 @@ import org.cytoscape.util.swing.OpenBrowser;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactCollapsedEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEvidenceEdge;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.CollapsablePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.JLink;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.LinePanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.LinkUtils;
 
 import javax.swing.*;
-
-import java.awt.*;
 
 import static uk.ac.ebi.intact.intactApp.internal.ui.panels.east.AbstractDetailPanel.backgroundColor;
 
@@ -23,15 +23,10 @@ public class EdgeBasics extends AbstractEdgeElement {
 
     protected void fillCollapsedEdgeContent(IntactCollapsedEdge edge) {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-        JLabel description = new JLabel("Collapsed edge between " + edge.source.name + " and " + edge.target.name + " (MI Score = " + edge.miScore + ")");
-        description.setAlignmentX(LEFT_ALIGNMENT);
-        content.add(description);
 
-        JPanel collapsedEdgesPanel = new JPanel();
-        collapsedEdgesPanel.setLayout(new BoxLayout(collapsedEdgesPanel, BoxLayout.Y_AXIS));
-        collapsedEdgesPanel.setBackground(backgroundColor);
+        VerticalPanel collapsedEdgesPanel = new VerticalPanel(backgroundColor);
         for (IntactEvidenceEdge iEEdge : edge.edges.values()) {
-            collapsedEdgesPanel.add(createIntactEdgeLink(openBrowser, iEEdge));
+            collapsedEdgesPanel.add(LinkUtils.createIntactEdgeLink(openBrowser, iEEdge));
         }
         CollapsablePanel collapsablePanel = new CollapsablePanel("Collapsed edges (" + edge.edges.size() + ")", collapsedEdgesPanel, true);
         collapsablePanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -40,23 +35,18 @@ public class EdgeBasics extends AbstractEdgeElement {
 
     protected void fillEvidenceEdgeContent(IntactEvidenceEdge edge) {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-        content.add(new JLabel("Evidence of " + edge.type + " between " + edge.source.name + " and " + edge.target.name));
 
         if (edge.hostOrganism != null) {
-            JPanel organism = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-            organism.setAlignmentX(LEFT_ALIGNMENT);
-            organism.setBackground(backgroundColor);
+            LinePanel organism = new LinePanel(backgroundColor);
             organism.add(new JLabel("Found in " + edge.hostOrganism.replaceFirst("In ", "")));
             organism.add(Box.createHorizontalStrut(4));
-            organism.add(LinkUtils.createSpecieLink(edge.hostOrganismTaxId, openBrowser));
+            organism.add(LinkUtils.createSpecieLink(openBrowser, edge.hostOrganismTaxId));
             organism.add(Box.createHorizontalGlue());
             content.add(organism);
         }
         {
-            JPanel ebiInfo = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-            ebiInfo.setAlignmentX(LEFT_ALIGNMENT);
-            ebiInfo.setBackground(backgroundColor);
-            ebiInfo.add(createIntactEdgeLink(openBrowser, edge));
+            LinePanel ebiInfo = new LinePanel(backgroundColor);
+            ebiInfo.add(LinkUtils.createIntactEdgeLink(openBrowser, edge));
             ebiInfo.add(new JLabel(" (MI Score = " + edge.miScore + ")"));
             ebiInfo.add(Box.createHorizontalGlue());
             content.add(ebiInfo);
@@ -66,9 +56,7 @@ public class EdgeBasics extends AbstractEdgeElement {
             content.add(new JLabel("Expanded with a " + edge.expansionType));
         }
         if (edge.pubMedId != null && !edge.pubMedId.isEmpty()) {
-            JPanel publication = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-            publication.setAlignmentX(LEFT_ALIGNMENT);
-            publication.setBackground(backgroundColor);
+            LinePanel publication = new LinePanel(backgroundColor);
             publication.add(new JLabel("Described in "));
             publication.add(new JLink("PubMed - " + edge.pubMedId, "https://www.ncbi.nlm.nih.gov/pubmed/" + edge.pubMedId, openBrowser));
             publication.add(Box.createHorizontalGlue());
@@ -76,7 +64,4 @@ public class EdgeBasics extends AbstractEdgeElement {
         }
     }
 
-    private JLink createIntactEdgeLink(OpenBrowser openBrowser, IntactEvidenceEdge iEEdge) {
-        return new JLink(iEEdge.ac, "https://www.ebi.ac.uk/intact/interaction/" + iEEdge.ac, openBrowser);
-    }
 }

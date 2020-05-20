@@ -1,19 +1,20 @@
 package uk.ac.ebi.intact.intactApp.internal.model.core;
 
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEvidenceEdge;
+import uk.ac.ebi.intact.intactApp.internal.model.core.ontology.OntologyIdentifier;
 
 public class Feature {
     public final IntactEvidenceEdge edge;
     public final IntactNode node;
     public final String type;
-    public final String typeMIId;
+    public final OntologyIdentifier typeIdentifier;
     public final String name;
 
-    public Feature(IntactEvidenceEdge edge, IntactNode node, String type, String typeMIId, String name) {
+    public Feature(IntactEvidenceEdge edge, IntactNode node, String type, OntologyIdentifier typeIdentifier, String name) {
         this.edge = edge;
         this.node = node;
         this.type = type;
-        this.typeMIId = typeMIId;
+        this.typeIdentifier = typeIdentifier;
         this.name = name;
     }
 
@@ -26,7 +27,7 @@ public class Feature {
 
         if (!edge.equals(feature.edge)) return false;
         if (!node.equals(feature.node)) return false;
-        if (!typeMIId.equals(feature.typeMIId)) return false;
+        if (!typeIdentifier.equals(feature.typeIdentifier)) return false;
         return name.equals(feature.name);
     }
 
@@ -34,7 +35,7 @@ public class Feature {
     public int hashCode() {
         int result = edge.hashCode();
         result = 31 * result + node.hashCode();
-        result = 31 * result + typeMIId.hashCode();
+        result = 31 * result + typeIdentifier.hashCode();
         result = 31 * result + name.hashCode();
         return result;
     }

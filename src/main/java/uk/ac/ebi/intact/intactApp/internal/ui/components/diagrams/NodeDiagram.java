@@ -3,6 +3,7 @@ package uk.ac.ebi.intact.intactApp.internal.ui.components.diagrams;
 import uk.ac.ebi.intact.intactApp.internal.model.core.Feature;
 import uk.ac.ebi.intact.intactApp.internal.model.core.FeatureClassifier;
 import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
+import uk.ac.ebi.intact.intactApp.internal.model.core.ontology.OntologyIdentifier;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.IntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.MutationIntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.StyleMapper;
@@ -31,7 +32,7 @@ public class NodeDiagram extends JPanel {
             JLabel2D label = new JLabel2D(iNode.name, JLabel.CENTER);
             label.setFont(new Font("SansSerif", Font.BOLD, 12));
             label.setForeground(Color.WHITE);
-            label.setOutlineColor(new Color(0, 0, 0, 95));
+            label.setOutlineColor(new Color(0, 0, 0, 130));
             label.setStroke(5);
             label.setAlignmentX(CENTER_ALIGNMENT);
             label.setAlignmentY(CENTER_ALIGNMENT);
@@ -46,8 +47,8 @@ public class NodeDiagram extends JPanel {
         shapePanel.setBackground(backgroundColor);
         AbstractNodeShape shape = StyleUtils.nodeTypeToShape(iNode.type, color != null ? color : IntactStyle.defaultNodeColor, 50);
 
-        Set<String> featureMIIDs = features.stream().map(feature -> feature.typeMIId).collect(Collectors.toSet());
-        if (CollectionUtils.anyCommonElement(featureMIIDs, FeatureClassifier.mutation.innerMIIds)) {
+        Set<OntologyIdentifier> featureTypeIDs = features.stream().map(feature -> feature.typeIdentifier).collect(Collectors.toSet());
+        if (CollectionUtils.anyCommonElement(featureTypeIDs, FeatureClassifier.mutation.innerIdentifiers)) {
             shape.setBorderColor(MutationIntactStyle.mutatedColor);
             shape.setBorderThickness(4);
         }

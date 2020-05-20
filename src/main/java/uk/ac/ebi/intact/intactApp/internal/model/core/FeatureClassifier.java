@@ -2,6 +2,8 @@ package uk.ac.ebi.intact.intactApp.internal.model.core;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
+import uk.ac.ebi.intact.intactApp.internal.model.core.ontology.OntologyIdentifier;
+import uk.ac.ebi.intact.intactApp.internal.utils.CollectionUtils;
 
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -13,7 +15,7 @@ public class FeatureClassifier {
     public static List<FeatureClass> root;
     public static InnerFeatureClass biologic;
     public static InnerFeatureClass experimental;
-    public static FeatureClass mutation;
+    public static InnerFeatureClass mutation;
     public static FeatureClass binding;
     public static FeatureClass variant;
     public static FeatureClass tag;
@@ -22,37 +24,32 @@ public class FeatureClassifier {
         biologic = new InnerFeatureClass("Biological features", "MI:0252", "Post Transcription Modification");
         experimental = new InnerFeatureClass("Experimental features", "MI:0505", "Other experimental features");
 
-        mutation = new FeatureClass("Mutations", "MI:0118");
+        mutation = new InnerFeatureClass("Mutations", "MI:0118", "Mutation with undefined effect");
+
         binding = new FeatureClass("Binding regions", "MI:0117");
         variant = new FeatureClass("Variants", "MI:1241");
         tag = new FeatureClass("Tags", "MI:0507");
 
-        biologic.subClasses.addAll(List.of(mutation, binding, variant));
+        mutation.subClasses.add(new FeatureClass("Mutation causing an interaction", "MI:2227"));
+        mutation.subClasses.add(new FeatureClass("Mutation decreasing interaction", "MI:0119"));
+        mutation.subClasses.add(new FeatureClass("Mutation increasing interaction", "MI:0382"));
+        mutation.subClasses.add(new FeatureClass("Mutation with complex effect", "MI:2333"));
+        mutation.subClasses.add(new FeatureClass("Mutation with no effect", "MI:2226"));
+        biologic.subClasses.addAll(List.of(binding, mutation, variant));
         experimental.subClasses.add(tag);
         root = List.of(biologic, experimental);
     }
 
     public static Map<FeatureClass, List<Feature>> classify(Collection<Feature> features) {
-        Map<FeatureClass, List<Feature>> featureClasses = new HashMap<>();
-        for (Feature feature : features) {
-            FeatureClass featureClass = recursiveFinder(feature.typeMIId, root);
-            if (!featureClasses.containsKey(featureClass)) {
-                List<Feature> innerFeatures = new ArrayList<>();
-                innerFeatures.add(feature);
-                featureClasses.put(featureClass, innerFeatures);
-            } else {
-                featureClasses.get(featureClass).add(feature);
-            }
-        }
-        return featureClasses;
+        return CollectionUtils.groupBy(features, feature -> recursiveFinder(feature.typeIdentifier, root));
     }
 
-    private static FeatureClass recursiveFinder(String miIdToFind, Collection<FeatureClass> searchInto) {
+    private static FeatureClass recursiveFinder(OntologyIdentifier idToFind, Collection<FeatureClass> searchInto) {
         for (FeatureClass featureClass : searchInto) {
-            if (featureClass.contains(miIdToFind)) {
+            if (featureClass.contains(idToFind)) {
                 if (featureClass instanceof InnerFeatureClass) {
                     InnerFeatureClass innerFeatureClass = (InnerFeatureClass) featureClass;
-                    FeatureClass finalClass = recursiveFinder(miIdToFind, innerFeatureClass.subClasses);
+                    FeatureClass finalClass = recursiveFinder(idToFind, innerFeatureClass.subClasses);
                     return finalClass != null ? finalClass : innerFeatureClass.nonDefinedLeaf;
                 } else {
                     return featureClass;
@@ -64,16 +61,16 @@ public class FeatureClassifier {
 
     public static class FeatureClass {
         public final String name;
-        public final String miId;
-        public final Set<String> innerMIIds = new HashSet<>();
+        public final OntologyIdentifier identifier;
+        public final Set<OntologyIdentifier> innerIdentifiers = new HashSet<>();
 
-        public FeatureClass(String name, String miId) {
+        public FeatureClass(String name, String identifier) {
             this.name = name;
-            this.miId = miId;
+            this.identifier = new OntologyIdentifier(identifier);
             executor.execute(() -> {
-                innerMIIds.add(miId);
-                String jsonQuery = "https://www.ebi.ac.uk/ols/api/ontologies/mi/terms/" +
-                        "http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F" + miId.replaceAll(":", "_") + "/descendants?size=1000";
+                innerIdentifiers.add(this.identifier);
+
+                String jsonQuery = this.identifier.getDescendantsURL();
 
                 try {
                     boolean hasNext = true;
@@ -83,7 +80,7 @@ public class FeatureClassifier {
                             if (json.get("page").get("totalElements").intValue() > 0) {
                                 JsonNode termChildren = json.get("_embedded").get("terms");
                                 for (final JsonNode objNode : termChildren) {
-                                    innerMIIds.add(objNode.get("obo_id").textValue());
+                                    innerIdentifiers.add(new OntologyIdentifier(objNode.get("obo_id").textValue(), this.identifier.sourceOntology));
                                 }
                             }
                             JsonNode nextPage = json.get("_links").get("next");
@@ -105,12 +102,12 @@ public class FeatureClassifier {
 
         public FeatureClass(String name) {
             this.name = name;
-            miId = null;
+            identifier = null;
         }
 
 
-        public boolean contains(String miId) {
-            return innerMIIds.contains(miId);
+        public boolean contains(OntologyIdentifier id) {
+            return innerIdentifiers.contains(id);
         }
 
 

@@ -8,7 +8,10 @@ import uk.ac.ebi.intact.intactApp.internal.model.core.Feature;
 import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEvidenceEdge;
 import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.ExpandViewTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.CollapsablePanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.LinePanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.VerticalPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.utils.LinkUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,24 +25,23 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import static uk.ac.ebi.intact.intactApp.internal.model.core.FeatureClassifier.*;
 import static uk.ac.ebi.intact.intactApp.internal.ui.panels.east.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.intactApp.internal.ui.utils.GroupUtils.groupElementsInPanel;
 
-public class NodeSummary extends AbstractNodeElement {
+public class NodeFeatures extends AbstractNodeElement {
     private final static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(15);
     private final List<Feature> features;
     private final boolean showFeatureEdge;
     private final boolean selectableFeatureEdge;
-    private final boolean showEdgeName;
 
-    public NodeSummary(IntactNode iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, boolean selectableFeatureEdge, boolean showEdgeName) {
-        this(iNode, features, openBrowser, showFeatureEdge, selectableFeatureEdge, showEdgeName, backgroundColor);
+    public NodeFeatures(IntactNode iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, boolean selectableFeatureEdge) {
+        this(iNode, features, openBrowser, showFeatureEdge, selectableFeatureEdge, backgroundColor);
     }
 
-    public NodeSummary(IntactNode iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, boolean selectableFeatureEdge, boolean showEdgeName, Color background) {
-        super("Summary", iNode, openBrowser);
+    public NodeFeatures(IntactNode iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, boolean selectableFeatureEdge, Color background) {
+        super("Features summary", iNode, openBrowser);
         this.features = features;
         this.showFeatureEdge = showFeatureEdge;
         this.selectableFeatureEdge = selectableFeatureEdge;
-        this.showEdgeName = showEdgeName;
         this.setBackground(background);
         fillContent();
     }
@@ -81,14 +83,11 @@ public class NodeSummary extends AbstractNodeElement {
                 subFeaturePanels.add(createFeatureList(innerFeatureClass.nonDefinedLeaf, classification.get(innerFeatureClass.nonDefinedLeaf)));
             }
             if (!subFeaturePanels.isEmpty()) {
-                JPanel featureListPanel = new JPanel();
-                featureListPanel.setBackground(getBackground());
-                featureListPanel.setLayout(new BoxLayout(featureListPanel, BoxLayout.Y_AXIS));
+                VerticalPanel featureListPanel = new VerticalPanel(getBackground());
                 for (CollapsablePanel subFeaturePanel : subFeaturePanels) {
                     featureListPanel.add(subFeaturePanel);
                 }
-                CollapsablePanel collapsablePanel = new CollapsablePanel(innerFeatureClass.name, featureListPanel, false);
-                return collapsablePanel;
+                return new CollapsablePanel(innerFeatureClass.name, featureListPanel, false);
             }
             return null;
         } else if (classification.containsKey(featureClass)) {
@@ -100,31 +99,35 @@ public class NodeSummary extends AbstractNodeElement {
     }
 
     private CollapsablePanel createFeatureList(FeatureClass featureClass, List<Feature> features) {
-        JPanel featureListPanel = new JPanel();
-        featureListPanel.setBackground(getBackground());
-        featureListPanel.setLayout(new BoxLayout(featureListPanel, BoxLayout.Y_AXIS));
-        for (Feature feature : features) {
-            JPanel line = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-            line.setBackground(getBackground());
-            line.add(new JLabel(feature.type + " (" + feature.name + ")"));
-            if (selectableFeatureEdge)
-                line.add(createSelectEdgeButton(feature.edge));
-            if (showFeatureEdge) {
-                if (!selectableFeatureEdge)
-                    line.add(Box.createHorizontalStrut(4));
-                if (showEdgeName) {
-                    line.add(new JLabel("on edge " + feature.edge.source.name + " -- " + feature.edge.target.name + " (" + feature.edge.ac + ")"));
-                } else {
-                    line.add(new JLabel("(" + feature.edge.ac + ")"));
-                }
+        VerticalPanel featureListPanel = new VerticalPanel(getBackground());
+        if (showFeatureEdge) {
+            groupElementsInPanel(featureListPanel, getBackground(), features, feature -> feature.type,
+                    (featureTypePanel, featuresOfType) -> groupElementsInPanel(featureTypePanel, getBackground(), featuresOfType, feature -> feature.name,
+                            (featureNamePanel, featuresOfName) -> {
+                                for (Feature feature : featuresOfName) {
+                                    LinePanel line = new LinePanel(getBackground());
+                                    if (selectableFeatureEdge) {
+                                        line.add(createSelectEdgeButton(feature.edge));
+                                        IntactNode otherNode = feature.edge.source.equals(feature.node) ? feature.edge.target : feature.edge.source;
+                                        line.add(new JLabel("Observed on edge with " + otherNode.name + " (" + feature.edge.ac + ")"));
+                                    } else {
+                                        line.add(LinkUtils.createIntactEdgeLink(openBrowser, feature.edge));
+                                    }
+                                    featureNamePanel.add(line);
+                                }
+                            }
+                    )
+            );
+        } else {
+            for (Feature feature : features) {
+                LinePanel line = new LinePanel(getBackground());
+                line.add(new JLabel(feature.type + " (" + feature.name + ")"));
+                line.add(Box.createHorizontalGlue());
+                featureListPanel.add(line);
             }
-
-
-            line.add(Box.createHorizontalGlue());
-            featureListPanel.add(line);
         }
-        CollapsablePanel collapsablePanel = new CollapsablePanel(featureClass.name, featureListPanel, true);
-        return collapsablePanel;
+
+        return new CollapsablePanel(featureClass.name, featureListPanel, true);
     }
 
 
@@ -173,5 +176,6 @@ public class NodeSummary extends AbstractNodeElement {
                 edgeToCheckBoxes.remove(edge);
             }
         }
+
     }
 }

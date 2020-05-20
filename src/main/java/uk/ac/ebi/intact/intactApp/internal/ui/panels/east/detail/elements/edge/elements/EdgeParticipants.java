@@ -8,7 +8,7 @@ import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactCollapsedEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEvidenceEdge;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeBasics;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeSummary;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeFeatures;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
@@ -24,7 +24,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
     private JPanel targetPanel;
     private static final Color nodePanelBg = new Color(229, 229, 229);
     private static final Color nodePanelBorder = new Color(186, 186, 186);
-    private final List<NodeSummary> participantSummaries = new ArrayList<>();
+    private final List<NodeFeatures> participantSummaries = new ArrayList<>();
 
 
     public EdgeParticipants(IntactEdge iEdge, OpenBrowser openBrowser) {
@@ -46,9 +46,9 @@ public class EdgeParticipants extends AbstractEdgeElement {
             nodeBasics.setBackground(nodePanelBg);
             nodePanel.add(nodeBasics, layoutHelper.down().anchor("north").expandHoriz());
 
-            NodeSummary nodeSummary = new NodeSummary(iNode, features.get(iNode), openBrowser, true, false, false, nodePanelBg);
-            nodePanel.add(nodeSummary, layoutHelper.down().anchor("north").expandHoriz());
-            participantSummaries.add(nodeSummary);
+            NodeFeatures nodeFeatures = new NodeFeatures(iNode, features.get(iNode), openBrowser, true, false, nodePanelBg);
+            nodePanel.add(nodeFeatures, layoutHelper.down().anchor("north").expandHoriz());
+            participantSummaries.add(nodeFeatures);
 
             nodePanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
         }
@@ -75,8 +75,8 @@ public class EdgeParticipants extends AbstractEdgeElement {
             biologicalRoleLabel.setAlignmentY(TOP_ALIGNMENT);
             nodePanel.add(biologicalRoleLabel, layoutHelper.down().anchor("north").expandHoriz());
 
-            NodeSummary nodeSummary = new NodeSummary(iNode, features.get(iNode), openBrowser, false, false, false, nodePanelBg);
-            nodePanel.add(nodeSummary, layoutHelper.down().anchor("north").expandHoriz());
+            NodeFeatures nodeFeatures = new NodeFeatures(iNode, features.get(iNode), openBrowser, false, false, nodePanelBg);
+            nodePanel.add(nodeFeatures, layoutHelper.down().anchor("north").expandHoriz());
 
             nodePanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
         }
@@ -111,7 +111,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
     }
 
     public void delete() {
-        for (NodeSummary participantSummary : participantSummaries) {
+        for (NodeFeatures participantSummary : participantSummaries) {
             participantSummary.deleteEdgeSelectionCheckboxes();
         }
     }

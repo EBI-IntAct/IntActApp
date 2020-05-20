@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.legend.panels.edge;
 
-import uk.ac.ebi.intact.intactApp.internal.ui.components.CollapsablePanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.legend.ContinuousColorLegend;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.legend.ContinuousEdgeWidthLegend;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.MIScoreSliderUI;

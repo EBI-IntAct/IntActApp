@@ -5,9 +5,13 @@ import org.cytoscape.model.CyRow;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.core.Feature;
 import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
+import uk.ac.ebi.intact.intactApp.internal.model.core.ontology.OntologyIdentifier;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.intactApp.internal.utils.TableUtil;
 
 import java.util.*;
+
+import static uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils.*;
 
 public class IntactEvidenceEdge extends IntactEdge {
     public final String type;
@@ -23,6 +27,7 @@ public class IntactEvidenceEdge extends IntactEdge {
 
     IntactEvidenceEdge(IntactNetwork iNetwork, CyEdge edge) {
         super(iNetwork, edge);
+        collapsed = false;
         type = edgeRow.get(CyEdge.INTERACTION, String.class);
         id = edgeRow.get(ModelUtils.INTACT_ID, Long.class);
         ac = edgeRow.get(ModelUtils.INTACT_AC, String.class);
@@ -43,12 +48,12 @@ public class IntactEvidenceEdge extends IntactEdge {
 
         for (CyRow featureRow : iNetwork.getFeaturesTable().getMatchingRows(ModelUtils.EDGE_REF, edge.getSUID())) {
             String type = featureRow.get(ModelUtils.FEATURE_TYPE, String.class);
-            String typeMIId = featureRow.get(ModelUtils.FEATURE_TYPE_MI_ID, String.class);
+            OntologyIdentifier typeId = TableUtil.getOntologyIdentifier(featureRow, FEATURE_TYPE_MI_ID, FEATURE_TYPE_MOD_ID, FEATURE_TYPE_PAR_ID);
             String name = featureRow.get(ModelUtils.FEATURE_NAME, String.class);
             if (featureRow.get(ModelUtils.NODE_REF, Long.class).equals(source.node.getSUID())) {
-                features.get(source).add(new Feature(this, source, type, typeMIId, name));
+                features.get(source).add(new Feature(this, source, type, typeId, name));
             } else {
-                features.get(target).add(new Feature(this, target, type, typeMIId, name));
+                features.get(target).add(new Feature(this, target, type, typeId, name));
             }
         }
         return features;
