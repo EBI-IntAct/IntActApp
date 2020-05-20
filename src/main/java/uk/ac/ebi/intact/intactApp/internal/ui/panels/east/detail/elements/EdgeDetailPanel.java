@@ -156,6 +156,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
             edgesPanel.remove(edgePanel);
             edgeToPanel.remove(unselectedEdge);
         }
+        EdgeParticipants.homogenizeNodeDiagramWidth();
 
         selectionRunning = false;
         revalidate();
