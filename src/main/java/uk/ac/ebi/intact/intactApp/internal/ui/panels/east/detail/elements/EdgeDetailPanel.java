@@ -16,6 +16,7 @@ import uk.ac.ebi.intact.intactApp.internal.model.events.RangeChangeListener;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.MIScoreSliderUI;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.RangeSlider;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.spinner.LoadingSpinner;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.AbstractDetailPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.edge.elements.EdgeBasics;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.edge.elements.EdgeDetails;
@@ -35,8 +36,7 @@ import static java.util.Comparator.comparing;
 
 
 public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeListener {
-    private EasyGBC layoutHelper = new EasyGBC();
-    private JPanel scorePanel;
+    private final EasyGBC layoutHelper = new EasyGBC();
     private JPanel edgesPanel;
     private CollapsablePanel selectedEdges;
     public static RangeSlider scoreSlider;
@@ -72,7 +72,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
         scoreSlider.setUpperValue(100);
         scoreSlider.addRangeChangeListener(this);
         Color bg = new Color(229, 229, 229);
-        scorePanel = new JPanel(new GridBagLayout());
+        JPanel scorePanel = new JPanel(new GridBagLayout());
         scorePanel.setBackground(bg);
         EasyGBC d = new EasyGBC();
         JLabel label = new JLabel("MI Score");
@@ -97,7 +97,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
     private JPanel createEdgesPanel() {
         edgesPanel = new JPanel(new GridBagLayout());
         edgesPanel.setBackground(backgroundColor);
-
+        edgesPanel.add(loadingSpinner, layoutHelper.anchor("west").noExpand());
         selectedEdges(CyTableUtil.getEdgesInState(currentINetwork.getNetwork(), CyNetwork.SELECTED, true));
 
         selectedEdges = new CollapsablePanel("Selected edges", edgesPanel, false);
@@ -121,14 +121,18 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
     }
 
     public volatile boolean selectionRunning;
+    private final LoadingSpinner loadingSpinner = new LoadingSpinner();
 
     public void selectedEdges(Collection<CyEdge> edges) {
         // Clear the nodes panel
         selectionRunning = true;
+        loadingSpinner.start();
+
         List<IntactEdge> iEdges = edges.stream()
                 .map(edge -> IntactEdge.createIntactEdge(currentINetwork, edge))
                 .filter(this::isEdgeOfCurrentViewType)
                 .collect(Comparators.greatest(MAXIMUM_SELECTED_EDGE_SHOWN, comparing(o -> o.miScore)));
+
 
         for (IntactEdge iEdge : iEdges) {
             if (!selectionRunning)
@@ -142,7 +146,8 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
             }
 
         }
-        if (edges.size() < MAXIMUM_SELECTED_EDGE_SHOWN) {
+
+        if (iEdges.size() < MAXIMUM_SELECTED_EDGE_SHOWN) {
             edgesPanel.remove(limitExceededPanel);
         } else {
             edgesPanel.add(limitExceededPanel, layoutHelper.expandHoriz().down());
@@ -157,7 +162,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
             edgeToPanel.remove(unselectedEdge);
         }
         EdgeParticipants.homogenizeNodeDiagramWidth();
-
+        loadingSpinner.stop();
         selectionRunning = false;
         revalidate();
         repaint();

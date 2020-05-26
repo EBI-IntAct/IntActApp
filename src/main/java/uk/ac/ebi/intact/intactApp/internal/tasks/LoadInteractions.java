@@ -66,6 +66,7 @@ public class LoadInteractions extends AbstractTask {
         }
 
         manager.addIntactNetwork(intactNet, network);
+        manager.addNetwork(network);
 
         // System.out.println("Results: "+results.toString());
         // Now style the network

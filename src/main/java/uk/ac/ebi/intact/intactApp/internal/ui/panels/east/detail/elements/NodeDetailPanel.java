@@ -136,7 +136,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
 
     public void networkChanged(IntactNetwork newNetwork) {
         this.currentINetwork = newNetwork;
-        selectedNodes(newNetwork.getSelectedNodes());
+         selectedNodes(newNetwork.getSelectedNodes());
     }
 
 

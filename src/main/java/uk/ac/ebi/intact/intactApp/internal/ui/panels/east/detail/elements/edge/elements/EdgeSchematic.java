@@ -31,7 +31,7 @@ public class EdgeSchematic extends AbstractEdgeElement {
     @Override
     protected void fillCollapsedEdgeContent(IntactCollapsedEdge edge) {
         drawNodes(edge);
-        int thickness = edge.edges.size() + 2;
+        int thickness = edge.subEdgeSUIDs.size() + 2;
         thickness = Integer.min(thickness, 25);
         EdgeDiagram edgeDiagram = new EdgeDiagram(CollapsedIntactStyle.getColor(edge.miScore), thickness, false);
         drawEdgePanel(edgeDiagram);

@@ -392,7 +392,10 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     }
 
     public void addNetwork(CyNetwork network) {
-        registrar.getService(CyNetworkManager.class).addNetwork(network);
+        CyNetworkManager networkManager = registrar.getService(CyNetworkManager.class);
+        if (!networkManager.networkExists(network.getSUID())) {
+            networkManager.addNetwork(network);
+        }
         registrar.getService(CyApplicationManager.class).setCurrentNetwork(network);
     }
 
@@ -608,18 +611,18 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     }
 
     public void handleEvent(NetworkAddedEvent nae) {
-        CyNetwork network = nae.getNetwork();
-        if (ignore) return;
-
-        // This is a string network only if we have a confidence score in the network table,
-        // "@id", "species", "canonical name", and "sequence" columns in the node table, and
-        // a "score" column in the edge table
-        if (ModelUtils.isIntactNetwork(network)) {
-            IntactNetwork intactNet = new IntactNetwork(this);
-            addIntactNetwork(intactNet, network);
-            showResultsPanel();
-            intactNet.completeMissingNodeColors();
-        }
+//        CyNetwork network = nae.getNetwork();
+//        if (ignore) return;
+//
+//        // This is a string network only if we have a confidence score in the network table,
+//        // "@id", "species", "canonical name", and "sequence" columns in the node table, and
+//        // a "score" column in the edge table
+//        if (ModelUtils.isIntactNetwork(network)) {
+//            IntactNetwork intactNet = new IntactNetwork(this);
+//            addIntactNetwork(intactNet, network);
+//            showResultsPanel();
+//            intactNet.completeMissingNodeColors();
+//        }
     }
 
     public void handleEvent(SessionLoadedEvent event) {
@@ -634,7 +637,6 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
                 if (ModelUtils.ifHaveIntactNS(network)) {
                     IntactNetwork intactNetwork = new IntactNetwork(this);
                     addIntactNetwork(intactNetwork, network);
-                    ModelUtils.buildIntactNetworkTableFromExistingOne(intactNetwork);
                     intactNetwork.completeMissingNodeColors();
                 } else if (ModelUtils.getDataVersion(network) == null) {
                     networksToUpgrade.add(network);

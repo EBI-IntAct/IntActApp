@@ -13,6 +13,7 @@ import uk.ac.ebi.intact.intactApp.internal.ui.components.diagrams.NodeDiagram;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeBasics;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeFeatures;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
+import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -21,8 +22,11 @@ import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class EdgeParticipants extends AbstractEdgeElement {
+    private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
     private JPanel sourcePanel;
     private JPanel targetPanel;
     private static final Color nodePanelBg = new Color(229, 229, 229);
@@ -34,7 +38,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
 
     public EdgeParticipants(IntactEdge iEdge, OpenBrowser openBrowser) {
         super(null, iEdge, openBrowser);
-        fillContent();
+        executor.execute(this::fillContent);
     }
 
     @Override
@@ -58,7 +62,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
             nodePanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
         }
 
-        int thickness = edge.edges.size() + 2;
+        int thickness = edge.subEdgeSUIDs.size() + 2;
         thickness = Integer.min(thickness, 25);
         content.add(new EdgeDiagram(CollapsedIntactStyle.getColor(edge.miScore), thickness, false));
     }
@@ -106,6 +110,9 @@ public class EdgeParticipants extends AbstractEdgeElement {
     }
 
     public static void homogenizeNodeDiagramWidth() {
+        while (executor.getActiveCount() != 0) {
+            TimeUtils.sleep(100);
+        }
         Optional<Integer> max = nodeDiagramInfos.values().stream().map(nodeDiagramInfo -> nodeDiagramInfo.width).max(Integer::compareTo);
         if (max.isPresent()) {
             int maxWidth = max.get();
@@ -141,7 +148,6 @@ public class EdgeParticipants extends AbstractEdgeElement {
             sourcePanel.setBackground(nodePanelBg);
             sourcePanel.setBorder(border);
             sourceDiagram = new NodeDiagram(edge.source, featuresMap.get(edge.source));
-            System.out.println(System.identityHashCode(sourceDiagram));
             sourceDiagram.setBorder(new EmptyBorder(0, 4, 0, 4));
             sourceDiagram.setOpaque(false);
             participantsPanel.add(sourceDiagram, c.noExpand());
@@ -154,7 +160,6 @@ public class EdgeParticipants extends AbstractEdgeElement {
             targetPanel.setBackground(nodePanelBg);
             targetPanel.setBorder(border);
             targetDiagram = new NodeDiagram(edge.target, featuresMap.get(edge.target));
-            System.out.println(System.identityHashCode(sourceDiagram));
             targetDiagram.setBorder(new EmptyBorder(0, 4, 0, 4));
             targetDiagram.setOpaque(false);
             participantsPanel.add(targetDiagram, c.down().noExpand());
@@ -168,6 +173,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
                 nodeDiagramInfos.get(nodeDiagram.node).nodeDiagrams.add(nodeDiagram);
             }
         }
+
         content.add(mainPanel);
     }
 

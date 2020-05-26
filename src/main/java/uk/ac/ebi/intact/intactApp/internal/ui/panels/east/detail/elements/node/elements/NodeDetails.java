@@ -12,7 +12,6 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -28,18 +27,17 @@ public class NodeDetails extends AbstractNodeElement {
     protected void fillContent() {
         executor.execute(() -> {
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-            Map<Object, Object> postData = new HashMap<>();
-            postData.put("ids", List.of(iNode.id));
-            JsonNode nodeDetails = HttpUtils.postJSON("https://wwwdev.ebi.ac.uk/intact/ws/graph/network/node/details", postData, iNode.iNetwork.getManager());
+            JsonNode nodeDetails = HttpUtils.getJSON("https://wwwdev.ebi.ac.uk/intact/ws/graph/network/node/details/" + iNode.id, new HashMap<>(), iNode.iNetwork.getManager());
             if (nodeDetails != null) {
-                JsonNode onlyNodeDetails = nodeDetails.get(0);
-                content.add(new NodeAliases(iNode, openBrowser, onlyNodeDetails.get("aliases")));
-                addNodeCrossReferences(onlyNodeDetails.get("xrefs"));
+                content.add(new NodeAliases(iNode, openBrowser, nodeDetails.get("aliases")));
+                addNodeCrossReferences(nodeDetails.get("xrefs"));
             }
         });
     }
 
     private void addNodeCrossReferences(JsonNode xrefs) {
+        if (xrefs == null) return;
+
         List<Identifier> identifiers = new ArrayList<>();
         for (JsonNode xref : xrefs) {
             JsonNode database = xref.get("database");

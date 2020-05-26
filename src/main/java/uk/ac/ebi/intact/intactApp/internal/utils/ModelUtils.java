@@ -83,7 +83,7 @@ public class ModelUtils {
 
 
     public static String C_IS_COLLAPSED = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "is collapsed";
-    public static String C_INTACT_IDS = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "intact ids";
+    public static String C_INTACT_SUIDS = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "collapsed edge SUIDs";
     public static String C_NB_EDGES = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "# evidences";
 
     public static String QUERYTERM = "query term";
@@ -700,7 +700,7 @@ public class ModelUtils {
 
         loadJSON(manager, intactNetwork, newNetwork, nodeMap, nodeNameMap, null, object);
 
-        manager.addNetwork(newNetwork);
+//        manager.addNetwork(newNetwork);
         return newNetwork;
     }
 
@@ -733,7 +733,7 @@ public class ModelUtils {
 
             createColumnIfNeeded(defaultEdgeTable, Boolean.class, C_IS_COLLAPSED);
             createColumnIfNeeded(defaultEdgeTable, Integer.class, C_NB_EDGES);
-            createListColumnIfNeeded(defaultEdgeTable, Long.class, C_INTACT_IDS);
+            createListColumnIfNeeded(defaultEdgeTable, Long.class, C_INTACT_SUIDS);
 
             // Features and xRefs tables
 

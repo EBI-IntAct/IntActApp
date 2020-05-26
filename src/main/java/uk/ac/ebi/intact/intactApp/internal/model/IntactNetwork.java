@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.intactApp.internal.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.*;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
 import org.cytoscape.model.events.AboutToRemoveEdgesListener;
@@ -323,6 +324,9 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     // INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT INTACT //
 
     private void updateCollapsedEdges(Collection<Couple> couplesToUpdate) {
+        CyEventHelper eventHelper = manager.getService(CyEventHelper.class);
+        CyTable table = network.getDefaultEdgeTable();
+        eventHelper.silenceEventSource(table);
         for (Couple couple : couplesToUpdate) {
             CyEdge summaryEdge;
             List<CyEdge> similarEdges = coupleToEdges.get(couple);
@@ -333,9 +337,11 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
                 } else {
                     summaryEdge = collapsedEdges.get(couple);
                 }
-                CyRow summaryEdgeRow = network.getRow(summaryEdge);
-                summaryEdgeRow.set(ModelUtils.C_INTACT_IDS, getColumnValuesOfEdges(edgeTable, ModelUtils.INTACT_ID, Long.class, similarEdges, "???"));
-                CyRow firstEdgeRow = network.getRow(similarEdges.iterator().next());
+                CyRow summaryEdgeRow = table.getRow(summaryEdge.getSUID());
+
+
+                summaryEdgeRow.set(ModelUtils.C_INTACT_SUIDS, getColumnValuesOfEdges(edgeTable, CyEdge.SUID, Long.class, similarEdges, "???"));
+                CyRow firstEdgeRow = network.getRow(similarEdges.get(0));
                 summaryEdgeRow.set(ModelUtils.MI_SCORE, firstEdgeRow.get(ModelUtils.MI_SCORE, Double.class));
                 summaryEdgeRow.set(ModelUtils.C_IS_COLLAPSED, true);
                 summaryEdgeRow.set(ModelUtils.C_NB_EDGES, similarEdges.size());
@@ -346,6 +352,8 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
                 network.removeEdges(Collections.singleton(summaryEdge));
             }
         }
+        eventHelper.unsilenceEventSource(table);
+
     }
 
 
