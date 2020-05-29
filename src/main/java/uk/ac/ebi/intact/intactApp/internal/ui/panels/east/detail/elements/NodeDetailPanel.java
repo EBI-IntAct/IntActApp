@@ -126,13 +126,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
     }
 
 
-    private boolean checkCurrentNetwork() {
-        if (currentINetwork == null) {
-            currentINetwork = manager.getCurrentIntactNetwork();
-            return currentINetwork != null;
-        }
-        return true;
-    }
+
 
     public void networkChanged(IntactNetwork newNetwork) {
         this.currentINetwork = newNetwork;
@@ -141,7 +135,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
 
 
     public void selectedNodes(Collection<CyNode> nodes) {
-        if (checkCurrentNetwork()) {
+        if (checkCurrentNetwork() && checkCurrentView()) {
             selectionRunning = true;
 
             List<IntactNode> iNodes = nodes.stream()
@@ -214,7 +208,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
 //            Map<Object, Object> postData = new HashMap<>();
 //            postData.put("ids", nodeIds);
 //            Instant begin = Instant.now();
-//            JsonNode nodeDetails = HttpUtils.postJSON("https://wwwdev.ebi.ac.uk/intact/ws/graph/network/node/details", postData, manager);
+//            JsonNode nodeDetails = HttpUtils.postJSON(INTACT_ENDPOINT_URL + "/network/node/details", postData, manager);
 //            System.out.println("Query answered in " + Duration.between(begin, Instant.now()).toMillis());
 //            if (nodeDetails != null) {
 //                for (JsonNode nodeDetail : nodeDetails) {

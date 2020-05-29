@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static uk.ac.ebi.intact.intactApp.internal.model.IntactManager.INTACT_ENDPOINT_URL;
+
 public class EdgeDetails extends AbstractEdgeElement {
     private final static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
@@ -29,7 +31,7 @@ public class EdgeDetails extends AbstractEdgeElement {
     protected void fillEvidenceEdgeContent(IntactEvidenceEdge edge) {
         executor.execute(() -> {
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-            JsonNode edgeDetails = HttpUtils.getJSON("https://wwwdev.ebi.ac.uk/intact/ws/graph/network/edge/details/" + edge.id, new HashMap<>(), edge.iNetwork.getManager());
+            JsonNode edgeDetails = HttpUtils.getJSON(INTACT_ENDPOINT_URL + "/network/edge/details/" + edge.id, new HashMap<>(), edge.iNetwork.getManager());
             if (edgeDetails != null) {
                 content.add(new EdgeAnnotations(edge, openBrowser, edgeDetails.get("annotations")));
                 content.add(new EdgeParameters(edge, openBrowser, edgeDetails.get("parameters")));

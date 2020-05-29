@@ -61,7 +61,8 @@ public class HttpUtils {
                     .header("accept", "application/json")
                     .build();
 
-            return new ObjectMapper().readTree(httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return new ObjectMapper().readTree(response.body());
 
         } catch (Exception e) {
             // e.printStackTrace();

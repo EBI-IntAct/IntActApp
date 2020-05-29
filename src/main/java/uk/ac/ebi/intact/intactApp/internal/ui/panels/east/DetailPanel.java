@@ -133,11 +133,12 @@ public class DetailPanel extends JPanel
             cytoPanel.setState(CytoPanelState.DOCK);
 
         // Tell tabs
-
         IntactNetwork currentNetwork = manager.getCurrentIntactNetwork();
-        nodePanel.networkChanged(currentNetwork);
-        edgePanel.networkChanged(currentNetwork);
-        legendPanel.networkChanged(currentNetwork);
+        if (currentNetwork != null) {
+            nodePanel.networkChanged(currentNetwork);
+            edgePanel.networkChanged(currentNetwork);
+            legendPanel.networkChanged(currentNetwork);
+        }
     }
 
     public void hideCytoPanel() {
@@ -253,9 +254,10 @@ public class DetailPanel extends JPanel
         }
         if (nodePanel != null) {
             // Tell tabs
-            nodePanel.networkChanged(event.getNewINetwork());
-            edgePanel.networkChanged(event.getNewINetwork());
-            legendPanel.networkChanged(event.getNewINetwork());
+            IntactNetwork newINetwork = event.getNewINetwork();
+            nodePanel.networkChanged(newINetwork);
+            edgePanel.networkChanged(newINetwork);
+            legendPanel.networkChanged(newINetwork);
         }
     }
 

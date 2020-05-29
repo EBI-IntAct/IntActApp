@@ -58,6 +58,7 @@ import java.util.concurrent.Executors;
 
 public class IntactManager implements NetworkAddedListener, SessionLoadedListener, NetworkAboutToBeDestroyedListener, NetworkViewAboutToBeDestroyedListener {
     public static String CONFIGURI = "https://jensenlab.org/assets/stringapp/";
+    public static final String INTACT_ENDPOINT_URL = "https://wwwdev.ebi.ac.uk/intact/ws/graph";
     public static String STRINGResolveURI = "http://version11.string-db.org/api/";
     public static String STITCHResolveURI = "http://stitch.embl.de/api/";
     public static String VIRUSESResolveURI = "http://viruses.string-db.org/cgi/webservice_handler.pl";
@@ -257,7 +258,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     }
 
     private void fireIntactViewTypeChangedEvent(IntactViewTypeChangedEvent event) {
-        for (IntactViewTypeChangedListener listener: intactViewTypeChangedListeners) {
+        for (IntactViewTypeChangedListener listener : intactViewTypeChangedListeners) {
             listener.handleEvent(event);
         }
     }
@@ -631,15 +632,12 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
         // Create string networks for any networks loaded by string
         Set<CyNetwork> networks = event.getLoadedSession().getNetworks();
-        Set<CyNetwork> networksToUpgrade = new HashSet<>();
         for (CyNetwork network : networks) {
             if (ModelUtils.isIntactNetwork(network)) {
                 if (ModelUtils.ifHaveIntactNS(network)) {
                     IntactNetwork intactNetwork = new IntactNetwork(this);
                     addIntactNetwork(intactNetwork, network);
                     intactNetwork.completeMissingNodeColors();
-                } else if (ModelUtils.getDataVersion(network) == null) {
-                    networksToUpgrade.add(network);
                 }
             }
         }
@@ -653,33 +651,52 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         }
 
 
-        if (ModelUtils.ifHaveIntactNS(getCurrentNetwork()))
+        if (ModelUtils.ifHaveIntactNS(getCurrentNetwork())) {
+            CyApplicationManager applicationManager = getService(CyApplicationManager.class);
+            applicationManager.setCurrentNetworkView(applicationManager.getCurrentNetworkView());
             showResultsPanel();
-        else
+        } else {
             hideResultsPanel();
+        }
     }
 
     public void linkIntactTablesToNetwork(Collection<CyTableMetadata> tables) {
         for (CyTableMetadata tableM : tables) {
             CyTable table = tableM.getTable();
+            linkCollapsedEdgesIdsToSUIDs(table);
             CyColumn nodeRefs = table.getColumn(ModelUtils.NODE_REF);
-            if (nodeRefs != null) { // If the table is an Intact unassigned table
-                List<Long> values = nodeRefs.getValues(Long.class);
-                if (!values.isEmpty()) {
-                    Long nodeSUID = values.get(0);
-                    if (nodeSUID != null) {
-                        for (IntactNetwork iNetwork : intactNetworkMap.values()) {
-                            if (iNetwork.getNetwork().getNode(nodeSUID) != null) { // If the node referenced belong to this network
-                                if (table.getColumn(ModelUtils.IDENTIFIER_ID) != null) {
-                                    iNetwork.setIdentifiersTable(table);
-                                } else {
-                                    iNetwork.setFeaturesTable(table);
-                                }
-                                break;
-                            }
-                        }
+            if (nodeRefs == null) continue; // If the table is an Intact unassigned table
+
+            List<Long> values = nodeRefs.getValues(Long.class);
+            if (values.isEmpty()) continue;
+
+            Long nodeSUID = values.get(0);
+            if (nodeSUID == null) continue;
+
+            for (IntactNetwork iNetwork : intactNetworkMap.values()) {
+                if (iNetwork.getNetwork().getNode(nodeSUID) != null) { // If the node referenced belong to this network
+                    if (table.getColumn(ModelUtils.IDENTIFIER_ID) != null) {
+                        iNetwork.setIdentifiersTable(table);
+                    } else {
+                        iNetwork.setFeaturesTable(table);
                     }
+                    break;
                 }
+            }
+
+        }
+    }
+
+    public void linkCollapsedEdgesIdsToSUIDs(CyTable edgeTable) {
+        CyColumn collapsedIntactIdsColumn = edgeTable.getColumn(ModelUtils.C_INTACT_IDS);
+        if (collapsedIntactIdsColumn == null) return;
+        for (CyRow row : edgeTable.getAllRows()) {
+            List<Long> ids = row.getList(ModelUtils.C_INTACT_IDS, Long.class);
+            if (ids == null) continue;
+            List<Long> suids = row.getList(ModelUtils.C_INTACT_SUIDS, Long.class);
+            suids.clear();
+            for (Long id : ids) {
+                suids.add(edgeTable.getMatchingKeys(ModelUtils.INTACT_ID, id, Long.class).iterator().next());
             }
         }
     }

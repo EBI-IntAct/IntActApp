@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static uk.ac.ebi.intact.intactApp.internal.model.IntactManager.INTACT_ENDPOINT_URL;
+
 public class NodeDetails extends AbstractNodeElement {
     private final static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
@@ -27,7 +29,7 @@ public class NodeDetails extends AbstractNodeElement {
     protected void fillContent() {
         executor.execute(() -> {
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-            JsonNode nodeDetails = HttpUtils.getJSON("https://wwwdev.ebi.ac.uk/intact/ws/graph/network/node/details/" + iNode.id, new HashMap<>(), iNode.iNetwork.getManager());
+            JsonNode nodeDetails = HttpUtils.getJSON(INTACT_ENDPOINT_URL + "/network/node/details/" + iNode.id, new HashMap<>(), iNode.iNetwork.getManager());
             if (nodeDetails != null) {
                 content.add(new NodeAliases(iNode, openBrowser, nodeDetails.get("aliases")));
                 addNodeCrossReferences(nodeDetails.get("xrefs"));

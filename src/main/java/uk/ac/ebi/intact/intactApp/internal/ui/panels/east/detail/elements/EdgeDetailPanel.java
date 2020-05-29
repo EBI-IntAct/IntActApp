@@ -124,48 +124,48 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
     private final LoadingSpinner loadingSpinner = new LoadingSpinner();
 
     public void selectedEdges(Collection<CyEdge> edges) {
-        // Clear the nodes panel
-        selectionRunning = true;
-        loadingSpinner.start();
+        if (checkCurrentNetwork() && checkCurrentView()) {
+            // Clear the nodes panel
+            selectionRunning = true;
+            loadingSpinner.start();
 
-        List<IntactEdge> iEdges = edges.stream()
-                .map(edge -> IntactEdge.createIntactEdge(currentINetwork, edge))
-                .filter(this::isEdgeOfCurrentViewType)
-                .collect(Comparators.greatest(MAXIMUM_SELECTED_EDGE_SHOWN, comparing(o -> o.miScore)));
+            List<IntactEdge> iEdges = edges.stream()
+                    .map(edge -> IntactEdge.createIntactEdge(currentINetwork, edge))
+                    .filter(this::isEdgeOfCurrentViewType)
+                    .collect(Comparators.greatest(MAXIMUM_SELECTED_EDGE_SHOWN, comparing(o -> o.miScore)));
 
 
-        for (IntactEdge iEdge : iEdges) {
-            if (!selectionRunning)
-                break;
+            for (IntactEdge iEdge : iEdges) {
+                if (!selectionRunning)
+                    break;
 
-            if (!edgeToPanel.containsKey(iEdge)) {
-                EdgePanel edgePanel = new EdgePanel(iEdge);
-                edgePanel.setAlignmentX(LEFT_ALIGNMENT);
-                edgesPanel.add(edgePanel, layoutHelper.anchor("west").down().expandHoriz());
-                edgeToPanel.put(iEdge, edgePanel);
+                if (!edgeToPanel.containsKey(iEdge)) {
+                    EdgePanel edgePanel = new EdgePanel(iEdge);
+                    edgePanel.setAlignmentX(LEFT_ALIGNMENT);
+                    edgesPanel.add(edgePanel, layoutHelper.anchor("west").down().expandHoriz());
+                    edgeToPanel.put(iEdge, edgePanel);
+                }
+
             }
 
-        }
+            if (iEdges.size() < MAXIMUM_SELECTED_EDGE_SHOWN) {
+                edgesPanel.remove(limitExceededPanel);
+            } else {
+                edgesPanel.add(limitExceededPanel, layoutHelper.expandHoriz().down());
+            }
 
-        if (iEdges.size() < MAXIMUM_SELECTED_EDGE_SHOWN) {
-            edgesPanel.remove(limitExceededPanel);
-        } else {
-            edgesPanel.add(limitExceededPanel, layoutHelper.expandHoriz().down());
+            HashSet<IntactEdge> unselectedEdges = new HashSet<>(edgeToPanel.keySet());
+            unselectedEdges.removeAll(iEdges);
+            for (IntactEdge unselectedEdge : unselectedEdges) {
+                EdgePanel edgePanel = edgeToPanel.get(unselectedEdge);
+                edgePanel.delete();
+                edgesPanel.remove(edgePanel);
+                edgeToPanel.remove(unselectedEdge);
+            }
+            EdgeParticipants.homogenizeNodeDiagramWidth();
+            loadingSpinner.stop();
+            selectionRunning = false;
         }
-
-        HashSet<IntactEdge> unselectedEdges = new HashSet<>(edgeToPanel.keySet());
-        unselectedEdges.removeAll(iEdges);
-        for (IntactEdge unselectedEdge : unselectedEdges) {
-            EdgePanel edgePanel = edgeToPanel.get(unselectedEdge);
-            edgePanel.delete();
-            edgesPanel.remove(edgePanel);
-            edgeToPanel.remove(unselectedEdge);
-        }
-        EdgeParticipants.homogenizeNodeDiagramWidth();
-        loadingSpinner.stop();
-        selectionRunning = false;
-        revalidate();
-        repaint();
     }
 
     private boolean isEdgeOfCurrentViewType(IntactEdge edge) {
