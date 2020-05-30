@@ -18,33 +18,31 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static uk.ac.ebi.intact.intactApp.internal.ui.panels.east.AbstractDetailPanel.backgroundColor;
-
 public class NodeDiagram extends JPanel {
     private final JPanel shapePanel = new JPanel();
-
+    public final IntactNode node;
     public NodeDiagram(IntactNode iNode, List<Feature> features) {
         this.setBackground(new Color(0,0,0,0));
         this.setOpaque(false);
         this.setLayout(new OverlayLayout(this));
         this.setAlignmentX(LEFT_ALIGNMENT);
+        this.node = iNode;
         if (iNode.name != null && !iNode.name.isBlank()) {
             JLabel2D label = new JLabel2D(iNode.name, JLabel.CENTER);
             label.setFont(new Font("SansSerif", Font.BOLD, 12));
             label.setForeground(Color.WHITE);
             label.setOutlineColor(new Color(0, 0, 0, 130));
             label.setStroke(5);
-            label.setAlignmentX(CENTER_ALIGNMENT);
-            label.setAlignmentY(CENTER_ALIGNMENT);
+//            label.setAlignmentX(CENTER_ALIGNMENT);
+//            label.setAlignmentY(CENTER_ALIGNMENT);
             this.add(label);
         }
 
-
+        shapePanel.setOpaque(false);
         Color color = (Color) StyleMapper.taxIdToPaint.get(iNode.taxId);
         if (color == null) {
             color = (Color) StyleMapper.kingdomColors.get(iNode.taxId);
         }
-        shapePanel.setBackground(backgroundColor);
         AbstractNodeShape shape = StyleUtils.nodeTypeToShape(iNode.type, color != null ? color : IntactStyle.defaultNodeColor, 50);
 
         Set<OntologyIdentifier> featureTypeIDs = features.stream().map(feature -> feature.typeIdentifier).collect(Collectors.toSet());
@@ -53,8 +51,8 @@ public class NodeDiagram extends JPanel {
             shape.setBorderThickness(4);
         }
 
-        shapePanel.setAlignmentX(CENTER_ALIGNMENT);
-        shapePanel.setAlignmentY(CENTER_ALIGNMENT);
+//        shapePanel.setAlignmentX(CENTER_ALIGNMENT);
+//        shapePanel.setAlignmentY(CENTER_ALIGNMENT);
         shapePanel.add(shape);
         this.add(shapePanel);
     }

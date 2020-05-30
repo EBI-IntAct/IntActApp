@@ -12,9 +12,10 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import static uk.ac.ebi.intact.intactApp.internal.model.IntactManager.INTACT_ENDPOINT_URL;
 
 public class NodeDetails extends AbstractNodeElement {
     private final static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
@@ -28,18 +29,17 @@ public class NodeDetails extends AbstractNodeElement {
     protected void fillContent() {
         executor.execute(() -> {
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-            Map<Object, Object> postData = new HashMap<>();
-            postData.put("ids", List.of(iNode.id));
-            JsonNode nodeDetails = HttpUtils.postJSON("https://wwwdev.ebi.ac.uk/intact/ws/graph/network/node/details", postData, iNode.iNetwork.getManager());
+            JsonNode nodeDetails = HttpUtils.getJSON(INTACT_ENDPOINT_URL + "/network/node/details/" + iNode.id, new HashMap<>(), iNode.iNetwork.getManager());
             if (nodeDetails != null) {
-                JsonNode onlyNodeDetails = nodeDetails.get(0);
-                content.add(new NodeAliases(iNode, openBrowser, onlyNodeDetails.get("aliases")));
-                addNodeCrossReferences(onlyNodeDetails.get("xrefs"));
+                content.add(new NodeAliases(iNode, openBrowser, nodeDetails.get("aliases")));
+                addNodeCrossReferences(nodeDetails.get("xrefs"));
             }
         });
     }
 
     private void addNodeCrossReferences(JsonNode xrefs) {
+        if (xrefs == null) return;
+
         List<Identifier> identifiers = new ArrayList<>();
         for (JsonNode xref : xrefs) {
             JsonNode database = xref.get("database");
@@ -50,7 +50,7 @@ public class NodeDetails extends AbstractNodeElement {
             String identifier = xref.get("identifier").textValue();
             String qualifier = xref.get("qualifier").textValue();
 
-            identifiers.add(new Identifier(iNode, databaseName, databaseIdentifier, identifier, qualifier));
+            identifiers.add(new Identifier(databaseName, databaseIdentifier, identifier, qualifier));
         }
         content.add(new NodeIdentifiers("Cross References", iNode, openBrowser, identifiers));
     }

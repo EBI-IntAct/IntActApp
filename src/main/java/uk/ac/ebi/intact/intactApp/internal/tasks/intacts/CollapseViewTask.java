@@ -24,8 +24,8 @@ public class CollapseViewTask extends AbstractHiderTask {
     public void run(TaskMonitor taskMonitor) {
         IntactNetwork iNetwork = manager.getIntactNetwork(manager.getCurrentNetwork());
         IntactNetworkView iView = manager.getCurrentIntactNetworkView();
-        if (iView.getType() != IntactNetworkView.Type.COLLAPSED) {
-            CyNetworkView view = iView.getView();
+        if (iView.type != IntactNetworkView.Type.COLLAPSED) {
+            CyNetworkView view = iView.view;
             manager.intactViewTypeChanged(IntactNetworkView.Type.COLLAPSED, iView);
 
             CyNetwork network = iNetwork.getNetwork();

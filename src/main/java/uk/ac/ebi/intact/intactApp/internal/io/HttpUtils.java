@@ -21,8 +21,7 @@ public class HttpUtils {
             .version(HttpClient.Version.HTTP_1_1)
             .build();
 
-    public static JsonNode getJSON(String url, Map<String, String> queryMap,
-                                   IntactManager manager) {
+    public static JsonNode getJSON(String url, Map<String, String> queryMap, IntactManager manager) {
 
         // Set up our connection
         URL trueURL;
@@ -43,9 +42,7 @@ public class HttpUtils {
         JsonNode jsonObject = NullNode.getInstance();
 
         try {
-            URLConnection connection = manager.getService(StreamUtil.class).getURLConnection(trueURL);
-
-            InputStream entityStream = connection.getInputStream();
+            InputStream entityStream = trueURL.openStream();
             jsonObject = new ObjectMapper().readTree(entityStream);
 
         } catch (Exception e) {
@@ -64,7 +61,8 @@ public class HttpUtils {
                     .header("accept", "application/json")
                     .build();
 
-            return new ObjectMapper().readTree(httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return new ObjectMapper().readTree(response.body());
 
         } catch (Exception e) {
             // e.printStackTrace();
@@ -146,8 +144,7 @@ public class HttpUtils {
         String jsonText = "";
         try {
             URL url = new URL(requestURL);
-            URLConnection olsConnection = url.openConnection();
-            BufferedReader in = new BufferedReader(new InputStreamReader(olsConnection.getInputStream()));
+            BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
             String inputLine;
             StringBuilder builder = new StringBuilder();
             while ((inputLine = in.readLine()) != null) {

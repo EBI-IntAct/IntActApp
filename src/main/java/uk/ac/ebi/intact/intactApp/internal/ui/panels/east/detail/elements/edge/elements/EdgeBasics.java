@@ -25,10 +25,10 @@ public class EdgeBasics extends AbstractEdgeElement {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
         VerticalPanel collapsedEdgesPanel = new VerticalPanel(backgroundColor);
-        for (IntactEvidenceEdge iEEdge : edge.edges.values()) {
+        for (IntactEvidenceEdge iEEdge : edge.getSubEdges().values()) {
             collapsedEdgesPanel.add(LinkUtils.createIntactEdgeLink(openBrowser, iEEdge));
         }
-        CollapsablePanel collapsablePanel = new CollapsablePanel("Collapsed edges (" + edge.edges.size() + ")", collapsedEdgesPanel, true);
+        CollapsablePanel collapsablePanel = new CollapsablePanel("Collapsed edges (" + edge.subEdgeSUIDs.size() + ")", collapsedEdgesPanel, true);
         collapsablePanel.setAlignmentX(LEFT_ALIGNMENT);
         content.add(collapsablePanel);
     }

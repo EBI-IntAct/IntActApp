@@ -23,7 +23,7 @@ public class NodeAliases extends AbstractNodeElement {
 
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
             GroupUtils.groupElementsInPanel(content, aliases,
-                    aliasData -> StringUtils.capitalize(aliasData.get("type").get("shortName").textValue()),
+                    aliasData -> StringUtils.capitalize(aliasData.get("type").get("shortName").textValue().replaceAll("iupac", "IUPAC").replaceAll("orf", "ORF")),
                     (toFill, aliasesOfTypeData) -> {
                         for (JsonNode aliasData : aliasesOfTypeData) {
                             toFill.add(new JLabel(aliasData.get("name").textValue()));

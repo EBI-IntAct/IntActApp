@@ -19,6 +19,8 @@ import uk.ac.ebi.intact.intactApp.internal.utils.ViewUtils;
 
 import java.util.*;
 
+import static uk.ac.ebi.intact.intactApp.internal.model.IntactManager.INTACT_ENDPOINT_URL;
+
 public class LoadInteractions extends AbstractTask {
     final IntactNetwork intactNet;
     final String species;
@@ -53,11 +55,15 @@ public class LoadInteractions extends AbstractTask {
         // String url = "http://api.jensenlab.org/network?entities="+URLEncoder.encode(ids.trim())+"&score="+conf;
         Map<Object, Object> args = new HashMap<>();
         args.put("identifiers", intactIds);
+//        args.put("species", 9606);
 
-        JsonNode results = HttpUtils.postJSON("https://wwwdev.ebi.ac.uk/intact/ws/graph/network/data", args, manager);
+        monitor.setTitle("Querying IntAct servers");
+        monitor.setProgress(0.2);
+        JsonNode results = HttpUtils.postJSON(INTACT_ENDPOINT_URL + "/network/data", args, manager);
 //        JsonNode results = HttpUtils.postJSON("http://localhost:8083/intact/ws/graph/interaction/cytoscape", args, manager);
-
         // This may change...
+        monitor.setTitle("Parsing result data");
+        monitor.setProgress(0.4);
         CyNetwork network = ModelUtils.createIntactNetworkFromJSON(intactNet, results, queryTermMap, netName);
 
         if (network == null) {
@@ -65,10 +71,19 @@ public class LoadInteractions extends AbstractTask {
             return;
         }
 
+        monitor.setTitle("Create collapsed edges");
+        monitor.setProgress(0.6);
         manager.addIntactNetwork(intactNet, network);
+        manager.fireIntactNetworkCreated(intactNet);
+
+        monitor.setTitle("Register network");
+        monitor.setProgress(0.7);
+        manager.addNetwork(network);
 
         // System.out.println("Results: "+results.toString());
         // Now style the network
+        monitor.setTitle("Create and register network view");
+        monitor.setProgress(0.8);
         CyNetworkView networkView = manager.createNetworkView(network);
         ViewUtils.styleNetwork(manager, network, networkView);
 

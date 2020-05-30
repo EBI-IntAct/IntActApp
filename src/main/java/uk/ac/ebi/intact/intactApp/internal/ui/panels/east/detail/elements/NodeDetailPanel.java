@@ -7,6 +7,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
+import uk.ac.ebi.intact.intactApp.internal.model.core.Feature;
 import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.AbstractDetailPanel;
@@ -126,22 +127,16 @@ public class NodeDetailPanel extends AbstractDetailPanel {
     }
 
 
-    private boolean checkCurrentNetwork() {
-        if (currentINetwork == null) {
-            currentINetwork = manager.getCurrentIntactNetwork();
-            return currentINetwork != null;
-        }
-        return true;
-    }
+
 
     public void networkChanged(IntactNetwork newNetwork) {
         this.currentINetwork = newNetwork;
-        selectedNodes(newNetwork.getSelectedNodes());
+         selectedNodes(newNetwork.getSelectedNodes());
     }
 
 
     public void selectedNodes(Collection<CyNode> nodes) {
-        if (checkCurrentNetwork()) {
+        if (checkCurrentNetwork() && checkCurrentView()) {
             selectionRunning = true;
 
             List<IntactNode> iNodes = nodes.stream()
@@ -195,9 +190,10 @@ public class NodeDetailPanel extends AbstractDetailPanel {
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
             content.setAlignmentX(LEFT_ALIGNMENT);
             setBackground(backgroundColor);
-            setHeader(new NodeSchematic(node, node.getFeatures(), openBrowser));
+            List<Feature> features = node.getFeatures();
+            setHeader(new NodeSchematic(node, features, openBrowser));
             content.add(new NodeBasics(node, openBrowser));
-            nodeFeatures = new NodeFeatures(node, node.getFeatures(), openBrowser, true, true);
+            nodeFeatures = new NodeFeatures(node, features, openBrowser, true, null);
             content.add(nodeFeatures);
             content.add(new NodeIdentifiers(node, openBrowser));
             nodeDetails = new NodeDetails(node, openBrowser);
@@ -214,7 +210,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
 //            Map<Object, Object> postData = new HashMap<>();
 //            postData.put("ids", nodeIds);
 //            Instant begin = Instant.now();
-//            JsonNode nodeDetails = HttpUtils.postJSON("https://wwwdev.ebi.ac.uk/intact/ws/graph/network/node/details", postData, manager);
+//            JsonNode nodeDetails = HttpUtils.postJSON(INTACT_ENDPOINT_URL + "/network/node/details", postData, manager);
 //            System.out.println("Query answered in " + Duration.between(begin, Instant.now()).toMillis());
 //            if (nodeDetails != null) {
 //                for (JsonNode nodeDetail : nodeDetails) {

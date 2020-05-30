@@ -59,11 +59,11 @@ public class LegendDetailPanel extends AbstractDetailPanel {
         IntactNetworkView intactNetworkView = manager.getIntactNetworkView(view);
         if (intactNetworkView != null) {
             currentIView = intactNetworkView;
-            currentINetwork = currentIView.getNetwork();
+            currentINetwork = currentIView.network;
 
             filterCurrentLegends();
 
-            viewTypeChanged(currentIView.getType());
+            viewTypeChanged(currentIView.type);
             nodePanel.networkViewChanged(currentIView);
             edgePanel.networkViewChanged(currentIView);
         }

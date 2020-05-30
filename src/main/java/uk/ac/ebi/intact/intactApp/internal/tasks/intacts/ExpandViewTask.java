@@ -25,8 +25,8 @@ public class ExpandViewTask extends AbstractHiderTask {
     public void run(TaskMonitor taskMonitor) {
         IntactNetwork iNetwork = manager.getIntactNetwork(manager.getCurrentNetwork());
         IntactNetworkView iView = manager.getCurrentIntactNetworkView();
-        CyNetworkView view = iView.getView();
-        if (iView.getType() == IntactNetworkView.Type.COLLAPSED) {
+        CyNetworkView view = iView.view;
+        if (iView.type == IntactNetworkView.Type.COLLAPSED) {
             CyNetwork network = iNetwork.getNetwork();
             Set<CyEdge> edgesToSelect = iNetwork.getCollapsedEdges().stream()
                     .filter(cyEdge -> network.getRow(cyEdge).get(CyNetwork.SELECTED, Boolean.class))
@@ -38,7 +38,7 @@ public class ExpandViewTask extends AbstractHiderTask {
             insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(view, null, iNetwork.getCollapsedEdges()));
             insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(view, null, iNetwork.getExpandedEdges()));
         }
-        if (iView.getType() != IntactNetworkView.Type.EXPANDED) {
+        if (iView.type != IntactNetworkView.Type.EXPANDED) {
             manager.intactViewTypeChanged(IntactNetworkView.Type.EXPANDED, iView);
         }
     }

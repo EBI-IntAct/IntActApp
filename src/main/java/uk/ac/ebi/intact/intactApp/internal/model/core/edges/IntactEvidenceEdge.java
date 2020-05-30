@@ -1,17 +1,8 @@
 package uk.ac.ebi.intact.intactApp.internal.model.core.edges;
 
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyRow;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.intactApp.internal.model.core.Feature;
-import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
-import uk.ac.ebi.intact.intactApp.internal.model.core.ontology.OntologyIdentifier;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
-import uk.ac.ebi.intact.intactApp.internal.utils.TableUtil;
-
-import java.util.*;
-
-import static uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils.*;
 
 public class IntactEvidenceEdge extends IntactEdge {
     public final String type;
@@ -40,22 +31,5 @@ public class IntactEvidenceEdge extends IntactEdge {
         pubMedId = edgeRow.get(ModelUtils.PUBMED_ID, String.class);
     }
 
-    public Map<IntactNode, List<Feature>> getFeatures() {
-        Map<IntactNode, List<Feature>> features = new HashMap<>();
-        features.put(source, new ArrayList<>());
-        if (target != null)
-            features.put(target, new ArrayList<>());
 
-        for (CyRow featureRow : iNetwork.getFeaturesTable().getMatchingRows(ModelUtils.EDGE_REF, edge.getSUID())) {
-            String type = featureRow.get(ModelUtils.FEATURE_TYPE, String.class);
-            OntologyIdentifier typeId = TableUtil.getOntologyIdentifier(featureRow, FEATURE_TYPE_MI_ID, FEATURE_TYPE_MOD_ID, FEATURE_TYPE_PAR_ID);
-            String name = featureRow.get(ModelUtils.FEATURE_NAME, String.class);
-            if (featureRow.get(ModelUtils.NODE_REF, Long.class).equals(source.node.getSUID())) {
-                features.get(source).add(new Feature(this, source, type, typeId, name));
-            } else {
-                features.get(target).add(new Feature(this, target, type, typeId, name));
-            }
-        }
-        return features;
-    }
 }

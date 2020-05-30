@@ -6,6 +6,7 @@ import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.core.Feature;
 import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
+import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactCollapsedEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEvidenceEdge;
 import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.ExpandViewTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
@@ -31,17 +32,17 @@ public class NodeFeatures extends AbstractNodeElement {
     private final static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(15);
     private final List<Feature> features;
     private final boolean showFeatureEdge;
-    private final boolean selectableFeatureEdge;
+    private final IntactCollapsedEdge summaryEdge;
 
-    public NodeFeatures(IntactNode iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, boolean selectableFeatureEdge) {
-        this(iNode, features, openBrowser, showFeatureEdge, selectableFeatureEdge, backgroundColor);
+    public NodeFeatures(IntactNode iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, IntactCollapsedEdge summaryEdge) {
+        this(iNode, features, openBrowser, showFeatureEdge, summaryEdge, backgroundColor);
     }
 
-    public NodeFeatures(IntactNode iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, boolean selectableFeatureEdge, Color background) {
+    public NodeFeatures(IntactNode iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, IntactCollapsedEdge summaryEdge, Color background) {
         super("Features summary", iNode, openBrowser);
         this.features = features;
         this.showFeatureEdge = showFeatureEdge;
-        this.selectableFeatureEdge = selectableFeatureEdge;
+        this.summaryEdge = summaryEdge;
         this.setBackground(background);
         fillContent();
     }
@@ -105,15 +106,19 @@ public class NodeFeatures extends AbstractNodeElement {
                     (featureTypePanel, featuresOfType) -> groupElementsInPanel(featureTypePanel, getBackground(), featuresOfType, feature -> feature.name,
                             (featureNamePanel, featuresOfName) -> {
                                 for (Feature feature : featuresOfName) {
-                                    LinePanel line = new LinePanel(getBackground());
-                                    if (selectableFeatureEdge) {
-                                        line.add(createSelectEdgeButton(feature.edge));
-                                        IntactNode otherNode = feature.edge.source.equals(feature.node) ? feature.edge.target : feature.edge.source;
-                                        line.add(new JLabel("Observed on edge with " + otherNode.name + " (" + feature.edge.ac + ")"));
-                                    } else {
-                                        line.add(LinkUtils.createIntactEdgeLink(openBrowser, feature.edge));
+                                    for (IntactEvidenceEdge edge : feature.getEdges()) {
+                                        LinePanel line = new LinePanel(getBackground());
+                                        if (summaryEdge == null) {
+                                            line.add(createSelectEdgeButton(edge));
+                                            IntactNode otherNode = edge.source.equals(iNode) ? edge.target : edge.source;
+                                            line.add(new JLabel("Observed on edge with " + otherNode.name + " (" + edge.ac + ")"));
+                                        } else {
+                                            if (summaryEdge.subEdgeSUIDs.contains(edge.edge.getSUID())) {
+                                                line.add(LinkUtils.createIntactEdgeLink(openBrowser, edge));
+                                            }
+                                        }
+                                        featureNamePanel.add(line);
                                     }
-                                    featureNamePanel.add(line);
                                 }
                             }
                     )
@@ -151,7 +156,7 @@ public class NodeFeatures extends AbstractNodeElement {
         selectEdgeCheckBox.addItemListener(e -> {
             IntactManager manager = edge.iNetwork.getManager();
             IntactNetworkView currentIView = manager.getCurrentIntactNetworkView();
-            if (currentIView != null && currentIView.getType() == IntactNetworkView.Type.COLLAPSED) {
+            if (currentIView != null && currentIView.type == IntactNetworkView.Type.COLLAPSED) {
                 manager.execute(new ExpandViewTaskFactory(manager).createTaskIterator());
             }
 

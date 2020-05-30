@@ -47,6 +47,22 @@ public abstract class AbstractDetailPanel extends JPanel {
 
     protected abstract void doFilter(String type);
 
+    protected boolean checkCurrentNetwork() {
+        if (currentINetwork == null) {
+            currentINetwork = manager.getCurrentIntactNetwork();
+            return currentINetwork != null;
+        }
+        return true;
+    }
+
+    protected boolean checkCurrentView() {
+        if (currentIView == null) {
+            currentIView = manager.getCurrentIntactNetworkView();
+            return currentIView != null;
+        }
+        return true;
+    }
+
     protected JComponent createFilterSlider(String type, String text, CyNetwork network, boolean labels, double max) {
         double value = 0.0;
         if (filters.containsKey(network) &&
@@ -103,8 +119,8 @@ public abstract class AbstractDetailPanel extends JPanel {
         if (value == 0)
             filter.remove(label);
     }
-
     protected static class LimitExceededPanel extends JPanel {
+
         public LimitExceededPanel(String limitOfWhat, int limit) {
             setLayout(new GridLayout(2, 1));
             Font font = textFont.deriveFont(15f);
@@ -119,7 +135,6 @@ public abstract class AbstractDetailPanel extends JPanel {
             label1.setHorizontalAlignment(JLabel.CENTER);
             add(label1);
         }
-
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
@@ -131,5 +146,6 @@ public abstract class AbstractDetailPanel extends JPanel {
                     new Color[]{new Color(66, 42, 146), new Color(134, 56, 148),}));
             g2.fillRoundRect(0, 0, getWidth(), height, 10, 10);
         }
+
     }
 }
