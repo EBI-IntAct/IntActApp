@@ -206,7 +206,7 @@ public class DetailPanel extends JPanel
     private void updateRadioButtons(CyNetworkView view) {
         IntactNetworkView intactNetworkView = manager.getIntactNetworkView(view);
         if (intactNetworkView != null) {
-            switch (intactNetworkView.getType()) {
+            switch (intactNetworkView.type) {
                 case COLLAPSED:
                     collapsedViewType.setSelected(true);
                     break;

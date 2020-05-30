@@ -6,32 +6,16 @@ import uk.ac.ebi.intact.intactApp.internal.model.events.RangeChangeListener;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.RangeSlider;
 
 public class IntactNetworkView implements RangeChangeListener {
-    private IntactManager manager;
-    private IntactNetwork network;
-    private CyNetworkView view;
-    private Type type = Type.COLLAPSED;
-    private Range miScoreRange = new Range();
+    public final IntactManager manager;
+    public final IntactNetwork network;
+    public final CyNetworkView view;
+    public Type type = Type.COLLAPSED;
+    private final Range miScoreRange = new Range();
 
     public IntactNetworkView(IntactManager manager, CyNetworkView view) {
         this.manager = manager;
         this.view = view;
         this.network = manager.getIntactNetwork(view.getModel());
-    }
-
-    public IntactNetwork getNetwork() {
-        return network;
-    }
-
-    public CyNetworkView getView() {
-        return view;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
     }
 
     public Range getMiScoreRange() {
@@ -55,11 +39,11 @@ public class IntactNetworkView implements RangeChangeListener {
     }
 
     public enum Type {
-        COLLAPSED("collapsed"),
-        EXPANDED("expanded"),
-        MUTATION("mutation");
+        COLLAPSED("COLLAPSED"),
+        EXPANDED("EXPANDED"),
+        MUTATION("MUTATION");
 
-        private String name;
+        private final String name;
 
         Type(String name) {
             this.name = name;

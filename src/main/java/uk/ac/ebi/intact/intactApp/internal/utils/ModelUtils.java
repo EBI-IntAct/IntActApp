@@ -22,9 +22,6 @@ import java.util.regex.Pattern;
 
 public class ModelUtils {
 
-    public static final String NODE_REF = "Node.SUID";
-    public static final String EDGE_REF = "Edge.SUID";
-
     // Namespaces
     public static String INTACTDB_NAMESPACE = "IntAct Database";
     public static String COLLAPSED_NAMESPACE = "Collapsed";
@@ -33,19 +30,26 @@ public class ModelUtils {
     public static String TABLE_NAMESPACE = "Table";
     public static String NAMESPACE_SEPARATOR = "::";
 
+    public static final String NODE_REF = "LastNode.SUID";
     // Network tables column
     public static final String FEATURES_TABLE_REF = "Features.SUID";
     public static final String IDENTIFIERS_TABLE_REF = "Identifiers.SUID";
 
     // Feature table columns
+    public static final String FEATURES = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Features";
+    public static final String SOURCE_FEATURES = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Source features";
+    public static final String TARGET_FEATURES = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Target features";
     public static final String FEATURE_AC = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Accession";
     public static final String FEATURE_NAME = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Name";
     public static final String FEATURE_TYPE = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Type";
     public static final String FEATURE_TYPE_MI_ID = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Type MI Id";
     public static final String FEATURE_TYPE_MOD_ID = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Type Mod Id";
     public static final String FEATURE_TYPE_PAR_ID = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Type Par Id";
+    public static final String FEATURE_EDGE_IDS = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Edge IDs";
+    public static final String FEATURE_EDGE_SUIDS = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Edge SUIDs";
 
     // Xrefs table columns
+    public static final String IDENTIFIERS = IDENTIFIER_NAMESPACE + NAMESPACE_SEPARATOR + "Identifiers";
     public static final String IDENTIFIER_AC = IDENTIFIER_NAMESPACE + NAMESPACE_SEPARATOR + "Accession";
     public static final String IDENTIFIER_ID = IDENTIFIER_NAMESPACE + NAMESPACE_SEPARATOR + "Identifier";
     public static final String IDENTIFIER_DB_NAME = IDENTIFIER_NAMESPACE + NAMESPACE_SEPARATOR + "Database Name";
@@ -83,6 +87,7 @@ public class ModelUtils {
 
 
     public static String C_IS_COLLAPSED = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "is collapsed";
+    public static String C_INTACT_IDS = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "collapsed edge IDs";
     public static String C_INTACT_SUIDS = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "collapsed edge SUIDs";
     public static String C_NB_EDGES = COLLAPSED_NAMESPACE + NAMESPACE_SEPARATOR + "# evidences";
 
@@ -710,94 +715,15 @@ public class ModelUtils {
             CyTable defaultNodeTable = network.getDefaultNodeTable();
             CyTable defaultEdgeTable = network.getDefaultEdgeTable();
 
-            for (String intactNodeColumn : Arrays.asList(INTACT_ID, PREFERRED_ID, PREFERRED_ID_DB, PREFERRED_ID_DB_MI_ID, TYPE, TYPE_MI_ID, SPECIES, FULL_NAME)) {
-                createColumnIfNeeded(defaultNodeTable, String.class, intactNodeColumn);
-            }
-            createColumnIfNeeded(defaultNodeTable, Long.class, TAX_ID);
-            createColumnIfNeeded(defaultNodeTable, Boolean.class, MUTATION, false);
-            createColumnIfNeeded(defaultNodeTable, String.class, ELABEL_STYLE);
-
-            createColumnIfNeeded(defaultEdgeTable, Long.class, INTACT_ID);
-            createColumnIfNeeded(defaultEdgeTable, String.class, INTERACTION_TYPE_MI_ID);
-            createColumnIfNeeded(defaultEdgeTable, Double.class, MI_SCORE);
-            for (String intactEdgeColumn : Arrays.asList(DETECTION_METHOD, DETECTION_METHOD_MI_ID, INTACT_AC, HOST_ORGANISM)) {
-                createColumnIfNeeded(defaultEdgeTable, String.class, intactEdgeColumn);
-            }
-            createColumnIfNeeded(defaultEdgeTable, Long.class, HOST_ORGANISM_ID);
-
-            for (String intactEdgeColumn : Arrays.asList(EXPANSION_TYPE, PUBMED_ID, SOURCE_BIOLOGICAL_ROLE, SOURCE_BIOLOGICAL_ROLE_MI_ID, TARGET_BIOLOGICAL_ROLE, TARGET_BIOLOGICAL_ROLE_MI_ID)) {
-                createColumnIfNeeded(defaultEdgeTable, String.class, intactEdgeColumn);
-            }
-
-            createColumnIfNeeded(network.getDefaultEdgeTable(), Boolean.class, AFFECTED_BY_MUTATION, false);
-
-            createColumnIfNeeded(defaultEdgeTable, Boolean.class, C_IS_COLLAPSED);
-            createColumnIfNeeded(defaultEdgeTable, Integer.class, C_NB_EDGES);
-            createListColumnIfNeeded(defaultEdgeTable, Long.class, C_INTACT_SUIDS);
-
-            // Features and xRefs tables
-
-            String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
-
             CyTableManager tableManager = manager.getService(CyTableManager.class);
 
             CyTableFactory tableFactory = manager.getService(CyTableFactory.class);
+            String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
+
             CyTable featuresTable = tableFactory.createTable("Features of " + networkName, FEATURE_AC, String.class, true, true);
             CyTable xRefsTable = tableFactory.createTable("Identifiers of " + networkName, IDENTIFIER_AC, String.class, true, true);
 
-            tableManager.addTable(featuresTable);
-            intactNetwork.setFeaturesTable(featuresTable);
-            tableManager.addTable(xRefsTable);
-            intactNetwork.setIdentifiersTable(xRefsTable);
-
-            featuresTable.createColumn(FEATURE_TYPE, String.class, true);
-            featuresTable.createColumn(FEATURE_TYPE_MI_ID, String.class, true);
-            featuresTable.createColumn(FEATURE_TYPE_MOD_ID, String.class, true);
-            featuresTable.createColumn(FEATURE_TYPE_PAR_ID, String.class, true);
-            featuresTable.createColumn(FEATURE_NAME, String.class, true);
-            featuresTable.createColumn(NODE_REF, Long.class, true);
-//            featuresTable.addVirtualColumns(network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS), NODE_REF, false);
-            CyTable nodeLocalTable = network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
-            featuresTable.addVirtualColumn("Node::Name", CyNetwork.NAME, nodeLocalTable, NODE_REF, false);
-            featuresTable.addVirtualColumn("Node::Preferred Identifier", PREFERRED_ID, nodeLocalTable, NODE_REF, false);
-            featuresTable.addVirtualColumn("Node::Preferred Identifier Database", PREFERRED_ID_DB, nodeLocalTable, NODE_REF, false);
-            featuresTable.addVirtualColumn("Node::Type", TYPE, nodeLocalTable, NODE_REF, false);
-            featuresTable.addVirtualColumn("Node::Species", SPECIES, nodeLocalTable, NODE_REF, false);
-            featuresTable.addVirtualColumn("Node::Tax Id", TAX_ID, nodeLocalTable, NODE_REF, false);
-
-            featuresTable.createColumn(EDGE_REF, Long.class, true);
-//            featuresTable.addVirtualColumns(network.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS), EDGE_REF, false);
-            CyTable edgeLocalTable = network.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS);
-            featuresTable.addVirtualColumn("Edge::Name", CyNetwork.NAME, edgeLocalTable, EDGE_REF, false);
-            featuresTable.addVirtualColumn("Edge::Detection Method", DETECTION_METHOD, edgeLocalTable, EDGE_REF, false);
-            featuresTable.addVirtualColumn("Edge::MI Score", MI_SCORE, edgeLocalTable, EDGE_REF, false);
-            featuresTable.addVirtualColumn("Edge::Host Organism", HOST_ORGANISM, edgeLocalTable, EDGE_REF, false);
-            featuresTable.addVirtualColumn("Edge::Host Organism Tax Id", HOST_ORGANISM_ID, edgeLocalTable, EDGE_REF, false);
-            featuresTable.addVirtualColumn("Edge::PubMed Identifier", PUBMED_ID, edgeLocalTable, EDGE_REF, false);
-            featuresTable.addVirtualColumn("Edge::Source Biological Role", SOURCE_BIOLOGICAL_ROLE, edgeLocalTable, EDGE_REF, false);
-            featuresTable.addVirtualColumn("Edge::Target Biological Role", TARGET_BIOLOGICAL_ROLE, edgeLocalTable, EDGE_REF, false);
-
-            xRefsTable.createColumn(NODE_REF, Long.class, true);
-            xRefsTable.createColumn(IDENTIFIER_ID, String.class, true);
-            xRefsTable.createColumn(IDENTIFIER_DB_NAME, String.class, true);
-            xRefsTable.createColumn(IDENTIFIER_DB_MI_ID, String.class, true);
-            xRefsTable.createColumn(IDENTIFIER_QUALIFIER, String.class, true);
-            xRefsTable.createColumn(IDENTIFIER_QUALIFIER_ID, String.class, true);
-//            xRefsTable.addVirtualColumns(nodeLocalTable, NODE_REF, false);
-            xRefsTable.addVirtualColumn("Node::Name", CyNetwork.NAME, nodeLocalTable, NODE_REF, false);
-            xRefsTable.addVirtualColumn("Node::Preferred Identifier", PREFERRED_ID, nodeLocalTable, NODE_REF, false);
-            xRefsTable.addVirtualColumn("Node::Preferred Identifier Database", PREFERRED_ID_DB, nodeLocalTable, NODE_REF, false);
-            xRefsTable.addVirtualColumn("Node::Type", TYPE, nodeLocalTable, NODE_REF, false);
-            xRefsTable.addVirtualColumn("Node::Species", SPECIES, nodeLocalTable, NODE_REF, false);
-            xRefsTable.addVirtualColumn("Node::Tax Id", TAX_ID, nodeLocalTable, NODE_REF, false);
-
-            CyTable defaultNetworkTable = network.getDefaultNetworkTable();
-            defaultNetworkTable.createColumn(FEATURES_TABLE_REF, Long.class, true);
-            defaultNetworkTable.createColumn(IDENTIFIERS_TABLE_REF, Long.class, true);
-            CyRow networkRow = defaultNetworkTable.getRow(network.getSUID());
-            networkRow.set(FEATURES_TABLE_REF, featuresTable.getSUID());
-            networkRow.set(IDENTIFIERS_TABLE_REF, xRefsTable.getSUID());
-
+            initTables(intactNetwork, network, defaultNodeTable, defaultEdgeTable, tableManager, featuresTable, xRefsTable);
 
             JsonNode nodesJSON = json.get("nodes");
             JsonNode edgesJSON = json.get("edges");
@@ -823,6 +749,80 @@ public class ModelUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private static void initTables(IntactNetwork intactNetwork, CyNetwork network, CyTable nodeTable, CyTable edgeTable, CyTableManager tableManager, CyTable featuresTable, CyTable xRefsTable) {
+        CyTable networkTable = network.getDefaultNetworkTable();
+        initNodeTable(nodeTable);
+        initEdgeTable(edgeTable);
+        initLowerTables(intactNetwork, network, tableManager, featuresTable, xRefsTable);
+    }
+
+    private static void initNodeTable(CyTable nodeTable) {
+        for (String intactNodeColumn : Arrays.asList(INTACT_ID, PREFERRED_ID, PREFERRED_ID_DB, PREFERRED_ID_DB_MI_ID, TYPE, TYPE_MI_ID, SPECIES, FULL_NAME)) {
+            createColumnIfNeeded(nodeTable, String.class, intactNodeColumn);
+        }
+        createColumnIfNeeded(nodeTable, Long.class, TAX_ID);
+        createColumnIfNeeded(nodeTable, Boolean.class, MUTATION, false);
+        createColumnIfNeeded(nodeTable, String.class, ELABEL_STYLE);
+        createListColumnIfNeeded(nodeTable, String.class, FEATURES);
+        createListColumnIfNeeded(nodeTable, String.class, IDENTIFIERS);
+    }
+
+    private static void initEdgeTable(CyTable edgeTable) {
+        createColumnIfNeeded(edgeTable, Long.class, INTACT_ID);
+        createColumnIfNeeded(edgeTable, String.class, INTERACTION_TYPE_MI_ID);
+        createColumnIfNeeded(edgeTable, Double.class, MI_SCORE);
+        for (String intactEdgeColumn : Arrays.asList(DETECTION_METHOD, DETECTION_METHOD_MI_ID, INTACT_AC, HOST_ORGANISM)) {
+            createColumnIfNeeded(edgeTable, String.class, intactEdgeColumn);
+        }
+        createColumnIfNeeded(edgeTable, Long.class, HOST_ORGANISM_ID);
+
+        for (String intactEdgeColumn : Arrays.asList(EXPANSION_TYPE, PUBMED_ID, SOURCE_BIOLOGICAL_ROLE, SOURCE_BIOLOGICAL_ROLE_MI_ID, TARGET_BIOLOGICAL_ROLE, TARGET_BIOLOGICAL_ROLE_MI_ID)) {
+            createColumnIfNeeded(edgeTable, String.class, intactEdgeColumn);
+        }
+
+        createListColumnIfNeeded(edgeTable, String.class, SOURCE_FEATURES);
+        createListColumnIfNeeded(edgeTable, String.class, TARGET_FEATURES);
+        createColumnIfNeeded(edgeTable, Boolean.class, AFFECTED_BY_MUTATION, false);
+
+        createColumnIfNeeded(edgeTable, Boolean.class, C_IS_COLLAPSED);
+        createColumnIfNeeded(edgeTable, Integer.class, C_NB_EDGES);
+        createListColumnIfNeeded(edgeTable, Long.class, C_INTACT_SUIDS);
+        createListColumnIfNeeded(edgeTable, Long.class, C_INTACT_IDS);
+    }
+
+    private static void initLowerTables(IntactNetwork intactNetwork, CyNetwork network, CyTableManager tableManager, CyTable featuresTable, CyTable xRefsTable) {
+        CyTable defaultNetworkTable = network.getDefaultNetworkTable();
+        defaultNetworkTable.createColumn(FEATURES_TABLE_REF, Long.class, true);
+        defaultNetworkTable.createColumn(IDENTIFIERS_TABLE_REF, Long.class, true);
+        CyRow networkRow = defaultNetworkTable.getRow(network.getSUID());
+        networkRow.set(FEATURES_TABLE_REF, featuresTable.getSUID());
+        networkRow.set(IDENTIFIERS_TABLE_REF, xRefsTable.getSUID());
+
+        initFeaturesTable(intactNetwork, tableManager, featuresTable);
+        initIdentifierTable(intactNetwork, tableManager, xRefsTable);
+    }
+
+    private static void initFeaturesTable(IntactNetwork intactNetwork, CyTableManager tableManager, CyTable featuresTable) {
+        tableManager.addTable(featuresTable);
+        intactNetwork.setFeaturesTable(featuresTable);
+        featuresTable.createColumn(NODE_REF, Long.class, true);
+        for (String columnName : List.of(FEATURE_TYPE, FEATURE_TYPE_MI_ID, FEATURE_TYPE_MOD_ID, FEATURE_TYPE_PAR_ID, FEATURE_NAME)) {
+            featuresTable.createColumn(columnName, String.class, true);
+        }
+        for (String columnName : List.of(FEATURE_EDGE_IDS, FEATURE_EDGE_SUIDS)) {
+            featuresTable.createListColumn(columnName, Long.class, false);
+        }
+    }
+
+    private static void initIdentifierTable(IntactNetwork intactNetwork, CyTableManager tableManager, CyTable xRefsTable) {
+        tableManager.addTable(xRefsTable);
+        intactNetwork.setIdentifiersTable(xRefsTable);
+        xRefsTable.createColumn(NODE_REF, Long.class, true);
+        for (String columnName : List.of(IDENTIFIER_ID, IDENTIFIER_DB_NAME, IDENTIFIER_DB_MI_ID, IDENTIFIER_QUALIFIER, IDENTIFIER_QUALIFIER_ID)) {
+            xRefsTable.createColumn(columnName, String.class, true);
+        }
     }
 
     public static void createColumnsFromIntactJSON(JsonNode nodes, CyTable table) {
@@ -904,6 +904,8 @@ public class ModelUtils {
         String nodeName = nodeJSON.get("interactor_name").textValue();
         row.set(CyNetwork.NAME, nodeName);
         row.set(MUTATION, false);
+        row.set(FEATURES, new ArrayList<>());
+        row.set(IDENTIFIERS, new ArrayList<>());
 
         nodeJSON.fields().forEachRemaining(entry -> {
             JsonNode value = entry.getValue();
@@ -939,11 +941,14 @@ public class ModelUtils {
                     for (JsonNode xref : value) {
                         String xrefAc = xref.get("xref_ac").textValue();
                         String xrefId = xref.get("xref_id").textValue();
-                        CyRow xRefRow = xRefsTable.getRow(xrefAc != null ? xrefAc : xrefId);
+                        String primaryKey = xrefAc != null ? xrefAc : xrefId;
+                        CyRow xRefRow = xRefsTable.getRow(primaryKey);
                         xRefRow.set(NODE_REF, newNode.getSUID());
                         xRefRow.set(IDENTIFIER_ID, xrefId);
                         xRefRow.set(IDENTIFIER_DB_NAME, xref.get("xref_database_name").textValue());
                         xRefRow.set(IDENTIFIER_DB_MI_ID, xref.get("xref_database_mi").textValue());
+
+                        row.getList(IDENTIFIERS, String.class).add(primaryKey);
                     }
                 case "interactor_name":
                 case "label":
@@ -981,8 +986,10 @@ public class ModelUtils {
         CyNode targetNode = nodeMap.get(targetId);
 
         CyEdge edge;
-        String type = edgeJSON.get("interaction_type").textValue();
         edge = network.addEdge(sourceNode, targetNode, false);
+
+        String type = edgeJSON.get("interaction_type").textValue();
+        Long id = edgeJSON.get("id").longValue();
 
         CyRow row = network.getRow(edge);
 
@@ -990,9 +997,10 @@ public class ModelUtils {
         row.set(CyEdge.INTERACTION, type);
         row.set(AFFECTED_BY_MUTATION, false);
         row.set(C_IS_COLLAPSED, false);
-        fillParticipantData(featuresTable, network, source, sourceNode, edge, row, SOURCE_BIOLOGICAL_ROLE, SOURCE_BIOLOGICAL_ROLE_MI_ID);
+        row.set(INTACT_ID, id);
+        fillParticipantData(featuresTable, network, source, sourceNode, edge, row, id, Position.SOURCE);
         if (!selfInteracting) {
-            fillParticipantData(featuresTable, network, target, targetNode, edge, row, TARGET_BIOLOGICAL_ROLE, TARGET_BIOLOGICAL_ROLE_MI_ID);
+            fillParticipantData(featuresTable, network, target, targetNode, edge, row, id, Position.TARGET);
         }
 
 //        boolean isDisruptedByMutation = edgeJSON.get("disrupted_by_mutation").booleanValue();
@@ -1014,10 +1022,8 @@ public class ModelUtils {
                 case "source":
                 case "target":
                 case "interaction_type":
-                    return;
                 case "id":
-                    row.set(INTACT_ID, value.longValue());
-                    break;
+                    return;
                 case "interaction_type_mi_identifier":
                     row.set(INTERACTION_TYPE_MI_ID, value.textValue());
                     break;
@@ -1051,16 +1057,43 @@ public class ModelUtils {
         });
     }
 
+    private enum Position {
+        SOURCE(SOURCE_BIOLOGICAL_ROLE, SOURCE_BIOLOGICAL_ROLE_MI_ID),
+        TARGET(TARGET_BIOLOGICAL_ROLE, TARGET_BIOLOGICAL_ROLE_MI_ID);
 
-    private static void fillParticipantData(CyTable featuresTable, CyNetwork network, JsonNode participantJson, CyNode participantNode, CyEdge edge, CyRow edgeRow, String participantBiologicalRole, String participantBoiologicalRoleMIId) {
-        edgeRow.set(participantBiologicalRole, participantJson.get("participant_biological_role_name").textValue());
-        edgeRow.set(participantBoiologicalRoleMIId, participantJson.get("participant_biological_role_mi_identifier").textValue());
+        final String biologicalRoleCol;
+        final String biologicalRoleMIIdCol;
+
+        Position(String biologicalRoleCol, String biologicalRoleMIIdCol) {
+            this.biologicalRoleCol = biologicalRoleCol;
+            this.biologicalRoleMIIdCol = biologicalRoleMIIdCol;
+        }
+    }
+
+    private static void fillParticipantData(CyTable featuresTable, CyNetwork network, JsonNode participantJson, CyNode participantNode, CyEdge edge, CyRow edgeRow, Long edgeId, Position position) {
+        edgeRow.set(position.biologicalRoleCol, participantJson.get("participant_biological_role_name").textValue());
+        edgeRow.set(position.biologicalRoleMIIdCol, participantJson.get("participant_biological_role_mi_identifier").textValue());
         for (JsonNode feature : participantJson.get("participant_features")) {
             if (!feature.get("feature_type").isNull()) {
                 String featureAc = feature.get("feature_ac").textValue();
+                if (featureAc == null || featureAc.isBlank()) {
+                    continue;
+                }
                 CyRow featureRow = featuresTable.getRow(featureAc);
+                switch (position) {
+                    case SOURCE:
+                        addToListCellIfNotPresent(edgeRow, SOURCE_FEATURES, featureAc, String.class);
+                        break;
+                    case TARGET:
+                        addToListCellIfNotPresent(edgeRow, TARGET_FEATURES, featureAc, String.class);
+                        break;
+                }
+                addToListCellIfNotPresent(network.getRow(participantNode), FEATURES, featureAc, String.class);
+                addToListCellIfNotPresent(featureRow, FEATURE_EDGE_IDS, edgeId, Long.class);
+                addToListCellIfNotPresent(featureRow, FEATURE_EDGE_SUIDS, edge.getSUID(), Long.class);
+
                 featureRow.set(NODE_REF, participantNode.getSUID());
-                featureRow.set(EDGE_REF, edge.getSUID());
+                featureRow.set(FEATURE_NAME, feature.get("feature_name").textValue());
                 featureRow.set(FEATURE_NAME, feature.get("feature_name").textValue());
                 featureRow.set(FEATURE_TYPE, feature.get("feature_type").textValue());
 
@@ -1083,6 +1116,25 @@ public class ModelUtils {
         }
     }
 
+    private static <E> List<E> getOrCreateList(CyRow row, String columnName, Class<E> elementsType) {
+        List<E> list = row.getList(columnName, elementsType);
+        if (list == null) {
+            row.set(columnName, new ArrayList<>());
+            list = row.getList(columnName, elementsType);
+        }
+        return list;
+    }
+
+    private static <E> boolean addToListCellIfNotPresent(CyRow row, String columnName, E elementToAdd, Class<E> elementsType) {
+        List<E> list = getOrCreateList(row, columnName, elementsType);
+        if (list.contains(elementToAdd)) {
+            return false;
+        } else {
+            list.add(elementToAdd);
+            return true;
+        }
+    }
+
     public static void buildIntactNetworkTableFromExistingOne(IntactNetwork iNetwork) {
         CyNetwork network = iNetwork.getNetwork();
         CyRow networkRow = network.getDefaultNetworkTable().getRow(network.getSUID());
@@ -1097,6 +1149,7 @@ public class ModelUtils {
             System.out.println("Identifiers and features SUID not found");
         }
     }
+
 
     //////////////////////////////////////////////////////////////////////
 

@@ -50,7 +50,7 @@ public class NodeDetails extends AbstractNodeElement {
             String identifier = xref.get("identifier").textValue();
             String qualifier = xref.get("qualifier").textValue();
 
-            identifiers.add(new Identifier(iNode, databaseName, databaseIdentifier, identifier, qualifier));
+            identifiers.add(new Identifier(databaseName, databaseIdentifier, identifier, qualifier));
         }
         content.add(new NodeIdentifiers("Cross References", iNode, openBrowser, identifiers));
     }

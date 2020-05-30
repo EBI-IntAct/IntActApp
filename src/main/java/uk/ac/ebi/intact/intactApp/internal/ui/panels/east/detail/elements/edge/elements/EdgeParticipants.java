@@ -55,7 +55,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
             nodeBasics.setBackground(nodePanelBg);
             nodePanel.add(nodeBasics, layoutHelper.down().anchor("north").expandHoriz());
 
-            NodeFeatures nodeFeatures = new NodeFeatures(iNode, features.get(iNode), openBrowser, true, false, nodePanelBg);
+            NodeFeatures nodeFeatures = new NodeFeatures(iNode, features.get(iNode), openBrowser, true, edge, nodePanelBg);
             nodePanel.add(nodeFeatures, layoutHelper.down().anchor("north").expandHoriz());
             participantSummaries.add(nodeFeatures);
 
@@ -88,7 +88,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
             biologicalRoleLabel.setAlignmentY(TOP_ALIGNMENT);
             nodePanel.add(biologicalRoleLabel, layoutHelper.down().anchor("north").expandHoriz());
 
-            NodeFeatures nodeFeatures = new NodeFeatures(iNode, features.get(iNode), openBrowser, false, false, nodePanelBg);
+            NodeFeatures nodeFeatures = new NodeFeatures(iNode, features.get(iNode), openBrowser, false, null, nodePanelBg);
             nodePanel.add(nodeFeatures, layoutHelper.down().anchor("north").expandHoriz());
 
             nodePanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
@@ -117,7 +117,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
         if (max.isPresent()) {
             int maxWidth = max.get();
             for (NodeDiagramInfo nodeDiagramInfo : nodeDiagramInfos.values()) {
-                for (NodeDiagram nodeDiagram: nodeDiagramInfo.nodeDiagrams) {
+                for (NodeDiagram nodeDiagram : nodeDiagramInfo.nodeDiagrams) {
                     Dimension preferredSize = nodeDiagram.getPreferredSize();
                     preferredSize.width = maxWidth;
                     nodeDiagram.setPreferredSize(preferredSize);

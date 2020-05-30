@@ -74,6 +74,7 @@ public class LoadInteractions extends AbstractTask {
         monitor.setTitle("Create collapsed edges");
         monitor.setProgress(0.6);
         manager.addIntactNetwork(intactNet, network);
+        manager.fireIntactNetworkCreated(intactNet);
 
         monitor.setTitle("Register network");
         monitor.setProgress(0.7);

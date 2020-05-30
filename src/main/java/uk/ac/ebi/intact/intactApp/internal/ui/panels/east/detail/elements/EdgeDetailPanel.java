@@ -169,8 +169,8 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
     }
 
     private boolean isEdgeOfCurrentViewType(IntactEdge edge) {
-        return (currentIView.getType() == IntactNetworkView.Type.COLLAPSED && edge.collapsed) ||
-                (currentIView.getType() != IntactNetworkView.Type.COLLAPSED && !edge.collapsed);
+        return (currentIView.type == IntactNetworkView.Type.COLLAPSED && edge.collapsed) ||
+                (currentIView.type != IntactNetworkView.Type.COLLAPSED && !edge.collapsed);
     }
 
 
@@ -205,7 +205,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
         Set<CyEdge> hiddenEdges = new HashSet<>();
 
         List<CyEdge> toFilter;
-        if (currentIView.getType() == IntactNetworkView.Type.COLLAPSED) {
+        if (currentIView.type == IntactNetworkView.Type.COLLAPSED) {
             toFilter = currentINetwork.getCollapsedEdges();
             hiddenEdges.addAll(currentINetwork.getExpandedEdges());
         } else {
@@ -214,7 +214,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
         }
 
         for (CyEdge edge : toFilter) {
-            View<CyEdge> edgeView = currentIView.getView().getEdgeView(edge);
+            View<CyEdge> edgeView = currentIView.view.getEdgeView(edge);
             CyNetwork network = currentINetwork.getNetwork();
             CyRow edgeRow = network.getRow(edge);
 
@@ -223,7 +223,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
             if (score > lower && score < upper) {
                 hiddenEdges.remove(edge);
                 for (CyNode node : new CyNode[]{edge.getSource(), edge.getTarget()}) {
-                    currentIView.getView().getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
+                    currentIView.view.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
                 }
                 edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true);
             } else {
@@ -232,7 +232,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
                 edgeRow.set(CyNetwork.SELECTED, false);
                 for (CyNode node : new CyNode[]{edge.getSource(), edge.getTarget()}) {
                     if (hiddenEdges.containsAll(network.getAdjacentEdgeList(node, CyEdge.Type.ANY))) {
-                        currentIView.getView().getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
+                        currentIView.view.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
                         network.getRow(node).set(CyNetwork.SELECTED, false);
                     }
                 }

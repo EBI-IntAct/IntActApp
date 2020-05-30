@@ -26,18 +26,22 @@ public class InterProIdentifierPanel extends IdentifierPanel {
                 .map(identifier -> identifier.id)
                 .filter(id -> !interProTerms.containsKey(id))
                 .forEach(id -> {
-                    JsonNode root = HttpUtils.getJsonForUrl("https://www.ebi.ac.uk/interpro/api/entry/InterPro/" + id + "?format=json");
-                    if (root != null) {
-                        Term term = new Term(root.get("metadata"));
-                        interProTerms.put(term.accession, term);
+                    try {
+                        JsonNode root = HttpUtils.getJsonForUrl("https://www.ebi.ac.uk/interpro/api/entry/InterPro/" + id + "?format=json");
+                        if (root != null) {
+                            Term term = new Term(root.get("metadata"));
+                            interProTerms.put(term.accession, term);
+                        }
+                    } catch (Exception ignored) {
                     }
+
                 });
         List<Term> terms = identifiers.stream()
                 .map(identifier -> interProTerms.get(identifier.id))
                 .collect(Collectors.toList());
         GroupUtils.groupElementsInPanel(content, terms, term -> term.type, (toFill, typeTerms) -> {
-            for (Term term: typeTerms) {
-                JLink termLink = new JLink(String.format("%s - %s", term.accession, term.name), "https://www.ebi.ac.uk/interpro/entry/InterPro/"+ term.accession, openBrowser);
+            for (Term term : typeTerms) {
+                JLink termLink = new JLink(String.format("%s - %s", term.accession, term.name), "https://www.ebi.ac.uk/interpro/entry/InterPro/" + term.accession, openBrowser);
                 termLink.setToolTipText(term.description);
                 toFill.add(termLink);
             }

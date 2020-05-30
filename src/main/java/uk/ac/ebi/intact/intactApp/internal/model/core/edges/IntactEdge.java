@@ -8,9 +8,11 @@ import uk.ac.ebi.intact.intactApp.internal.model.core.Feature;
 import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+
+import static java.util.stream.Collectors.toList;
+import static uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils.SOURCE_FEATURES;
+import static uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils.TARGET_FEATURES;
 
 public abstract class IntactEdge {
     public final IntactNetwork iNetwork;
@@ -21,6 +23,8 @@ public abstract class IntactEdge {
     public final CyRow edgeRow;
     public final IntactNode source;
     public final IntactNode target;
+    public final List<String> sourceFeatureAcs;
+    public final List<String> targetFeatureAcs;
 
 
     public static IntactEdge createIntactEdge(IntactNetwork iNetwork, CyEdge edge) {
@@ -41,9 +45,27 @@ public abstract class IntactEdge {
         miScore = edgeRow.get(ModelUtils.MI_SCORE, Double.class);
         source = new IntactNode(iNetwork, edge.getSource());
         target = edge.getTarget() != null ? new IntactNode(iNetwork, edge.getTarget()) : null;
+
+        sourceFeatureAcs = edgeRow.getList(SOURCE_FEATURES, String.class).stream().filter(s -> !s.isBlank()).collect(toList());
+        targetFeatureAcs = edgeRow.getList(TARGET_FEATURES, String.class).stream().filter(s -> !s.isBlank()).collect(toList());
     }
 
-    public abstract Map<IntactNode, List<Feature>> getFeatures();
+    public Map<IntactNode, List<Feature>> getFeatures() {
+        Map<IntactNode, List<Feature>> features = new HashMap<>();
+
+        buildFeatures(features, sourceFeatureAcs, source);
+        buildFeatures(features, targetFeatureAcs, target);
+        return features;
+    }
+
+    private void buildFeatures(Map<IntactNode, List<Feature>> features, List<String> featureAcs, IntactNode participant) {
+        features.put(participant, new ArrayList<>());
+        if (participant == null || featureAcs == null) return;
+
+        for (String featureAc : featureAcs) {
+            features.get(participant).add(new Feature(iNetwork, iNetwork.getFeaturesTable().getRow(featureAc)));
+        }
+    }
 
     @Override
     public boolean equals(Object o) {

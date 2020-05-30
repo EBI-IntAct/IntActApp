@@ -46,13 +46,15 @@ import uk.ac.ebi.intact.intactApp.internal.model.styles.MutationIntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.StyleMapper;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowResultsPanelTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.DetailPanel;
-import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+
+import static uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils.*;
 
 // import org.jcolorbrewer.ColorBrewer;
 
@@ -169,39 +171,39 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         channelColors.put("similarity", new Color(163, 161, 255)); // Lila
 
         // Get our default settings
-        configProps = ModelUtils.getPropertyService(this, SavePolicy.CONFIG_DIR);
+        configProps = getPropertyService(this, SavePolicy.CONFIG_DIR);
 
         // check for an alternative config URI
-        if (ModelUtils.hasProperty(configProps, alternativeCONFIGURIProperty)) {
-            alternativeCONFIGURI = ModelUtils.getStringProperty(configProps,
+        if (hasProperty(configProps, alternativeCONFIGURIProperty)) {
+            alternativeCONFIGURI = getStringProperty(configProps,
                     alternativeCONFIGURIProperty);
         } else {
-            ModelUtils.setStringProperty(configProps, alternativeCONFIGURIProperty, alternativeCONFIGURI);
+            setStringProperty(configProps, alternativeCONFIGURIProperty, alternativeCONFIGURI);
         }
 
         // set all stringApp default proerties
-        if (ModelUtils.hasProperty(configProps, ShowStructureImages)) {
-            setShowImage(ModelUtils.getBooleanProperty(configProps, ShowStructureImages));
+        if (hasProperty(configProps, ShowStructureImages)) {
+            setShowImage(getBooleanProperty(configProps, ShowStructureImages));
         }
-        if (ModelUtils.hasProperty(configProps, ShowEnhancedLabels)) {
-            setShowEnhancedLabels(ModelUtils.getBooleanProperty(configProps, ShowEnhancedLabels));
+        if (hasProperty(configProps, ShowEnhancedLabels)) {
+            setShowEnhancedLabels(getBooleanProperty(configProps, ShowEnhancedLabels));
         }
-        if (ModelUtils.hasProperty(configProps, HighlightNeighbors)) {
-            setHighlightNeighbors(ModelUtils.getBooleanProperty(configProps, HighlightNeighbors));
+        if (hasProperty(configProps, HighlightNeighbors)) {
+            setHighlightNeighbors(getBooleanProperty(configProps, HighlightNeighbors));
         }
 
 
-        if (ModelUtils.hasProperty(configProps, "species")) {
-            setDefaultSpecies(ModelUtils.getStringProperty(configProps, "species"));
+        if (hasProperty(configProps, "species")) {
+            setDefaultSpecies(getStringProperty(configProps, "species"));
         }
-        if (ModelUtils.hasProperty(configProps, "defaultConfidence")) {
-            setDefaultConfidence(ModelUtils.getDoubleProperty(configProps, "defaultConfidence"));
+        if (hasProperty(configProps, "defaultConfidence")) {
+            setDefaultConfidence(getDoubleProperty(configProps, "defaultConfidence"));
         }
-        if (ModelUtils.hasProperty(configProps, "additionalProteins")) {
-            setDefaultAdditionalProteins(ModelUtils.getIntegerProperty(configProps, "additionalProteins"));
+        if (hasProperty(configProps, "additionalProteins")) {
+            setDefaultAdditionalProteins(getIntegerProperty(configProps, "additionalProteins"));
         }
-        if (ModelUtils.hasProperty(configProps, "maxProteins")) {
-            setDefaultMaxProteins(ModelUtils.getIntegerProperty(configProps, "maxProteins"));
+        if (hasProperty(configProps, "maxProteins")) {
+            setDefaultMaxProteins(getIntegerProperty(configProps, "maxProteins"));
         }
 
         CyNetworkViewManager networkViewManager = getService(CyNetworkViewManager.class);
@@ -210,10 +212,11 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         for (CyNetwork network : registrar.getService(CyNetworkManager.class).getNetworkSet()) {
             CyRootNetwork rootNetwork = rootNetworkManager.getRootNetwork(network);
             if (rootNetwork.getBaseNetwork().getSUID().equals(network.getSUID())) {
-                if (ModelUtils.isIntactNetwork(network)) {
+                if (isIntactNetwork(network)) {
                     IntactNetwork intactNetwork = new IntactNetwork(this);
                     addIntactNetwork(intactNetwork, network);
-                    ModelUtils.buildIntactNetworkTableFromExistingOne(intactNetwork);
+                    fireIntactNetworkCreated(intactNetwork);
+                    buildIntactNetworkTableFromExistingOne(intactNetwork);
                     intactNetwork.completeMissingNodeColors();
                     for (CyNetworkView view : networkViewManager.getNetworkViews(network)) {
                         addNetworkView(view);
@@ -223,7 +226,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         }
 
         // Get a session property file for the current session
-        sessionProperties = ModelUtils.getPropertyService(this, SavePolicy.SESSION_FILE);
+        sessionProperties = getPropertyService(this, SavePolicy.SESSION_FILE);
     }
 
     public void setupStyles() {
@@ -252,8 +255,8 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     }
 
     public void intactViewTypeChanged(IntactNetworkView.Type newType, IntactNetworkView iView) {
-        intactStyles.get(newType).applyStyle(iView.getView());
-        iView.setType(newType);
+        intactStyles.get(newType).applyStyle(iView.view);
+        iView.type = newType;
         fireIntactViewTypeChangedEvent(new IntactViewTypeChangedEvent(this, newType));
     }
 
@@ -281,7 +284,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
             // use alternative config URI if available and otherwise retrieve the default one
             // based on the app version
             if (alternativeCONFIGURI != null && alternativeCONFIGURI.length() > 0) {
-                uris = ModelUtils.getResultsFromJSON(
+                uris = getResultsFromJSON(
                         HttpUtils.getJSON(alternativeCONFIGURI, args, manager)
                 );
             }
@@ -527,7 +530,7 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     }
 
     private String getDataAPIURL() {
-        String alternativeAPI = ModelUtils.getStringProperty(configProps,
+        String alternativeAPI = getStringProperty(configProps,
                 alternativeAPIProperty);
         if (alternativeAPI != null && alternativeAPI.length() > 0) return alternativeAPI;
         return URI;
@@ -581,23 +584,23 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
     public void updateSettings() {
         double overlapCutoff = 0.5;
-        ModelUtils.setStringProperty(configProps, "confidence", Double.toString(overlapCutoff));
-        ModelUtils.setStringProperty(configProps, "showImage", Boolean.toString(showImage));
-        ModelUtils.setStringProperty(configProps, "showEnhancedLabels", Boolean.toString(showEnhancedLabels));
-        ModelUtils.setStringProperty(configProps, "highlightNeighbors", Boolean.toString(highlightNeighbors));
+        setStringProperty(configProps, "confidence", Double.toString(overlapCutoff));
+        setStringProperty(configProps, "showImage", Boolean.toString(showImage));
+        setStringProperty(configProps, "showEnhancedLabels", Boolean.toString(showEnhancedLabels));
+        setStringProperty(configProps, "highlightNeighbors", Boolean.toString(highlightNeighbors));
 
-        ModelUtils.setStringProperty(configProps, "species", getDefaultSpecies().toString());
-        ModelUtils.setStringProperty(configProps, "defaultConfidence", Double.toString(getDefaultConfidence()));
-        ModelUtils.setStringProperty(configProps, "additionalProteins", Integer.toString(getDefaultAdditionalProteins()));
-        ModelUtils.setStringProperty(configProps, "maxProteins", Integer.toString(getDefaultMaxProteins()));
+        setStringProperty(configProps, "species", getDefaultSpecies().toString());
+        setStringProperty(configProps, "defaultConfidence", Double.toString(getDefaultConfidence()));
+        setStringProperty(configProps, "additionalProteins", Integer.toString(getDefaultAdditionalProteins()));
+        setStringProperty(configProps, "maxProteins", Integer.toString(getDefaultMaxProteins()));
 
-        ModelUtils.setStringProperty(configProps, "overlapCutoff", Double.toString(overlapCutoff));
+        setStringProperty(configProps, "overlapCutoff", Double.toString(overlapCutoff));
         int topTerms = 5;
-        ModelUtils.setStringProperty(configProps, "topTerms", Integer.toString(topTerms));
-        ModelUtils.setStringProperty(configProps, "chartType", chartType.name());
-        ModelUtils.setStringProperty(configProps, "enrichmentPalette", brewerPalette.toString());
+        setStringProperty(configProps, "topTerms", Integer.toString(topTerms));
+        setStringProperty(configProps, "chartType", chartType.name());
+        setStringProperty(configProps, "enrichmentPalette", brewerPalette.toString());
         boolean removeOverlap = false;
-        ModelUtils.setStringProperty(configProps, "removeOverlap", Boolean.toString(removeOverlap));
+        setStringProperty(configProps, "removeOverlap", Boolean.toString(removeOverlap));
         {
             StringBuilder categories = new StringBuilder();
             for (EnrichmentTerm.TermCategory c : categoryFilter) {
@@ -605,10 +608,10 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
             }
             if (categories.length() > 1)
                 categories = new StringBuilder(categories.substring(categories.length() - 1));
-            ModelUtils.setStringProperty(configProps, "categoryFilter", categories.toString());
+            setStringProperty(configProps, "categoryFilter", categories.toString());
         }
 
-        ModelUtils.setStringProperty(configProps, "channelColors", getChannelColorString());
+        setStringProperty(configProps, "channelColors", getChannelColorString());
     }
 
     public void handleEvent(NetworkAddedEvent nae) {
@@ -628,30 +631,31 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
     public void handleEvent(SessionLoadedEvent event) {
         // Get any properties we stored in the session
-        sessionProperties = ModelUtils.getPropertyService(this, SavePolicy.SESSION_FILE);
+        sessionProperties = getPropertyService(this, SavePolicy.SESSION_FILE);
 
         // Create string networks for any networks loaded by string
         Set<CyNetwork> networks = event.getLoadedSession().getNetworks();
+        List<IntactNetwork> iNetworks = new ArrayList<>();
         for (CyNetwork network : networks) {
-            if (ModelUtils.isIntactNetwork(network)) {
-                if (ModelUtils.ifHaveIntactNS(network)) {
+            if (isIntactNetwork(network)) {
+                if (ifHaveIntactNS(network)) {
                     IntactNetwork intactNetwork = new IntactNetwork(this);
                     addIntactNetwork(intactNetwork, network);
                     intactNetwork.completeMissingNodeColors();
+                    iNetworks.add(intactNetwork);
                 }
             }
         }
-
-        linkIntactTablesToNetwork(event.getLoadedSession().getTables());
+        linkIntactTablesToNetwork(event.getLoadedSession().getTables(), getEdgeMapping(iNetworks));
 
         for (CyNetworkView view : event.getLoadedSession().getNetworkViews()) {
-            if (ModelUtils.isIntactNetwork(view.getModel())) {
+            if (isIntactNetwork(view.getModel())) {
                 addNetworkView(view);
             }
         }
 
 
-        if (ModelUtils.ifHaveIntactNS(getCurrentNetwork())) {
+        if (ifHaveIntactNS(getCurrentNetwork())) {
             CyApplicationManager applicationManager = getService(CyApplicationManager.class);
             applicationManager.setCurrentNetworkView(applicationManager.getCurrentNetworkView());
             showResultsPanel();
@@ -660,12 +664,29 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         }
     }
 
-    public void linkIntactTablesToNetwork(Collection<CyTableMetadata> tables) {
+    private Map<CyNetwork, Map<Long, Long>> getEdgeMapping(List<IntactNetwork> iNetworks) {
+        Map<CyNetwork, Map<Long, Long>> edgeMapping = new HashMap<>();
+        for (IntactNetwork iNetwork : iNetworks) {
+            Map<Long, Long> networkEdgeMapping = new HashMap<>();
+            CyNetwork network = iNetwork.getNetwork();
+            edgeMapping.put(network, networkEdgeMapping);
+            for (CyRow edgeRow: network.getDefaultEdgeTable().getAllRows()) {
+                Long id = edgeRow.get(INTACT_ID, Long.class);
+                if (id == null) continue;
+                Long suid = edgeRow.get(CyEdge.SUID, Long.class);
+                networkEdgeMapping.put(id, suid);
+
+            }
+        }
+        return edgeMapping;
+    }
+
+    private void linkIntactTablesToNetwork(Collection<CyTableMetadata> tables, Map<CyNetwork, Map<Long, Long>> edgeMapping) {
         for (CyTableMetadata tableM : tables) {
+            linkCollapsedEdgesIdsToSUIDs(tableM, edgeMapping);
             CyTable table = tableM.getTable();
-            linkCollapsedEdgesIdsToSUIDs(table);
-            CyColumn nodeRefs = table.getColumn(ModelUtils.NODE_REF);
-            if (nodeRefs == null) continue; // If the table is an Intact unassigned table
+            CyColumn nodeRefs = table.getColumn(NODE_REF);
+            if (nodeRefs == null) continue;
 
             List<Long> values = nodeRefs.getValues(Long.class);
             if (values.isEmpty()) continue;
@@ -675,10 +696,14 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
 
             for (IntactNetwork iNetwork : intactNetworkMap.values()) {
                 if (iNetwork.getNetwork().getNode(nodeSUID) != null) { // If the node referenced belong to this network
-                    if (table.getColumn(ModelUtils.IDENTIFIER_ID) != null) {
+                    if (table.getColumn(IDENTIFIER_ID) != null) {
                         iNetwork.setIdentifiersTable(table);
                     } else {
                         iNetwork.setFeaturesTable(table);
+                        Map<Long, Long> networkEdgeMapping = edgeMapping.get(iNetwork.getNetwork());
+                        for (CyRow featureRow: table.getAllRows()) {
+                            featureRow.set(FEATURE_EDGE_SUIDS, featureRow.getList(FEATURE_EDGE_IDS, Long.class).stream().map(networkEdgeMapping::get).collect(Collectors.toList()));
+                        }
                     }
                     break;
                 }
@@ -687,17 +712,19 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         }
     }
 
-    public void linkCollapsedEdgesIdsToSUIDs(CyTable edgeTable) {
-        CyColumn collapsedIntactIdsColumn = edgeTable.getColumn(ModelUtils.C_INTACT_IDS);
+    private void linkCollapsedEdgesIdsToSUIDs(CyTableMetadata tableM, Map<CyNetwork, Map<Long, Long>> edgeMapping) {
+        CyTable edgeTable= tableM.getTable();
+        CyColumn collapsedIntactIdsColumn = edgeTable.getColumn(C_INTACT_IDS);
         if (collapsedIntactIdsColumn == null) return;
+
+        Map<Long, Long> networkEdgeMapping = edgeMapping.get(rootNetworkManager.getRootNetwork(tableM.getNetwork()).getSubNetworkList().get(0));
+        if (networkEdgeMapping == null) return;
+
         for (CyRow row : edgeTable.getAllRows()) {
-            List<Long> ids = row.getList(ModelUtils.C_INTACT_IDS, Long.class);
+            List<Long> ids = row.getList(C_INTACT_IDS, Long.class);
             if (ids == null) continue;
-            List<Long> suids = row.getList(ModelUtils.C_INTACT_SUIDS, Long.class);
-            suids.clear();
-            for (Long id : ids) {
-                suids.add(edgeTable.getMatchingKeys(ModelUtils.INTACT_ID, id, Long.class).iterator().next());
-            }
+            List<Long> list = ids.stream().filter(Objects::nonNull).map(networkEdgeMapping::get).collect(Collectors.toList());
+            row.set(C_INTACT_SUIDS, list);
         }
     }
 
@@ -819,8 +846,10 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
         return new Color(r, g, b);
     }
 
-    public void addNetworkView(CyNetworkView view) {
-        intactNetworkViewMap.put(view, new IntactNetworkView(this, view));
+    public IntactNetworkView addNetworkView(CyNetworkView view) {
+        IntactNetworkView iView = new IntactNetworkView(this, view);
+        intactNetworkViewMap.put(view, iView);
+        return iView;
     }
 
 
@@ -832,6 +861,10 @@ public class IntactManager implements NetworkAddedListener, SessionLoadedListene
     public void addIntactNetwork(IntactNetwork intactNetwork, CyNetwork network) {
         intactNetworkMap.put(network, intactNetwork);
         intactNetwork.setNetwork(network);
+
+    }
+
+    public void fireIntactNetworkCreated(IntactNetwork intactNetwork) {
         for (IntactNetworkCreatedListener listener : intactNetworkCreatedListeners) {
             listener.handleEvent(new IntactNetworkCreatedEvent(this, intactNetwork));
         }

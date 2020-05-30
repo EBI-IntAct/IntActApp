@@ -340,6 +340,24 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
                 CyRow summaryEdgeRow = table.getRow(summaryEdge.getSUID());
 
 
+                List<String> sourceFeatures = new ArrayList<>();
+                List<String> targetFeatures = new ArrayList<>();
+                for (CyEdge edge : similarEdges) {
+                    CyRow edgeRow = edgeTable.getRow(edge.getSUID());
+
+                    List<String> edgeSourceFeatures = edgeRow.getList(SOURCE_FEATURES, String.class);
+                    List<String> edgeTargetFeatures = edgeRow.getList(TARGET_FEATURES, String.class);
+                    if (edge.getSource().equals(couple.node1)) {
+                        if (edgeSourceFeatures != null) sourceFeatures.addAll(edgeSourceFeatures);
+                        if (edgeTargetFeatures != null) targetFeatures.addAll(edgeTargetFeatures);
+                    } else {
+                        if (edgeTargetFeatures != null) sourceFeatures.addAll(edgeTargetFeatures);
+                        if (edgeSourceFeatures != null) targetFeatures.addAll(edgeSourceFeatures);
+                    }
+                }
+                summaryEdgeRow.set(SOURCE_FEATURES, sourceFeatures);
+                summaryEdgeRow.set(TARGET_FEATURES, targetFeatures);
+
                 summaryEdgeRow.set(C_INTACT_IDS, getColumnValuesOfEdges(edgeTable, INTACT_ID, Long.class, similarEdges, "???"));
                 summaryEdgeRow.set(C_INTACT_SUIDS, getColumnValuesOfEdges(edgeTable, CyEdge.SUID, Long.class, similarEdges, "???"));
                 CyRow firstEdgeRow = network.getRow(similarEdges.get(0));
