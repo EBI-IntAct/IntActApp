@@ -29,7 +29,7 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
         if (terms.isBlank()) {
             monitor.showMessage(TaskMonitor.Level.WARN, "Empty query");
         } else {
-            resolvedInteractors = intactNetwork.resolveTerms(taxon, terms, exactQuery);
+            resolvedInteractors = intactNetwork.resolveTerms(terms, exactQuery);
             if (resolvedInteractors == null || resolvedInteractors.size() == 0) {
                 monitor.showMessage(TaskMonitor.Level.ERROR, "Query returned no terms");
             }

@@ -306,7 +306,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             if (interactorsToQuery.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No interactors selected. Please select at least one interactor.");
             } else {
-                TaskFactory factory = new ImportNetworkTaskFactory(iNetwork, interactorsToQuery.stream().map(interactor -> interactor.ac).collect(toList()), null, null);
+                TaskFactory factory = new ImportNetworkTaskFactory(iNetwork, interactorsToQuery.stream().map(interactor -> interactor.ac).collect(toList()), true, null);
                 manager.utils.execute(factory.createTaskIterator());
                 close();
             }

@@ -21,16 +21,15 @@ import static uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager.I
 public class LoadInteractions extends AbstractTask {
     private final IntactNetwork intactNet;
     private final List<String> intactAcs;
-    private final List<Long> taxIds;
+    private final boolean includeNeighbours;
     private final String netName;
 
     public LoadInteractions(final IntactNetwork intactNet,
                             final List<String> intactAcs,
-                            final List<Long> taxIds,
-                            final String netName) {
+                            boolean includeNeighbours, final String netName) {
         this.intactNet = intactNet;
         this.intactAcs = intactAcs;
-        this.taxIds = taxIds;
+        this.includeNeighbours = includeNeighbours;
         this.netName = netName;
     }
 
@@ -40,10 +39,7 @@ public class LoadInteractions extends AbstractTask {
 
         postData.put("interactorAcs", intactAcs);
         System.out.println(intactAcs);
-        if (taxIds != null && !taxIds.isEmpty())  {
-            postData.put("species", taxIds);
-            System.out.println(taxIds);
-        }
+        postData.put("neighboursRequired", includeNeighbours);
 
         monitor.setTitle("Load IntAct Network");
         monitor.setTitle("Querying IntAct servers");

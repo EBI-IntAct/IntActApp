@@ -1,6 +1,5 @@
 package uk.ac.ebi.intact.intactApp.internal.model;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.*;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
@@ -114,17 +113,11 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
         return interactorsToResolve;
     }
 
-    public Map<String, List<Interactor>> resolveTerms(int taxon, final String terms, boolean exactQuery) {
+    public Map<String, List<Interactor>> resolveTerms(final String terms, boolean exactQuery) {
         Map<Object, Object> resolverData = new HashMap<>();
         resolverData.put("query", terms.replaceAll("[\\n\\s\\r]", " "));
-        JsonNode resolvedInteractorsRoot;
-        if (!exactQuery) {
-             resolvedInteractorsRoot = HttpUtils.postJSON(IntactManager.INTACT_INTERACTOR_WS + "list/resolve", resolverData, manager);
-        } else {
-            //TODO Add new endpoint for exact query
-            resolvedInteractorsRoot = HttpUtils.postJSON(IntactManager.INTACT_INTERACTOR_WS + "list/resolve", resolverData, manager);
-        }
-        interactorsToResolve = Interactor.getInteractorsToResolve(resolvedInteractorsRoot);
+        resolverData.put("identifierSearch", !exactQuery);
+        interactorsToResolve = Interactor.getInteractorsToResolve(HttpUtils.postJSON(IntactManager.INTACT_INTERACTOR_WS + "list/resolve", resolverData, manager));
         completeMissingNodeColorsFromInteractors();
         return interactorsToResolve;
     }
@@ -137,7 +130,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
             if (interactors.size() > 1) {
                 noAmbiguity = false;
                 break;
-            } else if (interactors.size() == 1){
+            } else if (interactors.size() == 1) {
                 List<String> ids = new ArrayList<>();
                 ids.add(interactors.get(0).ac);
                 termToAcs.put(key, ids);
@@ -148,14 +141,6 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
 
         return noAmbiguity;
     }
-
-    public void addAcToTerm(String term, String ac) {
-        if (!termToAcs.containsKey(term))
-            termToAcs.put(term, new ArrayList<>());
-        termToAcs.get(term).add(ac);
-    }
-
-
 
     public List<String> combineAcs(Map<String, String> acToTerm) {
         List<String> acs = new ArrayList<>();

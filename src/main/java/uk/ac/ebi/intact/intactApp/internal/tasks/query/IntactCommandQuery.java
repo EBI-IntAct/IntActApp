@@ -17,25 +17,24 @@ import java.util.stream.Stream;
 public class IntactCommandQuery extends AbstractTask {
     @Tunable(required = true, context = "nogui", exampleStringValue = "gtp lrr* cell Q5S007 EBI-2624319", gravity = 0,
             description = "Space separated terms to search among interactors ids and names to build the network around them.")
-    public String terms;
+    public String seedTerms;
 
     @Tunable(context = "nogui", exampleStringValue = "9606, 559292", gravity = 1,
-            description = "Comma separated taxon ids of given terms. These terms will be converted to seed interactors on which partners will be attached to build the network.")
-    public String seedTaxons;
-    private final Set<Long> seedTaxIds = new HashSet<>();
-
-    @Tunable(context = "nogui", exampleStringValue = "9606, 559292", gravity = 2,
-            description = "Comma separated taxon ids of the desired network interactors species, both for the seeds and their partner.<br>" +
-                    "If not given, all species will be accepted. If seedTaxons is given, this argument won't be used for seeds, only for their partner.<br>" +
-                    "seedTaxons will automatically be added to global taxons")
+            description = "Comma separated taxon ids of seed interactor saround which the network will be built.<br>" +
+                    "If not given, all species will be accepted.")
     public String taxons;
-    private final Set<Long> taxIds = new HashSet<>();
 
 
-    @Tunable(context = "nogui", exampleStringValue = "protein, peptide, small molecule, gene, dna, ds dna, ss dna, rna, complex", gravity = 3,
+    @Tunable(context = "nogui", exampleStringValue = "protein, peptide, small molecule, gene, dna, ds dna, ss dna, rna, complex", gravity = 2,
             description = "Comma separated allowed types of seeds interactor around which the network will be built.<br>" +
                     "If not given, all types will be allowed for seeds")
     public String types;
+
+    @Tunable(context = "nogui", gravity = 3,
+            description = "If true, resulting network will be made of given seed terms interactors and all interacting partner found for them.<br>" +
+                    "If false, resulting network will only be constituted of given terms interactors and interaction between them.<br>" +
+                    "Default value : True")
+    public Boolean includeSeedPartners = true;
 
     @Tunable(context = "nogui", gravity = 4,
             description = "Name of the network to build", longDescription = "Name of the network to build.<br> If not given, will be IntAct network")
@@ -57,36 +56,21 @@ public class IntactCommandQuery extends AbstractTask {
 
     private void resolveTermsToAcs() {
         Map<Object, Object> postData = new HashMap<>();
-        postData.put("query", terms);
+        postData.put("query", String.join("\n",seedTerms.split("\\s+")));
         JsonNode resolutionResponse = HttpUtils.postJSON(IntactManager.INTACT_INTERACTOR_WS + "list/resolve", postData, manager);
         Map<String, List<Interactor>> interactorsToResolve = Interactor.getInteractorsToResolve(resolutionResponse);
         Stream<Interactor> interactors = interactorsToResolve.values().stream().flatMap(List::stream);
 
         if (types != null && !types.isBlank()) {
-            Set<String> availableTypes = Set.of(types.split("\\s*,\\s*"));
-            interactors = interactors.filter(interactor -> availableTypes.contains(interactor.type));
+            Set<String> allowedTypes = Set.of(types.split("\\s*,\\s*"));
+            interactors = interactors.filter(interactor -> allowedTypes.contains(interactor.type));
         }
 
         if (taxons != null && !taxons.isEmpty()) {
-            taxIds.addAll(Arrays.stream(taxons.split("\\s*,\\s*"))
+            Set<Long> allowedTaxIds = Arrays.stream(taxons.split("\\s*,\\s*"))
                     .map(Long::parseLong)
-                    .collect(Collectors.toList()));
-        }
-
-        if (seedTaxons != null && !seedTaxons.isEmpty()) {
-            seedTaxIds.addAll(Arrays.stream(seedTaxons.split("\\s*,\\s*"))
-                    .map(Long::parseLong)
-                    .collect(Collectors.toList()));
-        } else {
-            seedTaxIds.addAll(taxIds);
-        }
-
-        if (!taxIds.isEmpty()) {
-            taxIds.addAll(seedTaxIds);
-        }
-
-        if (!seedTaxIds.isEmpty()) {
-            interactors = interactors.filter(interactor -> seedTaxIds.contains(interactor.taxId));
+                    .collect(Collectors.toSet());
+            interactors = interactors.filter(interactor -> allowedTaxIds.contains(interactor.taxId));
         }
 
         interactorAcs.addAll(interactors.map(interactor -> interactor.ac).collect(Collectors.toList()));
@@ -94,7 +78,7 @@ public class IntactCommandQuery extends AbstractTask {
 
     private void buildNetwork() {
         IntactNetwork network = new IntactNetwork(manager);
-        ImportNetworkTaskFactory factory = new ImportNetworkTaskFactory(network, interactorAcs, new ArrayList<>(taxIds), netName);
+        ImportNetworkTaskFactory factory = new ImportNetworkTaskFactory(network, interactorAcs, includeSeedPartners, netName);
         insertTasksAfterCurrentTask(factory.createTaskIterator());
     }
 }

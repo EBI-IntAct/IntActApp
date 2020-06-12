@@ -83,7 +83,7 @@ public class IntactExactQueryTaskFactory extends AbstractNetworkSearchTaskFactor
         Map<String, List<Interactor>> interactorsToResolve = intactNetwork.getInteractorsToResolve();
         if (showNoResults(interactorsToResolve)) return;
         if (intactNetwork.hasNoAmbiguity()) {
-            importNetwork(0);
+            importNetwork();
         } else {
             SwingUtilities.invokeLater(() -> {
                 JDialog d = new JDialog();
@@ -107,10 +107,10 @@ public class IntactExactQueryTaskFactory extends AbstractNetworkSearchTaskFactor
         return false;
     }
 
-    void importNetwork(int taxon) {
+    void importNetwork() {
         Map<String, String> acToTerm = new HashMap<>();
         List<String> intactAcs = intactNetwork.combineAcs(acToTerm);
-        TaskFactory factory = new ImportNetworkTaskFactory(intactNetwork, intactAcs, null, null);
+        TaskFactory factory = new ImportNetworkTaskFactory(intactNetwork, intactAcs, true, null);
         manager.utils.execute(factory.createTaskIterator());
     }
 }
