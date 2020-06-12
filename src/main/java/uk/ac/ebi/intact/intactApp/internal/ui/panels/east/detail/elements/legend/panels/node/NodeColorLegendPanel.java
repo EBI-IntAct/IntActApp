@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.legend.panels.node;
 
-import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.StyleMapper;
@@ -46,7 +46,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
             Map<Long, Paint> reference = (taxon.isSpecies) ? StyleMapper.taxIdToPaint : StyleMapper.kingdomColors;
             NodeColorPicker nodeColorPicker = new NodeColorPicker(taxon.descriptor, (Color) reference.get(taxon.taxId), taxon.isSpecies);
             nodeColorPicker.addColorChangedListener(e -> {
-                manager.updateStylesColorScheme(taxon.taxId, e.newColor, true);
+                manager.style.updateStylesColorScheme(taxon.taxId, e.newColor, true);
                 reference.put(taxon.taxId, e.newColor);
             });
             colorPickers.put(taxon.taxId, nodeColorPicker);
@@ -90,9 +90,6 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
     @Override
     public void filterCurrentLegend() {
         executor.execute(() -> {
-            while (!currentINetwork.isStyleCompleted())
-                TimeUtils.sleep(100);
-
             Set<Long> networkTaxIds = currentINetwork.getTaxIds();
 
             for (Long taxId : colorPickers.keySet()) {
@@ -101,9 +98,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
                                 (StyleMapper.taxIdToChildrenTaxIds.containsKey(taxId) && CollectionUtils.anyCommonElement(networkTaxIds, StyleMapper.taxIdToChildrenTaxIds.get(taxId)))
                 );
             }
-
             addNodeColorPanel.setVisible(!currentINetwork.getNonDefinedTaxon().isEmpty());
-
         });
     }
 }

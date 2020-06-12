@@ -11,7 +11,7 @@ import java.awt.event.*;
 
 public class SearchQueryComponent extends JTextField {
     private static final long serialVersionUID = 1L;
-    private static final String DEF_SEARCH_TEXT = "Enter one term per line.      Set species →";
+    private static final String DEF_SEARCH_TEXT = "Enter one term per line.";
     final int vgap = 1;
     final int hgap = 5;
     final String tooltip;
@@ -61,8 +61,6 @@ public class SearchQueryComponent extends JTextField {
             }
         });
         setToolTipText(tooltip);
-
-        return;
     }
 
     @Override
@@ -78,12 +76,11 @@ public class SearchQueryComponent extends JTextField {
             // Get the FontMetrics
             FontMetrics metrics = g2.getFontMetrics(getFont());
             // Determine the X coordinate for the text
-            int x = hgap;
             // Determine the Y coordinate for the text (note we add the ascent, as in java 2d 0 is top of the screen)
             int y = (metrics.getHeight() / 2) + metrics.getAscent() + vgap;
             // Draw
             g2.setColor(msgColor);
-            g2.drawString(DEF_SEARCH_TEXT, x, y);
+            g2.drawString(DEF_SEARCH_TEXT, hgap, y);
             g2.dispose();
         }
     }

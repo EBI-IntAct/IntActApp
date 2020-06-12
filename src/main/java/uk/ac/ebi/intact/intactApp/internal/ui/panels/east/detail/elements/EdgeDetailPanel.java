@@ -5,7 +5,7 @@ import org.cytoscape.model.*;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactCollapsedEdge;
@@ -111,10 +111,6 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
     }
 
 
-    protected void doFilter(String type) {
-    }
-
-
     public void networkChanged(IntactNetwork newNetwork) {
         this.currentINetwork = newNetwork;
         selectedEdges(newNetwork.getSelectedEdges());
@@ -179,7 +175,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
             scoreSlider.removeRangeChangeListener(currentIView);
         }
         scoreSlider.silentRangeChangeEvents();
-        currentIView = manager.getIntactNetworkView(view);
+        currentIView = manager.data.getIntactNetworkView(view);
         scoreSlider.addRangeChangeListener(currentIView);
 
         IntactNetworkView.Range miScoreRange = currentIView.getMiScoreRange();

@@ -14,6 +14,8 @@ public abstract class IdentifierPanelFactory {
                 return new InterProIdentifierPanel(identifiers, openBrowser);
             case "reactome":
                 return new ReactomeIdentifierPanel(identifiers, openBrowser);
+            case "intact":
+                return new IntactIdentifierPanel(identifiers, openBrowser);
             default:
                 return new IdentifierPanel(identifiers, openBrowser);
         }

@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.
 import org.cytoscape.util.swing.OpenBrowser;
 import uk.ac.ebi.intact.intactApp.internal.model.DbIdentifiersToLink;
 import uk.ac.ebi.intact.intactApp.internal.model.core.Identifier;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.JLink;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
 
 import javax.swing.*;

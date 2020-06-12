@@ -12,7 +12,6 @@ import java.util.List;
 
 public class NodeSchematic extends AbstractNodeElement {
 
-
     private NodeDiagram nodeDiagram;
     private final List<Feature> features;
 

@@ -16,36 +16,43 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import static uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils.*;
 
-public class IntactNode {
+public class IntactNode extends Interactor implements Comparable<Interactor> {
     public final IntactNetwork iNetwork;
     public final CyNode node;
-    public final String id;
-    public final String name;
-    public final String fullName;
-    public final String type;
-    public final Identifier preferredId;
-    public final String species;
+    public final Identifier preferredIdentifier;
     public final List<String> featureAcs = new ArrayList<>();
     public final List<String> identifierAcs = new ArrayList<>();
-    public final long taxId;
 
     public IntactNode(final IntactNetwork iNetwork, final CyNode node) {
+        this(iNetwork, node, iNetwork.getNetwork().getRow(node));
+    }
+
+    public IntactNode(final IntactNetwork iNetwork, final CyNode node, CyRow nodeRow) {
+        super(
+                nodeRow.get(INTACT_ID, String.class),
+                nodeRow.get(CyNetwork.NAME, String.class),
+                nodeRow.get(PREFERRED_ID, String.class),
+                nodeRow.get(FULL_NAME, String.class),
+                nodeRow.get(TYPE, String.class),
+                nodeRow.get(SPECIES, String.class),
+                nodeRow.get(TAX_ID, Long.class),
+                -1
+        );
         this.iNetwork = iNetwork;
         this.node = node;
-        CyRow nodeRow = iNetwork.getNetwork().getRow(node);
-        name = nodeRow.get(CyNetwork.NAME, String.class);
-        fullName = nodeRow.get(FULL_NAME, String.class);
-        id = nodeRow.get(INTACT_ID, String.class);
-        type = nodeRow.get(TYPE, String.class);
         String preferredIdDbName = nodeRow.get(PREFERRED_ID_DB, String.class);
         OntologyIdentifier preferredIdDbMIId = new OntologyIdentifier(nodeRow.get(PREFERRED_ID_DB_MI_ID, String.class), SourceOntology.MI);
-        String preferredId = nodeRow.get(PREFERRED_ID, String.class);
-        this.preferredId = new Identifier(preferredIdDbName, preferredIdDbMIId, preferredId, "preferred id");
-        species = nodeRow.get(SPECIES, String.class);
-        taxId = nodeRow.get(TAX_ID, Long.class);
+        this.preferredIdentifier = new Identifier(preferredIdDbName, preferredIdDbMIId, preferredId, "preferred id");
 
-        featureAcs.addAll(nodeRow.getList(FEATURES, String.class).stream().filter(s -> !s.isBlank()).collect(toList()));
-        identifierAcs.addAll(nodeRow.getList(IDENTIFIERS, String.class).stream().filter(s -> !s.isBlank()).collect(toList()));
+        List<String> nodeFeatures = nodeRow.getList(FEATURES, String.class);
+        if (nodeFeatures != null) {
+            featureAcs.addAll(nodeFeatures.stream().filter(s -> !s.isBlank()).collect(toList()));
+        }
+
+        List<String> nodeIdentifiers = nodeRow.getList(IDENTIFIERS, String.class);
+        if (nodeIdentifiers != null) {
+            identifierAcs.addAll(nodeIdentifiers.stream().filter(s -> !s.isBlank()).collect(toList()));
+        }
     }
 
     public List<Identifier> getIdentifiers() {
@@ -75,4 +82,13 @@ public class IntactNode {
     public String toString() {
         return node.toString();
     }
+
+    @Override
+    public int compareTo(Interactor o) {
+        if (name.isEmpty()) return Integer.MAX_VALUE;
+        else if (o.name.isEmpty()) return Integer.MIN_VALUE;
+        else return name.compareTo(o.name);
+    }
+
+
 }

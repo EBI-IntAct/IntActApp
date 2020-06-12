@@ -3,6 +3,7 @@ package uk.ac.ebi.intact.intactApp.internal.model;
 import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.events.RangeChangeEvent;
 import uk.ac.ebi.intact.intactApp.internal.model.events.RangeChangeListener;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.RangeSlider;
 
 public class IntactNetworkView implements RangeChangeListener {
@@ -15,7 +16,7 @@ public class IntactNetworkView implements RangeChangeListener {
     public IntactNetworkView(IntactManager manager, CyNetworkView view) {
         this.manager = manager;
         this.view = view;
-        this.network = manager.getIntactNetwork(view.getModel());
+        this.network = view != null ? manager.data.getIntactNetwork(view.getModel()) : null;
     }
 
     public Range getMiScoreRange() {
@@ -31,11 +32,7 @@ public class IntactNetworkView implements RangeChangeListener {
 
     @Override
     public String toString() {
-        return "IntactNetworkView{" +
-                "network=" + network +
-                ", type=" + type +
-                ", miScoreRange=" + miScoreRange +
-                '}';
+        return "View of " + network.toString();
     }
 
     public enum Type {

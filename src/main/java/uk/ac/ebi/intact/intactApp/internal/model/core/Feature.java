@@ -36,6 +36,7 @@ public class Feature {
     public List<IntactEvidenceEdge> getEdges() {
         return edgeSUIDs.stream()
                 .map(suid -> (IntactEvidenceEdge) IntactEdge.createIntactEdge(network, network.getNetwork().getEdge(suid)))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

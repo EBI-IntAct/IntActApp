@@ -4,7 +4,7 @@ import org.cytoscape.util.swing.OpenBrowser;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactCollapsedEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEvidenceEdge;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.JLink;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.VerticalPanel;

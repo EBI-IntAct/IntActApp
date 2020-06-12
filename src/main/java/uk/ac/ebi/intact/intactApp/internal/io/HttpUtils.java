@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import org.cytoscape.io.util.StreamUtil;
-import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 
 import java.io.*;
 import java.net.*;
@@ -22,20 +22,18 @@ public class HttpUtils {
             .build();
 
     public static JsonNode getJSON(String url, Map<String, String> queryMap, IntactManager manager) {
-
-        // Set up our connection
         URL trueURL;
         try {
             if (queryMap.size() > 0) {
                 String args = HttpUtils.getStringArguments(queryMap);
-                manager.info("URL: " + url + "?" + args);
+                manager.utils.info("URL: " + url + "?" + args);
                 trueURL = new URL(url + "?" + args);
             } else {
-                manager.info("URL: " + url);
+                manager.utils.info("URL: " + url);
                 trueURL = new URL(url);
             }
         } catch (MalformedURLException e) {
-            manager.info("URL malformed");
+            manager.utils.info("URL malformed");
             return NullNode.getInstance();
         }
 
@@ -66,7 +64,7 @@ public class HttpUtils {
 
         } catch (Exception e) {
             // e.printStackTrace();
-            manager.error("Unexpected error when parsing JSON from server: " + e.getMessage());
+            manager.utils.error("Unexpected error when parsing JSON from server: " + e.getMessage());
             return null;
         }
 
@@ -98,7 +96,7 @@ public class HttpUtils {
 
     private static URLConnection executeWithRedirect(IntactManager manager, String url, Map<String, String> queryMap) throws Exception {
         // Get the connection from Cytoscape
-        HttpURLConnection connection = (HttpURLConnection) manager.getService(StreamUtil.class).getURLConnection(new URL(url));
+        HttpURLConnection connection = (HttpURLConnection) manager.utils.getService(StreamUtil.class).getURLConnection(new URL(url));
 
         // We want to write on the stream
         connection.setDoOutput(true);
@@ -121,7 +119,7 @@ public class HttpUtils {
                 return executeWithRedirect(manager, connection.getHeaderField("Location"), queryMap);
             case HttpURLConnection.HTTP_INTERNAL_ERROR:
             case HttpURLConnection.HTTP_BAD_REQUEST:
-                manager.error(readStream(connection.getErrorStream()));
+                manager.utils.error(readStream(connection.getErrorStream()));
                 return connection;
         }
 
@@ -177,7 +175,7 @@ public class HttpUtils {
                 builder.append("&");
             }
             if (entry.getValue() instanceof List) {
-                for (Object element : (List) entry.getValue()) {
+                for (Object element : (List<?>) entry.getValue()) {
                     builder.append(URLEncoder.encode(entry.getKey().toString(), StandardCharsets.UTF_8));
                     builder.append("=");
                     builder.append(URLEncoder.encode(element.toString(), StandardCharsets.UTF_8));

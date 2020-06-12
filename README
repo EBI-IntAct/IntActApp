@@ -7,7 +7,7 @@ Mode 1: build an initial network from String/Stitch
 2) Take list of identifiers and use resolveList on String web site to get the possible matches.  If the preferredName
    matches the user input, use that.  If not, provide the user with a dialog to choose which identifier to select.
 3) Once the list of identifiers are known, use the API to get a tsv file with all of the interactions.  Use this to build
-   the network.  Once the network is built, go back to string/stitch to get the additional annotations (currently don't
+   the network.  Once the network is built, go back to string/stitch to get the additional interactors (currently don't
    have a good way to do this).
 
 Mode 2: expand an existing network from String/Stitch

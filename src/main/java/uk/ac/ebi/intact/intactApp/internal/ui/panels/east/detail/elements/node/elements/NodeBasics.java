@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.cytoscape.util.swing.OpenBrowser;
 import uk.ac.ebi.intact.intactApp.internal.model.DbIdentifiersToLink;
 import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.JLink;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.LinkUtils;
 
@@ -24,7 +24,7 @@ public class NodeBasics extends AbstractNodeElement {
     protected void fillContent() {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.add(new JLabel(iNode.fullName));
-        content.add(new JLink(DbIdentifiersToLink.getFancyDatabaseName(iNode.preferredId) + " · " + iNode.preferredId.id, DbIdentifiersToLink.getLink(iNode.preferredId), openBrowser));
+        content.add(new JLink(DbIdentifiersToLink.getFancyDatabaseName(iNode.preferredIdentifier) + " · " + iNode.preferredIdentifier.id, DbIdentifiersToLink.getLink(iNode.preferredIdentifier), openBrowser));
         graphDescription = new LinePanel(getBackground());
         graphDescription.add(new JLabel(StringUtils.capitalize(iNode.type) + " of " + iNode.species));
         graphDescription.add(Box.createHorizontalStrut(4));

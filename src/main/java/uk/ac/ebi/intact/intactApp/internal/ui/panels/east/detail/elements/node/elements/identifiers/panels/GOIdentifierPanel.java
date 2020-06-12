@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.cytoscape.util.swing.OpenBrowser;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 import uk.ac.ebi.intact.intactApp.internal.model.core.Identifier;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.JLink;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.GroupUtils;
 
 import java.net.URLEncoder;

@@ -15,7 +15,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
-import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.StyleMapper;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
@@ -47,12 +47,12 @@ public abstract class IntactStyle {
 
     public IntactStyle(IntactManager manager) {
         this.manager = manager;
-        vmm = manager.getService(VisualMappingManager.class);
-        eventHelper = manager.getService(CyEventHelper.class);
+        vmm = manager.utils.getService(VisualMappingManager.class);
+        eventHelper = manager.utils.getService(CyEventHelper.class);
         style = getOrCreateStyle();
-        continuousFactory = manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
-        discreteFactory = manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
-        passthroughFactory = manager.getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
+        continuousFactory = manager.utils.getService(VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
+        discreteFactory = manager.utils.getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
+        passthroughFactory = manager.utils.getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
         createStyle();
         if (newStyle)
             registerStyle();
@@ -66,7 +66,7 @@ public abstract class IntactStyle {
             }
         }
         newStyle = true;
-        return manager.getService(VisualStyleFactory.class).createVisualStyle(getStyleName());
+        return manager.utils.getService(VisualStyleFactory.class).createVisualStyle(getStyleName());
     }
 
     private void createStyle() {
@@ -135,9 +135,9 @@ public abstract class IntactStyle {
 
     private void setNodeLabel() {
         if (fastLabelsMapping == null) {
-            VisualLexicon lex = manager.getService(RenderingEngineManager.class).getDefaultVisualLexicon();
+            VisualLexicon lex = manager.utils.getService(RenderingEngineManager.class).getDefaultVisualLexicon();
             fastLabelsMapping = (PassthroughMapping<String, String>) passthroughFactory.createVisualMappingFunction(CyNetwork.NAME, String.class, BasicVisualLexicon.NODE_LABEL);
-            if (manager.haveEnhancedGraphics()) {
+            if (manager.utils.haveEnhancedGraphics()) {
 
                 fancyLabelsProperty = lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_3");
                 fancyLabelsMapping = (PassthroughMapping) passthroughFactory.createVisualMappingFunction(ModelUtils.ELABEL_STYLE, String.class, fancyLabelsProperty);
@@ -154,7 +154,7 @@ public abstract class IntactStyle {
                 fancy = false;
             }
         } else {
-            if (manager.haveEnhancedGraphics()) {
+            if (manager.utils.haveEnhancedGraphics()) {
                 style.addVisualMappingFunction(fancyLabelsMapping);
                 style.setDefaultValue(fancyLabelsPositionProperty, fancyLabelsPositionValue);
                 style.removeVisualMappingFunction(BasicVisualLexicon.NODE_LABEL);
@@ -167,7 +167,7 @@ public abstract class IntactStyle {
     }
 
     public void toggleFancy() {
-        if (!fancy && manager.haveEnhancedGraphics()) {
+        if (!fancy && manager.utils.haveEnhancedGraphics()) {
             if (fancyLabelsMapping == null)
                 setNodeLabel();
             style.addVisualMappingFunction(fancyLabelsMapping);

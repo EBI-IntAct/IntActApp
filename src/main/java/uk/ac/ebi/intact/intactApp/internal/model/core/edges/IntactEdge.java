@@ -10,7 +10,6 @@ import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
 import java.util.*;
 
-import static java.util.stream.Collectors.toList;
 import static uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils.SOURCE_FEATURES;
 import static uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils.TARGET_FEATURES;
 
@@ -28,7 +27,10 @@ public abstract class IntactEdge {
 
 
     public static IntactEdge createIntactEdge(IntactNetwork iNetwork, CyEdge edge) {
-        if (iNetwork.getNetwork().getRow(edge).get(ModelUtils.C_IS_COLLAPSED, Boolean.class)) {
+        if (iNetwork == null || edge == null) return null;
+        CyRow edgeRow = iNetwork.getNetwork().getRow(edge);
+        if (edgeRow == null) return null;
+        if (edgeRow.get(ModelUtils.C_IS_COLLAPSED, Boolean.class)) {
             return new IntactCollapsedEdge(iNetwork, edge);
         } else {
             return new IntactEvidenceEdge(iNetwork, edge);
@@ -46,8 +48,14 @@ public abstract class IntactEdge {
         source = new IntactNode(iNetwork, edge.getSource());
         target = edge.getTarget() != null ? new IntactNode(iNetwork, edge.getTarget()) : null;
 
-        sourceFeatureAcs = edgeRow.getList(SOURCE_FEATURES, String.class).stream().filter(s -> !s.isBlank()).collect(toList());
-        targetFeatureAcs = edgeRow.getList(TARGET_FEATURES, String.class).stream().filter(s -> !s.isBlank()).collect(toList());
+        sourceFeatureAcs = edgeRow.getList(SOURCE_FEATURES, String.class);
+        if (sourceFeatureAcs != null) {
+            sourceFeatureAcs.removeIf(String::isBlank);
+        }
+        targetFeatureAcs = edgeRow.getList(TARGET_FEATURES, String.class);
+        if (targetFeatureAcs != null) {
+            targetFeatureAcs.removeIf(String::isBlank);
+        }
     }
 
     public Map<IntactNode, List<Feature>> getFeatures() {

@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.legend.panels;
 
-import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;

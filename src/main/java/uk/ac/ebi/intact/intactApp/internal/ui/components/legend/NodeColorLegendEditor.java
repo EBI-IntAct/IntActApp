@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.intactApp.internal.ui.components.legend;
 
-import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.StyleMapper;
 import uk.ac.ebi.intact.intactApp.internal.utils.IconUtils;
@@ -103,7 +103,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     private void resetFormerLegend() {
         Color formerColor = originalColors.remove(descriptor);
         if (formerColor != null)
-            manager.updateStylesColorScheme(currentTaxId, formerColor, false);
+            manager.style.updateStylesColorScheme(currentTaxId, formerColor, false);
         StyleMapper.taxIdToPaint.remove(currentTaxId);
     }
 
@@ -112,7 +112,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
 //            updateStyleColors();
 //            if (!includeSubSpecies.isSelected()) {
 //                for (Long children : OLSMapper.taxIdToChildrenTaxIds.get(currentTaxId)) {
-//                    manager.updateStylesColorScheme(children, originalColors.get(descriptor), false);
+//                    manager.styleManager.updateStylesColorScheme(children, originalColors.get(descriptor), false);
 //                }
 //            }
 //        });
@@ -125,7 +125,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     }
 
     private void updateStyleColors() {
-        manager.updateStylesColorScheme(currentTaxId, currentColor, false);
+        manager.style.updateStylesColorScheme(currentTaxId, currentColor, false);
     }
 
     public void destroy() {

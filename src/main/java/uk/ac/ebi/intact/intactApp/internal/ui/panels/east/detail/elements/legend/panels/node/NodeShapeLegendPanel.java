@@ -1,7 +1,7 @@
 package uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.legend.panels.node;
 
 import org.apache.commons.lang3.StringUtils;
-import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.StyleMapper;
@@ -9,7 +9,6 @@ import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.legend
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.StyleUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.CollectionUtils;
-import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -42,9 +41,6 @@ public class NodeShapeLegendPanel extends AbstractLegendPanel {
     @Override
     public void filterCurrentLegend() {
         executor.execute(() -> {
-            while (!currentINetwork.isStyleCompleted())
-                TimeUtils.sleep(100);
-
             Set<String> networkInteractorTypes = currentINetwork.getInteractorTypes();
 
             for (String nodeType : nodeShapesLines.keySet()) {

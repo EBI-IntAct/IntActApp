@@ -15,6 +15,7 @@ import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
 
 import java.awt.*;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -31,6 +32,8 @@ public class StyleMapper {
     private static boolean nodeTypesWorking = false;
     private static boolean edgeTypesReady = false;
     private static boolean edgeTypesWorking = false;
+    private static final List<WeakReference<StyleUpdatedListener>> styleUpdatedListeners = new ArrayList<>();
+
 
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
     public static Hashtable<Long, Paint> taxIdToPaint = new Hashtable<>() {{
@@ -121,6 +124,7 @@ public class StyleMapper {
                     addDescendantsColors(parentSpecie, (Color) paint);
                 }
 
+                fireStyleUpdated();
                 taxIdsReady = true;
             }
         });
@@ -189,21 +193,37 @@ public class StyleMapper {
             String resultText = getRequestResultForUrl("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&id=" + concatenateTaxIds(taxIdsToCheckAndAdd));
             JSONObject jObject = XML.toJSONObject(resultText);
             JsonNode taxons = new ObjectMapper().readTree(jObject.toString()).get("TaxaSet").get("Taxon");
-            for (JsonNode taxon : taxons) {
-                Long taxId = taxon.get("TaxId").longValue();
-                ArrayNode lineage = (ArrayNode) taxon.get("LineageEx").get("Taxon");
-
-                for (int i = lineage.size() - 1; i >= 0; i--) {
-                    Long supTaxId = lineage.get(i).get("TaxId").longValue();
-                    if (originalKingdomColors.containsKey(supTaxId)) {
-                        Paint paint = originalKingdomColors.get(supTaxId);
-                        kingdomColors.put(taxId, paint);
-                        taxIdToChildrenTaxIds.get(supTaxId).add(taxId);
-                        addedTaxIds.put(taxId, paint);
-                        break;
-                    }
+            if (taxons.isArray()) {
+                for (JsonNode taxon : taxons) {
+                    addTaxon(addedTaxIds, taxon);
                 }
+            } else {
+                addTaxon(addedTaxIds, taxons);
             }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        fireStyleUpdated();
+        return addedTaxIds;
+    }
+
+    private static void addTaxon(Map<Long, Paint> addedTaxIds, JsonNode taxons) {
+        Long taxId = taxons.get("TaxId").longValue();
+        ArrayNode lineage = (ArrayNode) taxons.get("LineageEx").get("Taxon");
+
+        for (int i = lineage.size() - 1; i >= 0; i--) {
+            Long supTaxId = lineage.get(i).get("TaxId").longValue();
+            if (originalKingdomColors.containsKey(supTaxId)) {
+                Paint paint = originalKingdomColors.get(supTaxId);
+                kingdomColors.put(taxId, paint);
+                taxIdToChildrenTaxIds.get(supTaxId).add(taxId);
+                addedTaxIds.put(taxId, paint);
+                break;
+            }
+        }
+    }
 
     public static Map<Long, Paint> updateChildrenColors(Long parentTaxId, Color newColor, boolean addDescendants) {
         Map<Long, Paint> updatedTaxIds = new Hashtable<>();
@@ -304,5 +324,25 @@ public class StyleMapper {
 
     public static boolean edgeTypesNotReady() {
         return !edgeTypesReady;
+    }
+
+    public static void fireStyleUpdated() {
+        executor.execute(() -> {
+            Iterator<WeakReference<StyleUpdatedListener>> listenerIterator = styleUpdatedListeners.iterator();
+            while (listenerIterator.hasNext()) {
+                StyleUpdatedListener listener = listenerIterator.next().get();
+                if (listener == null) listenerIterator.remove();
+                else listener.handleStyleUpdatedEvent();
+            }
+        });
+    }
+
+
+    public static void addStyleUpdatedListener(StyleUpdatedListener listener) {
+        styleUpdatedListeners.add(new WeakReference<>(listener));
+    }
+
+    public static void removeStyleUpdatedListener(StyleUpdatedListener listener) {
+        styleUpdatedListeners.removeIf(ref -> ref.get() == null || ref.get() == listener);
     }
 }

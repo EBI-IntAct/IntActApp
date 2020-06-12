@@ -9,24 +9,29 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.model.events.NetworkViewAddedListener;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
-import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.tasks.query.factories.AddTermsTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.query.factories.IntactBroadSearchTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.query.IntactCommandQuery;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.*;
-import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.CollapseViewTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.ExpandViewTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.MutationViewTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.ui.IntactWebServiceClient;
+import uk.ac.ebi.intact.intactApp.internal.tasks.view.factories.CollapseViewTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.view.factories.ExpandViewTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.view.factories.MutationViewTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.query.factories.IntactExactQueryTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
 import java.util.Properties;
 
 import static org.cytoscape.work.ServiceProperties.*;
 
-// import uk.ac.ebi.intact.intactApp.internal.tasks.FindProteinsTaskFactory;
-// import uk.ac.ebi.intact.intactApp.internal.tasks.OpenEvidenceTaskFactory;
 
 // TODO: [Optional] Improve non-gui mode
 public class CyActivator extends AbstractCyActivator {
@@ -65,13 +70,6 @@ public class CyActivator extends AbstractCyActivator {
         Version v = bc.getBundle().getVersion();
         String version = v.toString(); // The full version
 
-        // Only look at the .0 version for our internal purposes
-        String minorVersion = new Version(v.getMajor(), v.getMinor(), 0).toString();
-        manager.setVersion(minorVersion);
-
-        // Get configuration and messages for user from server
-        manager.updateURIsFromConfig();
-
         // TODO Switch properties with first loaded IntactNetwork, and reset it back when deleting the last one
 //        // Load Property if available.
 //        CyProperty<Properties> cyProp = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
@@ -82,49 +80,51 @@ public class CyActivator extends AbstractCyActivator {
 
         {
             // Register our network added listener and session loaded listener
-            registerService(bc, manager, NetworkAddedListener.class, new Properties());
-            registerService(bc, manager, SessionLoadedListener.class, new Properties());
-            registerService(bc, manager, NetworkAboutToBeDestroyedListener.class, new Properties());
+            registerService(bc, manager.data, SessionLoadedListener.class, new Properties());
+            registerService(bc, manager.data, NetworkAddedListener.class, new Properties());
+            registerService(bc, manager.data, NetworkViewAddedListener.class, new Properties());
+            registerService(bc, manager.data, NetworkAboutToBeDestroyedListener.class, new Properties());
+            registerService(bc, manager.data, NetworkViewAboutToBeDestroyedListener.class, new Properties());
         }
 
-        {
-            // Register our web service client
-            IntactWebServiceClient client = new IntactWebServiceClient(manager);
-            registerAllServices(bc, client, new Properties());
-        }
+//        {
+//            // Register our web service client
+//            IntactWebServiceClient client = new IntactWebServiceClient(manager);
+//            registerAllServices(bc, client, new Properties());
+//        }
 
         {
-            CollapseViewTaskFactory collapseViewTaskFactory = new CollapseViewTaskFactory(manager);
+            CollapseViewTaskFactory collapseViewTaskFactory = new CollapseViewTaskFactory(manager, false);
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
             properties.setProperty(COMMAND, "collapse");
 
             properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
-            properties.setProperty(TITLE, "Collapsed edges view");
+            properties.setProperty(TITLE, "Collapse");
             properties.setProperty(MENU_GRAVITY, "1.0");
             properties.setProperty(IN_MENU_BAR, "true");
             registerService(bc, collapseViewTaskFactory, TaskFactory.class, properties);
         }
         {
-            ExpandViewTaskFactory expendTaskFactory = new ExpandViewTaskFactory(manager);
+            ExpandViewTaskFactory expendTaskFactory = new ExpandViewTaskFactory(manager, false);
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
-            properties.setProperty(COMMAND, "expend");
+            properties.setProperty(COMMAND, "expand");
 
             properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
-            properties.setProperty(TITLE, "Expanded edges view");
+            properties.setProperty(TITLE, "Expand");
             properties.setProperty(MENU_GRAVITY, "2.0");
             properties.setProperty(IN_MENU_BAR, "true");
             registerService(bc, expendTaskFactory, TaskFactory.class, properties);
         }
         {
-            MutationViewTaskFactory mutationViewTaskFactory = new MutationViewTaskFactory(manager);
+            MutationViewTaskFactory mutationViewTaskFactory = new MutationViewTaskFactory(manager, false);
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
             properties.setProperty(COMMAND, "mutation");
 
             properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
-            properties.setProperty(TITLE, "Mutation view");
+            properties.setProperty(TITLE, "Mutation");
             properties.setProperty(MENU_GRAVITY, "3.0");
             properties.setProperty(IN_MENU_BAR, "true");
             registerService(bc, mutationViewTaskFactory, TaskFactory.class, properties);
@@ -134,7 +134,7 @@ public class CyActivator extends AbstractCyActivator {
         {
             VersionTaskFactory versionFactory = new VersionTaskFactory(version);
             Properties versionProps = new Properties();
-            versionProps.setProperty(COMMAND_NAMESPACE, "string");
+            versionProps.setProperty(COMMAND_NAMESPACE, "intact");
             versionProps.setProperty(COMMAND, "version");
             versionProps.setProperty(COMMAND_DESCRIPTION,
                     "Returns the version of IntActApp");
@@ -143,23 +143,6 @@ public class CyActivator extends AbstractCyActivator {
             registerService(bc, versionFactory, TaskFactory.class, versionProps);
         }
 
-        {
-            SettingsTaskFactory settingsFactory =
-                    new SettingsTaskFactory(manager);
-            Properties props = new Properties();
-            props.setProperty(PREFERRED_MENU, "Apps.IntAct");
-            props.setProperty(TITLE, "Settings");
-            props.setProperty(MENU_GRAVITY, "100.0");
-            props.setProperty(IN_MENU_BAR, "true");
-            props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
-            props.setProperty(COMMAND_NAMESPACE, "string");
-            props.setProperty(COMMAND, "settings");
-            props.setProperty(COMMAND_DESCRIPTION,
-                    "Adjust various settings");
-            props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-            props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
-            registerService(bc, settingsFactory, TaskFactory.class, props);
-        }
 
         {
             AddTermsTaskFactory addTerms = new AddTermsTaskFactory(manager);
@@ -174,27 +157,50 @@ public class CyActivator extends AbstractCyActivator {
 
         if (haveGUI) {
             {
-                ShowResultsPanelTaskFactory showResults = new ShowResultsPanelTaskFactory(manager);
+                ShowDetailPanelTaskFactory showResults = new ShowDetailPanelTaskFactory(manager);
                 showResults.reregister();
-                manager.setShowResultsPanelTaskFactory(showResults);
+                manager.utils.setShowDetailPanelTaskFactory(showResults);
 
                 // Now bring up the side panel if the current network is a STRING network
-                CyNetwork current = manager.getCurrentNetwork();
+                CyNetwork current = manager.data.getCurrentNetwork();
                 if (ModelUtils.ifHaveIntactNS(current)) {
                     // It's the current network.  Bring up the results panel
-                    manager.execute(showResults.createTaskIterator(), true);
+                    manager.utils.execute(showResults.createTaskIterator(), true);
                 }
             }
         }
 
-        // Register our Network search factories
         {
-            IntactSearchTaskFactory stringSearch = new IntactSearchTaskFactory(manager);
-            Properties propsSearch = new Properties();
-            registerService(bc, stringSearch, NetworkSearchTaskFactory.class, propsSearch);
+            Properties propsQueryCommand = new Properties();
+            propsQueryCommand.setProperty(COMMAND_NAMESPACE, "intact");
+            propsQueryCommand.setProperty(COMMAND, "query");
+            propsQueryCommand.setProperty(COMMAND_DESCRIPTION, "Search for interactors ids or names and build network around them");
+            propsQueryCommand.setProperty(COMMAND_SUPPORTS_JSON, "false");
+            AbstractTaskFactory intactCommandQueryFactory = new AbstractTaskFactory() {
+                @Override
+                public TaskIterator createTaskIterator() {
+                    return new TaskIterator(new IntactCommandQuery(manager));
+                }
+            };
+            registerService(bc, intactCommandQueryFactory, TaskFactory.class, propsQueryCommand);
+
         }
 
-        manager.info("Intact App initialized");
+        // Register our Network search factories
+
+        {
+            IntactExactQueryTaskFactory intactQuery = new IntactExactQueryTaskFactory(manager);
+            Properties propsSearch = new Properties();
+            registerService(bc, intactQuery, NetworkSearchTaskFactory.class, propsSearch);
+        }
+
+        {
+            IntactBroadSearchTaskFactory intactSearch = new IntactBroadSearchTaskFactory(manager);
+            Properties propsSearch = new Properties();
+            registerService(bc, intactSearch, NetworkSearchTaskFactory.class, propsSearch);
+        }
+
+        manager.utils.info("Intact App initialized");
     }
 
 }

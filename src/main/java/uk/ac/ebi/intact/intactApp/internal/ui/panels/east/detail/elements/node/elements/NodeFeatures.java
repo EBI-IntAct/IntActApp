@@ -2,25 +2,25 @@ package uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.core.Feature;
 import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactCollapsedEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEvidenceEdge;
-import uk.ac.ebi.intact.intactApp.internal.tasks.intacts.factories.ExpandViewTaskFactory;
+import uk.ac.ebi.intact.intactApp.internal.tasks.view.factories.ExpandViewTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.LinkUtils;
+import uk.ac.ebi.intact.intactApp.internal.utils.CollectionUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.awt.event.ItemListener;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -106,11 +106,19 @@ public class NodeFeatures extends AbstractNodeElement {
                     (featureTypePanel, featuresOfType) -> groupElementsInPanel(featureTypePanel, getBackground(), featuresOfType, feature -> feature.name,
                             (featureNamePanel, featuresOfName) -> {
                                 for (Feature feature : featuresOfName) {
-                                    for (IntactEvidenceEdge edge : feature.getEdges()) {
+                                    List<IntactEvidenceEdge> featureEdges = feature.getEdges();
+                                    for (IntactEvidenceEdge edge : featureEdges) {
                                         LinePanel line = new LinePanel(getBackground());
                                         if (summaryEdge == null) {
-                                            line.add(createSelectEdgeButton(edge));
-                                            IntactNode otherNode = edge.source.equals(iNode) ? edge.target : edge.source;
+                                            IntactNode otherNode;
+                                            if (iNode.equals(edge.source)) {
+                                                otherNode = edge.target;
+                                            } else if (iNode.equals(edge.target)) {
+                                                otherNode = edge.source;
+                                            } else {
+                                                continue;
+                                            }
+                                            line.add(new SelectEdgeButton(edge));
                                             line.add(new JLabel("Observed on edge with " + otherNode.name + " (" + edge.ac + ")"));
                                         } else {
                                             if (summaryEdge.subEdgeSUIDs.contains(edge.edge.getSUID())) {
@@ -135,47 +143,47 @@ public class NodeFeatures extends AbstractNodeElement {
         return new CollapsablePanel(featureClass.name, featureListPanel, true);
     }
 
+    public static Map<IntactEvidenceEdge, List<SelectEdgeButton>> edgeToCheckBoxes = new HashMap<>();
+    private final Map<SelectEdgeButton, IntactEvidenceEdge> checkBoxes = new HashMap<>();
 
-    public static Map<IntactEvidenceEdge, List<JCheckBox>> edgeToCheckBoxes = new HashMap<>();
-    private final Map<JCheckBox, IntactEvidenceEdge> checkBoxes = new HashMap<>();
+    private class SelectEdgeButton extends JCheckBox implements ItemListener {
+        private boolean silenceListener = false;
+        private final IntactEvidenceEdge edge;
 
-    private JCheckBox createSelectEdgeButton(IntactEvidenceEdge edge) {
-        JCheckBox selectEdgeCheckBox = new JCheckBox();
-        selectEdgeCheckBox.setSelected(edge.edgeRow.get(CyNetwork.SELECTED, Boolean.class));
-        selectEdgeCheckBox.setToolTipText("Select edge");
-        checkBoxes.put(selectEdgeCheckBox, edge);
-
-        if (!edgeToCheckBoxes.containsKey(edge)) {
-            ArrayList<JCheckBox> edgeCheckBoxes = new ArrayList<>();
-            edgeCheckBoxes.add(selectEdgeCheckBox);
-            edgeToCheckBoxes.put(edge, edgeCheckBoxes);
-        } else {
-            edgeToCheckBoxes.get(edge).add(selectEdgeCheckBox);
+        public SelectEdgeButton(IntactEvidenceEdge edge) {
+            this.edge = edge;
+            setSelected(edge.edgeRow.get(CyNetwork.SELECTED, Boolean.class));
+            setToolTipText("Select edge");
+            checkBoxes.put(this, edge);
+            CollectionUtils.addToGroups(edgeToCheckBoxes, this, selectEdgeButton -> edge);
+            addItemListener(this);
         }
 
-        selectEdgeCheckBox.addItemListener(e -> {
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            if (silenceListener) return;
             IntactManager manager = edge.iNetwork.getManager();
-            IntactNetworkView currentIView = manager.getCurrentIntactNetworkView();
+            IntactNetworkView currentIView = manager.data.getCurrentIntactNetworkView();
             if (currentIView != null && currentIView.type == IntactNetworkView.Type.COLLAPSED) {
-                manager.execute(new ExpandViewTaskFactory(manager).createTaskIterator());
+                manager.utils.execute(new ExpandViewTaskFactory(manager, true).createTaskIterator());
             }
 
             boolean selected = e.getStateChange() == ItemEvent.SELECTED;
             edge.iNetwork.getNetwork().getRow(edge.edge).set(CyNetwork.SELECTED, selected);
 
-            for (JCheckBox checkBox : edgeToCheckBoxes.get(edge)) {
+            for (SelectEdgeButton checkBox : edgeToCheckBoxes.get(edge)) {
+                checkBox.silenceListener = true;
                 checkBox.setSelected(selected);
+                checkBox.silenceListener = false;
             }
-
-        });
-        return selectEdgeCheckBox;
+        }
     }
 
     public void deleteEdgeSelectionCheckboxes() {
-        for (Map.Entry<JCheckBox, IntactEvidenceEdge> entry : checkBoxes.entrySet()) {
+        for (Map.Entry<SelectEdgeButton, IntactEvidenceEdge> entry : checkBoxes.entrySet()) {
             JCheckBox selectCheckBox = entry.getKey();
             IntactEvidenceEdge edge = entry.getValue();
-            List<JCheckBox> edgeCheckBoxes = edgeToCheckBoxes.get(edge);
+            List<SelectEdgeButton> edgeCheckBoxes = edgeToCheckBoxes.get(edge);
             edgeCheckBoxes.remove(selectCheckBox);
             if (edgeCheckBoxes.isEmpty()) {
                 edgeToCheckBoxes.remove(edge);

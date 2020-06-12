@@ -91,7 +91,7 @@ public class MIScoreSliderUI extends RangeSliderUI {
         g.setPaint(p);
         g.fillRoundRect(halfThumb, -unselectedHeight / 2, trackBounds.width, unselectedHeight, unselectedHeight, unselectedHeight);
 
-        g.setPaint(new Color(241, 86, 255, 100));
+        g.setPaint(new Color(84, 84, 84, 100));
         g.fillRoundRect(halfThumb, -unselectedHeight / 2, trackBounds.width, unselectedHeight, unselectedHeight, unselectedHeight);
 
         g.setPaint(p);

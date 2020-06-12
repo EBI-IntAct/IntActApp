@@ -2,10 +2,7 @@ package uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements;
 
 import com.google.common.collect.Comparators;
 import org.cytoscape.model.*;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import uk.ac.ebi.intact.intactApp.internal.model.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.core.Feature;
 import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
@@ -23,8 +20,6 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static java.util.Comparator.*;
 
 /**
  * Displays information about a protein taken from STRING
@@ -88,46 +83,6 @@ public class NodeDetailPanel extends AbstractDetailPanel {
         return selectedNodes;
     }
 
-    // Hide all nodes who's values are less than "value"
-    protected void doFilter(String type) {
-        CyNetworkView view = manager.getCurrentNetworkView();
-        CyNetwork net = view.getModel();
-        Map<String, Double> filter = filters.get(net).get(type);
-        for (CyNode node : net.getNodeList()) {
-            CyRow nodeRow = net.getRow(node);
-            boolean show = true;
-            for (String lbl : filter.keySet()) {
-                Double v = nodeRow.get(type, lbl, Double.class);
-                double nv = filter.get(lbl);
-                if ((v == null && nv > 0) || v < nv) {
-                    show = false;
-                    break;
-                }
-            }
-            View<CyNode> nv = view.getNodeView(node);
-            if (nv == null) continue;
-            if (show) {
-                nv.clearValueLock(BasicVisualLexicon.NODE_VISIBLE);
-                for (CyEdge e : net.getAdjacentEdgeList(node, CyEdge.Type.ANY)) {
-                    final View<CyEdge> ev = view.getEdgeView(e);
-                    if (ev == null) continue;
-                    ev.clearValueLock(BasicVisualLexicon.EDGE_VISIBLE);
-                }
-            } else {
-                nv.setLockedValue(BasicVisualLexicon.NODE_VISIBLE, false);
-                net.getRow(node).set(CyNetwork.SELECTED, false);
-                for (CyEdge e : net.getAdjacentEdgeList(node, CyEdge.Type.ANY)) {
-                    final View<CyEdge> ev = view.getEdgeView(e);
-                    if (ev == null) continue;
-                    net.getRow(e).set(CyNetwork.SELECTED, false);
-                    ev.setLockedValue(BasicVisualLexicon.EDGE_VISIBLE, false);
-                }
-            }
-        }
-    }
-
-
-
 
     public void networkChanged(IntactNetwork newNetwork) {
         this.currentINetwork = newNetwork;
@@ -141,20 +96,20 @@ public class NodeDetailPanel extends AbstractDetailPanel {
 
             List<IntactNode> iNodes = nodes.stream()
                     .map(node -> new IntactNode(currentINetwork, node))
-                    .collect(Comparators.least(MAXIMUM_SELECTED_NODE_SHOWN, nullsLast((comparing(o -> o.name, nullsLast(naturalOrder()))))));
+                    .collect(Comparators.least(MAXIMUM_SELECTED_NODE_SHOWN, IntactNode::compareTo));
 
-            List<String> nodesIds = iNodes.stream().map(iNode -> iNode.id).collect(Collectors.toList());
+            List<String> nodesIds = iNodes.stream().map(iNode -> iNode.preferredId).collect(Collectors.toList());
 
             for (IntactNode node : iNodes) {
                 if (!selectionRunning) {
                     break;
                 }
 
-                if (!nodeIdToNodePanel.containsKey(node.id)) {
+                if (!nodeIdToNodePanel.containsKey(node.preferredId)) {
                     NodePanel newPanel = new NodePanel(node);
                     newPanel.setAlignmentX(LEFT_ALIGNMENT);
                     nodesPanel.add(newPanel, layoutHelper.anchor("west").down().expandHoriz());
-                    nodeIdToNodePanel.put(node.id, newPanel);
+                    nodeIdToNodePanel.put(node.preferredId, newPanel);
                 }
             }
             if (nodes.size() < MAXIMUM_SELECTED_NODE_SHOWN) {
