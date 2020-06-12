@@ -16,6 +16,7 @@ public enum Taxons {
     ANIMALS(33208L, "Other animals",false),
     MAMMALS(40674L, "Other mammals", false),
     FUNGI(4751L, "Other fungi", false),
+    AMOEBOZOA(554915L, "Amoebas", false),
     BACTERIA(2L, "Other bacteria",false),
     VIRUSES(10239L, "Other viruses",false),
     ARCHAEA(2157L, "Other archaea", false),

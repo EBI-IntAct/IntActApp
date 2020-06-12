@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import org.json.XML;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
 import uk.ac.ebi.intact.intactApp.internal.model.core.ontology.SourceOntology;
+import uk.ac.ebi.intact.intactApp.internal.model.events.StyleUpdatedListener;
 import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
 
 import java.awt.*;
@@ -33,24 +34,25 @@ public class StyleMapper {
 
     private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
     public static Hashtable<Long, Paint> taxIdToPaint = new Hashtable<>() {{
-        put(E_COLI.taxId, new Color(137, 51, 54)); // Escherichia coli
-        put(S_CEREVISIAE.taxId, new Color(174, 125, 52));  // Saccharomyces cerevisiae
-        put(H_SAPIENS.taxId, new Color(51, 94, 148));  // Homo sapiens
-        put(M_MUSCULUS.taxId, new Color(28, 67, 156)); // Mus musculus
-        put(D_MELANOGASTER.taxId, new Color(50, 147, 143)); // Drosophila melanogaster
-        put(C_ELEGANS.taxId, new Color(74, 147, 121)); // Caenorhabditis elegans
-        put(A_THALIANA.taxId, new Color(46, 93, 46));  // Arabidopsis thaliana
+        put(E_COLI.taxId, new Color(137, 51, 54));
+        put(S_CEREVISIAE.taxId, new Color(174, 125, 52));
+        put(H_SAPIENS.taxId, new Color(51, 94, 148));
+        put(M_MUSCULUS.taxId, new Color(28, 67, 156));
+        put(D_MELANOGASTER.taxId, new Color(50, 147, 143));
+        put(C_ELEGANS.taxId, new Color(74, 147, 121));
+        put(A_THALIANA.taxId, new Color(46, 93, 46));
 
-        put(CHEMICAL_SYNTHESIS.taxId, new Color(141, 102, 102));  // Chemical Synthesis
+        put(CHEMICAL_SYNTHESIS.taxId, new Color(141, 102, 102));
     }};
     public static Hashtable<Long, Paint> kingdomColors = new Hashtable<>() {{
-        put(PLANTS.taxId, new Color(80, 162, 79)); // Viridiplantae (Plants)
-        put(MAMMALS.taxId, new Color(86, 136, 192)); // Mammals
-        put(ANIMALS.taxId, new Color(62, 181, 170)); // Metazoa (Animals)
-        put(FUNGI.taxId, new Color(235, 144, 0)); // Fungi
-        put(BACTERIA.taxId, new Color(178, 53, 57)); // Bacteria
-        put(VIRUSES.taxId, new Color(132, 100, 190)); // Viruses
-        put(ARCHAEA.taxId, new Color(172, 71, 101)); // Archaea
+        put(PLANTS.taxId, new Color(80, 162, 79));
+        put(MAMMALS.taxId, new Color(86, 136, 192));
+        put(ANIMALS.taxId, new Color(62, 181, 170));
+        put(FUNGI.taxId, new Color(235, 144, 0));
+        put(AMOEBOZOA.taxId, new Color(195, 84, 26));
+        put(BACTERIA.taxId, new Color(178, 53, 57));
+        put(VIRUSES.taxId, new Color(132, 100, 190));
+        put(ARCHAEA.taxId, new Color(172, 71, 101));
         put(ARTIFICIAL.taxId, new Color(101, 101, 101));
     }};
 
@@ -156,7 +158,6 @@ public class StyleMapper {
                     hasNext = false;
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -203,12 +204,6 @@ public class StyleMapper {
                     }
                 }
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return addedTaxIds;
-    }
 
     public static Map<Long, Paint> updateChildrenColors(Long parentTaxId, Color newColor, boolean addDescendants) {
         Map<Long, Paint> updatedTaxIds = new Hashtable<>();
