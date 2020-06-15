@@ -94,7 +94,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
             nodePanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
         }
 
-        content.add(new EdgeDiagram(StyleMapper.edgeTypeToPaint.get(edge.type), 4, edge.expansionType != null));
+        content.add(new EdgeDiagram(StyleMapper.edgeTypeToPaint.get(edge.type), 4, edge.expansionType != null && !edge.expansionType.isBlank()));
     }
 
     private static final Map<IntactNode, NodeDiagramInfo> nodeDiagramInfos = new HashMap<>();
