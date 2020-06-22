@@ -83,6 +83,7 @@ class Row extends JPanel implements ItemListener {
     private JComponent createSpecies(Interactor interactor) {
         JComponent speciesPanel = new VerticalPanel();
         speciesPanel.add(Box.createVerticalGlue());
+        if (interactor.species == null) return new CenteredLabel("");
         Matcher speciesMatcher = speciesPattern.matcher(interactor.species);
         if (speciesMatcher.find()) {
             speciesPanel.add(new CenteredLabel(speciesMatcher.group()));
