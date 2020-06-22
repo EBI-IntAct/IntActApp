@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static uk.ac.ebi.intact.intactApp.internal.ui.panels.east.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.AbstractDetailPanel.backgroundColor;
 import static uk.ac.ebi.intact.intactApp.internal.utils.CollectionUtils.groupBy;
 import static uk.ac.ebi.intact.intactApp.internal.utils.CollectionUtils.groupByMultipleKeys;
 

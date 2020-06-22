@@ -2,7 +2,7 @@ package uk.ac.ebi.intact.intactApp.internal.ui.components.legend;
 
 import org.cytoscape.util.swing.CyColorChooser;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.legend.shapes.Ball;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.LegendDetailPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels.LegendDetailPanel;
 
 import javax.swing.*;
 import java.awt.*;
