@@ -1,28 +1,25 @@
-package uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements;
+package uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels;
 
 import com.google.common.collect.Comparators;
-import org.cytoscape.model.*;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactCollapsedEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEvidenceEdge;
-import uk.ac.ebi.intact.intactApp.internal.model.events.RangeChangeEvent;
-import uk.ac.ebi.intact.intactApp.internal.model.events.RangeChangeListener;
+import uk.ac.ebi.intact.intactApp.internal.model.filters.Filter;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.MIScoreSliderUI;
-import uk.ac.ebi.intact.intactApp.internal.ui.components.slider.RangeSlider;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.spinner.LoadingSpinner;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.AbstractDetailPanel;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.edge.elements.EdgeBasics;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.edge.elements.EdgeDetails;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.edge.elements.EdgeParticipants;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.AbstractDetailPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels.edge.elements.EdgeBasics;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels.edge.elements.EdgeDetails;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels.edge.elements.EdgeParticipants;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.filters.FilterPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
-import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
 
 import javax.swing.*;
@@ -35,19 +32,18 @@ import java.util.concurrent.ThreadPoolExecutor;
 import static java.util.Comparator.comparing;
 
 
-public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeListener {
+public class EdgeDetailPanel extends AbstractDetailPanel {
     private final EasyGBC layoutHelper = new EasyGBC();
     private JPanel edgesPanel;
     private CollapsablePanel selectedEdges;
-    public static RangeSlider scoreSlider;
     private static final int MAXIMUM_SELECTED_EDGE_SHOWN = 100;
     private final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
-
     private final Map<IntactEdge, EdgePanel> edgeToPanel = new HashMap<>();
-
-//    private final CollapseAllButton collapseAllButton = new CollapseAllButton(true, edgeToPanel.values());
-
+    private final JPanel mainPanel = new JPanel(new GridBagLayout());
+    private final JPanel filtersPanel = new JPanel(new GridBagLayout());
+    private final EasyGBC filterHelper = new EasyGBC();
+    private final Map<Class<? extends Filter>, FilterPanel> filterPanels = new HashMap<>();
 
     public EdgeDetailPanel(final IntactManager manager) {
         super(manager, MAXIMUM_SELECTED_EDGE_SHOWN, "edges");
@@ -59,37 +55,41 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
     private void init() {
         setBackground(backgroundColor);
         setLayout(new GridBagLayout());
-        createScorePanel();
+//        createScorePanel();
         createScrollablePanel();
-
     }
 
-    private void createScorePanel() {
-        scoreSlider = new RangeSlider(0, 100);
-        scoreSlider.setUI(new MIScoreSliderUI(scoreSlider));
-        scoreSlider.setForeground(Color.LIGHT_GRAY);
-        scoreSlider.setValue(0);
-        scoreSlider.setUpperValue(100);
-        scoreSlider.addRangeChangeListener(this);
-        Color bg = new Color(229, 229, 229);
-        JPanel scorePanel = new JPanel(new GridBagLayout());
-        scorePanel.setBackground(bg);
-        EasyGBC d = new EasyGBC();
-        JLabel label = new JLabel("MI Score");
+    public void setupFilters(List<Filter<? extends IntactEdge>> edgeFilters) {
+        for (Filter<? extends IntactEdge> filter : edgeFilters) {
+            if (!filterPanels.containsKey(filter.getClass())) {
+                FilterPanel<?> filterPanel = FilterPanel.createFilterPanel(filter);
+                if (filterPanel != null) {
+                    filtersPanel.add(filterPanel, filterHelper.down().expandHoriz());
+                    filterPanels.put(filter.getClass(), filterPanel);
+                }
+            } else {
+                filterPanels.get(filter.getClass()).setFilter(filter);
+            }
+        }
+        hideDisabledFilters();
+    }
 
-        scoreSlider.setBackground(bg);
-        scorePanel.add(label, d.anchor("west").noExpand());
-        scorePanel.add(scoreSlider, d.right().anchor("west").expandHoriz());
-        add(scorePanel, layoutHelper.down().anchor("west").expandHoriz());
+    public void hideDisabledFilters() {
+        for (FilterPanel<?> filterPanel : filterPanels.values()) {
+            filterPanel.setVisible(filterPanel.getFilter().isEnabled());
+        }
     }
 
     private void createScrollablePanel() {
-        JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBackground(backgroundColor);
         JScrollPane scrollPane = new JScrollPane(mainPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.getVerticalScrollBar().setBlockIncrement(100);
         scrollPane.setAlignmentX(LEFT_ALIGNMENT);
         add(scrollPane, layoutHelper.down().anchor("west").expandBoth());
+        CollapsablePanel filtersCP = new CollapsablePanel("Filters", filtersPanel, false);
+        filtersCP.setBackground(backgroundColor);
+        mainPanel.add(filtersCP, layoutHelper.anchor("northwest").down().expandHoriz());
+//        mainPanel.add(Box.createHorizontalGlue(), layoutHelper.anchor("west").right().right().expandHoriz());
         mainPanel.add(createEdgesPanel(), layoutHelper.anchor("north").down().expandHoriz());
         mainPanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
     }
@@ -100,7 +100,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
         edgesPanel.add(loadingSpinner, layoutHelper.anchor("west").noExpand());
         selectedEdges(CyTableUtil.getEdgesInState(currentINetwork.getNetwork(), CyNetwork.SELECTED, true));
 
-        selectedEdges = new CollapsablePanel("Selected edges", edgesPanel, false);
+        selectedEdges = new CollapsablePanel("Selected edges info", edgesPanel, false);
 //        LinePanel headerLine = new LinePanel(backgroundColor);
 //        JLabel label = new JLabel(" Selected edges  ");
 //        label.setFont(textFont.deriveFont(15f));
@@ -165,27 +165,28 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
     }
 
     private boolean isEdgeOfCurrentViewType(IntactEdge edge) {
-        return (currentIView.type == IntactNetworkView.Type.COLLAPSED && edge.collapsed) ||
-                (currentIView.type != IntactNetworkView.Type.COLLAPSED && !edge.collapsed);
+        return (currentIView.getType() == IntactNetworkView.Type.COLLAPSED && edge.collapsed) ||
+                (currentIView.getType() != IntactNetworkView.Type.COLLAPSED && !edge.collapsed);
     }
 
 
     public void networkViewChanged(CyNetworkView view) {
-        if (currentIView != null) {
-            scoreSlider.removeRangeChangeListener(currentIView);
-        }
-        scoreSlider.silentRangeChangeEvents();
+//        if (currentIView != null) {
+//            scoreSlider.removeRangeChangeListener(currentIView);
+//        }
+//        scoreSlider.silentRangeChangeEvents();
         currentIView = manager.data.getIntactNetworkView(view);
-        scoreSlider.addRangeChangeListener(currentIView);
+//        scoreSlider.addRangeChangeListener(currentIView);
 
-        IntactNetworkView.Range miScoreRange = currentIView.getMiScoreRange();
-        scoreSlider.setValue(miScoreRange.lowerValue);
-        scoreSlider.setUpperValue(miScoreRange.upperValue);
-        scoreSlider.enableRangeChangeEvents();
+//        IntactNetworkView.Range miScoreRange = currentIView.getMiScoreRange();
+//        scoreSlider.setValue(miScoreRange.lowerValue);
+//        scoreSlider.setUpperValue(miScoreRange.upperValue);
+//        scoreSlider.enableRangeChangeEvents();
     }
 
     public void viewTypeChanged() {
         executor.execute(() -> {
+                    hideDisabledFilters();
                     TimeUtils.sleep(1000);
                     selectedEdges(currentINetwork.getSelectedEdges());
                 }
@@ -193,53 +194,9 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
     }
 
 
-    @Override
-    public void rangeChanged(RangeChangeEvent event) {
-        RangeSlider slider = event.getRangeSlider();
-        double lower = slider.getValue() / 100d;
-        double upper = slider.getUpperValue() / 100d;
-        Set<CyEdge> hiddenEdges = new HashSet<>();
-
-        List<CyEdge> toFilter;
-        if (currentIView.type == IntactNetworkView.Type.COLLAPSED) {
-            toFilter = currentINetwork.getCollapsedEdges();
-            hiddenEdges.addAll(currentINetwork.getExpandedEdges());
-        } else {
-            toFilter = currentINetwork.getExpandedEdges();
-            hiddenEdges.addAll(currentINetwork.getCollapsedEdges());
-        }
-
-        for (CyEdge edge : toFilter) {
-            View<CyEdge> edgeView = currentIView.view.getEdgeView(edge);
-            CyNetwork network = currentINetwork.getNetwork();
-            CyRow edgeRow = network.getRow(edge);
-
-            double score = edgeRow.get(ModelUtils.MI_SCORE, Double.class);
-
-            if (score > lower && score < upper) {
-                hiddenEdges.remove(edge);
-                for (CyNode node : new CyNode[]{edge.getSource(), edge.getTarget()}) {
-                    currentIView.view.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
-                }
-                edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true);
-            } else {
-                hiddenEdges.add(edge);
-                edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
-                edgeRow.set(CyNetwork.SELECTED, false);
-                for (CyNode node : new CyNode[]{edge.getSource(), edge.getTarget()}) {
-                    if (hiddenEdges.containsAll(network.getAdjacentEdgeList(node, CyEdge.Type.ANY))) {
-                        currentIView.view.getNodeView(node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
-                        network.getRow(node).set(CyNetwork.SELECTED, false);
-                    }
-                }
-            }
-        }
-    }
-
     private class EdgePanel extends CollapsablePanel {
 
         private final EdgeParticipants edgeParticipants;
-        private final EdgeDetails edgeDetails;
 
         public EdgePanel(IntactEdge edge) {
             super("", !(selectedEdges == null || selectedEdges.collapseAllButton.isExpanded()));
@@ -258,8 +215,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel implements RangeChangeL
             setHeader(title);
 
             content.add(new EdgeBasics(edge, openBrowser));
-            edgeDetails = new EdgeDetails(edge, openBrowser);
-            content.add(edgeDetails);
+            content.add(new EdgeDetails(edge, openBrowser));
             edgeParticipants = new EdgeParticipants(edge, openBrowser);
             content.add(edgeParticipants);
         }

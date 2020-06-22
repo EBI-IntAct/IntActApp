@@ -1,18 +1,22 @@
-package uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements;
+package uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels;
 
 import com.google.common.collect.Comparators;
-import org.cytoscape.model.*;
-import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.core.Feature;
 import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
+import uk.ac.ebi.intact.intactApp.internal.model.filters.Filter;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.AbstractDetailPanel;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeBasics;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeDetails;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeFeatures;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.NodeSchematic;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.node.elements.identifiers.NodeIdentifiers;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.AbstractDetailPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels.node.elements.NodeBasics;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels.node.elements.NodeDetails;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels.node.elements.NodeFeatures;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels.node.elements.NodeSchematic;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels.node.elements.identifiers.NodeIdentifiers;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.filters.FilterPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
@@ -21,11 +25,6 @@ import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Displays information about a protein taken from STRING
- *
- * @author Scooter Morris
- */
 public class NodeDetailPanel extends AbstractDetailPanel {
     private JPanel nodesPanel = null;
     private CollapsablePanel selectedNodes;
@@ -33,8 +32,9 @@ public class NodeDetailPanel extends AbstractDetailPanel {
     private final EasyGBC layoutHelper = new EasyGBC();
     public volatile boolean selectionRunning;
     private final Map<String, NodePanel> nodeIdToNodePanel = new HashMap<>();
-
-//    private final CollapseAllButton collapseAllButton = new CollapseAllButton(true, nodeIdToNodePanel.values());
+    private final JPanel filtersPanel = new JPanel(new GridBagLayout());
+    private final EasyGBC filterHelper = new EasyGBC();
+    private final Map<Class<? extends Filter>, FilterPanel> filterPanels = new HashMap<>();
 
     public NodeDetailPanel(final IntactManager manager) {
         super(manager, MAXIMUM_SELECTED_NODE_SHOWN, "nodes");
@@ -54,7 +54,9 @@ public class NodeDetailPanel extends AbstractDetailPanel {
             mainPanel.setLayout(new GridBagLayout());
             mainPanel.setBackground(backgroundColor);
             EasyGBC d = new EasyGBC();
-
+            CollapsablePanel filters = new CollapsablePanel("Filters", filtersPanel, true);
+            filters.setBackground(backgroundColor);
+            mainPanel.add(filters, d.down().anchor("north").expandHoriz());
             mainPanel.add(createNodesPanel(), d.down().anchor("north").expandHoriz());
             mainPanel.add(Box.createVerticalGlue(), d.down().expandVert());
         }
@@ -65,6 +67,27 @@ public class NodeDetailPanel extends AbstractDetailPanel {
         add(scrollPane, c.down().anchor("west").expandBoth());
     }
 
+    public void setupFilters(List<Filter<? extends IntactNode>> nodeFilters) {
+        for (Filter<? extends IntactNode> filter : nodeFilters) {
+            if (!filterPanels.containsKey(filter.getClass())) {
+                FilterPanel<?> filterPanel = FilterPanel.createFilterPanel(filter);
+                if (filterPanel != null) {
+                    filtersPanel.add(filterPanel, filterHelper.down().expandHoriz());
+                    filterPanels.put(filter.getClass(), filterPanel);
+                }
+            } else {
+                filterPanels.get(filter.getClass()).setFilter(filter);
+            }
+        }
+        hideDisabledFilters();
+    }
+
+    public void hideDisabledFilters() {
+        for (FilterPanel<?> filterPanel : filterPanels.values()) {
+            filterPanel.setVisible(filterPanel.getFilter().isEnabled());
+        }
+    }
+
     private JPanel createNodesPanel() {
         nodesPanel = new JPanel();
         nodesPanel.setBackground(backgroundColor);
@@ -73,7 +96,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
         selectedNodes(CyTableUtil.getNodesInState(currentINetwork.getNetwork(), CyNetwork.SELECTED, true));
 
         nodesPanel.setAlignmentX(LEFT_ALIGNMENT);
-        selectedNodes = new CollapsablePanel("Selected nodes", nodesPanel, false);
+        selectedNodes = new CollapsablePanel("Selected nodes info", nodesPanel, false);
 //        LinePanel headerLine = new LinePanel(backgroundColor);
 //        JLabel label = new JLabel(" Selected nodes  ");
 //        label.setFont(textFont.deriveFont(15f));
@@ -86,7 +109,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
 
     public void networkChanged(IntactNetwork newNetwork) {
         this.currentINetwork = newNetwork;
-         selectedNodes(newNetwork.getSelectedNodes());
+        selectedNodes(newNetwork.getSelectedNodes());
     }
 
 

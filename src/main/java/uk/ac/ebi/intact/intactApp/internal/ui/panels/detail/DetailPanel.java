@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.intactApp.internal.ui.panels.east;
+package uk.ac.ebi.intact.intactApp.internal.ui.panels.detail;
 
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
@@ -10,20 +10,23 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.events.SelectedNodesAndEdgesEvent;
 import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
 import org.cytoscape.view.model.CyNetworkView;
-import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
+import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
+import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.events.IntactNetworkCreatedEvent;
 import uk.ac.ebi.intact.intactApp.internal.model.events.IntactNetworkCreatedListener;
-import uk.ac.ebi.intact.intactApp.internal.model.events.IntactViewTypeChangedEvent;
+import uk.ac.ebi.intact.intactApp.internal.model.events.IntactViewChangedEvent;
 import uk.ac.ebi.intact.intactApp.internal.model.events.IntactViewTypeChangedListener;
+import uk.ac.ebi.intact.intactApp.internal.model.filters.Filter;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.tasks.view.factories.CollapseViewTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.tasks.view.factories.ExpandViewTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.tasks.view.factories.MutationViewTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.EdgeDetailPanel;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.LegendDetailPanel;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.NodeDetailPanel;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.detail.elements.VersionPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels.EdgeDetailPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels.LegendDetailPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels.NodeDetailPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.sub.panels.VersionPanel;
 import uk.ac.ebi.intact.intactApp.internal.utils.IconUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
@@ -31,7 +34,9 @@ import uk.ac.ebi.intact.intactApp.internal.utils.TimeUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 public class DetailPanel extends JPanel
@@ -63,7 +68,7 @@ public class DetailPanel extends JPanel
     public DetailPanel(final IntactManager manager) {
         this.manager = manager;
         manager.data.addIntactNetworkCreatedListener(this);
-        manager.data.addIntactViewTypeChangedListener(this);
+        manager.data.addIntactViewChangedListener(this);
         this.setLayout(new BorderLayout());
 
         collapseViewTaskFactory = new CollapseViewTaskFactory(manager, true);
@@ -75,10 +80,24 @@ public class DetailPanel extends JPanel
         viewTypes.add(expandedViewType);
         viewTypes.add(mutationViewType);
 
-        collapsedViewType.setSelected(true);
+
+        IntactNetworkView iView = manager.data.getCurrentIntactNetworkView();
         collapsedViewType.addActionListener(e -> manager.utils.execute(collapseViewTaskFactory.createTaskIterator()));
         expandedViewType.addActionListener(e -> manager.utils.execute(expandViewTaskFactory.createTaskIterator()));
         mutationViewType.addActionListener(e -> manager.utils.execute(mutationViewTaskFactory.createTaskIterator()));
+        if (iView != null) {
+            switch (iView.getType()) {
+                case COLLAPSED:
+                    collapsedViewType.setSelected(true);
+                    break;
+                case EXPANDED:
+                    expandedViewType.setSelected(true);
+                    break;
+                case MUTATION:
+                    mutationViewType.setSelected(true);
+                    break;
+            }
+        }
 
         JPanel viewTypesPanel = new JPanel(new GridLayout(3, 1));
         viewTypesPanel.setBorder(BorderFactory.createTitledBorder("View types"));
@@ -87,18 +106,6 @@ public class DetailPanel extends JPanel
         viewTypesPanel.add(mutationViewType);
         JPanel upperPanel = new JPanel(new GridLayout(1, 2));
         upperPanel.add(viewTypesPanel);
-
-//        ToggleSwitch toggleFancy = new ToggleSwitch(true, new Color(59, 136, 253));
-//        toggleFancy.addChangeListener(e -> manager.toggleFancyStyles());
-//        JPanel buttonsPanel = new JPanel();
-//        Box fastFancyBox = Box.createHorizontalBox();
-//        fastFancyBox.add(new JLabel("Fast"));
-//        fastFancyBox.add(Box.createHorizontalStrut(4));
-//        fastFancyBox.add(toggleFancy);
-//        fastFancyBox.add(Box.createHorizontalStrut(4));
-//        fastFancyBox.add(new JLabel("Fancy"));
-//        buttonsPanel.add(fastFancyBox);
-//        upperPanel.add(buttonsPanel);
         this.add(upperPanel, BorderLayout.NORTH);
 
 
@@ -116,6 +123,10 @@ public class DetailPanel extends JPanel
         manager.utils.registerService(this, SetCurrentNetworkViewListener.class, new Properties());
         manager.utils.registerService(this, SelectedNodesAndEdgesListener.class, new Properties());
         registered = true;
+        if (iView != null) {
+            setupFilters(iView);
+            legendPanel.viewTypeChanged(iView.getType());
+        }
         revalidate();
         repaint();
     }
@@ -202,7 +213,7 @@ public class DetailPanel extends JPanel
     private void updateRadioButtons(CyNetworkView view) {
         IntactNetworkView intactNetworkView = manager.data.getIntactNetworkView(view);
         if (intactNetworkView != null) {
-            switch (intactNetworkView.type) {
+            switch (intactNetworkView.getType()) {
                 case COLLAPSED:
                     collapsedViewType.setSelected(true);
                     break;
@@ -232,6 +243,21 @@ public class DetailPanel extends JPanel
         }
     }
 
+    public void setupFilters(IntactNetworkView view) {
+        List<Filter<? extends IntactEdge>> edgeFilters = new ArrayList<>();
+        List<Filter<? extends IntactNode>> nodeFilters = new ArrayList<>();
+        for (Filter<?> filter : view.getFilters()) {
+            if (IntactEdge.class.isAssignableFrom(filter.elementType)) {
+                edgeFilters.add((Filter<? extends IntactEdge>) filter);
+            } else if (IntactNode.class.isAssignableFrom(filter.elementType)) {
+                nodeFilters.add((Filter<? extends IntactNode>) filter);
+            }
+        }
+        edgePanel.setupFilters(edgeFilters);
+        nodePanel.setupFilters(nodeFilters);
+
+    }
+
 
     @Override
     public void handleEvent(SetCurrentNetworkViewEvent e) {
@@ -240,6 +266,10 @@ public class DetailPanel extends JPanel
             updateRadioButtons(view);
             legendPanel.networkViewChanged(view);
             edgePanel.networkViewChanged(view);
+            IntactNetworkView iView = manager.data.getIntactNetworkView(view);
+            if (iView != null) {
+                setupFilters(iView);
+            }
         }
     }
 
@@ -258,7 +288,7 @@ public class DetailPanel extends JPanel
     }
 
     @Override
-    public void handleEvent(IntactViewTypeChangedEvent event) {
+    public void handleEvent(IntactViewChangedEvent event) {
         legendPanel.viewTypeChanged(event.newType);
         edgePanel.viewTypeChanged();
         switch (event.newType) {
