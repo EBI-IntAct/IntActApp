@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.intactApp.internal.model.managers;
+package uk.ac.ebi.intact.intactApp.internal.model.managers.sub.managers;
 
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyUserLog;
@@ -12,7 +12,7 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskObserver;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowDetailPanelTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.DetailPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.DetailPanel;
 
 import javax.swing.*;
 import java.util.Map;
@@ -29,7 +29,7 @@ public class CytoUtils {
     ShowDetailPanelTaskFactory detailPanelTaskFactory;
     DetailPanel detailPanel;
 
-    CytoUtils(CyServiceRegistrar registrar) {
+    public CytoUtils(CyServiceRegistrar registrar) {
         this.logger = Logger.getLogger(CyUserLog.NAME);
         this.registrar = registrar;
         // Get our task managers
@@ -89,7 +89,7 @@ public class CytoUtils {
     public void critical(String criticalError) {
         logger.error(criticalError);
         SwingUtilities.invokeLater(
-                () -> JOptionPane.showMessageDialog(null, "<html><p style=\"width:200px;\">" + criticalError + "</p></html>", "Critical stringApp error", JOptionPane.ERROR_MESSAGE)
+                () -> JOptionPane.showMessageDialog(null, "<html><p style=\"width:200px;\">" + criticalError + "</p></html>", "Critical IntActApp error", JOptionPane.ERROR_MESSAGE)
         );
     }
 

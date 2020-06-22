@@ -1,7 +1,8 @@
-package uk.ac.ebi.intact.intactApp.internal.model.managers;
+package uk.ac.ebi.intact.intactApp.internal.model.managers.sub.managers;
 
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.CollapsedIntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.ExpandedIntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.IntactStyle;
@@ -16,7 +17,7 @@ public class IntactStyleManager {
     private final IntactManager intactManager;
     final Map<IntactNetworkView.Type, IntactStyle> intactStyles = new HashMap<>();
 
-    IntactStyleManager(IntactManager intactManager) {
+    public IntactStyleManager(IntactManager intactManager) {
         this.intactManager = intactManager;
     }
 

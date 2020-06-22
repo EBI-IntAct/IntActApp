@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.intactApp.internal.model.managers;
+package uk.ac.ebi.intact.intactApp.internal.model.managers.sub.managers;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.*;
@@ -22,8 +22,9 @@ import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.model.events.IntactNetworkCreatedEvent;
 import uk.ac.ebi.intact.intactApp.internal.model.events.IntactNetworkCreatedListener;
-import uk.ac.ebi.intact.intactApp.internal.model.events.IntactViewTypeChangedEvent;
+import uk.ac.ebi.intact.intactApp.internal.model.events.IntactViewChangedEvent;
 import uk.ac.ebi.intact.intactApp.internal.model.events.IntactViewTypeChangedListener;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.CollapsedIntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
@@ -45,7 +46,7 @@ public class IntactDataManager implements
     final Map<CyNetwork, IntactNetwork> intactNetworkMap;
     final Map<CyNetworkView, IntactNetworkView> intactNetworkViewMap;
 
-    IntactDataManager(IntactManager manager) {
+    public IntactDataManager(IntactManager manager) {
         this.manager = manager;
         intactNetworkMap = new HashMap<>();
         intactNetworkViewMap = new HashMap<>();
@@ -62,7 +63,7 @@ public class IntactDataManager implements
             buildIntactNetworkTableFromExistingOne(intactNetwork);
             intactNetwork.completeMissingNodeColorsFromTables();
             for (CyNetworkView view : networkViewManager.getNetworkViews(network)) {
-                addNetworkView(view);
+                addNetworkView(view, true);
             }
         }
     }
@@ -133,9 +134,10 @@ public class IntactDataManager implements
         manager.utils.getService(CyApplicationManager.class).setCurrentNetwork(network);
     }
 
-    public void addNetworkView(CyNetworkView view) {
-        IntactNetworkView iView = new IntactNetworkView(manager, view);
+    public IntactNetworkView addNetworkView(CyNetworkView view, boolean loadData) {
+        IntactNetworkView iView = new IntactNetworkView(manager, view, loadData);
         intactNetworkViewMap.put(view, iView);
+        return iView;
     }
 
     public CyNetwork getCurrentNetwork() {
@@ -187,7 +189,7 @@ public class IntactDataManager implements
     @Override
     public void handleEvent(NetworkViewAddedEvent e) {
         if (intactNetworkMap.containsKey(e.getNetworkView().getModel())) {
-            addNetworkView(e.getNetworkView());
+            addNetworkView(e.getNetworkView(), false);
         }
     }
 
@@ -213,14 +215,13 @@ public class IntactDataManager implements
 
         for (CyNetworkView view : event.getLoadedSession().getNetworkViews()) {
             if (ModelUtils.isIntactNetwork(view.getModel())) {
-                addNetworkView(view);
+                addNetworkView(view, true);
             }
         }
 
-
-        if (ModelUtils.ifHaveIntactNS(getCurrentNetwork())) {
-            CyApplicationManager applicationManager = manager.utils.getService(CyApplicationManager.class);
-            applicationManager.setCurrentNetworkView(applicationManager.getCurrentNetworkView());
+        IntactNetworkView currentView = getCurrentIntactNetworkView();
+        if (currentView != null) {
+            fireIntactViewChangedEvent(new IntactViewChangedEvent(manager, currentView));
             manager.utils.showResultsPanel();
         } else {
             manager.utils.hideResultsPanel();
@@ -337,23 +338,23 @@ public class IntactDataManager implements
 
 
     //================= IntactViewTypeChanged =================//
-    public void intactViewTypeChanged(IntactNetworkView.Type newType, IntactNetworkView iView) {
+    public void intactViewChanged(IntactNetworkView.Type newType, IntactNetworkView iView) {
         manager.style.intactStyles.get(newType).applyStyle(iView.view);
-        iView.type = newType;
-        fireIntactViewTypeChangedEvent(new IntactViewTypeChangedEvent(manager, newType));
+        iView.setType(newType);
+        fireIntactViewChangedEvent(new IntactViewChangedEvent(manager, iView));
     }
 
-    void fireIntactViewTypeChangedEvent(IntactViewTypeChangedEvent event) {
+    public void fireIntactViewChangedEvent(IntactViewChangedEvent event) {
         for (IntactViewTypeChangedListener listener : intactViewTypeChangedListeners) {
             listener.handleEvent(event);
         }
     }
 
-    public void addIntactViewTypeChangedListener(IntactViewTypeChangedListener listener) {
+    public void addIntactViewChangedListener(IntactViewTypeChangedListener listener) {
         intactViewTypeChangedListeners.add(listener);
     }
 
-    public void removeIntactViewTypeChangedListener(IntactViewTypeChangedListener listener) {
+    public void removeIntactViewChangedListener(IntactViewTypeChangedListener listener) {
         intactViewTypeChangedListeners.remove(listener);
     }
 }

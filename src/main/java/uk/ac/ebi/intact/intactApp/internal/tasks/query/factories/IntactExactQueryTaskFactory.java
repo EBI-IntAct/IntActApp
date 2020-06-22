@@ -70,47 +70,7 @@ public class IntactExactQueryTaskFactory extends AbstractNetworkSearchTaskFactor
 
 
     @Override
-    public void allFinished(FinishStatus finishStatus) {
-    }
-
-
-    @Override
-    public void taskFinished(ObservableTask task) {
-        if (!(task instanceof TermsResolvingTask)) {
-            return;
-        }
-
-        Map<String, List<Interactor>> interactorsToResolve = intactNetwork.getInteractorsToResolve();
-        if (showNoResults(interactorsToResolve)) return;
-        if (intactNetwork.hasNoAmbiguity()) {
-            importNetwork();
-        } else {
-            SwingUtilities.invokeLater(() -> {
-                JDialog d = new JDialog();
-                d.setTitle("Terms disambiguation");
-                d.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-                ResolveTermsPanel panel = new ResolveTermsPanel(manager, intactNetwork,null,false, false);
-                d.setContentPane(panel);
-                d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-                d.pack();
-                d.setVisible(true);
-            });
-        }
-    }
-
-    private boolean showNoResults(Map<String, List<Interactor>> resolvedInteractors) {
-        if (resolvedInteractors == null || resolvedInteractors.size() == 0) {
-            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, "Your query returned no results",
-                    "No results", JOptionPane.ERROR_MESSAGE));
-            return true;
-        }
-        return false;
-    }
-
-    void importNetwork() {
-        Map<String, String> acToTerm = new HashMap<>();
-        List<String> intactAcs = intactNetwork.combineAcs(acToTerm);
-        TaskFactory factory = new ImportNetworkTaskFactory(intactNetwork, intactAcs, true, null);
-        manager.utils.execute(factory.createTaskIterator());
+    public JComponent getOptionsComponent() {
+        return new OptionsPanel(manager, IntactOptionManager.Scope.SEARCH);
     }
 }

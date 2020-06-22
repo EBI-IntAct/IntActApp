@@ -113,6 +113,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         initScrollPanel();
         fillDisplayPanel();
         createFilters();
+        add(new CollapsablePanel("Options", new OptionsPanel(manager, Scope.DISAMBIGUATION), false), layoutHelper.down().expandHoriz());
         createControlButtons();
     }
 
@@ -245,7 +246,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
                     Object value = column.getValue.apply(interactor);
                     if (!visibleValues.contains(value)) {
                         visibleValues.add(value);
-                        JCheckBox checkBox = new JCheckBox(value.toString(), true);
+                        JCheckBox checkBox = new JCheckBox(value != null ? value.toString() : "", true);
                         columnFilterMenus.get(column).add(checkBox);
                         checkBox.addItemListener(e -> {
                             switch (e.getStateChange()) {
@@ -306,7 +307,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             if (interactorsToQuery.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No interactors selected. Please select at least one interactor.");
             } else {
-                TaskFactory factory = new ImportNetworkTaskFactory(iNetwork, interactorsToQuery.stream().map(interactor -> interactor.ac).collect(toList()), true, null);
+                TaskFactory factory = new ImportNetworkTaskFactory(iNetwork, interactorsToQuery.stream().map(interactor -> interactor.ac).collect(toList()), manager.option.ADD_INTERACTING_PARTNERS.getValue(), null);
                 manager.utils.execute(factory.createTaskIterator());
                 close();
             }

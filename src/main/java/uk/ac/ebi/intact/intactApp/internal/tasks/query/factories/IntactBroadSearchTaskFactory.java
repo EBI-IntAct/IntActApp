@@ -68,38 +68,7 @@ public class IntactBroadSearchTaskFactory extends AbstractNetworkSearchTaskFacto
 
 
     @Override
-    public void allFinished(FinishStatus finishStatus) {
-    }
-
-
-    @Override
-    public void taskFinished(ObservableTask task) {
-        if (!(task instanceof TermsResolvingTask)) {
-            return;
-        }
-
-        Map<String, List<Interactor>> interactorsToResolve = intactNetwork.getInteractorsToResolve();
-        if (showNoResults(interactorsToResolve)) return;
-        intactNetwork.hasNoAmbiguity();
-        SwingUtilities.invokeLater(() -> {
-            JDialog d = new JDialog();
-            d.setTitle("Query preview");
-            d.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-            ResolveTermsPanel panel = new ResolveTermsPanel(manager, intactNetwork);
-            d.setContentPane(panel);
-            d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            d.pack();
-            d.setVisible(true);
-        });
-
-    }
-
-    private boolean showNoResults(Map<String, List<Interactor>> resolvedInteractors) {
-        if (resolvedInteractors == null || resolvedInteractors.size() == 0) {
-            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, "Your query returned no results",
-                    "No results", JOptionPane.ERROR_MESSAGE));
-            return true;
-        }
-        return false;
+    public JComponent getOptionsComponent() {
+        return new OptionsPanel(manager, IntactOptionManager.Scope.SEARCH);
     }
 }
