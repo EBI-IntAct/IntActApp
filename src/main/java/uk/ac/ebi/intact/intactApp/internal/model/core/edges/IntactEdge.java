@@ -5,6 +5,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.core.Feature;
+import uk.ac.ebi.intact.intactApp.internal.model.core.IntactElement;
 import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
 import uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils;
 
@@ -13,7 +14,7 @@ import java.util.*;
 import static uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils.SOURCE_FEATURES;
 import static uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils.TARGET_FEATURES;
 
-public abstract class IntactEdge {
+public abstract class IntactEdge implements IntactElement {
     public final IntactNetwork iNetwork;
     public final CyEdge edge;
     public final String name;
@@ -30,7 +31,9 @@ public abstract class IntactEdge {
         if (iNetwork == null || edge == null) return null;
         CyRow edgeRow = iNetwork.getNetwork().getRow(edge);
         if (edgeRow == null) return null;
-        if (edgeRow.get(ModelUtils.C_IS_COLLAPSED, Boolean.class)) {
+        Boolean isCollapsed = edgeRow.get(ModelUtils.C_IS_COLLAPSED, Boolean.class);
+        if (isCollapsed == null) return null;
+        if (isCollapsed) {
             return new IntactCollapsedEdge(iNetwork, edge);
         } else {
             return new IntactEvidenceEdge(iNetwork, edge);

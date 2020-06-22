@@ -1,10 +1,8 @@
 package uk.ac.ebi.intact.intactApp.internal.model.core;
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
+import org.cytoscape.model.*;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
+import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.core.ontology.OntologyIdentifier;
 import uk.ac.ebi.intact.intactApp.internal.model.core.ontology.SourceOntology;
 
@@ -16,7 +14,7 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import static uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils.*;
 
-public class IntactNode extends Interactor implements Comparable<Interactor> {
+public class IntactNode extends Interactor implements Comparable<Interactor>, IntactElement {
     public final IntactNetwork iNetwork;
     public final CyNode node;
     public final Identifier preferredIdentifier;
@@ -53,6 +51,10 @@ public class IntactNode extends Interactor implements Comparable<Interactor> {
         if (nodeIdentifiers != null) {
             identifierAcs.addAll(nodeIdentifiers.stream().filter(s -> !s.isBlank()).collect(toList()));
         }
+    }
+
+    public List<IntactEdge> getAdjacentEdges() {
+        return iNetwork.getNetwork().getAdjacentEdgeList(node, CyEdge.Type.ANY).stream().map(edge -> IntactEdge.createIntactEdge(iNetwork, edge)).collect(toList());
     }
 
     public List<Identifier> getIdentifiers() {
