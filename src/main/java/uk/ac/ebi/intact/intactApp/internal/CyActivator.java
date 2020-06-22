@@ -22,6 +22,7 @@ import uk.ac.ebi.intact.intactApp.internal.tasks.query.factories.AddTermsTaskFac
 import uk.ac.ebi.intact.intactApp.internal.tasks.query.factories.IntactBroadSearchTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.tasks.query.IntactCommandQuery;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.*;
+import uk.ac.ebi.intact.intactApp.internal.tasks.settings.SettingsTask;
 import uk.ac.ebi.intact.intactApp.internal.tasks.view.factories.CollapseViewTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.tasks.view.factories.ExpandViewTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.tasks.view.factories.MutationViewTaskFactory;
@@ -182,8 +183,25 @@ public class CyActivator extends AbstractCyActivator {
                     return new TaskIterator(new IntactCommandQuery(manager));
                 }
             };
-            registerService(bc, intactCommandQueryFactory, TaskFactory.class, propsQueryCommand);
 
+            registerService(bc, intactCommandQueryFactory, TaskFactory.class, propsQueryCommand);
+        }
+
+        {
+            Properties propsSettings = new Properties();
+            propsSettings.setProperty(PREFERRED_MENU, "Apps.IntAct");
+            propsSettings.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+            propsSettings.setProperty(TITLE, "Settings");
+            propsSettings.setProperty(MENU_GRAVITY, "20.0");
+            propsSettings.setProperty(IN_MENU_BAR, "true");
+            AbstractTaskFactory intactSettingsFactory = new AbstractTaskFactory() {
+                @Override
+                public TaskIterator createTaskIterator() {
+                    return new TaskIterator(new SettingsTask(manager));
+                }
+            };
+
+            registerService(bc, intactSettingsFactory, TaskFactory.class, propsSettings);
         }
 
         // Register our Network search factories
