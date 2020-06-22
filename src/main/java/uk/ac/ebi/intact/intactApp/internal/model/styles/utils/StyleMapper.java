@@ -3,8 +3,6 @@ package uk.ac.ebi.intact.intactApp.internal.model.styles.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.json.JSONObject;
 import org.json.XML;
@@ -23,7 +21,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import static uk.ac.ebi.intact.intactApp.internal.io.HttpUtils.getRequestResultForUrl;
-import static uk.ac.ebi.intact.intactApp.internal.model.styles.utils.Taxons.*;
+import static uk.ac.ebi.intact.intactApp.internal.model.styles.utils.Taxons.ARTIFICIAL;
 
 public class StyleMapper {
     private static boolean taxIdsReady = false;
@@ -33,80 +31,58 @@ public class StyleMapper {
     private static boolean edgeTypesReady = false;
     private static boolean edgeTypesWorking = false;
     private static final List<WeakReference<StyleUpdatedListener>> styleUpdatedListeners = new ArrayList<>();
+    private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
 
+    public static Hashtable<Long, Paint> taxIdToPaint = Arrays.stream(Taxons.values())
+            .filter(taxons -> taxons.isSpecies)
+            .collect(Collectors.toMap(
+                    taxon -> taxon.taxId,
+                    taxon -> taxon.defaultColor,
+                    (u, v) -> u,
+                    Hashtable::new)
+            );
 
-    private static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
-    public static Hashtable<Long, Paint> taxIdToPaint = new Hashtable<>() {{
-        put(E_COLI.taxId, new Color(137, 51, 54));
-        put(S_CEREVISIAE.taxId, new Color(174, 125, 52));
-        put(H_SAPIENS.taxId, new Color(51, 94, 148));
-        put(M_MUSCULUS.taxId, new Color(28, 67, 156));
-        put(D_MELANOGASTER.taxId, new Color(50, 147, 143));
-        put(C_ELEGANS.taxId, new Color(74, 147, 121));
-        put(A_THALIANA.taxId, new Color(46, 93, 46));
-
-        put(CHEMICAL_SYNTHESIS.taxId, new Color(141, 102, 102));
-    }};
-    public static Hashtable<Long, Paint> kingdomColors = new Hashtable<>() {{
-        put(PLANTS.taxId, new Color(80, 162, 79));
-        put(MAMMALS.taxId, new Color(86, 136, 192));
-        put(ANIMALS.taxId, new Color(62, 181, 170));
-        put(FUNGI.taxId, new Color(235, 144, 0));
-        put(AMOEBOZOA.taxId, new Color(195, 84, 26));
-        put(BACTERIA.taxId, new Color(178, 53, 57));
-        put(VIRUSES.taxId, new Color(132, 100, 190));
-        put(ARCHAEA.taxId, new Color(172, 71, 101));
-        put(ARTIFICIAL.taxId, new Color(101, 101, 101));
-    }};
+    public static Hashtable<Long, Paint> kingdomColors = Arrays.stream(Taxons.values())
+            .filter(taxons -> !taxons.isSpecies)
+            .collect(Collectors.toMap(
+                    taxon -> taxon.taxId,
+                    taxon -> taxon.defaultColor,
+                    (u, v) -> u,
+                    Hashtable::new)
+            );
 
     public static Hashtable<Long, Paint> originalTaxIdToPaint = new Hashtable<>(taxIdToPaint);
     public static Hashtable<Long, Paint> originalKingdomColors = new Hashtable<>(kingdomColors);
 
     public static Hashtable<Long, List<Long>> taxIdToChildrenTaxIds = new Hashtable<>();
 
-    public static final Hashtable<String, Paint> edgeTypeToPaint = new Hashtable<>() {{
-        put("colocalization", new Color(165, 165, 165));
-        put("association", new Color(97, 131, 196));
-        put("physical association", new Color(178, 101, 188));
-        put("direct interaction", new Color(184, 54, 75));
-        put("phosphorylation reaction", new Color(231, 111, 61));
-        put("phosphorylation", new Color(231, 111, 61));
-        put("dephosphorylation", new Color(231, 111, 61));
-        put("dephosphorylation reaction", new Color(231, 111, 61));
-    }};
+    public static final Hashtable<String, Paint> edgeTypeToPaint = Arrays.stream(InteractionType.values())
+            .collect(Collectors.toMap(
+                    type -> type.name,
+                    type -> type.defaultColor,
+                    (u, v) -> u,
+                    Hashtable::new)
+            );
 
-    public static final Hashtable<String, NodeShape> nodeTypeToShape = new Hashtable<>() {{
-        put("bioactive entity", NodeShapeVisualProperty.TRIANGLE);
-        put("protein", NodeShapeVisualProperty.ELLIPSE);
-        put("gene", NodeShapeVisualProperty.ROUND_RECTANGLE);
-        put("dna", BasicVisualLexicon.NODE_SHAPE.parseSerializableString("VEE"));
-        put("rna", NodeShapeVisualProperty.DIAMOND);
-        put("peptide", NodeShapeVisualProperty.OCTAGON);
-        put("complex", NodeShapeVisualProperty.HEXAGON);
-    }};
+    public static final Hashtable<String, NodeShape> nodeTypeToShape = Arrays.stream(InteractorType.values())
+            .collect(Collectors.toMap(
+                    type -> type.name,
+                    type -> type.shape,
+                    (u, v) -> u,
+                    Hashtable::new)
+            );
 
     public static final Hashtable<String, NodeShape> originalNodeTypeToShape = new Hashtable<>(nodeTypeToShape);
 
     public static final Hashtable<String, List<String>> nodeTypeToParent = new Hashtable<>();
     public static final Hashtable<String, List<String>> edgeTypeToParent = new Hashtable<>();
 
-    public static final Map<String, String> typesToIds = new HashMap<>() {{
-        put("bioactive entity", "MI_1100");
-        put("protein", "MI_0326");
-        put("gene", "MI_0250");
-        put("dna", "MI_0319");
-        put("rna", "MI_0320");
-        put("peptide", "MI_0327");
-        put("complex", "MI_0314");
+    public static final Map<String, String> typesToIds = new HashMap<>();
 
-
-        put("direct interaction", "MI_0407");
-        put("phosphorylation reaction", "MI_0217");
-        put("dephosphorylation reaction", "MI_0203");
-        put("association", "MI_0914");
-        put("physical association", "MI_0915");
-        put("colocalization", "MI_0403");
-    }};
+    static {
+        Arrays.stream(InteractionType.values()).filter(type -> !type.MI_ID.isBlank()).forEach(type -> typesToIds.put(type.name, type.MI_ID));
+        Arrays.stream(InteractorType.values()).filter(type -> !type.MI_ID.isBlank()).forEach(type -> typesToIds.put(type.name, type.MI_ID));
+    }
 
     public static void initializeTaxIdToPaint() {
         executor.execute(() -> {
