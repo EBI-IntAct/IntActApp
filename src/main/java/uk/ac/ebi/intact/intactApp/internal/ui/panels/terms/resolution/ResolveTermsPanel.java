@@ -5,9 +5,12 @@ import org.cytoscape.work.TaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.intactApp.internal.model.core.Interactor;
 import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.sub.managers.IntactOptionManager.Scope;
 import uk.ac.ebi.intact.intactApp.internal.tasks.query.factories.ImportNetworkTaskFactory;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.filler.HorizontalFiller;
 import uk.ac.ebi.intact.intactApp.internal.ui.components.labels.CenteredLabel;
+import uk.ac.ebi.intact.intactApp.internal.ui.components.panels.CollapsablePanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.options.OptionsPanel;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.ComponentUtils;
 import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
 import uk.ac.ebi.intact.intactApp.internal.utils.IconUtils;
@@ -57,11 +60,10 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
 
     final EasyGBC columnHeaderHelper = new EasyGBC();
     final JPanel columnHeaderPanel = new JPanel(new GridBagLayout());
-    final JScrollPane sColumnHeader = new JScrollPane(columnHeaderPanel, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
     final EasyGBC rowHeaderHelper = new EasyGBC();
     final JPanel rowHeaderPanel = new JPanel(new GridBagLayout());
-    final JScrollPane sRowHeader;
+    private final JPanel rowHeaderContainerPanel = new JPanel(new GridBagLayout());
 
     final EasyGBC tableCornerHelper = new EasyGBC();
     final JPanel tableCornerPanel = new JPanel(new GridBagLayout());
@@ -91,13 +93,6 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         this.additionalTask = additionalTask;
         this.selectedByDefault = selectedByDefault;
         this.includeNonAmbiguousTerms = includeNonAmbiguousTerms;
-
-        JPanel rowHeaderMainPanel = new JPanel(new GridBagLayout());
-        rowHeaderMainPanel.setBackground(Color.WHITE);
-        EasyGBC c = new EasyGBC();
-        rowHeaderMainPanel.add(rowHeaderPanel, c.expandHoriz().anchor("northwest"));
-        rowHeaderMainPanel.add(Box.createVerticalGlue(), c.expandBoth());
-        sRowHeader = new JScrollPane(rowHeaderMainPanel, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         init();
     }
 
@@ -110,11 +105,20 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             add(new CenteredLabel("Please select the interactors that you meant to query as seeds to build the network around.", 14, HEADER_CELLS_COLOR), layoutHelper.down().expandHoriz());
         }
         createColumnHeader();
+        createRowHeader();
         initScrollPanel();
         fillDisplayPanel();
         createFilters();
         add(new CollapsablePanel("Options", new OptionsPanel(manager, Scope.DISAMBIGUATION), false), layoutHelper.down().expandHoriz());
         createControlButtons();
+        add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
+    }
+
+    private void createRowHeader() {
+        rowHeaderContainerPanel.setBackground(Color.WHITE);
+        EasyGBC c = new EasyGBC();
+        rowHeaderContainerPanel.add(rowHeaderPanel, c.expandHoriz().anchor("northwest"));
+        rowHeaderContainerPanel.add(Box.createVerticalGlue(), c.expandBoth());
     }
 
     private void createColumnHeader() {
@@ -206,17 +210,24 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     private void initScrollPanel() {
         JScrollPane scrollPane = new JScrollPane(displayPanel, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setAutoscrolls(true);
-        for (JScrollPane headerScrollPane : List.of(sColumnHeader, sRowHeader)) {
-            for (MouseListener mouseListener : headerScrollPane.getMouseListeners()) {
-                headerScrollPane.removeMouseListener(mouseListener);
-            }
-        }
+
         scrollPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, tableCornerPanel);
+
         HorizontalFiller corner = new HorizontalFiller();
         corner.setBorder(BorderFactory.createMatteBorder(2, 1, 0, 1, Color.WHITE));
         scrollPane.setCorner(JScrollPane.LOWER_LEFT_CORNER, corner);
-        scrollPane.setColumnHeader(sColumnHeader.getViewport());
-        scrollPane.setRowHeader(sRowHeader.getViewport());
+
+        {
+            JViewport viewport = new JViewport();
+            viewport.setView(columnHeaderPanel);
+            scrollPane.setColumnHeader(viewport);
+        }
+        {
+            JViewport viewport = new JViewport();
+            viewport.setView(rowHeaderContainerPanel);
+            scrollPane.setRowHeader(viewport);
+        }
+
         displayPanel.setMinimumSize(new Dimension(900, HEIGHT));
         displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
         scrollPane.setMinimumSize(new Dimension(900, HEIGHT));
