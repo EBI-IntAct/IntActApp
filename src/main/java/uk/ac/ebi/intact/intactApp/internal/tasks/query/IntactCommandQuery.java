@@ -15,12 +15,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class IntactCommandQuery extends AbstractTask {
-    @Tunable(required = true, context = "nogui", exampleStringValue = "gtp lrr* cell Q5S007 EBI-2624319", gravity = 0,
+    @Tunable(context = "nogui", exampleStringValue = "gtp lrr* cell Q5S007 EBI-2624319", gravity = 0,
             description = "Space separated terms to search among interactors ids and names to build the network around them.")
     public String seedTerms;
 
     @Tunable(context = "nogui", exampleStringValue = "9606, 559292", gravity = 1,
-            description = "Comma separated taxon ids of seed interactor saround which the network will be built.<br>" +
+            description = "Comma separated taxon ids of seed interactors around which the network will be built.<br>" +
                     "If not given, all species will be accepted.")
     public String taxons;
 
