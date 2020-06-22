@@ -1,26 +1,20 @@
 package uk.ac.ebi.intact.intactApp.internal.tasks.query.factories;
 
-import org.apache.log4j.Logger;
-import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.search.AbstractNetworkSearchTaskFactory;
-import org.cytoscape.work.*;
+import org.cytoscape.work.TaskIterator;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.intactApp.internal.model.core.Interactor;
 import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.sub.managers.IntactOptionManager;
 import uk.ac.ebi.intact.intactApp.internal.tasks.query.TermsResolvingTask;
 import uk.ac.ebi.intact.intactApp.internal.ui.SearchQueryComponent;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.terms.resolution.ResolveTermsPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.options.OptionsPanel;
 import uk.ac.ebi.intact.intactApp.internal.utils.IconUtils;
 
 import javax.swing.*;
-import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-public class IntactExactQueryTaskFactory extends AbstractNetworkSearchTaskFactory implements TaskObserver {
+public class IntactExactQueryTaskFactory extends AbstractNetworkSearchTaskFactory {
     private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/ICON_PNG/Cropped_Gradient790.png");
     static String INTACT_ID = "uk.ac.ebi.intact.query";
     static URL INTACT_URL;
@@ -36,9 +30,7 @@ public class IntactExactQueryTaskFactory extends AbstractNetworkSearchTaskFactor
     }
 
 
-    private final Logger logger = Logger.getLogger(CyUserLog.NAME);
     IntactManager manager;
-    private IntactNetwork intactNetwork = null;
     private SearchQueryComponent queryComponent = null;
 
     public IntactExactQueryTaskFactory(IntactManager manager) {
@@ -52,9 +44,7 @@ public class IntactExactQueryTaskFactory extends AbstractNetworkSearchTaskFactor
 
     public TaskIterator createTaskIterator() {
         String terms = queryComponent.getQueryText();
-
-        intactNetwork = new IntactNetwork(manager);
-        return new TaskIterator(new TermsResolvingTask(intactNetwork, 0, terms, true));
+        return new TaskIterator(new TermsResolvingTask(new IntactNetwork(manager), terms, "Term disambiguation", true));
     }
 
 
@@ -63,11 +53,6 @@ public class IntactExactQueryTaskFactory extends AbstractNetworkSearchTaskFactor
             queryComponent = new SearchQueryComponent();
         return queryComponent;
     }
-
-    public TaskObserver getTaskObserver() {
-        return this;
-    }
-
 
     @Override
     public JComponent getOptionsComponent() {

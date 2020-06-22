@@ -1,26 +1,20 @@
 package uk.ac.ebi.intact.intactApp.internal.tasks.query.factories;
 
 import org.cytoscape.application.swing.search.AbstractNetworkSearchTaskFactory;
-import org.cytoscape.work.FinishStatus;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskObserver;
 import uk.ac.ebi.intact.intactApp.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.intactApp.internal.model.core.Interactor;
 import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.intactApp.internal.model.managers.sub.managers.IntactOptionManager;
 import uk.ac.ebi.intact.intactApp.internal.tasks.query.TermsResolvingTask;
 import uk.ac.ebi.intact.intactApp.internal.ui.SearchQueryComponent;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.terms.resolution.ResolveTermsPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.options.OptionsPanel;
 import uk.ac.ebi.intact.intactApp.internal.utils.IconUtils;
 
 import javax.swing.*;
-import java.awt.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
 
-public class IntactBroadSearchTaskFactory extends AbstractNetworkSearchTaskFactory implements TaskObserver {
+public class IntactBroadSearchTaskFactory extends AbstractNetworkSearchTaskFactory {
     private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/ICON_PNG/Cropped_Gradient790.png");
     static String INTACT_ID = "uk.ac.ebi.intact.search";
     static URL INTACT_URL;
@@ -36,7 +30,6 @@ public class IntactBroadSearchTaskFactory extends AbstractNetworkSearchTaskFacto
     }
 
     IntactManager manager;
-    private IntactNetwork intactNetwork = null;
     private SearchQueryComponent queryComponent = null;
 
     public IntactBroadSearchTaskFactory(IntactManager manager) {
@@ -50,9 +43,7 @@ public class IntactBroadSearchTaskFactory extends AbstractNetworkSearchTaskFacto
 
     public TaskIterator createTaskIterator() {
         String terms = queryComponent.getQueryText();
-
-        intactNetwork = new IntactNetwork(manager);
-        return new TaskIterator(new TermsResolvingTask(intactNetwork, 0, terms, false));
+        return new TaskIterator(new TermsResolvingTask(new IntactNetwork(manager), terms, "Query preview", false));
     }
 
 
@@ -61,11 +52,6 @@ public class IntactBroadSearchTaskFactory extends AbstractNetworkSearchTaskFacto
             queryComponent = new SearchQueryComponent();
         return queryComponent;
     }
-
-    public TaskObserver getTaskObserver() {
-        return this;
-    }
-
 
     @Override
     public JComponent getOptionsComponent() {
