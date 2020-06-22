@@ -11,6 +11,6 @@ public class MutationViewTaskFactory extends AbstractHiderTaskFactory {
 
     @Override
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new MutationViewTask(manager, stringToModel, hideTaskFactory, unHideTaskFactory, currentView));
+        return new TaskIterator(new MutationViewTask(manager, hideTaskFactory, unHideTaskFactory, currentView));
     }
 }

@@ -21,9 +21,10 @@ public class ModelUtils {
     public static String NAMESPACE_SEPARATOR = "::";
 
     // Network tables column
-    public static final String FEATURES_TABLE_REF = "Features.SUID";
-    public static final String IDENTIFIERS_TABLE_REF = "Identifiers.SUID";
+    public static final String NET_FEATURES_TABLE_REF = "Features.SUID";
+    public static final String NET_IDENTIFIERS_TABLE_REF = "Identifiers.SUID";
     public static final String NET_UUID = "UUID";
+    public static final String NET_VIEW_STATE = "View::Data";
 
     // Feature table columns
     public static final String FEATURES = FEATURE_NAMESPACE + NAMESPACE_SEPARATOR + "Features";
@@ -298,10 +299,16 @@ public class ModelUtils {
     }
 
     private static void initTables(IntactNetwork intactNetwork, CyNetwork network, CyTable nodeTable, CyTable edgeTable, CyTableManager tableManager, CyTable featuresTable, CyTable xRefsTable) {
+        initNetworkTable(network.getDefaultNetworkTable());
         initNodeTable(nodeTable);
         initEdgeTable(edgeTable);
         initLowerTables(intactNetwork, network, tableManager, featuresTable, xRefsTable);
     }
+
+    private static void initNetworkTable(CyTable networkTable) {
+        createColumnIfNeeded(networkTable, String.class, NET_VIEW_STATE);
+    }
+
 
     private static void initNodeTable(CyTable nodeTable) {
         for (String intactNodeColumn : Arrays.asList(INTACT_ID, PREFERRED_ID, PREFERRED_ID_DB, PREFERRED_ID_DB_MI_ID, TYPE, TYPE_MI_ID, SPECIES, FULL_NAME)) {
@@ -339,14 +346,14 @@ public class ModelUtils {
 
     private static void initLowerTables(IntactNetwork intactNetwork, CyNetwork network, CyTableManager tableManager, CyTable featuresTable, CyTable identifiersTable) {
         CyTable networkTable = network.getDefaultNetworkTable();
-        createColumnIfNeeded(networkTable, Long.class, FEATURES_TABLE_REF);
-        createColumnIfNeeded(networkTable, Long.class, IDENTIFIERS_TABLE_REF);
+        createColumnIfNeeded(networkTable, Long.class, NET_FEATURES_TABLE_REF);
+        createColumnIfNeeded(networkTable, Long.class, NET_IDENTIFIERS_TABLE_REF);
         createColumnIfNeeded(networkTable, String.class, NET_UUID);
         CyRow networkRow = networkTable.getRow(network.getSUID());
         UUID uuid = UUID.randomUUID();
         networkRow.set(NET_UUID, uuid.toString());
-        networkRow.set(FEATURES_TABLE_REF, featuresTable.getSUID());
-        networkRow.set(IDENTIFIERS_TABLE_REF, identifiersTable.getSUID());
+        networkRow.set(NET_FEATURES_TABLE_REF, featuresTable.getSUID());
+        networkRow.set(NET_IDENTIFIERS_TABLE_REF, identifiersTable.getSUID());
         initFeaturesTable(intactNetwork, uuid, tableManager, featuresTable);
         initIdentifierTable(intactNetwork, uuid, tableManager, identifiersTable);
     }
@@ -673,11 +680,11 @@ public class ModelUtils {
         CyRow networkRow = network.getDefaultNetworkTable().getRow(network.getSUID());
         IntactManager manager = iNetwork.getManager();
         CyTableManager tableManager = manager.utils.getService(CyTableManager.class);
-        Long identifiersSUID = networkRow.get(IDENTIFIERS_TABLE_REF, Long.class);
+        Long identifiersSUID = networkRow.get(NET_IDENTIFIERS_TABLE_REF, Long.class);
 
         if (identifiersSUID != null) {
             iNetwork.setIdentifiersTable(tableManager.getTable(identifiersSUID));
-            iNetwork.setFeaturesTable(tableManager.getTable(networkRow.get(FEATURES_TABLE_REF, Long.class)));
+            iNetwork.setFeaturesTable(tableManager.getTable(networkRow.get(NET_FEATURES_TABLE_REF, Long.class)));
         } else {
             System.out.println("Identifiers and features SUID not found");
         }

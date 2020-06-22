@@ -5,7 +5,7 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.tasks.factories.ShowDetailPanelTaskFactory;
-import uk.ac.ebi.intact.intactApp.internal.ui.panels.east.DetailPanel;
+import uk.ac.ebi.intact.intactApp.internal.ui.panels.detail.DetailPanel;
 
 import java.awt.*;
 import java.util.Properties;
@@ -26,7 +26,7 @@ public class ShowResultsPanelTask extends AbstractTask {
         CySwingApplication swingApplication = manager.utils.getService(CySwingApplication.class);
         CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
 
-        return cytoPanel.indexOfComponent("uk.ac.ebi.intact.intactApp.String") >= 0;
+        return cytoPanel.indexOfComponent("uk.ac.ebi.intact.intactApp.Intact") >= 0;
     }
 
     public void run(TaskMonitor monitor) {

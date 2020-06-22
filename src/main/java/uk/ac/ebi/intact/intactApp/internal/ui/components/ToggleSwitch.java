@@ -13,6 +13,10 @@ public class ToggleSwitch extends AbstractButton implements MouseListener {
     private final int height = 15;
     private final int width = 30;
 
+    public ToggleSwitch(boolean activated) {
+        this(activated, new Color(34, 83, 157));
+    }
+
     public ToggleSwitch(boolean activated, Color accentColor) {
         this.activated = activated;
         this.accentColor = accentColor;
@@ -74,7 +78,7 @@ public class ToggleSwitch extends AbstractButton implements MouseListener {
     public Dimension getPreferredSize() {
         Insets insets = new Insets(0, 0, 0, 0);
         insets = getInsets(insets);
-        return new Dimension(insets.left + width  + insets.right, insets.top + height  + insets.bottom);
+        return new Dimension(insets.left + width + insets.right, insets.top + height + insets.bottom);
     }
 
 

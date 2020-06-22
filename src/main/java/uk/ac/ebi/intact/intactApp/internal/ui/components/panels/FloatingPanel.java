@@ -9,6 +9,8 @@ public class FloatingPanel extends JPanel {
 
     private final Dimension toPlaceSize;
     private JComponent toPlace;
+    private boolean expandHoriz = false;
+    private boolean expandVert = false;
 
     public FloatingPanel(JComponent toPlace) {
         this.toPlace = toPlace;
@@ -38,9 +40,24 @@ public class FloatingPanel extends JPanel {
         g.setColor(getBackground());
         g.fillRect(insets.left, insets.top, getWidth() - insets.left - insets.right, getHeight() - insets.top - insets.bottom);
 
-        int y = max(insets.top, min(clip.y + (clip.height - toPlaceSize.height) / 2, getHeight() - toPlaceSize.height - insets.bottom));
-        int x = clip.x + (clip.width - toPlaceSize.width) / 2;
-        toPlace.setLocation(x, y);
+        int width, height, x, y;
+        if (expandHoriz) {
+            width = clip.width;
+            x = clip.x;
+        } else {
+            width = toPlaceSize.width;
+            x = clip.x + (clip.width - toPlaceSize.width) / 2;
+        }
+
+        if (expandVert) {
+            height = clip.height;
+            y = clip.y;
+        } else {
+            height = toPlaceSize.height;
+            y = max(insets.top, min(clip.y + (clip.height - toPlaceSize.height) / 2, getHeight() - toPlaceSize.height - insets.bottom));
+        }
+
+        toPlace.setBounds(x, y, width, height);
     }
 
     @Override
@@ -57,6 +74,19 @@ public class FloatingPanel extends JPanel {
 
     public void setToPlace(JComponent toPlace) {
         this.toPlace = toPlace;
+    }
+
+    public void expandHoriz() {
+        this.expandHoriz = true;
+    }
+
+    public void expandVert() {
+        this.expandVert = true;
+    }
+
+    public void noExpand() {
+        this.expandVert = false;
+        this.expandHoriz = false;
     }
 }
 
