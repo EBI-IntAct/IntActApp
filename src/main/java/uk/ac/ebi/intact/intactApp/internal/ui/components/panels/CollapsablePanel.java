@@ -1,7 +1,6 @@
 package uk.ac.ebi.intact.intactApp.internal.ui.components.panels;
 
 import uk.ac.ebi.intact.intactApp.internal.ui.components.CollapseAllButton;
-import uk.ac.ebi.intact.intactApp.internal.ui.utils.EasyGBC;
 import uk.ac.ebi.intact.intactApp.internal.utils.IconUtils;
 
 import javax.swing.*;
@@ -176,7 +175,6 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
         JButton expandButton;
         JComponent headerComponent;
         boolean expanded;
-        private final EasyGBC layoutHelper = new EasyGBC();
 
         public HeaderPanel(String text, boolean collapsed) {
             this.expanded = !collapsed;
@@ -216,7 +214,5 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
         public void setButton(Icon buttonState) {
             expandButton.setIcon(buttonState);
         }
-
     }
-
 }

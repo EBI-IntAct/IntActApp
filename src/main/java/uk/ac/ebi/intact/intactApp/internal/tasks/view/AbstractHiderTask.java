@@ -1,7 +1,6 @@
 package uk.ac.ebi.intact.intactApp.internal.tasks.view;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.hide.HideTaskFactory;
@@ -21,7 +20,6 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractHiderTask extends AbstractTask {
     protected IntactManager manager;
-    protected StringToModel stringToModel;
     protected HideTaskFactory hideTaskFactory;
     protected UnHideTaskFactory unHideTaskFactory;
 
@@ -32,9 +30,8 @@ public abstract class AbstractHiderTask extends AbstractTask {
     protected IntactNetwork iNetwork;
     protected IntactNetworkView iView;
 
-    public AbstractHiderTask(IntactManager manager, StringToModel stringToModel, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, boolean currentView) {
+    public AbstractHiderTask(IntactManager manager, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, boolean currentView) {
         this.manager = manager;
-        this.stringToModel = stringToModel;
         this.hideTaskFactory = hideTaskFactory;
         this.unHideTaskFactory = unHideTaskFactory;
         this.currentView = currentView;
@@ -45,7 +42,7 @@ public abstract class AbstractHiderTask extends AbstractTask {
 
     protected void collapseEdgesIfNeeded() {
         chooseData();
-        if (iView != null && iView.type != IntactNetworkView.Type.COLLAPSED) {
+        if (iView != null && iView.getType() != IntactNetworkView.Type.COLLAPSED) {
             CyNetwork network = iNetwork.getNetwork();
             Set<CyEdge> edgesToSelect = iNetwork.getExpandedEdges().stream()
                     .filter(cyEdge -> network.getRow(cyEdge).get(CyNetwork.SELECTED, Boolean.class))
@@ -60,7 +57,7 @@ public abstract class AbstractHiderTask extends AbstractTask {
 
     protected void expandEdgesIfNeeded() {
         chooseData();
-        if (iView != null && iView.type == IntactNetworkView.Type.COLLAPSED) {
+        if (iView != null && iView.getType() == IntactNetworkView.Type.COLLAPSED) {
             CyNetwork network = iNetwork.getNetwork();
             Set<CyEdge> edgesToSelect = iNetwork.getCollapsedEdges().stream()
                     .filter(cyEdge -> network.getRow(cyEdge).get(CyNetwork.SELECTED, Boolean.class))
@@ -90,7 +87,7 @@ public abstract class AbstractHiderTask extends AbstractTask {
     private static class CurrentIntactView extends IntactNetworkView {
 
         public CurrentIntactView(IntactManager manager) {
-            super(manager, null);
+            super(manager, null, false);
         }
 
         @Override

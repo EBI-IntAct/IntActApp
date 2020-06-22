@@ -9,7 +9,11 @@ import org.cytoscape.model.events.AddedEdgesListener;
 import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.intactApp.internal.io.HttpUtils;
+import uk.ac.ebi.intact.intactApp.internal.model.core.IntactNode;
 import uk.ac.ebi.intact.intactApp.internal.model.core.Interactor;
+import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactCollapsedEdge;
+import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEdge;
+import uk.ac.ebi.intact.intactApp.internal.model.core.edges.IntactEvidenceEdge;
 import uk.ac.ebi.intact.intactApp.internal.model.managers.IntactManager;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.IntactStyle;
 import uk.ac.ebi.intact.intactApp.internal.model.styles.utils.StyleMapper;
@@ -20,6 +24,7 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 import static uk.ac.ebi.intact.intactApp.internal.utils.ModelUtils.*;
 import static uk.ac.ebi.intact.intactApp.internal.utils.TableUtil.getColumnValuesOfEdges;
@@ -35,11 +40,14 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     CyTable featuresTable;
     CyTable identifiersTable;
 
-
+    private final List<IntactNode> iNodes = new ArrayList<>();
     // Collapsed edges
-    private Map<Couple, CyEdge> collapsedEdges;
-    private List<CyEdge> expandedEdges;
-    private Map<Couple, List<CyEdge>> coupleToEdges = new HashMap<>();
+    private final Map<Couple, List<CyEdge>> coupleToEdges = new HashMap<>();
+    private final Map<Couple, CyEdge> collapsedEdges = new HashMap<>();
+    private final List<IntactCollapsedEdge> collapsedIEdges = new ArrayList<>();
+    private final List<CyEdge> expandedEdges = new ArrayList<>();
+    private final List<IntactEvidenceEdge> evidenceIEdges = new ArrayList<>();
+
     private final Set<Long> taxIds = new HashSet<>();
     private final Set<String> interactorTypes = new HashSet<>();
     private final Map<String, Long> speciesNameToId = new HashMap<>();
@@ -68,9 +76,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
 
         TableUtil.NullAndNonNullEdges identifiedOrNotEdges = TableUtil.splitNullAndNonNullEdges(network, INTACT_AC);
 
-        expandedEdges = new ArrayList<>(identifiedOrNotEdges.nonNullEdges);
-        collapsedEdges = new HashMap<>();
-        coupleToEdges = new HashMap<>();
+        expandedEdges.addAll(identifiedOrNotEdges.nonNullEdges);
 
         Couple.putEdgesToCouples(expandedEdges, coupleToEdges);
 
@@ -82,6 +88,10 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
         } else {
             updateCollapsedEdges(coupleToEdges.keySet());
         }
+
+        network.getNodeList().forEach(node -> iNodes.add(new IntactNode(this, node)));
+        collapsedEdges.values().forEach(edge -> collapsedIEdges.add((IntactCollapsedEdge) IntactEdge.createIntactEdge(this, edge)));
+        expandedEdges.forEach(edge -> evidenceIEdges.add((IntactEvidenceEdge) IntactEdge.createIntactEdge(this, edge)));
 
         completeMissingNodeColorsFromTables();
     }
@@ -156,7 +166,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     public void hideExpandedEdgesOnViewCreation(CyNetworkView networkView) {
         HideTaskFactory hideTaskFactory = manager.utils.getService(HideTaskFactory.class);
         manager.utils.execute(hideTaskFactory.createTaskIterator(networkView, null, expandedEdges));
-        manager.data.addNetworkView(networkView);
+        manager.data.addNetworkView(networkView, false);
     }
 
     public void completeMissingNodeColorsFromTables() {
@@ -249,6 +259,13 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
 
     }
 
+    public List<IntactCollapsedEdge> getCollapsedIEdges() {
+        return new ArrayList<>(collapsedIEdges);
+    }
+
+    public List<IntactEvidenceEdge> getEvidenceIEdges() {
+        return new ArrayList<>(evidenceIEdges);
+    }
 
     public List<CyEdge> getCollapsedEdges() {
         return new ArrayList<>(collapsedEdges.values());
@@ -272,6 +289,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
         if (e.getSource() == network) {
             Collection<CyEdge> addedEdges = e.getPayloadCollection();
             expandedEdges.addAll(addedEdges);
+//            expandedIEdges.addAll(addedEdges.stream().map(edge -> (IntactEvidenceEdge) IntactEdge.createIntactEdge(this, edge)).filter(Objects::nonNull).collect(Collectors.toList()));
             Set<Couple> updatedCouples = Couple.putEdgesToCouples(addedEdges, coupleToEdges);
             updateCollapsedEdges(updatedCouples);
         }
@@ -298,7 +316,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     public void setFeaturesTable(CyTable featuresTable) {
         this.featuresTable = featuresTable;
         if (network != null) {
-            network.getRow(network).set(FEATURES_TABLE_REF, featuresTable.getSUID());
+            network.getRow(network).set(NET_FEATURES_TABLE_REF, featuresTable.getSUID());
         }
     }
 
@@ -309,7 +327,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     public void setIdentifiersTable(CyTable identifiersTable) {
         this.identifiersTable = identifiersTable;
         if (network != null)
-            network.getRow(network).set(IDENTIFIERS_TABLE_REF, identifiersTable.getSUID());
+            network.getRow(network).set(NET_IDENTIFIERS_TABLE_REF, identifiersTable.getSUID());
     }
 
     public List<CyEdge> getSelectedEdges() {
@@ -331,6 +349,11 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
         }
         return selectedNodes;
     }
+
+    public List<IntactNode> getINodes() {
+        return network.getNodeList().stream().map(node -> new IntactNode(this, node)).collect(Collectors.toList());
+    }
+
 
     @Override
     public boolean equals(Object o) {

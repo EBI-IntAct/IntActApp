@@ -13,6 +13,6 @@ public class CollapseViewTaskFactory extends AbstractHiderTaskFactory {
 
     @Override
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new CollapseViewTask(manager, stringToModel, hideTaskFactory, unHideTaskFactory, currentView));
+        return new TaskIterator(new CollapseViewTask(manager, hideTaskFactory, unHideTaskFactory, currentView));
     }
 }

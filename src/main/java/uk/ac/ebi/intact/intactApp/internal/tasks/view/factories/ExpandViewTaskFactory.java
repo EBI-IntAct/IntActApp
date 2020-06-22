@@ -12,6 +12,6 @@ public class ExpandViewTaskFactory extends AbstractHiderTaskFactory {
 
     @Override
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new ExpandViewTask(manager,stringToModel, hideTaskFactory, unHideTaskFactory, currentView));
+        return new TaskIterator(new ExpandViewTask(manager, hideTaskFactory, unHideTaskFactory, currentView));
     }
 }
