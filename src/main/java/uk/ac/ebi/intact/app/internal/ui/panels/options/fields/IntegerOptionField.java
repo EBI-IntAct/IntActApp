@@ -61,6 +61,7 @@ public class IntegerOptionField extends OptionField<OptionManager.NumericOption<
             int n = Integer.parseInt(text);
             if (n >= option.min && n <= option.max) {
                 slider.setValue(n);
+                ignore = false;
                 return;
             }
         } catch (NumberFormatException ignored) {
