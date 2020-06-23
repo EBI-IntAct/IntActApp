@@ -237,9 +237,10 @@ public class StyleMapper {
 
                 Map<String, Paint> originalColors = new Hashtable<>(edgeTypeToPaint);
 
-                for (String miType : List.of("direct interaction", "phosphorylation reaction", "dephosphorylation reaction")) {
-                    setChildrenValues(edgeTypeToPaint, miType, originalColors.get(miType), edgeTypeToParent);
-                }
+                Arrays.stream(InteractionType.values())
+                        .filter(type-> type.queryChildren)
+                        .forEach(type -> setChildrenValues(edgeTypeToPaint, type.name, type.defaultColor, edgeTypeToParent));
+
                 edgeTypeToPaint.putAll(originalColors);
 
 
