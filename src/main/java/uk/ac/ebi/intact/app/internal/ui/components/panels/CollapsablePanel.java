@@ -26,7 +26,7 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
     private boolean collapsed;
 
     public CollapsablePanel(String text, boolean collapsed) {
-        this(text, new JPanel(), collapsed);
+        this(text, new VerticalPanel(), collapsed);
     }
 
     public CollapsablePanel(String text, JPanel panel, boolean collapsed) {

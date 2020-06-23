@@ -7,10 +7,12 @@ public class VerticalPanel extends JPanel {
 
     public VerticalPanel() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setOpaque(false);
     }
 
     public VerticalPanel(Color backgroundColor) {
         this();
+        setOpaque(true);
         setBackground(backgroundColor);
     }
 }

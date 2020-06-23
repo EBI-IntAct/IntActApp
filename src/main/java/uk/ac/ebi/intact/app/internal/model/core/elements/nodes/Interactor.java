@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.app.internal.model.core.elements.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 
 import java.util.*;
 
@@ -11,6 +12,7 @@ public class Interactor {
     public final String fullName;
     public final String type;
     public final String species;
+    public final Map<String, List<String>> matchingColumns = new HashMap<>();
     public final Long taxId;
     public final Integer interactionCount;
 
@@ -35,17 +37,24 @@ public class Interactor {
         json.fields().forEachRemaining(term -> {
             List<Interactor> interactors = new ArrayList<>();
             JsonNode termData = term.getValue();
-            for (JsonNode content: termData.get("content")) {
-                interactors.add(new Interactor(
-                        content.get("interactorAc").textValue(),
-                        content.get("interactorName").textValue(),
-                        content.get("interactorPreferredIdentifier").textValue(),
-                        content.get("interactorDescription").textValue(),
-                        content.get("interactorType").textValue(),
-                        content.get("interactorSpecies").textValue(),
-                        content.get("interactorTaxId").longValue(),
-                        content.get("interactionCount").intValue()
-                ));
+            for (JsonNode highlighted : termData.get("highlighted")) {
+                JsonNode entity = highlighted.get("entity");
+                Interactor interactor = new Interactor(
+                        entity.get("interactorAc").textValue(),
+                        entity.get("interactorName").textValue(),
+                        entity.get("interactorPreferredIdentifier").textValue(),
+                        entity.get("interactorDescription").textValue(),
+                        entity.get("interactorType").textValue(),
+                        entity.get("interactorSpecies").textValue(),
+                        entity.get("interactorTaxId").longValue(),
+                        entity.get("interactionCount").intValue()
+                );
+                for (JsonNode highlight : highlighted.get("highlights")) {
+                    for (JsonNode snipplet : highlight.get("snipplets")) {
+                        CollectionUtils.addToGroups(interactor.matchingColumns, snipplet.textValue(), s -> highlight.get("field").get("name").textValue());
+                    }
+                }
+                interactors.add(interactor);
             }
             String termName = term.getKey();
             map.put(termName, interactors);

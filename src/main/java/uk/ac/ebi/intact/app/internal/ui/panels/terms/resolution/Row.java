@@ -1,8 +1,10 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
+import org.apache.commons.lang3.StringUtils;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.ui.components.diagrams.InteractorDiagram;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.CenteredLabel;
+import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.ComponentUtils;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
@@ -23,7 +25,7 @@ import static uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution.TermColum
 class Row extends JPanel implements ItemListener {
     public static final Color SELECTED_COLOR = new Color(208, 196, 214);
     public static final Color UNSELECTED_COLOR = new Color(216, 216, 216);
-    public static final Color FORCED_COLOR = new Color(215, 168, 221);
+    public static final Color FORCED_COLOR = new Color(224, 194, 203);
     private final EasyGBC layoutHelper = new EasyGBC();
     final Interactor interactor;
     final TermTable table;
@@ -50,15 +52,15 @@ class Row extends JPanel implements ItemListener {
         this.addMouseListener(mouseAdapter);
         layoutHelper.expandBoth().anchor("west");
         addCell(createSelectionCheckBox(), SELECT);
-        addCell(createPreview(interactor), PREVIEW);
-        addCell(createSpecies(interactor), SPECIES);
+        addCell(createPreview(), PREVIEW);
+        addCell(createSpecies(), SPECIES);
         addCell(new CenteredLabel(interactor.type), TYPE);
         addCell(new CenteredLabel(interactor.name), NAME);
         addCell(new CenteredLabel(interactor.fullName), DESCRIPTION);
         addCell(new CenteredLabel(interactor.interactionCount.toString()), NB_INTERACTIONS);
         addCell(new CenteredLabel(interactor.preferredId), ID);
+        addCell(createMatchingColumns(), MATCHING_COLUMNS);
         addCell(new CenteredLabel(interactor.ac), AC);
-
         ComponentUtils.resizeHeight(cells.get(SELECT), getPreferredSize().height, ComponentUtils.SizeType.PREF);
     }
 
@@ -72,7 +74,7 @@ class Row extends JPanel implements ItemListener {
         return selectionCheckBox;
     }
 
-    private JPanel createPreview(Interactor interactor) {
+    private JPanel createPreview() {
         JPanel cellContent = new VerticalPanel();
 
         cellContent.add(Box.createVerticalGlue());
@@ -82,7 +84,7 @@ class Row extends JPanel implements ItemListener {
         return cellContent;
     }
 
-    private JComponent createSpecies(Interactor interactor) {
+    private JComponent createSpecies() {
         JComponent speciesPanel = new VerticalPanel();
         speciesPanel.add(Box.createVerticalGlue());
         if (interactor.species == null) return new CenteredLabel("");
@@ -98,6 +100,30 @@ class Row extends JPanel implements ItemListener {
         return speciesPanel;
     }
 
+    private JComponent createMatchingColumns() {
+        JButton showMatchingColumns = new JButton("Show matching columns");
+        JPanel matchingColumns = new VerticalPanel();
+        showMatchingColumns.setEnabled(!interactor.matchingColumns.isEmpty());
+        interactor.matchingColumns.forEach((columnName, matchingValues) -> {
+            TermColumn column = getByHighlightName(columnName);
+            if (column != null) cells.get(column).highlight();
+
+            String columnFancyName = StringUtils.capitalize(columnName.replaceAll("interactor_", ""));
+            CollapsablePanel matchingColumn = new CollapsablePanel(columnFancyName, false);
+            for (String matchingValue : matchingValues) {
+                matchingColumn.addContent(new JLabel("<html>" + matchingValue + "</html>"));
+            }
+            matchingColumns.add(matchingColumn);
+        });
+
+
+        showMatchingColumns.addActionListener(e -> SwingUtilities.invokeLater(() -> {
+            JOptionPane.showConfirmDialog(showMatchingColumns, matchingColumns, "Matching columns", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE);
+        }));
+        return showMatchingColumns;
+    }
+
+
 
     private Cell addCell(JComponent cellContent, TermColumn column) {
         EasyGBC helper = column.isFixedInRowHeader ? table.resolver.rowHeaderHelper.noExpand() : layoutHelper;
@@ -106,7 +132,10 @@ class Row extends JPanel implements ItemListener {
         helper.gridx = column.ordinal();
         Cell cell = new Cell(cellContent);
         cell.setBackground(selected ? SELECTED_COLOR : UNSELECTED_COLOR);
-        if (column != SELECT) cellContent.addMouseListener(mouseAdapter);
+        if (column != SELECT && column != MATCHING_COLUMNS){
+            cellContent.addMouseListener(mouseAdapter);
+            cellContent.setFocusable(true);
+        }
         cells.put(column, cell);
 
         container.add(cell, helper.expandBoth());

@@ -60,7 +60,7 @@ class TermTable extends JPanel implements ItemListener {
             }
             if (isPaged) {
                 LimitExceededPanel limitExceededPanel = new LimitExceededPanel("interactors", "matched", resolver.manager.option.MAX_INTERACTOR_PER_TERM.getValue(), "requery with a bigger number of interactor per terms via the option panel", JLabel.LEFT);
-                limitExceededPanel.setBorder(new EmptyBorder(1,1,1,1));
+                limitExceededPanel.setBorder(new EmptyBorder(1, 1, 1, 1));
                 add(limitExceededPanel, layoutHelper.down().expandHoriz());
                 resolver.rowHeaderPanel.add(Box.createVerticalStrut(limitExceededPanel.getPreferredSize().height), resolver.rowHeaderHelper.down().expandHoriz());
             }
@@ -95,14 +95,18 @@ class TermTable extends JPanel implements ItemListener {
 
         selectAll = new IButton("Select all");
         selectAll.setEnabled(!resolver.selectedByDefault);
-        selectAll.addActionListener(e -> selectRows(true));
+        selectAll.addActionListener(e -> {
+            if (includeAllInteractorsOption) selectRows(true);
+        });
         selectAll.setAlignmentX(CENTER_ALIGNMENT);
         selectAll.setDisabledColor(Color.WHITE);
         termControlPanel.add(selectAll);
 
         unselectAll = new IButton("Unselect all");
         unselectAll.setEnabled(resolver.selectedByDefault);
-        unselectAll.addActionListener(e -> selectRows(false));
+        unselectAll.addActionListener(e -> {
+            if (includeAllInteractorsOption) selectRows(false);
+        });
         unselectAll.setAlignmentX(CENTER_ALIGNMENT);
         unselectAll.setDisabledColor(Color.WHITE);
         termControlPanel.add(unselectAll);
