@@ -97,12 +97,6 @@ public class NodeDetailPanel extends AbstractDetailPanel {
 
         nodesPanel.setAlignmentX(LEFT_ALIGNMENT);
         selectedNodes = new CollapsablePanel("Selected nodes info", nodesPanel, false);
-//        LinePanel headerLine = new LinePanel(backgroundColor);
-//        JLabel label = new JLabel(" Selected nodes  ");
-//        label.setFont(textFont.deriveFont(15f));
-//        headerLine.add(label);
-//        headerLine.add(collapseAllButton);
-//        selectedNodes.setHeader(headerLine);
         return selectedNodes;
     }
 
@@ -182,37 +176,6 @@ public class NodeDetailPanel extends AbstractDetailPanel {
             nodeFeatures.deleteEdgeSelectionCheckboxes();
         }
     }
-
-//    private void completeNodeDetails(List<String> nodeIds) {
-//        executor.execute(() -> {
-//            Map<Object, Object> postData = new HashMap<>();
-//            postData.put("ids", nodeIds);
-//            Instant begin = Instant.now();
-//            JsonNode nodeDetails = HttpUtils.postJSON(INTACT_ENDPOINT_URL + "/network/node/details", postData, manager);
-//            System.out.println("Query answered in " + Duration.between(begin, Instant.now()).toMillis());
-//            if (nodeDetails != null) {
-//                for (JsonNode nodeDetail : nodeDetails) {
-//                    String nodeId = nodeDetail.get("id").textValue();
-//                    NodePanel nodePanel = nodeIdToNodePanel.get(nodeId);
-//
-//                    JsonNode aliases = nodeDetail.get("aliases");
-//                    List<Identifier> xrefs = new ArrayList<>();
-//                    for (JsonNode xref : nodeDetail.get("xrefs")) {
-//                        JsonNode database = xref.get("database");
-//
-//                        String databaseName = database.get("shortName").textValue();
-//                        OntologyIdentifier databaseIdentifier = new OntologyIdentifier(database.get("identifier").textValue());
-//
-//                        String identifier = xref.get("identifier").textValue();
-//                        String qualifier = xref.get("qualifier").textValue();
-//
-//                        xrefs.add(new Identifier(nodePanel.node, databaseName, databaseIdentifier, identifier, qualifier));
-//                    }
-//                }
-//            }
-//            System.out.println("Query result parsed in " + Duration.between(begin, Instant.now()).toMillis());
-//        });
-//    }
 }
 
 

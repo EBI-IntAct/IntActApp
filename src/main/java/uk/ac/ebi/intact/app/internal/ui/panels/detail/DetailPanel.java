@@ -134,7 +134,6 @@ public class DetailPanel extends JPanel
 
 
     public void showCytoPanel() {
-        // System.out.println("show panel");
         CySwingApplication swingApplication = manager.utils.getService(CySwingApplication.class);
         CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
         if (!registered) {
@@ -159,7 +158,7 @@ public class DetailPanel extends JPanel
     }
 
     public String getIdentifier() {
-        return "uk.ac.ebi.intact.intactApp.Intact";
+        return "uk.ac.ebi.intact.app.details";
     }
 
     public Component getComponent() {

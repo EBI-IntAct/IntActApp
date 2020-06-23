@@ -48,7 +48,7 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
                     JDialog d = new JDialog();
                     d.setTitle(panelTitle);
                     d.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-                    ResolveTermsPanel panel = new ResolveTermsPanel(manager, iNetwork, null, !exactQuery, !exactQuery);
+                    ResolveTermsPanel panel = new ResolveTermsPanel(manager, iNetwork, !exactQuery, !exactQuery);
                     d.setContentPane(panel);
                     d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     d.pack();

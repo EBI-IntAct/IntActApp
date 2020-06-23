@@ -74,7 +74,6 @@ public abstract class IntactStyle {
 
         setNodeShapeStyle();
         setNodePaintStyle();
-        setSelectedNodePaint();
         setNodeBorderPaintStyle();
         setNodeBorderWidth();
         setNodeLabelColor();
@@ -111,10 +110,6 @@ public abstract class IntactStyle {
             }
             updateNodeTypeToShapeMapping(StyleMapper.nodeTypeToShape);
         }).start();
-    }
-
-    protected void setSelectedNodePaint() {
-//        style.setDefaultValue(BasicVisualLexicon.NODE_SELECTED_PAINT, new Color(204, 0, 51));
     }
 
     public void setNodePaintStyle() {
@@ -230,16 +225,7 @@ public abstract class IntactStyle {
         networkView.updateView();
     }
 
-    public void applyStyle() {
-        vmm.setCurrentVisualStyle(style);
-    }
-
-    public void removeStyle() {
-        vmm.removeVisualStyle(style);
-    }
-
     public abstract String getStyleName();
     public abstract IntactNetworkView.Type getStyleViewType();
-
 }
 

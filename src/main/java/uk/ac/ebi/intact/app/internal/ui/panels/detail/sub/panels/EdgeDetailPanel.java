@@ -101,12 +101,6 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
         selectedEdges(CyTableUtil.getEdgesInState(currentINetwork.getNetwork(), CyNetwork.SELECTED, true));
 
         selectedEdges = new CollapsablePanel("Selected edges info", edgesPanel, false);
-//        LinePanel headerLine = new LinePanel(backgroundColor);
-//        JLabel label = new JLabel(" Selected edges  ");
-//        label.setFont(textFont.deriveFont(15f));
-//        headerLine.add(label);
-//        headerLine.add(collapseAllButton);
-//        selectedEdges.setHeader(headerLine);
         return selectedEdges;
     }
 
@@ -171,17 +165,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
 
 
     public void networkViewChanged(CyNetworkView view) {
-//        if (currentIView != null) {
-//            scoreSlider.removeRangeChangeListener(currentIView);
-//        }
-//        scoreSlider.silentRangeChangeEvents();
         currentIView = manager.data.getIntactNetworkView(view);
-//        scoreSlider.addRangeChangeListener(currentIView);
-
-//        IntactNetworkView.Range miScoreRange = currentIView.getMiScoreRange();
-//        scoreSlider.setValue(miScoreRange.lowerValue);
-//        scoreSlider.setUpperValue(miScoreRange.upperValue);
-//        scoreSlider.enableRangeChangeEvents();
     }
 
     public void viewTypeChanged() {

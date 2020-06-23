@@ -1,13 +1,12 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
-import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
-import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.IntactOptionManager;
-import uk.ac.ebi.intact.app.internal.ui.components.filler.HorizontalFiller;
 import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
 import uk.ac.ebi.intact.app.internal.model.core.Interactor;
 import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.IntactOptionManager;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ImportNetworkTaskFactory;
+import uk.ac.ebi.intact.app.internal.ui.components.filler.HorizontalFiller;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.CenteredLabel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.options.OptionsPanel;
@@ -18,7 +17,10 @@ import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.*;
 
@@ -43,7 +45,6 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     IntactNetwork iNetwork;
 
     final JPanel displayPanel = new JPanel(new GridBagLayout());
-    Task additionalTask;
     final Map<TermColumn, Cell> columns = new HashMap<>();
     final Map<TermColumn, Integer> maxWidthsOfColumns = Arrays.stream(TermColumn.values())
             .collect(toMap(termColumn -> termColumn, termColumn -> 0));
@@ -70,27 +71,14 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     private JButton selectAllButton;
     private JButton unSelectAllButton;
 
-//  For WebServiceClient
-//    public ResolveTermsPanel(final IntactManager manager) {
-//        super(new GridBagLayout());
-//        this.manager = manager;
-//        JPanel rowHeaderMainPanel = new JPanel(new GridBagLayout());
-//        rowHeaderMainPanel.setBackground(Color.WHITE);
-//        EasyGBC c = new EasyGBC();
-//        rowHeaderMainPanel.add(rowHeaderPanel, c.expandHoriz());
-//        rowHeaderMainPanel.add(Box.createVerticalGlue(), c.expandBoth());
-//        sRowHeader = new JScrollPane(rowHeaderMainPanel, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//    }
-
     public ResolveTermsPanel(final IntactManager manager, IntactNetwork iNetwork) {
-        this(manager, iNetwork, null, true, true);
+        this(manager, iNetwork, true, true);
     }
 
-    public ResolveTermsPanel(final IntactManager manager, IntactNetwork iNetwork, Task additionalTask, boolean selectedByDefault, boolean includeNonAmbiguousTerms) {
+    public ResolveTermsPanel(final IntactManager manager, IntactNetwork iNetwork, boolean selectedByDefault, boolean includeNonAmbiguousTerms) {
         super(new GridBagLayout());
         this.manager = manager;
         this.iNetwork = iNetwork;
-        this.additionalTask = additionalTask;
         this.selectedByDefault = selectedByDefault;
         this.includeNonAmbiguousTerms = includeNonAmbiguousTerms;
         init();
