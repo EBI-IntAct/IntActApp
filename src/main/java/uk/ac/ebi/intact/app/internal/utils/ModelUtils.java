@@ -2,11 +2,11 @@ package uk.ac.ebi.intact.app.internal.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.*;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.core.FeatureClassifier;
-import uk.ac.ebi.intact.app.internal.model.core.Interactor;
-import uk.ac.ebi.intact.app.internal.model.core.ontology.OntologyIdentifier;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -99,7 +99,7 @@ public class ModelUtils {
                     + "the latest STRING network for the nodes in your network?</html>";
     public static String REQUERY_TITLE = "Re-query network?";
 
-    public static List<CyNode> augmentNetworkFromJSON(IntactManager manager, CyNetwork net,
+    public static List<CyNode> augmentNetworkFromJSON(Manager manager, CyNetwork net,
                                                       List<CyEdge> newEdges, JsonNode object) {
 //        //TODO Make augmentNetworkFromJson
 //        JsonNode results = getResultsFromJSON(object);
@@ -228,11 +228,11 @@ public class ModelUtils {
 
     /////////////////////////////////////////////////////////////////////
 
-    public static CyNetwork createIntactNetworkFromJSON(IntactNetwork intactNetwork, JsonNode object, String netName) {
-        IntactManager manager = intactNetwork.getManager();
+    public static CyNetwork createIntactNetworkFromJSON(Network network, JsonNode object, String netName) {
+        Manager manager = network.getManager();
 
         // Get a network name
-        netName = getNetworkName(intactNetwork, netName);
+        netName = getNetworkName(network, netName);
 
         // Create the network
         CyNetwork newNetwork = manager.data.createNetwork(netName);
@@ -243,16 +243,16 @@ public class ModelUtils {
         // Create a map to save the node names
         Map<String, String> nodeNameMap = new HashMap<>();
 
-        loadJSON(manager, intactNetwork, newNetwork, nodeMap, nodeNameMap, null, object);
+        loadJSON(manager, network, newNetwork, nodeMap, nodeNameMap, null, object);
 
         return newNetwork;
     }
 
-    private static String getNetworkName(IntactNetwork intactNetwork, String netName) {
+    private static String getNetworkName(Network network, String netName) {
         String defaultName = "IntAct Network";
 
         if (netName != null && !netName.isBlank()) return netName;
-        Map<String, List<Interactor>> interactorsToResolve = intactNetwork.getInteractorsToResolve();
+        Map<String, List<Interactor>> interactorsToResolve = network.getInteractorsToResolve();
 
         if (interactorsToResolve == null) return defaultName;
         Set<String> terms = interactorsToResolve.keySet();
@@ -262,7 +262,7 @@ public class ModelUtils {
         return defaultName;
     }
 
-    public static void loadJSON(IntactManager manager, IntactNetwork intactNetwork, CyNetwork network, Map<String, CyNode> nodeMap, Map<String, String> nodeNameMap, List<CyEdge> newEdges, JsonNode json) {
+    public static void loadJSON(Manager manager, Network intactNetwork, CyNetwork network, Map<String, CyNode> nodeMap, Map<String, String> nodeNameMap, List<CyEdge> newEdges, JsonNode json) {
         try {
             CyTable defaultNodeTable = network.getDefaultNodeTable();
             CyTable defaultEdgeTable = network.getDefaultEdgeTable();
@@ -298,7 +298,7 @@ public class ModelUtils {
         }
     }
 
-    private static void initTables(IntactNetwork intactNetwork, CyNetwork network, CyTable nodeTable, CyTable edgeTable, CyTableManager tableManager, CyTable featuresTable, CyTable xRefsTable) {
+    private static void initTables(Network intactNetwork, CyNetwork network, CyTable nodeTable, CyTable edgeTable, CyTableManager tableManager, CyTable featuresTable, CyTable xRefsTable) {
         initNetworkTable(network.getDefaultNetworkTable());
         initNodeTable(nodeTable);
         initEdgeTable(edgeTable);
@@ -344,7 +344,7 @@ public class ModelUtils {
         createListColumnIfNeeded(edgeTable, Long.class, C_INTACT_IDS);
     }
 
-    private static void initLowerTables(IntactNetwork intactNetwork, CyNetwork network, CyTableManager tableManager, CyTable featuresTable, CyTable identifiersTable) {
+    private static void initLowerTables(Network intactNetwork, CyNetwork network, CyTableManager tableManager, CyTable featuresTable, CyTable identifiersTable) {
         CyTable networkTable = network.getDefaultNetworkTable();
         createColumnIfNeeded(networkTable, Long.class, NET_FEATURES_TABLE_REF);
         createColumnIfNeeded(networkTable, Long.class, NET_IDENTIFIERS_TABLE_REF);
@@ -358,10 +358,10 @@ public class ModelUtils {
         initIdentifierTable(intactNetwork, uuid, tableManager, identifiersTable);
     }
 
-    private static void initFeaturesTable(IntactNetwork intactNetwork, UUID networkUUID, CyTableManager tableManager, CyTable featuresTable) {
+    private static void initFeaturesTable(Network network, UUID networkUUID, CyTableManager tableManager, CyTable featuresTable) {
         tableManager.addTable(featuresTable);
         featuresTable.createColumn(NET_UUID, String.class, true, networkUUID.toString());
-        intactNetwork.setFeaturesTable(featuresTable);
+        network.setFeaturesTable(featuresTable);
         for (String columnName : List.of(FEATURE_TYPE, FEATURE_TYPE_MI_ID, FEATURE_TYPE_MOD_ID, FEATURE_TYPE_PAR_ID, FEATURE_NAME)) {
             createColumnIfNeeded(featuresTable, String.class, columnName);
         }
@@ -370,10 +370,10 @@ public class ModelUtils {
         }
     }
 
-    private static void initIdentifierTable(IntactNetwork intactNetwork, UUID networkUUID, CyTableManager tableManager, CyTable identifiersTable) {
+    private static void initIdentifierTable(Network network, UUID networkUUID, CyTableManager tableManager, CyTable identifiersTable) {
         tableManager.addTable(identifiersTable);
         identifiersTable.createColumn(NET_UUID, String.class, true, networkUUID.toString());
-        intactNetwork.setIdentifiersTable(identifiersTable);
+        network.setIdentifiersTable(identifiersTable);
         for (String columnName : List.of(IDENTIFIER_ID, IDENTIFIER_DB_NAME, IDENTIFIER_DB_MI_ID, IDENTIFIER_QUALIFIER, IDENTIFIER_QUALIFIER_ID)) {
             createColumnIfNeeded(identifiersTable, String.class, columnName);
         }
@@ -675,34 +675,34 @@ public class ModelUtils {
         }
     }
 
-    public static void buildIntactNetworkTableFromExistingOne(IntactNetwork iNetwork) {
-        CyNetwork network = iNetwork.getNetwork();
-        CyRow networkRow = network.getDefaultNetworkTable().getRow(network.getSUID());
-        IntactManager manager = iNetwork.getManager();
+    public static void buildIntactNetworkTableFromExistingOne(Network network) {
+        CyNetwork cyNetwork = network.getCyNetwork();
+        CyRow networkRow = cyNetwork.getDefaultNetworkTable().getRow(cyNetwork.getSUID());
+        Manager manager = network.getManager();
         CyTableManager tableManager = manager.utils.getService(CyTableManager.class);
         Long identifiersSUID = networkRow.get(NET_IDENTIFIERS_TABLE_REF, Long.class);
 
         if (identifiersSUID != null) {
-            iNetwork.setIdentifiersTable(tableManager.getTable(identifiersSUID));
-            iNetwork.setFeaturesTable(tableManager.getTable(networkRow.get(NET_FEATURES_TABLE_REF, Long.class)));
+            network.setIdentifiersTable(tableManager.getTable(identifiersSUID));
+            network.setFeaturesTable(tableManager.getTable(networkRow.get(NET_FEATURES_TABLE_REF, Long.class)));
         } else {
             System.out.println("Identifiers and features SUID not found");
         }
     }
 
-    public static void buildSubTablesForSubIntactNetwork(IntactNetwork subNetwork, IntactNetwork parentNetwork) {
-        IntactManager manager = subNetwork.getManager();
+    public static void buildSubTablesForSubIntactNetwork(Network subNetwork, Network parentNetwork) {
+        Manager manager = subNetwork.getManager();
         CyTableManager tableManager = manager.utils.getService(CyTableManager.class);
         CyTableFactory tableFactory = manager.utils.getService(CyTableFactory.class);
 
         CyTable featuresTable = tableFactory.createTable("Features of " + subNetwork.toString(), FEATURE_AC, String.class, true, true);
         CyTable identifiersTable = tableFactory.createTable("Identifiers of " + subNetwork.toString(), IDENTIFIER_AC, String.class, true, true);
 
-        initLowerTables(subNetwork, subNetwork.getNetwork(), tableManager, featuresTable, identifiersTable);
+        initLowerTables(subNetwork, subNetwork.getCyNetwork(), tableManager, featuresTable, identifiersTable);
 
         // Copy included features
         Set<String> featuresAcsToAdd = new HashSet<>();
-        CyTable edgeTable = subNetwork.getNetwork().getDefaultEdgeTable();
+        CyTable edgeTable = subNetwork.getCyNetwork().getDefaultEdgeTable();
         edgeTable.getColumn(SOURCE_FEATURES).getValues(List.class).forEach(list -> {
             if (list != null) ((List<?>) list).forEach(o -> featuresAcsToAdd.add((String) o));
         });
@@ -715,7 +715,7 @@ public class ModelUtils {
         }
 
         // Copy included identifiers
-        CyTable nodeTable = subNetwork.getNetwork().getDefaultNodeTable();
+        CyTable nodeTable = subNetwork.getCyNetwork().getDefaultNodeTable();
         Set<String> identifierAcsToAdd = new HashSet<>();
         nodeTable.getColumn(IDENTIFIERS).getValues(List.class).forEach(list -> {
             if (list != null) ((List<?>) list).forEach(o -> identifierAcsToAdd.add((String) o));

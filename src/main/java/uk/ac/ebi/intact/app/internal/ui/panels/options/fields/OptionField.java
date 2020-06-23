@@ -1,11 +1,11 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.options.fields;
 
-import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.IntactOptionManager;
+import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
 
-public abstract class OptionField<O extends IntactOptionManager.Option<?>> {
+public abstract class OptionField<O extends OptionManager.Option<?>> {
     protected final JPanel container;
     protected final EasyGBC layoutHelper;
     protected final O option;
@@ -18,15 +18,15 @@ public abstract class OptionField<O extends IntactOptionManager.Option<?>> {
         layoutHelper.right().anchor("west").expandHoriz();
     }
 
-    public static OptionField<?> createOptionField(IntactOptionManager.Option<?> option, JPanel container, EasyGBC layoutHelper) {
+    public static OptionField<?> createOptionField(OptionManager.Option<?> option, JPanel container, EasyGBC layoutHelper) {
         if (option.type == Integer.class)
-            return new IntegerOptionField((IntactOptionManager.NumericOption<Integer>) option, container, layoutHelper);
+            return new IntegerOptionField((OptionManager.NumericOption<Integer>) option, container, layoutHelper);
         if (option.type == Double.class)
-            return new DoubleOptionField((IntactOptionManager.NumericOption<Double>) option, container, layoutHelper);
+            return new DoubleOptionField((OptionManager.NumericOption<Double>) option, container, layoutHelper);
         if (option.type == Boolean.class)
-            return new BooleanOptionField((IntactOptionManager.Option<Boolean>) option, container, layoutHelper);
+            return new BooleanOptionField((OptionManager.Option<Boolean>) option, container, layoutHelper);
         if (option.type == String.class)
-            return new StringOptionField((IntactOptionManager.Option<String>) option, container, layoutHelper);
+            return new StringOptionField((OptionManager.Option<String>) option, container, layoutHelper);
         return null;
     }
 }

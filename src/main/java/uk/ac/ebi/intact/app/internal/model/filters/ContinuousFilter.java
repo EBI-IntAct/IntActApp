@@ -1,40 +1,40 @@
 package uk.ac.ebi.intact.app.internal.model.filters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.IntactElement;
-import uk.ac.ebi.intact.app.internal.model.core.IntactNode;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactCollapsedEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 
 import java.util.Collection;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
 
-public abstract class ContinuousFilter<T extends IntactElement> extends Filter<T> {
+public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
     protected double min;
     protected double max;
     protected double currentMin;
     protected double currentMax;
 
-    public ContinuousFilter(IntactNetworkView iView, Class<T> elementType, String name, double min, double max) {
-        super(iView, name, elementType);
+    public ContinuousFilter(NetworkView view, Class<T> elementType, String name, double min, double max) {
+        super(view, name, elementType);
         this.min = min;
         this.max = max;
         currentMin = min;
         currentMax = max;
     }
 
-    public ContinuousFilter(IntactNetworkView iView, Class<T> elementType, String name) {
-        super(iView, name, elementType);
-        List<? extends IntactElement> elements;
-        if (IntactNode.class.isAssignableFrom(elementType)) {
-            elements = iNetwork.getINodes();
-        } else if (elementType == IntactCollapsedEdge.class) {
-            elements = iNetwork.getCollapsedIEdges();
-        } else if (elementType == IntactEvidenceEdge.class) {
-            elements = iNetwork.getEvidenceIEdges();
+    public ContinuousFilter(NetworkView view, Class<T> elementType, String name) {
+        super(view, name, elementType);
+        List<? extends Element> elements;
+        if (Node.class.isAssignableFrom(elementType)) {
+            elements = network.getINodes();
+        } else if (elementType == CollapsedEdge.class) {
+            elements = network.getCollapsedIEdges();
+        } else if (elementType == EvidenceEdge.class) {
+            elements = network.getEvidenceIEdges();
         } else throw new IllegalArgumentException();
 
         DoubleSummaryStatistics stats = elements.stream().mapToDouble(value -> getProperty(elementType.cast(value))).summaryStatistics();
@@ -60,14 +60,14 @@ public abstract class ContinuousFilter<T extends IntactElement> extends Filter<T
     @Override
     public void filterView() {
         if (currentMin == min && currentMax == max) return;
-        Collection<? extends IntactElement> elementsToFilter;
+        Collection<? extends Element> elementsToFilter;
 
-        if (IntactNode.class.isAssignableFrom(elementType)) {
-            elementsToFilter = iView.visibleNodes;
-        } else if (IntactEdge.class.isAssignableFrom(elementType)) {
-            if (elementType == IntactCollapsedEdge.class && iView.getType() != IntactNetworkView.Type.COLLAPSED) return;
-            if (elementType == IntactEvidenceEdge.class && iView.getType() == IntactNetworkView.Type.COLLAPSED) return;
-            elementsToFilter = iView.visibleEdges;
+        if (Node.class.isAssignableFrom(elementType)) {
+            elementsToFilter = view.visibleNodes;
+        } else if (Edge.class.isAssignableFrom(elementType)) {
+            if (elementType == CollapsedEdge.class && view.getType() != NetworkView.Type.COLLAPSED) return;
+            if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.COLLAPSED) return;
+            elementsToFilter = view.visibleEdges;
         } else {
             return;
         }
@@ -106,7 +106,7 @@ public abstract class ContinuousFilter<T extends IntactElement> extends Filter<T
 
     public void setCurrentMin(double currentMin) {
         this.currentMin = currentMin;
-        iView.filter();
+        view.filter();
     }
 
     public double getCurrentMax() {
@@ -115,12 +115,12 @@ public abstract class ContinuousFilter<T extends IntactElement> extends Filter<T
 
     public void setCurrentMax(double currentMax) {
         this.currentMax = currentMax;
-        iView.filter();
+        view.filter();
     }
 
     public void setCurrentPositions(double min, double max) {
         this.currentMin = min;
         this.currentMax = max;
-        iView.filter();
+        view.filter();
     }
 }

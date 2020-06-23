@@ -1,10 +1,10 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
 import org.cytoscape.work.TaskFactory;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.core.Interactor;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
-import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.IntactOptionManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ImportNetworkTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.components.filler.HorizontalFiller;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.CenteredLabel;
@@ -36,13 +36,13 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     public static final int TERM_SPACE = 8;
     private static final ImageIcon filterIcon = IconUtils.createImageIcon("/IntAct/DIGITAL/filter.png");
     public static final Color HEADER_CELLS_COLOR = new Color(104, 41, 124);
-    private final IntactManager manager;
+    private final Manager manager;
     private final EasyGBC layoutHelper = new EasyGBC();
     private final Set<Interactor> interactorsToQuery = new HashSet<>();
     final boolean includeNonAmbiguousTerms;
     final boolean selectedByDefault;
 
-    IntactNetwork iNetwork;
+    Network network;
 
     final JPanel displayPanel = new JPanel(new GridBagLayout());
     final Map<TermColumn, Cell> columns = new HashMap<>();
@@ -71,14 +71,14 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     private JButton selectAllButton;
     private JButton unSelectAllButton;
 
-    public ResolveTermsPanel(final IntactManager manager, IntactNetwork iNetwork) {
-        this(manager, iNetwork, true, true);
+    public ResolveTermsPanel(final Manager manager, Network network) {
+        this(manager, network, true, true);
     }
 
-    public ResolveTermsPanel(final IntactManager manager, IntactNetwork iNetwork, boolean selectedByDefault, boolean includeNonAmbiguousTerms) {
+    public ResolveTermsPanel(final Manager manager, Network network, boolean selectedByDefault, boolean includeNonAmbiguousTerms) {
         super(new GridBagLayout());
         this.manager = manager;
-        this.iNetwork = iNetwork;
+        this.network = network;
         this.selectedByDefault = selectedByDefault;
         this.includeNonAmbiguousTerms = includeNonAmbiguousTerms;
         init();
@@ -87,17 +87,17 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     private void init() {
         if (includeNonAmbiguousTerms) {
             add(new CenteredLabel("The terms you have given matches all these interactors.", 15, HEADER_CELLS_COLOR), layoutHelper.expandHoriz());
-            add(new CenteredLabel("Select interactors you want to use as seeds to build the network around", 14, HEADER_CELLS_COLOR), layoutHelper.down().expandHoriz());
+            add(new CenteredLabel("Select interactors you want to use as seeds to build the cyNetwork around", 14, HEADER_CELLS_COLOR), layoutHelper.down().expandHoriz());
         } else {
             add(new CenteredLabel("There is ambiguity among the terms you gave.", 15, HEADER_CELLS_COLOR), layoutHelper.down().expandHoriz());
-            add(new CenteredLabel("Please select the interactors that you meant to query as seeds to build the network around.", 14, HEADER_CELLS_COLOR), layoutHelper.down().expandHoriz());
+            add(new CenteredLabel("Please select the interactors that you meant to query as seeds to build the cyNetwork around.", 14, HEADER_CELLS_COLOR), layoutHelper.down().expandHoriz());
         }
         createColumnHeader();
         createRowHeader();
         initScrollPanel();
         fillDisplayPanel();
         createFilters();
-        add(new CollapsablePanel("Options", new OptionsPanel(manager, IntactOptionManager.Scope.DISAMBIGUATION), false), layoutHelper.down().expandHoriz());
+        add(new CollapsablePanel("Options", new OptionsPanel(manager, OptionManager.Scope.DISAMBIGUATION), false), layoutHelper.down().expandHoriz());
         createControlButtons();
         add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
     }
@@ -163,7 +163,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         EasyGBC c = new EasyGBC();
         c.anchor("west");
         displayPanel.setBackground(Color.WHITE);
-        iNetwork.getInteractorsToResolve().forEach((term, interactors) -> {
+        network.getInteractorsToResolve().forEach((term, interactors) -> {
             if (includeNonAmbiguousTerms || interactors.size() > 1) {
                 TermTable termTable = new TermTable(this, term, interactors);
                 termTables.add(termTable);
@@ -306,7 +306,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             if (interactorsToQuery.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No interactors selected. Please select at least one interactor.");
             } else {
-                TaskFactory factory = new ImportNetworkTaskFactory(iNetwork, interactorsToQuery.stream().map(interactor -> interactor.ac).collect(toList()), manager.option.ADD_INTERACTING_PARTNERS.getValue(), null);
+                TaskFactory factory = new ImportNetworkTaskFactory(network, interactorsToQuery.stream().map(interactor -> interactor.ac).collect(toList()), manager.option.ADD_INTERACTING_PARTNERS.getValue(), null);
                 manager.utils.execute(factory.createTaskIterator());
                 close();
             }

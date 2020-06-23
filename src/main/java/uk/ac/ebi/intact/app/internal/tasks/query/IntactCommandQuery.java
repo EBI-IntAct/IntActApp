@@ -6,9 +6,9 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ImportNetworkTaskFactory;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.core.Interactor;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,9 +40,9 @@ public class IntactCommandQuery extends AbstractTask {
             description = "Name of the network to build", longDescription = "Name of the network to build.<br> If not given, will be IntAct network")
     public String netName;
 
-    private final IntactManager manager;
+    private final Manager manager;
 
-    public IntactCommandQuery(IntactManager manager) {
+    public IntactCommandQuery(Manager manager) {
         this.manager = manager;
     }
 
@@ -57,7 +57,7 @@ public class IntactCommandQuery extends AbstractTask {
     private void resolveTermsToAcs() {
         Map<Object, Object> postData = new HashMap<>();
         postData.put("query", String.join("\n",seedTerms.split("\\s+")));
-        JsonNode resolutionResponse = HttpUtils.postJSON(IntactManager.INTACT_INTERACTOR_WS + "list/resolve", postData, manager);
+        JsonNode resolutionResponse = HttpUtils.postJSON(Manager.INTACT_INTERACTOR_WS + "list/resolve", postData, manager);
         Map<String, List<Interactor>> interactorsToResolve = Interactor.getInteractorsToResolve(resolutionResponse);
         Stream<Interactor> interactors = interactorsToResolve.values().stream().flatMap(List::stream);
 
@@ -77,7 +77,7 @@ public class IntactCommandQuery extends AbstractTask {
     }
 
     private void buildNetwork() {
-        IntactNetwork network = new IntactNetwork(manager);
+        Network network = new Network(manager);
         ImportNetworkTaskFactory factory = new ImportNetworkTaskFactory(network, interactorAcs, includeSeedPartners, netName);
         insertTasksAfterCurrentTask(factory.createTaskIterator());
     }

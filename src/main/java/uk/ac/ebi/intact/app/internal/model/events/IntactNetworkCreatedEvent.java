@@ -1,18 +1,18 @@
 package uk.ac.ebi.intact.app.internal.model.events;
 
 import org.cytoscape.event.AbstractCyEvent;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 
-public class IntactNetworkCreatedEvent extends AbstractCyEvent<IntactManager> {
-    private final IntactNetwork newINetwork;
+public class IntactNetworkCreatedEvent extends AbstractCyEvent<Manager> {
+    private final Network newINetwork;
 
-    public IntactNetworkCreatedEvent(IntactManager source, IntactNetwork newINetwork) {
+    public IntactNetworkCreatedEvent(Manager source, Network newINetwork) {
         super(source, IntactNetworkCreatedListener.class);
         this.newINetwork = newINetwork;
     }
 
-    public IntactNetwork getNewINetwork() {
+    public Network getNewINetwork() {
         return newINetwork;
     }
 }

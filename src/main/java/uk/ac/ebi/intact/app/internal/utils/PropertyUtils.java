@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.app.internal.utils;
 import org.cytoscape.property.AbstractConfigDirPropsReader;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 
 import java.util.Properties;
 
@@ -51,7 +51,7 @@ public class PropertyUtils {
         }
     }
 
-    public static CyProperty<Properties> getPropertyService(IntactManager manager, CyProperty.SavePolicy policy) {
+    public static CyProperty<Properties> getPropertyService(Manager manager, CyProperty.SavePolicy policy) {
         String name = "intactApp";
         if (policy == CyProperty.SavePolicy.SESSION_FILE) {
             CyProperty<Properties> service = manager.utils.getService(CyProperty.class, "(cyPropertyName=" + name + ")");

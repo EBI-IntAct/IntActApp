@@ -2,16 +2,16 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.Feature;
-import uk.ac.ebi.intact.app.internal.model.core.FeatureClassifier;
-import uk.ac.ebi.intact.app.internal.model.core.IntactNode;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactCollapsedEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.ExpandViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.utils.LinkUtils;
 import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
@@ -32,13 +32,13 @@ public class NodeFeatures extends AbstractNodeElement {
     private final static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(15);
     private final List<Feature> features;
     private final boolean showFeatureEdge;
-    private final IntactCollapsedEdge summaryEdge;
+    private final CollapsedEdge summaryEdge;
 
-    public NodeFeatures(IntactNode iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, IntactCollapsedEdge summaryEdge) {
+    public NodeFeatures(Node iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, CollapsedEdge summaryEdge) {
         this(iNode, features, openBrowser, showFeatureEdge, summaryEdge, backgroundColor);
     }
 
-    public NodeFeatures(IntactNode iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, IntactCollapsedEdge summaryEdge, Color background) {
+    public NodeFeatures(Node iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, CollapsedEdge summaryEdge, Color background) {
         super("Features summary", iNode, openBrowser);
         this.features = features;
         this.showFeatureEdge = showFeatureEdge;
@@ -106,11 +106,11 @@ public class NodeFeatures extends AbstractNodeElement {
                     (featureTypePanel, featuresOfType) -> groupElementsInPanel(featureTypePanel, getBackground(), featuresOfType, feature -> feature.name,
                             (featureNamePanel, featuresOfName) -> {
                                 for (Feature feature : featuresOfName) {
-                                    List<IntactEvidenceEdge> featureEdges = feature.getEdges();
-                                    for (IntactEvidenceEdge edge : featureEdges) {
+                                    List<EvidenceEdge> featureEdges = feature.getEdges();
+                                    for (EvidenceEdge edge : featureEdges) {
                                         LinePanel line = new LinePanel(getBackground());
                                         if (summaryEdge == null) {
-                                            IntactNode otherNode;
+                                            Node otherNode;
                                             if (iNode.equals(edge.source)) {
                                                 otherNode = edge.target;
                                             } else if (iNode.equals(edge.target)) {
@@ -143,14 +143,14 @@ public class NodeFeatures extends AbstractNodeElement {
         return new CollapsablePanel(featureClass.name, featureListPanel, true);
     }
 
-    public static Map<IntactEvidenceEdge, List<SelectEdgeButton>> edgeToCheckBoxes = new HashMap<>();
-    private final Map<SelectEdgeButton, IntactEvidenceEdge> checkBoxes = new HashMap<>();
+    public static Map<EvidenceEdge, List<SelectEdgeButton>> edgeToCheckBoxes = new HashMap<>();
+    private final Map<SelectEdgeButton, EvidenceEdge> checkBoxes = new HashMap<>();
 
     private class SelectEdgeButton extends JCheckBox implements ItemListener {
         private boolean silenceListener = false;
-        private final IntactEvidenceEdge edge;
+        private final EvidenceEdge edge;
 
-        public SelectEdgeButton(IntactEvidenceEdge edge) {
+        public SelectEdgeButton(EvidenceEdge edge) {
             this.edge = edge;
             setSelected(edge.edgeRow.get(CyNetwork.SELECTED, Boolean.class));
             setToolTipText("Select edge");
@@ -162,14 +162,14 @@ public class NodeFeatures extends AbstractNodeElement {
         @Override
         public void itemStateChanged(ItemEvent e) {
             if (silenceListener) return;
-            IntactManager manager = edge.iNetwork.getManager();
-            IntactNetworkView currentIView = manager.data.getCurrentIntactNetworkView();
-            if (currentIView != null && currentIView.getType() == IntactNetworkView.Type.COLLAPSED) {
+            Manager manager = edge.network.getManager();
+            NetworkView currentIView = manager.data.getCurrentIntactNetworkView();
+            if (currentIView != null && currentIView.getType() == NetworkView.Type.COLLAPSED) {
                 manager.utils.execute(new ExpandViewTaskFactory(manager, true).createTaskIterator());
             }
 
             boolean selected = e.getStateChange() == ItemEvent.SELECTED;
-            edge.iNetwork.getNetwork().getRow(edge.edge).set(CyNetwork.SELECTED, selected);
+            edge.network.getCyNetwork().getRow(edge.edge).set(CyNetwork.SELECTED, selected);
 
             for (SelectEdgeButton checkBox : edgeToCheckBoxes.get(edge)) {
                 checkBox.silenceListener = true;
@@ -180,9 +180,9 @@ public class NodeFeatures extends AbstractNodeElement {
     }
 
     public void deleteEdgeSelectionCheckboxes() {
-        for (Map.Entry<SelectEdgeButton, IntactEvidenceEdge> entry : checkBoxes.entrySet()) {
+        for (Map.Entry<SelectEdgeButton, EvidenceEdge> entry : checkBoxes.entrySet()) {
             JCheckBox selectCheckBox = entry.getKey();
-            IntactEvidenceEdge edge = entry.getValue();
+            EvidenceEdge edge = entry.getValue();
             List<SelectEdgeButton> edgeCheckBoxes = edgeToCheckBoxes.get(edge);
             edgeCheckBoxes.remove(selectCheckBox);
             if (edgeCheckBoxes.isEmpty()) {

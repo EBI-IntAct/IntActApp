@@ -1,10 +1,10 @@
 package uk.ac.ebi.intact.app.internal.ui.components.diagrams;
 
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLabel2D;
-import uk.ac.ebi.intact.app.internal.model.core.Interactor;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.model.events.StyleUpdatedListener;
 import uk.ac.ebi.intact.app.internal.model.styles.IntactStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.utils.StyleMapper;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.shapes.AbstractNodeShape;
 import uk.ac.ebi.intact.app.internal.ui.utils.StyleUtils;
 

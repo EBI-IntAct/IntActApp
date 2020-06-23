@@ -1,33 +1,33 @@
 package uk.ac.ebi.intact.app.internal.model.filters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.IntactNode;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactCollapsedEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEvidenceEdge;
-import uk.ac.ebi.intact.app.internal.model.core.IntactElement;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class DiscreteFilter<T extends IntactElement> extends Filter<T> {
+public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
     protected final Map<String, Boolean> propertiesVisibility = new HashMap<>();
 
-    public DiscreteFilter(IntactNetworkView iView, Class<T> elementType, String name) {
-        super(iView, name, elementType);
+    public DiscreteFilter(NetworkView view, Class<T> elementType, String name) {
+        super(view, name, elementType);
         List<T> elements;
-        if (elementType == IntactNode.class) {
-            elements = new ArrayList<>((List<T>) iNetwork.getINodes());
-        } else if (elementType == IntactEdge.class) {
-            elements = new ArrayList<>((List<T>) iNetwork.getCollapsedIEdges());
-            elements.addAll((List<T>) iNetwork.getEvidenceIEdges());
-        } else if (elementType == IntactCollapsedEdge.class) {
-            elements = new ArrayList<>((List<T>) iNetwork.getCollapsedIEdges());
-        } else if (elementType == IntactEvidenceEdge.class) {
-            elements = new ArrayList<>((List<T>) iNetwork.getEvidenceIEdges());
+        if (elementType == Node.class) {
+            elements = new ArrayList<>((List<T>) network.getINodes());
+        } else if (elementType == Edge.class) {
+            elements = new ArrayList<>((List<T>) network.getCollapsedIEdges());
+            elements.addAll((List<T>) network.getEvidenceIEdges());
+        } else if (elementType == CollapsedEdge.class) {
+            elements = new ArrayList<>((List<T>) network.getCollapsedIEdges());
+        } else if (elementType == EvidenceEdge.class) {
+            elements = new ArrayList<>((List<T>) network.getEvidenceIEdges());
         } else return;
 
         for (T element : elements) {
@@ -54,12 +54,12 @@ public abstract class DiscreteFilter<T extends IntactElement> extends Filter<T> 
     @Override
     public void filterView() {
         if (propertiesVisibility.values().stream().anyMatch(visible -> !visible)) {
-            if (IntactNode.class.isAssignableFrom(elementType)) {
-                iView.visibleNodes.removeIf(node -> !propertiesVisibility.get(getProperty(elementType.cast(node))));
-            } else if (IntactEdge.class.isAssignableFrom(elementType)) {
-                if (elementType == IntactCollapsedEdge.class && iView.getType() != IntactNetworkView.Type.COLLAPSED) return;
-                if (elementType == IntactEvidenceEdge.class && iView.getType() == IntactNetworkView.Type.COLLAPSED) return;
-                iView.visibleEdges.removeIf(edge -> !propertiesVisibility.get(getProperty(elementType.cast(edge))));
+            if (Node.class.isAssignableFrom(elementType)) {
+                view.visibleNodes.removeIf(node -> !propertiesVisibility.get(getProperty(elementType.cast(node))));
+            } else if (Edge.class.isAssignableFrom(elementType)) {
+                if (elementType == CollapsedEdge.class && view.getType() != NetworkView.Type.COLLAPSED) return;
+                if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.COLLAPSED) return;
+                view.visibleEdges.removeIf(edge -> !propertiesVisibility.get(getProperty(elementType.cast(edge))));
             }
         }
     }
@@ -76,7 +76,7 @@ public abstract class DiscreteFilter<T extends IntactElement> extends Filter<T> 
     public void setPropertyVisibility(String propertyValueToString, boolean visible) {
         if (propertiesVisibility.containsKey(propertyValueToString) && propertiesVisibility.get(propertyValueToString) != visible) {
             propertiesVisibility.put(propertyValueToString, visible);
-            iView.filter();
+            view.filter();
         }
     }
 

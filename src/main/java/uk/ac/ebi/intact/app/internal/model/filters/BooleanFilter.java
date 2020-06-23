@@ -1,17 +1,17 @@
 package uk.ac.ebi.intact.app.internal.model.filters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.IntactNode;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEdge;
-import uk.ac.ebi.intact.app.internal.model.core.IntactElement;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 
-public abstract class BooleanFilter<T extends IntactElement> extends Filter<T> {
+public abstract class BooleanFilter<T extends Element> extends Filter<T> {
     protected boolean status = false;
     public final String description;
 
-    public BooleanFilter(IntactNetworkView iView, Class<T> elementType, String name, String description) {
-        super(iView, name, elementType);
+    public BooleanFilter(NetworkView view, Class<T> elementType, String name, String description) {
+        super(view, name, elementType);
         this.description = description;
     }
 
@@ -29,10 +29,10 @@ public abstract class BooleanFilter<T extends IntactElement> extends Filter<T> {
     public void filterView() {
         if (!isEnabled() || !status) return;
 
-        if (IntactNode.class.isAssignableFrom(elementType)) {
-            iView.visibleNodes.removeIf(node -> isToHide(elementType.cast(node)));
-        } else if (IntactEdge.class.isAssignableFrom(elementType)) {
-            iView.visibleEdges.removeIf(edge -> isToHide(elementType.cast(edge)));
+        if (Node.class.isAssignableFrom(elementType)) {
+            view.visibleNodes.removeIf(node -> isToHide(elementType.cast(node)));
+        } else if (Edge.class.isAssignableFrom(elementType)) {
+            view.visibleEdges.removeIf(edge -> isToHide(elementType.cast(edge)));
         }
     }
 
@@ -42,6 +42,6 @@ public abstract class BooleanFilter<T extends IntactElement> extends Filter<T> {
 
     public void setStatus(boolean status) {
         this.status = status;
-        iView.filter();
+        view.filter();
     }
 }

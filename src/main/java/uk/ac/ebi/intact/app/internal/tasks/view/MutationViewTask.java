@@ -3,19 +3,19 @@ package uk.ac.ebi.intact.app.internal.tasks.view;
 import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.work.TaskMonitor;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 
 public class MutationViewTask extends AbstractHiderTask {
-    public MutationViewTask(IntactManager manager, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, boolean currentView) {
+    public MutationViewTask(Manager manager, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, boolean currentView) {
         super(manager, hideTaskFactory, unHideTaskFactory, currentView);
     }
 
     @Override
     public void run(TaskMonitor taskMonitor) {
         expandEdgesIfNeeded();
-        if (iView != null && iView.getType() != IntactNetworkView.Type.MUTATION) {
-            manager.data.intactViewChanged(IntactNetworkView.Type.MUTATION, iView);
+        if (chosenView != null && chosenView.getType() != NetworkView.Type.MUTATION) {
+            manager.data.intactViewChanged(NetworkView.Type.MUTATION, chosenView);
         }
     }
 }

@@ -1,7 +1,7 @@
 package uk.ac.ebi.intact.app.internal.ui.utils;
 
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 
 public class LinkUtils {
@@ -12,7 +12,7 @@ public class LinkUtils {
                 openBrowser);
     }
 
-    public static JLink createIntactEdgeLink(OpenBrowser openBrowser, IntactEvidenceEdge iEEdge) {
+    public static JLink createIntactEdgeLink(OpenBrowser openBrowser, EvidenceEdge iEEdge) {
         return new JLink(iEEdge.ac, "https://www.ebi.ac.uk/intact/interaction/" + iEEdge.ac, openBrowser);
     }
 }

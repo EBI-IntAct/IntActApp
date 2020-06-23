@@ -2,12 +2,12 @@ package uk.ac.ebi.intact.app.internal.tasks.view.factories;
 
 
 import org.cytoscape.work.TaskIterator;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.view.CollapseViewTask;
 
 public class CollapseViewTaskFactory extends AbstractHiderTaskFactory {
 
-    public CollapseViewTaskFactory(IntactManager manager, boolean currentView) {
+    public CollapseViewTaskFactory(Manager manager, boolean currentView) {
         super(manager, currentView);
     }
 

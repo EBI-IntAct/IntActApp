@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.filters;
 
-import uk.ac.ebi.intact.app.internal.model.core.IntactElement;
+import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.filters.edge.EdgeMIScoreFilter;
 import uk.ac.ebi.intact.app.internal.ui.components.slider.MIScoreSliderUI;
 import uk.ac.ebi.intact.app.internal.model.events.RangeChangeEvent;
@@ -13,7 +13,7 @@ import java.awt.*;
 
 import static uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel.backgroundColor;
 
-public class ContinuousFilterPanel<T extends IntactElement> extends FilterPanel<ContinuousFilter<T>> implements RangeChangeListener {
+public class ContinuousFilterPanel<T extends Element> extends FilterPanel<ContinuousFilter<T>> implements RangeChangeListener {
     private final RangeSlider slider = new RangeSlider(0, 100);
 
     public ContinuousFilterPanel(ContinuousFilter<T> filter) {

@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.components.legend;
 
-import uk.ac.ebi.intact.app.internal.model.styles.utils.StyleMapper;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 
 import javax.swing.*;
 import java.awt.*;

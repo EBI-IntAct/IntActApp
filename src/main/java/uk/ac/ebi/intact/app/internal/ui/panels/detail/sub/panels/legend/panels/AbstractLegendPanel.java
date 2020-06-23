@@ -1,8 +1,8 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels;
 
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
@@ -13,13 +13,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public abstract class AbstractLegendPanel extends CollapsablePanel {
-    protected IntactManager manager;
+    protected Manager manager;
     protected EasyGBC layoutHelper = new EasyGBC();
-    protected IntactNetwork currentINetwork;
-    protected IntactNetworkView currentIView;
+    protected Network currentINetwork;
+    protected NetworkView currentIView;
     protected ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
-    public AbstractLegendPanel(String text, IntactManager manager, IntactNetwork currentINetwork, IntactNetworkView currentIView) {
+    public AbstractLegendPanel(String text, Manager manager, Network currentINetwork, NetworkView currentIView) {
         super(text, false);
         this.manager = manager;
         this.currentINetwork = currentINetwork;
@@ -38,11 +38,11 @@ public abstract class AbstractLegendPanel extends CollapsablePanel {
 
     public abstract void filterCurrentLegend();
 
-    public void networkChanged(IntactNetwork newINetwork) {
+    public void networkChanged(Network newINetwork) {
         this.currentINetwork = newINetwork;
     }
 
-    public void networkViewChanged(IntactNetworkView newINetworkView) {
+    public void networkViewChanged(NetworkView newINetworkView) {
         currentIView = newINetworkView;
     }
 }

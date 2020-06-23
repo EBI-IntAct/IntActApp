@@ -5,12 +5,12 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactCollapsedEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEvidenceEdge;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.spinner.LoadingSpinner;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel;
@@ -39,13 +39,13 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
     private static final int MAXIMUM_SELECTED_EDGE_SHOWN = 100;
     private final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
 
-    private final Map<IntactEdge, EdgePanel> edgeToPanel = new HashMap<>();
+    private final Map<Edge, EdgePanel> edgeToPanel = new HashMap<>();
     private final JPanel mainPanel = new JPanel(new GridBagLayout());
     private final JPanel filtersPanel = new JPanel(new GridBagLayout());
     private final EasyGBC filterHelper = new EasyGBC();
     private final Map<Class<? extends Filter>, FilterPanel> filterPanels = new HashMap<>();
 
-    public EdgeDetailPanel(final IntactManager manager) {
+    public EdgeDetailPanel(final Manager manager) {
         super(manager, MAXIMUM_SELECTED_EDGE_SHOWN, "edges");
         init();
         revalidate();
@@ -59,8 +59,8 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
         createScrollablePanel();
     }
 
-    public void setupFilters(List<Filter<? extends IntactEdge>> edgeFilters) {
-        for (Filter<? extends IntactEdge> filter : edgeFilters) {
+    public void setupFilters(List<Filter<? extends Edge>> edgeFilters) {
+        for (Filter<? extends Edge> filter : edgeFilters) {
             if (!filterPanels.containsKey(filter.getClass())) {
                 FilterPanel<?> filterPanel = FilterPanel.createFilterPanel(filter);
                 if (filterPanel != null) {
@@ -98,14 +98,14 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
         edgesPanel = new JPanel(new GridBagLayout());
         edgesPanel.setBackground(backgroundColor);
         edgesPanel.add(loadingSpinner, layoutHelper.anchor("west").noExpand());
-        selectedEdges(CyTableUtil.getEdgesInState(currentINetwork.getNetwork(), CyNetwork.SELECTED, true));
+        selectedEdges(CyTableUtil.getEdgesInState(currentINetwork.getCyNetwork(), CyNetwork.SELECTED, true));
 
         selectedEdges = new CollapsablePanel("Selected edges info", edgesPanel, false);
         return selectedEdges;
     }
 
 
-    public void networkChanged(IntactNetwork newNetwork) {
+    public void networkChanged(Network newNetwork) {
         this.currentINetwork = newNetwork;
         selectedEdges(newNetwork.getSelectedEdges());
     }
@@ -119,13 +119,13 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
             selectionRunning = true;
             loadingSpinner.start();
 
-            List<IntactEdge> iEdges = edges.stream()
-                    .map(edge -> IntactEdge.createIntactEdge(currentINetwork, edge))
+            List<Edge> iEdges = edges.stream()
+                    .map(edge -> Edge.createIntactEdge(currentINetwork, edge))
                     .filter(this::isEdgeOfCurrentViewType)
                     .collect(Comparators.greatest(MAXIMUM_SELECTED_EDGE_SHOWN, comparing(o -> o.miScore)));
 
 
-            for (IntactEdge iEdge : iEdges) {
+            for (Edge iEdge : iEdges) {
                 if (!selectionRunning)
                     break;
 
@@ -144,9 +144,9 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
                 edgesPanel.add(limitExceededPanel, layoutHelper.expandHoriz().down());
             }
 
-            HashSet<IntactEdge> unselectedEdges = new HashSet<>(edgeToPanel.keySet());
+            HashSet<Edge> unselectedEdges = new HashSet<>(edgeToPanel.keySet());
             unselectedEdges.removeAll(iEdges);
-            for (IntactEdge unselectedEdge : unselectedEdges) {
+            for (Edge unselectedEdge : unselectedEdges) {
                 EdgePanel edgePanel = edgeToPanel.get(unselectedEdge);
                 edgePanel.delete();
                 edgesPanel.remove(edgePanel);
@@ -158,14 +158,14 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
         }
     }
 
-    private boolean isEdgeOfCurrentViewType(IntactEdge edge) {
-        return (currentIView.getType() == IntactNetworkView.Type.COLLAPSED && edge.collapsed) ||
-                (currentIView.getType() != IntactNetworkView.Type.COLLAPSED && !edge.collapsed);
+    private boolean isEdgeOfCurrentViewType(Edge edge) {
+        return (currentIView.getType() == NetworkView.Type.COLLAPSED && edge.collapsed) ||
+                (currentIView.getType() != NetworkView.Type.COLLAPSED && !edge.collapsed);
     }
 
 
     public void networkViewChanged(CyNetworkView view) {
-        currentIView = manager.data.getIntactNetworkView(view);
+        currentIView = manager.data.getNetworkView(view);
     }
 
     public void viewTypeChanged() {
@@ -182,17 +182,17 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
 
         private final EdgeParticipants edgeParticipants;
 
-        public EdgePanel(IntactEdge edge) {
+        public EdgePanel(Edge edge) {
             super("", !(selectedEdges == null || selectedEdges.collapseAllButton.isExpanded()));
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
             content.setAlignmentX(LEFT_ALIGNMENT);
             setBackground(backgroundColor);
 
             JLabel title;
-            if (edge instanceof IntactCollapsedEdge) {
+            if (edge instanceof CollapsedEdge) {
                 title = new JLabel("Collapsed edge between " + edge.source.name + " and " + edge.target.name + " (MI Score = " + edge.miScore + ")");
             } else {
-                IntactEvidenceEdge iEEdge = (IntactEvidenceEdge) edge;
+                EvidenceEdge iEEdge = (EvidenceEdge) edge;
                 title = new JLabel("Evidence of " + iEEdge.type + " between " + iEEdge.source.name + " and " + iEEdge.target.name);
             }
 

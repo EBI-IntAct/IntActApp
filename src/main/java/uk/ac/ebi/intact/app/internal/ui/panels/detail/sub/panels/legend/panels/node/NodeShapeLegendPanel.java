@@ -1,10 +1,10 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.node;
 
 import org.apache.commons.lang3.StringUtils;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
-import uk.ac.ebi.intact.app.internal.model.styles.utils.StyleMapper;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.AbstractLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
@@ -23,7 +23,7 @@ public class NodeShapeLegendPanel extends AbstractLegendPanel {
     private final Map<String, JPanel> nodeShapesLines = new HashMap<>();
 
 
-    public NodeShapeLegendPanel(IntactManager manager, IntactNetwork currentINetwork, IntactNetworkView currentIView) {
+    public NodeShapeLegendPanel(Manager manager, Network currentINetwork, NetworkView currentIView) {
         super("<html>Node Shape <em>~ Interactor Type</em></html>", manager, currentINetwork, currentIView);
         for (String nodeType : StyleMapper.originalNodeTypeToShape.keySet()) {
             JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT,4,2));

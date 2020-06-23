@@ -2,8 +2,8 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.core.IntactNode;
-import uk.ac.ebi.intact.app.internal.model.DbIdentifiersToLink;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.io.DbIdentifiersToLink;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.LinkUtils;
@@ -15,7 +15,7 @@ public class NodeBasics extends AbstractNodeElement {
 
     private LinePanel graphDescription;
 
-    public NodeBasics(IntactNode iNode, OpenBrowser openBrowser) {
+    public NodeBasics(Node iNode, OpenBrowser openBrowser) {
         super(null, iNode, openBrowser);
         fillContent();
     }

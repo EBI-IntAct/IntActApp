@@ -1,15 +1,15 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels;
 
 import org.cytoscape.view.model.CyNetworkView;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.StyleUpdatedListener;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.EdgeLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.NodeLegendPanel;
-import uk.ac.ebi.intact.app.internal.model.styles.utils.StyleMapper;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
@@ -19,7 +19,7 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
     private final NodeLegendPanel nodePanel;
     private final EdgeLegendPanel edgePanel;
 
-    public LegendDetailPanel(final IntactManager manager) {
+    public LegendDetailPanel(final Manager manager) {
         super(manager,0,"legend");
         JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBackground(backgroundColor);
@@ -54,9 +54,9 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
     }
 
     public void networkViewChanged(CyNetworkView view) {
-        IntactNetworkView intactNetworkView = manager.data.getIntactNetworkView(view);
-        if (intactNetworkView != null) {
-            currentIView = intactNetworkView;
+        NetworkView networkView = manager.data.getNetworkView(view);
+        if (networkView != null) {
+            currentIView = networkView;
             currentINetwork = currentIView.network;
 
             filterCurrentLegends();
@@ -72,12 +72,12 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
         edgePanel.filterCurrentLegend();
     }
 
-    public void viewTypeChanged(IntactNetworkView.Type newType) {
+    public void viewTypeChanged(NetworkView.Type newType) {
         nodePanel.viewTypeChanged(newType);
         edgePanel.viewTypeChanged(newType);
     }
 
-    public void networkChanged(IntactNetwork newNetwork) {
+    public void networkChanged(Network newNetwork) {
         currentINetwork = newNetwork;
         nodePanel.networkChanged(newNetwork);
         edgePanel.networkChanged(newNetwork);

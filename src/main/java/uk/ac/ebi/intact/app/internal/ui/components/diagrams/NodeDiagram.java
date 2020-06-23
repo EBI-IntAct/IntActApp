@@ -1,9 +1,9 @@
 package uk.ac.ebi.intact.app.internal.ui.components.diagrams;
 
-import uk.ac.ebi.intact.app.internal.model.core.IntactNode;
-import uk.ac.ebi.intact.app.internal.model.core.Feature;
-import uk.ac.ebi.intact.app.internal.model.core.FeatureClassifier;
-import uk.ac.ebi.intact.app.internal.model.core.ontology.OntologyIdentifier;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
 import uk.ac.ebi.intact.app.internal.model.styles.MutationIntactStyle;
 import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 
@@ -12,9 +12,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class NodeDiagram extends InteractorDiagram {
-    public final IntactNode node;
+    public final Node node;
 
-    public NodeDiagram(IntactNode node, List<Feature> features) {
+    public NodeDiagram(Node node, List<Feature> features) {
         super(node);
         this.node = node;
         Set<OntologyIdentifier> featureTypeIDs = features.stream().map(feature -> feature.typeIdentifier).collect(Collectors.toSet());

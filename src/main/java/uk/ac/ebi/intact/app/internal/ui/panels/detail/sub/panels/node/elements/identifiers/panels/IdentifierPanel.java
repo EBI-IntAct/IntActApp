@@ -1,8 +1,8 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.identifiers.panels;
 
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.DbIdentifiersToLink;
-import uk.ac.ebi.intact.app.internal.model.core.Identifier;
+import uk.ac.ebi.intact.app.internal.io.DbIdentifiersToLink;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.Identifier;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 

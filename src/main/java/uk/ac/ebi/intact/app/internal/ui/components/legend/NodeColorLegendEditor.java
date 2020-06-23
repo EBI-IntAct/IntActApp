@@ -1,8 +1,8 @@
 package uk.ac.ebi.intact.app.internal.ui.components.legend;
 
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.styles.utils.StyleMapper;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 
 import javax.swing.*;
@@ -17,15 +17,15 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     private static final Map<String, Color> originalColors = new HashMap<>();
     private static final List<NodeColorLegendEditor> NODE_COLOR_LEGEND_EDITOR_LIST = new ArrayList<>();
 
-    protected IntactNetwork currentINetwork;
+    protected Network currentINetwork;
     protected JComponent addNewNodeLegendEditorActivator;
     protected long currentTaxId;
-    protected IntactManager manager;
+    protected Manager manager;
     protected JComboBox<String> speciesField;
 //    protected JCheckBox includeSubSpecies = new JCheckBox("Include subtaxons");
     protected JButton removeButton = new JButton(remove);
 
-    public NodeColorLegendEditor(IntactNetwork currentINetwork, JComponent addNewNodeLegendEditorActivator) {
+    public NodeColorLegendEditor(Network currentINetwork, JComponent addNewNodeLegendEditorActivator) {
         this.currentINetwork = currentINetwork;
         this.manager = currentINetwork.getManager();
         this.addNewNodeLegendEditorActivator = addNewNodeLegendEditorActivator;
@@ -143,7 +143,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
         }
     }
 
-    public void networkChanged(IntactNetwork newINetwork) {
+    public void networkChanged(Network newINetwork) {
         currentINetwork = newINetwork;
     }
 

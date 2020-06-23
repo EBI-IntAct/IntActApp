@@ -17,14 +17,14 @@ import org.cytoscape.work.TaskIterator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
-import uk.ac.ebi.intact.app.internal.tasks.factories.ShowDetailPanelTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.factories.VersionTaskFactory;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.IntactCommandQuery;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.AddTermsTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.IntactBroadSearchTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.IntactExactQueryTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.settings.SettingsTask;
+import uk.ac.ebi.intact.app.internal.tasks.version.factories.VersionTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.CollapseViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.ExpandViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.MutationViewTaskFactory;
@@ -57,28 +57,12 @@ public class CyActivator extends AbstractCyActivator {
         // Get a handle on the CyServiceRegistrar
         CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
 
-//        final FunctionalMappingFactory fnFactory = new FunctionalMappingFactory(registrar);
-//        {
-//            final Properties props = new Properties();
-//            props.setProperty("service.type", "factory");
-//            props.setProperty("mapping.type", "functional");
-//            registerService(bc, fnFactory, VisualMappingFunctionFactory.class, props);
-//        }
-
-        IntactManager manager = new IntactManager(registrar);
+        Manager manager = new Manager(registrar);
 
 
         // Get our version number
         Version v = bc.getBundle().getVersion();
         String version = v.toString(); // The full version
-
-        // TODO Switch properties with first loaded IntactNetwork, and reset it back when deleting the last one
-//        // Load Property if available.
-//        CyProperty<Properties> cyProp = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
-//        final Properties props = cyProp.getProperties();
-//        final String selectionListProp = props.getProperty(PROP_NAME);
-//        props.setProperty()
-
 
         {
             // Register our network added listener and session loaded listener
@@ -88,12 +72,6 @@ public class CyActivator extends AbstractCyActivator {
             registerService(bc, manager.data, NetworkAboutToBeDestroyedListener.class, new Properties());
             registerService(bc, manager.data, NetworkViewAboutToBeDestroyedListener.class, new Properties());
         }
-
-//        {
-//            // Register our web service client
-//            IntactWebServiceClient client = new IntactWebServiceClient(manager);
-//            registerAllServices(bc, client, new Properties());
-//        }
 
         {
             CollapseViewTaskFactory collapseViewTaskFactory = new CollapseViewTaskFactory(manager, false);
@@ -132,7 +110,6 @@ public class CyActivator extends AbstractCyActivator {
             registerService(bc, mutationViewTaskFactory, TaskFactory.class, properties);
         }
 
-
         {
             VersionTaskFactory versionFactory = new VersionTaskFactory(version);
             Properties versionProps = new Properties();
@@ -144,7 +121,6 @@ public class CyActivator extends AbstractCyActivator {
             versionProps.setProperty(COMMAND_EXAMPLE_JSON, "{\"version\":\"2.1.0\"}");
             registerService(bc, versionFactory, TaskFactory.class, versionProps);
         }
-
 
         {
             AddTermsTaskFactory addTerms = new AddTermsTaskFactory(manager);
@@ -158,17 +134,13 @@ public class CyActivator extends AbstractCyActivator {
 
 
         if (haveGUI) {
-            {
-                ShowDetailPanelTaskFactory showResults = new ShowDetailPanelTaskFactory(manager);
-                showResults.reregister();
-                manager.utils.setShowDetailPanelTaskFactory(showResults);
+            ShowDetailPanelTaskFactory showResults = new ShowDetailPanelTaskFactory(manager);
+            showResults.reregister();
+            manager.utils.setShowDetailPanelTaskFactory(showResults);
 
-                // Now bring up the side panel if the current network is a STRING network
-                CyNetwork current = manager.data.getCurrentNetwork();
-                if (ModelUtils.ifHaveIntactNS(current)) {
-                    // It's the current network.  Bring up the results panel
-                    manager.utils.execute(showResults.createTaskIterator(), true);
-                }
+            CyNetwork current = manager.data.getCurrentCyNetwork();
+            if (ModelUtils.ifHaveIntactNS(current)) {
+                manager.utils.execute(showResults.createTaskIterator(), true);
             }
         }
 
@@ -212,7 +184,6 @@ public class CyActivator extends AbstractCyActivator {
             Properties propsSearch = new Properties();
             registerService(bc, intactQuery, NetworkSearchTaskFactory.class, propsSearch);
         }
-
         {
             IntactBroadSearchTaskFactory intactSearch = new IntactBroadSearchTaskFactory(manager);
             Properties propsSearch = new Properties();
@@ -221,5 +192,4 @@ public class CyActivator extends AbstractCyActivator {
 
         manager.utils.info("Intact App initialized");
     }
-
 }

@@ -3,8 +3,8 @@ package uk.ac.ebi.intact.app.internal.model.styles;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
 import java.awt.*;
@@ -12,11 +12,11 @@ import java.awt.*;
 public class MutationIntactStyle extends ExpandedIntactStyle {
 
     public static final String TITLE = "Intact - Mutation";
-    public final static IntactNetworkView.Type type = IntactNetworkView.Type.MUTATION;
+    public final static NetworkView.Type type = NetworkView.Type.MUTATION;
     public static final Color mutatedColor = new Color(255, 0, 161);
     public static final Color wildColor = new Color(126, 131, 137);
 
-    public MutationIntactStyle(IntactManager manager) {
+    public MutationIntactStyle(Manager manager) {
         super(manager);
     }
 
@@ -87,7 +87,7 @@ public class MutationIntactStyle extends ExpandedIntactStyle {
     }
 
     @Override
-    public IntactNetworkView.Type getStyleViewType() {
+    public NetworkView.Type getStyleViewType() {
         return type;
     }
 

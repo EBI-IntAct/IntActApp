@@ -1,8 +1,8 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels;
 
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.node.NodeBorderLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.node.NodeColorLegendPanel;
@@ -15,7 +15,7 @@ public class NodeLegendPanel extends AbstractLegendPanel {
     public final NodeShapeLegendPanel nodeShapeLegendPanel;
     public final NodeBorderLegendPanel nodeBorderLegendPanel;
 
-    public NodeLegendPanel(IntactManager manager, IntactNetwork currentINetwork, IntactNetworkView currentIView) {
+    public NodeLegendPanel(Manager manager, Network currentINetwork, NetworkView currentIView) {
         super("Nodes", manager, currentINetwork, currentIView);
         content.setBackground(AbstractDetailPanel.backgroundColor);
         content.setLayout(new GridBagLayout());
@@ -36,7 +36,7 @@ public class NodeLegendPanel extends AbstractLegendPanel {
     }
 
     @Override
-    public void networkChanged(IntactNetwork newINetwork) {
+    public void networkChanged(Network newINetwork) {
         super.networkChanged(newINetwork);
         nodeColorLegendPanel.networkChanged(newINetwork);
         nodeShapeLegendPanel.networkChanged(newINetwork);
@@ -44,15 +44,15 @@ public class NodeLegendPanel extends AbstractLegendPanel {
     }
 
     @Override
-    public void networkViewChanged(IntactNetworkView newINetworkView) {
+    public void networkViewChanged(NetworkView newINetworkView) {
         super.networkViewChanged(newINetworkView);
         nodeColorLegendPanel.networkViewChanged(newINetworkView);
         nodeShapeLegendPanel.networkViewChanged(newINetworkView);
         nodeBorderLegendPanel.networkViewChanged(newINetworkView);
     }
 
-    public void viewTypeChanged(IntactNetworkView.Type newType) {
-        if (newType == IntactNetworkView.Type.MUTATION) {
+    public void viewTypeChanged(NetworkView.Type newType) {
+        if (newType == NetworkView.Type.MUTATION) {
             content.add(nodeBorderLegendPanel, layoutHelper.down().expandHoriz());
             content.revalidate();
             content.repaint();

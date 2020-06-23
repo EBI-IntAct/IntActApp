@@ -1,17 +1,17 @@
 package uk.ac.ebi.intact.app.internal.model.filters.edge;
 
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 
-public class EdgeTypeFilter extends DiscreteFilter<IntactEvidenceEdge> {
+public class EdgeTypeFilter extends DiscreteFilter<EvidenceEdge> {
 
-    public EdgeTypeFilter(IntactNetworkView iView) {
-        super(iView, IntactEvidenceEdge.class, "Type");
+    public EdgeTypeFilter(NetworkView view) {
+        super(view, EvidenceEdge.class, "Type");
     }
 
     @Override
-    public String getPropertyValue(IntactEvidenceEdge element) {
+    public String getPropertyValue(EvidenceEdge element) {
         return element.type;
     }
 }

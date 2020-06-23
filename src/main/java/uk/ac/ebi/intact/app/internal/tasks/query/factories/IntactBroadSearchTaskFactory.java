@@ -2,11 +2,11 @@ package uk.ac.ebi.intact.app.internal.tasks.query.factories;
 
 import org.cytoscape.application.swing.search.AbstractNetworkSearchTaskFactory;
 import org.cytoscape.work.TaskIterator;
-import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.IntactOptionManager;
+import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
 import uk.ac.ebi.intact.app.internal.ui.SearchQueryComponent;
 import uk.ac.ebi.intact.app.internal.ui.panels.options.OptionsPanel;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.query.TermsResolvingTask;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 
@@ -29,10 +29,10 @@ public class IntactBroadSearchTaskFactory extends AbstractNetworkSearchTaskFacto
         }
     }
 
-    IntactManager manager;
+    Manager manager;
     private SearchQueryComponent queryComponent = null;
 
-    public IntactBroadSearchTaskFactory(IntactManager manager) {
+    public IntactBroadSearchTaskFactory(Manager manager) {
         super(INTACT_ID, INTACT_NAME, INTACT_DESC, icon, INTACT_URL);
         this.manager = manager;
     }
@@ -43,7 +43,7 @@ public class IntactBroadSearchTaskFactory extends AbstractNetworkSearchTaskFacto
 
     public TaskIterator createTaskIterator() {
         String terms = queryComponent.getQueryText();
-        return new TaskIterator(new TermsResolvingTask(new IntactNetwork(manager), terms, "Query preview", false));
+        return new TaskIterator(new TermsResolvingTask(new Network(manager), terms, "Query preview", false));
     }
 
 
@@ -55,6 +55,6 @@ public class IntactBroadSearchTaskFactory extends AbstractNetworkSearchTaskFacto
 
     @Override
     public JComponent getOptionsComponent() {
-        return new OptionsPanel(manager, IntactOptionManager.Scope.SEARCH);
+        return new OptionsPanel(manager, OptionManager.Scope.SEARCH);
     }
 }

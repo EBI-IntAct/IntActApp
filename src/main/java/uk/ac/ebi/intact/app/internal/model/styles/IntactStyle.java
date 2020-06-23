@@ -15,9 +15,9 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
-import uk.ac.ebi.intact.app.internal.model.styles.utils.StyleMapper;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 
@@ -27,7 +27,7 @@ import java.util.Map;
 public abstract class IntactStyle {
     public static final Color defaultNodeColor = new Color(157, 177, 128);
     protected VisualStyle style;
-    protected IntactManager manager;
+    protected Manager manager;
     protected CyEventHelper eventHelper;
     protected VisualMappingManager vmm;
     protected VisualMappingFunctionFactory continuousFactory;
@@ -45,7 +45,7 @@ public abstract class IntactStyle {
     private static VisualProperty fancyLabelsPositionProperty;
     private static Object fancyLabelsPositionValue;
 
-    public IntactStyle(IntactManager manager) {
+    public IntactStyle(Manager manager) {
         this.manager = manager;
         vmm = manager.utils.getService(VisualMappingManager.class);
         eventHelper = manager.utils.getService(CyEventHelper.class);
@@ -226,6 +226,6 @@ public abstract class IntactStyle {
     }
 
     public abstract String getStyleName();
-    public abstract IntactNetworkView.Type getStyleViewType();
+    public abstract NetworkView.Type getStyleViewType();
 }
 

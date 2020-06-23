@@ -11,28 +11,28 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.*;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
 
 import java.util.*;
 
 public class AddNewTermsTask extends AbstractTask {
-    final IntactNetwork stringNet;
+    final Network stringNet;
     final List<String> intactAcs;
     @Tunable(description = "Re-layout network?")
     public boolean relayout = false;
 
-    public AddNewTermsTask(final IntactNetwork iNetwork, final List<String> intactAcs) {
-        this.stringNet = iNetwork;
+    public AddNewTermsTask(final Network network, final List<String> intactAcs) {
+        this.stringNet = network;
         this.intactAcs = intactAcs;
     }
 
     public void run(TaskMonitor monitor) {
         monitor.setTitle("Adding " + intactAcs.size() + " terms to network");
-        IntactManager manager = stringNet.getManager();
-        CyNetwork network = stringNet.getNetwork();
+        Manager manager = stringNet.getManager();
+        CyNetwork network = stringNet.getCyNetwork();
 
         StringBuilder ids = null;
         for (String id : intactAcs) {
@@ -47,9 +47,9 @@ public class AddNewTermsTask extends AbstractTask {
         Map<Object, Object> args = new HashMap<>();
         args.put("existing", ModelUtils.getExisting(network).trim());
 
-        monitor.setStatusMessage("Getting additional terms from " + IntactManager.INTACT_GRAPH_WS);
+        monitor.setStatusMessage("Getting additional terms from " + Manager.INTACT_GRAPH_WS);
 
-        JsonNode results = HttpUtils.postJSON(IntactManager.INTACT_GRAPH_WS, args, manager);
+        JsonNode results = HttpUtils.postJSON(Manager.INTACT_GRAPH_WS, args, manager);
 
         if (results == null) {
             monitor.showMessage(TaskMonitor.Level.ERROR, "String returned no results");

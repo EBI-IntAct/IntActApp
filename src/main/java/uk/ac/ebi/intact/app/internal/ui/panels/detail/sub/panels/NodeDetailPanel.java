@@ -4,10 +4,10 @@ import com.google.common.collect.Comparators;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.core.Feature;
-import uk.ac.ebi.intact.app.internal.model.core.IntactNode;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeBasics;
@@ -36,7 +36,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
     private final EasyGBC filterHelper = new EasyGBC();
     private final Map<Class<? extends Filter>, FilterPanel> filterPanels = new HashMap<>();
 
-    public NodeDetailPanel(final IntactManager manager) {
+    public NodeDetailPanel(final Manager manager) {
         super(manager, MAXIMUM_SELECTED_NODE_SHOWN, "nodes");
         init();
         revalidate();
@@ -67,8 +67,8 @@ public class NodeDetailPanel extends AbstractDetailPanel {
         add(scrollPane, c.down().anchor("west").expandBoth());
     }
 
-    public void setupFilters(List<Filter<? extends IntactNode>> nodeFilters) {
-        for (Filter<? extends IntactNode> filter : nodeFilters) {
+    public void setupFilters(List<Filter<? extends Node>> nodeFilters) {
+        for (Filter<? extends Node> filter : nodeFilters) {
             if (!filterPanels.containsKey(filter.getClass())) {
                 FilterPanel<?> filterPanel = FilterPanel.createFilterPanel(filter);
                 if (filterPanel != null) {
@@ -93,7 +93,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
         nodesPanel.setBackground(backgroundColor);
         nodesPanel.setLayout(new GridBagLayout());
 
-        selectedNodes(CyTableUtil.getNodesInState(currentINetwork.getNetwork(), CyNetwork.SELECTED, true));
+        selectedNodes(CyTableUtil.getNodesInState(currentINetwork.getCyNetwork(), CyNetwork.SELECTED, true));
 
         nodesPanel.setAlignmentX(LEFT_ALIGNMENT);
         selectedNodes = new CollapsablePanel("Selected nodes info", nodesPanel, false);
@@ -101,7 +101,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
     }
 
 
-    public void networkChanged(IntactNetwork newNetwork) {
+    public void networkChanged(Network newNetwork) {
         this.currentINetwork = newNetwork;
         selectedNodes(newNetwork.getSelectedNodes());
     }
@@ -111,13 +111,13 @@ public class NodeDetailPanel extends AbstractDetailPanel {
         if (checkCurrentNetwork() && checkCurrentView()) {
             selectionRunning = true;
 
-            List<IntactNode> iNodes = nodes.stream()
-                    .map(node -> new IntactNode(currentINetwork, node))
-                    .collect(Comparators.least(MAXIMUM_SELECTED_NODE_SHOWN, IntactNode::compareTo));
+            List<Node> iNodes = nodes.stream()
+                    .map(node -> new Node(currentINetwork, node))
+                    .collect(Comparators.least(MAXIMUM_SELECTED_NODE_SHOWN, Node::compareTo));
 
             List<String> nodesIds = iNodes.stream().map(iNode -> iNode.preferredId).collect(Collectors.toList());
 
-            for (IntactNode node : iNodes) {
+            for (Node node : iNodes) {
                 if (!selectionRunning) {
                     break;
                 }
@@ -154,9 +154,9 @@ public class NodeDetailPanel extends AbstractDetailPanel {
 
         private final NodeFeatures nodeFeatures;
         final NodeDetails nodeDetails;
-        final IntactNode node;
+        final Node node;
 
-        public NodePanel(IntactNode node) {
+        public NodePanel(Node node) {
             super("", !(selectedNodes == null || selectedNodes.collapseAllButton.isExpanded()));
             this.node = node;
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));

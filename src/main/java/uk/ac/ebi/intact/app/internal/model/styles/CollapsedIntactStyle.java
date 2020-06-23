@@ -4,21 +4,21 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
 import java.awt.*;
 
 public class CollapsedIntactStyle extends IntactStyle {
     public final static String TITLE = "Intact - Collapsed";
-    public final static IntactNetworkView.Type type = IntactNetworkView.Type.COLLAPSED;
+    public final static NetworkView.Type type = NetworkView.Type.COLLAPSED;
     public static final int edgeWidthValue1 = 1;
     public static final int edgeWidthValue2 = 25;
     public static final double edgeWidth1 = 2d;
     public static final double edgeWidth2 = 25d;
 
-    public CollapsedIntactStyle(IntactManager manager) {
+    public CollapsedIntactStyle(Manager manager) {
         super(manager);
     }
 
@@ -68,7 +68,7 @@ public class CollapsedIntactStyle extends IntactStyle {
     }
 
     @Override
-    public IntactNetworkView.Type getStyleViewType() {
+    public NetworkView.Type getStyleViewType() {
         return type;
     }
 

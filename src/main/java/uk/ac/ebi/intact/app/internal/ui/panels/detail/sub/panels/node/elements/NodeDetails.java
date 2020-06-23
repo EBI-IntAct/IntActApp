@@ -3,10 +3,10 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.util.swing.OpenBrowser;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
-import uk.ac.ebi.intact.app.internal.model.core.Identifier;
-import uk.ac.ebi.intact.app.internal.model.core.IntactNode;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.Identifier;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.identifiers.NodeIdentifiers;
-import uk.ac.ebi.intact.app.internal.model.core.ontology.OntologyIdentifier;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -15,12 +15,12 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static uk.ac.ebi.intact.app.internal.model.managers.IntactManager.INTACT_GRAPH_WS;
+import static uk.ac.ebi.intact.app.internal.model.core.managers.Manager.INTACT_GRAPH_WS;
 
 public class NodeDetails extends AbstractNodeElement {
     private final static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
-    public NodeDetails(IntactNode iNode, OpenBrowser openBrowser) {
+    public NodeDetails(Node iNode, OpenBrowser openBrowser) {
         super(null, iNode, openBrowser);
         fillContent();
     }
@@ -29,7 +29,7 @@ public class NodeDetails extends AbstractNodeElement {
     protected void fillContent() {
         executor.execute(() -> {
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-            JsonNode nodeDetails = HttpUtils.getJSON(INTACT_GRAPH_WS + "network/node/details/" + iNode.ac, new HashMap<>(), iNode.iNetwork.getManager());
+            JsonNode nodeDetails = HttpUtils.getJSON(INTACT_GRAPH_WS + "network/node/details/" + iNode.ac, new HashMap<>(), iNode.network.getManager());
             if (nodeDetails != null) {
                 content.add(new NodeAliases(iNode, openBrowser, nodeDetails.get("aliases")));
                 addNodeCrossReferences(nodeDetails.get("xrefs"));

@@ -3,9 +3,9 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,19 +22,19 @@ public abstract class AbstractDetailPanel extends JPanel {
     public final static Font labelFont = new Font("SansSerif", Font.BOLD, 12);
     public final static Font textFont = new Font("SansSerif", Font.PLAIN, 12);
 
-    protected final IntactManager manager;
+    protected final Manager manager;
     protected final OpenBrowser openBrowser;
     protected final Font iconFont;
-    protected IntactNetwork currentINetwork;
-    protected IntactNetworkView currentIView;
+    protected Network currentINetwork;
+    protected NetworkView currentIView;
     protected Map<CyNetwork, Map<String, Map<String, Double>>> filters = new HashMap<>();
     protected final LimitExceededPanel limitExceededPanel;
 
 
-    public AbstractDetailPanel(final IntactManager manager, int selectionLimit, String limitOfWhat) {
+    public AbstractDetailPanel(final Manager manager, int selectionLimit, String limitOfWhat) {
         this.manager = manager;
         this.openBrowser = manager.utils.getService(OpenBrowser.class);
-        this.currentINetwork = manager.data.getCurrentIntactNetwork();
+        this.currentINetwork = manager.data.getCurrentNetwork();
         this.currentIView = manager.data.getCurrentIntactNetworkView();
         setBackground(backgroundColor);
         IconManager iconManager = manager.utils.getService(IconManager.class);
@@ -45,7 +45,7 @@ public abstract class AbstractDetailPanel extends JPanel {
 
     protected boolean checkCurrentNetwork() {
         if (currentINetwork == null) {
-            currentINetwork = manager.data.getCurrentIntactNetwork();
+            currentINetwork = manager.data.getCurrentNetwork();
             return currentINetwork != null;
         }
         return true;

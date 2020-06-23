@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.filters;
 
-import uk.ac.ebi.intact.app.internal.model.core.IntactElement;
+import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.filters.BooleanFilter;
 import uk.ac.ebi.intact.app.internal.ui.components.ToggleSwitch;
 
@@ -9,7 +9,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 
-public class BooleanFilterPanel<T extends IntactElement> extends FilterPanel<BooleanFilter<T>> implements ChangeListener {
+public class BooleanFilterPanel<T extends Element> extends FilterPanel<BooleanFilter<T>> implements ChangeListener {
     private final ToggleSwitch toggleSwitch = new ToggleSwitch(false, new Color(34, 83, 157));
     private final JLabel label = new JLabel("");
 

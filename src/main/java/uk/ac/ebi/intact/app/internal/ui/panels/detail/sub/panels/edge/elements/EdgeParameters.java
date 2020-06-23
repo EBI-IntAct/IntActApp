@@ -3,33 +3,33 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.elements;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactCollapsedEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.GroupUtils;
-import uk.ac.ebi.intact.app.internal.model.core.ontology.OntologyIdentifier;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
 
 import javax.swing.*;
 
 public class EdgeParameters extends AbstractEdgeElement {
     private final JsonNode parametersData;
 
-    public EdgeParameters(IntactEdge iEdge, OpenBrowser openBrowser, JsonNode parametersData) {
+    public EdgeParameters(Edge iEdge, OpenBrowser openBrowser, JsonNode parametersData) {
         super("Parameters", iEdge, openBrowser);
         this.parametersData = parametersData;
         fillContent();
     }
 
     @Override
-    protected void fillCollapsedEdgeContent(IntactCollapsedEdge edge) {
+    protected void fillCollapsedEdgeContent(CollapsedEdge edge) {
     }
 
     @Override
-    protected void fillEvidenceEdgeContent(IntactEvidenceEdge edge) {
+    protected void fillEvidenceEdgeContent(EvidenceEdge edge) {
         if (parametersData != null && !parametersData.isNull() && !parametersData.isEmpty()) {
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
             GroupUtils.groupElementsInPanel(content, parametersData,

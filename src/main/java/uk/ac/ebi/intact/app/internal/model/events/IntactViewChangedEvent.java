@@ -1,14 +1,14 @@
 package uk.ac.ebi.intact.app.internal.model.events;
 
 import org.cytoscape.event.AbstractCyEvent;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 
-public class IntactViewChangedEvent extends AbstractCyEvent<IntactManager> {
-    public final IntactNetworkView.Type newType;
-    public final IntactNetworkView view;
+public class IntactViewChangedEvent extends AbstractCyEvent<Manager> {
+    public final NetworkView.Type newType;
+    public final NetworkView view;
 
-    public IntactViewChangedEvent(IntactManager source, IntactNetworkView view) {
+    public IntactViewChangedEvent(Manager source, NetworkView view) {
         super(source, IntactViewTypeChangedListener.class);
         this.newType = view.getType();
         this.view = view;

@@ -99,7 +99,7 @@ public class EmptyCustomGraphics implements CyCustomGraphics<CustomGraphicLayer>
     }
 
     @Override
-    public List<CustomGraphicLayer> getLayers(CyNetworkView view, View<? extends CyIdentifiable> grView) {
+    public List<CustomGraphicLayer> getLayers(CyNetworkView cyView, View<? extends CyIdentifiable> grView) {
         return new ArrayList<>();
     }
 

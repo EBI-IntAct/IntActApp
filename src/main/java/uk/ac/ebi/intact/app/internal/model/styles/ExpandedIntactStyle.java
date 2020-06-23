@@ -5,9 +5,9 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
-import uk.ac.ebi.intact.app.internal.model.styles.utils.StyleMapper;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 
@@ -16,10 +16,10 @@ import java.awt.*;
 public class ExpandedIntactStyle extends IntactStyle {
 
     public static final String TITLE = "Intact - Evidence";
-    public final static IntactNetworkView.Type type = IntactNetworkView.Type.EXPANDED;
+    public final static NetworkView.Type type = NetworkView.Type.EXPANDED;
 
 
-    public ExpandedIntactStyle(IntactManager manager) {
+    public ExpandedIntactStyle(Manager manager) {
         super(manager);
     }
 
@@ -57,7 +57,7 @@ public class ExpandedIntactStyle extends IntactStyle {
         return TITLE;
     }
     @Override
-    public IntactNetworkView.Type getStyleViewType() {
+    public NetworkView.Type getStyleViewType() {
         return type;
     }
 }

@@ -2,16 +2,16 @@ package uk.ac.ebi.intact.app.internal.tasks.settings;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.panels.options.OptionsPanel;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class SettingsTask extends AbstractTask {
-    private final IntactManager manager;
+    private final Manager manager;
 
-    public SettingsTask(IntactManager manager) {
+    public SettingsTask(Manager manager) {
         this.manager = manager;
     }
 

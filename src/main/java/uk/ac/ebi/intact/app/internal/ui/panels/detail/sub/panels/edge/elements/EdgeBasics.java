@@ -1,9 +1,9 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.elements;
 
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactCollapsedEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
@@ -16,16 +16,16 @@ import static uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel
 
 public class EdgeBasics extends AbstractEdgeElement {
 
-    public EdgeBasics(IntactEdge iEdge, OpenBrowser openBrowser) {
+    public EdgeBasics(Edge iEdge, OpenBrowser openBrowser) {
         super(null, iEdge, openBrowser);
         fillContent();
     }
 
-    protected void fillCollapsedEdgeContent(IntactCollapsedEdge edge) {
+    protected void fillCollapsedEdgeContent(CollapsedEdge edge) {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
         VerticalPanel collapsedEdgesPanel = new VerticalPanel(backgroundColor);
-        for (IntactEvidenceEdge iEEdge : edge.getSubEdges().values()) {
+        for (EvidenceEdge iEEdge : edge.getSubEdges().values()) {
             collapsedEdgesPanel.add(LinkUtils.createIntactEdgeLink(openBrowser, iEEdge));
         }
         CollapsablePanel collapsablePanel = new CollapsablePanel("Collapsed edges (" + edge.subEdgeSUIDs.size() + ")", collapsedEdgesPanel, true);
@@ -33,7 +33,7 @@ public class EdgeBasics extends AbstractEdgeElement {
         content.add(collapsablePanel);
     }
 
-    protected void fillEvidenceEdgeContent(IntactEvidenceEdge edge) {
+    protected void fillEvidenceEdgeContent(EvidenceEdge edge) {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
         if (edge.hostOrganism != null) {

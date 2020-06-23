@@ -9,8 +9,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.*;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
 
@@ -19,13 +19,13 @@ import java.time.Instant;
 import java.util.*;
 
 public class LoadInteractions extends AbstractTask implements TaskObserver {
-    private final IntactNetwork intactNet;
+    private final Network intactNet;
     private final List<String> intactAcs;
     private final boolean includeNeighbours;
     private final String netName;
     private Instant begin;
 
-    public LoadInteractions(final IntactNetwork intactNet,
+    public LoadInteractions(final Network intactNet,
                             final List<String> intactAcs,
                             boolean includeNeighbours, final String netName) {
         this.intactNet = intactNet;
@@ -36,7 +36,7 @@ public class LoadInteractions extends AbstractTask implements TaskObserver {
     }
 
     public void run(TaskMonitor monitor) {
-        IntactManager manager = intactNet.getManager();
+        Manager manager = intactNet.getManager();
         Map<Object, Object> postData = new HashMap<>();
 
         postData.put("interactorAcs", intactAcs);
@@ -49,7 +49,7 @@ public class LoadInteractions extends AbstractTask implements TaskObserver {
         begin = Instant.now();
         manager.utils.registerService(this, TaskObserver.class, new Properties());
 
-        JsonNode results = HttpUtils.postJSON(IntactManager.INTACT_GRAPH_WS + "network/data", postData, manager);
+        JsonNode results = HttpUtils.postJSON(Manager.INTACT_GRAPH_WS + "network/data", postData, manager);
         System.out.println(Duration.between(begin, Instant.now()).toSeconds());
         // This may change...
         monitor.setTitle("Parsing result data");

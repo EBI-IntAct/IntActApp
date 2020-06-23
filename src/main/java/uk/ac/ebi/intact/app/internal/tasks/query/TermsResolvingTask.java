@@ -4,9 +4,9 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskMonitor;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.core.Interactor;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ImportNetworkTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution.ResolveTermsPanel;
 
@@ -17,16 +17,16 @@ import java.util.List;
 import java.util.Map;
 
 public class TermsResolvingTask extends AbstractTask implements ObservableTask {
-    private final IntactManager manager;
-    private final IntactNetwork iNetwork;
+    private final Manager manager;
+    private final Network network;
     private final String terms;
     private final String panelTitle;
     Map<String, List<Interactor>> interactorsToResolve = null;
     final boolean exactQuery;
 
-    public TermsResolvingTask(IntactNetwork iNetwork, String terms, String panelTitle, boolean exactQuery) {
-        this.manager = iNetwork.getManager();
-        this.iNetwork = iNetwork;
+    public TermsResolvingTask(Network network, String terms, String panelTitle, boolean exactQuery) {
+        this.manager = network.getManager();
+        this.network = network;
         this.terms = terms;
         this.panelTitle = panelTitle;
         this.exactQuery = exactQuery;
@@ -38,17 +38,17 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
         if (terms.isBlank()) {
             monitor.showMessage(TaskMonitor.Level.WARN, "Empty query");
         } else {
-            interactorsToResolve = iNetwork.resolveTerms(terms, exactQuery);
+            interactorsToResolve = network.resolveTerms(terms, exactQuery);
 
             if (showNoResults()) return;
-            if (exactQuery && iNetwork.hasNoAmbiguity()) {
+            if (exactQuery && network.hasNoAmbiguity()) {
                 importNetwork();
             } else {
                 SwingUtilities.invokeLater(() -> {
                     JDialog d = new JDialog();
                     d.setTitle(panelTitle);
                     d.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-                    ResolveTermsPanel panel = new ResolveTermsPanel(manager, iNetwork, !exactQuery, !exactQuery);
+                    ResolveTermsPanel panel = new ResolveTermsPanel(manager, network, !exactQuery, !exactQuery);
                     d.setContentPane(panel);
                     d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     d.pack();
@@ -72,8 +72,8 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
 
     void importNetwork() {
         Map<String, String> acToTerm = new HashMap<>();
-        List<String> intactAcs = iNetwork.combineAcs(acToTerm);
-        TaskFactory factory = new ImportNetworkTaskFactory(iNetwork, intactAcs, true, null);
+        List<String> intactAcs = network.combineAcs(acToTerm);
+        TaskFactory factory = new ImportNetworkTaskFactory(network, intactAcs, true, null);
         manager.utils.execute(factory.createTaskIterator());
     }
 

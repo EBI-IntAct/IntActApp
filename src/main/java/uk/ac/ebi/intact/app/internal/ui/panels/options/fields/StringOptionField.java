@@ -1,16 +1,16 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.options.fields;
 
-import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.IntactOptionManager;
+import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 
-public class StringOptionField extends OptionField<IntactOptionManager.Option<String>> {
+public class StringOptionField extends OptionField<OptionManager.Option<String>> {
     private final JTextField textField;
 
-    public StringOptionField(IntactOptionManager.Option<String> option, JPanel container, EasyGBC layoutHelper) {
+    public StringOptionField(OptionManager.Option<String> option, JPanel container, EasyGBC layoutHelper) {
         super(option, container, layoutHelper);
         textField = new JTextField(option.defaultValue);
         textField.setText(option.getValue());

@@ -6,11 +6,11 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 
 public class RequeryTask extends AbstractTask {
 
-    final IntactManager manager;
+    final Manager manager;
     final CyNetwork network;
     //private JButton btnOK = null;
     //private JButton btnCancel = null;
@@ -26,7 +26,7 @@ public class RequeryTask extends AbstractTask {
     // required = true)
     // public UserAction requeryBtn = new UserAction(this);
 
-    public RequeryTask(final IntactManager manager, CyNetwork network) {
+    public RequeryTask(final Manager manager, CyNetwork network) {
         this.manager = manager;
         this.network = network;
     }

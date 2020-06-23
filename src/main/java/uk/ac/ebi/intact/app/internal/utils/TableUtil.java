@@ -4,12 +4,12 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import uk.ac.ebi.intact.app.internal.model.core.ontology.OntologyIdentifier;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.ac.ebi.intact.app.internal.model.core.ontology.SourceOntology.*;
+import static uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.SourceOntology.*;
 
 public class TableUtil {
     public static <T> List<T> getColumnValuesOfEdges(CyTable table, String columnName, Class<? extends T> columnType, List<CyEdge> edges, T defaultValue) {

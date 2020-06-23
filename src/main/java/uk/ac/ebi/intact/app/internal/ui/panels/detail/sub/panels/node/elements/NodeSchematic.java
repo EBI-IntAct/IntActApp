@@ -1,8 +1,8 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements;
 
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.core.Feature;
-import uk.ac.ebi.intact.app.internal.model.core.IntactNode;
+import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.ui.components.diagrams.NodeDiagram;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
@@ -15,7 +15,7 @@ public class NodeSchematic extends AbstractNodeElement {
     private NodeDiagram nodeDiagram;
     private final List<Feature> features;
 
-    public NodeSchematic(IntactNode iNode, List<Feature> features, OpenBrowser openBrowser) {
+    public NodeSchematic(Node iNode, List<Feature> features, OpenBrowser openBrowser) {
         super(null, iNode, openBrowser);
         this.features = features;
         fillContent();

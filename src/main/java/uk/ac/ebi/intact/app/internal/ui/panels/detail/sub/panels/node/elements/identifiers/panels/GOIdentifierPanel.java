@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.cytoscape.util.swing.OpenBrowser;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
-import uk.ac.ebi.intact.app.internal.model.core.Identifier;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.Identifier;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.app.internal.ui.utils.GroupUtils;
 

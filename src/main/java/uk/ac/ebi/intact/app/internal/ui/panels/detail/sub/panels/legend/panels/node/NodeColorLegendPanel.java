@@ -1,15 +1,15 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.node;
 
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorPicker;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.AbstractLegendPanel;
 import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
-import uk.ac.ebi.intact.app.internal.model.styles.utils.StyleMapper;
-import uk.ac.ebi.intact.app.internal.model.styles.utils.Taxons;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.definitions.Taxons;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 
@@ -25,7 +25,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
     private final JButton addNodeColorButton = new JButton(add);
     private final JPanel addNodeColorPanel = new JPanel();
 
-    public NodeColorLegendPanel(IntactManager manager, IntactNetwork currentINetwork, IntactNetworkView currentIView) {
+    public NodeColorLegendPanel(Manager manager, Network currentINetwork, NetworkView currentIView) {
         super("<html>Node Color <em>~ Species</em></html>", manager, currentINetwork, currentIView);
         createNodeColorLegend(Taxons.getSpecies());
         addSeparator();

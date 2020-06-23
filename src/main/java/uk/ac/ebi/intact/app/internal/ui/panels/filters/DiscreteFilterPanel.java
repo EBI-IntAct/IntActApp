@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.filters;
 
-import uk.ac.ebi.intact.app.internal.model.core.IntactElement;
+import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 
@@ -11,7 +11,7 @@ import java.util.List;
 
 import static uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel.backgroundColor;
 
-public class DiscreteFilterPanel<T extends IntactElement> extends FilterPanel<DiscreteFilter<T>> {
+public class DiscreteFilterPanel<T extends Element> extends FilterPanel<DiscreteFilter<T>> {
 
     List<JCheckBox> checkBoxes = new ArrayList<>();
 
@@ -29,19 +29,19 @@ public class DiscreteFilterPanel<T extends IntactElement> extends FilterPanel<Di
     private void buildOptionLines() {
         JButton selectAll = new JButton("Select all");
         selectAll.addActionListener(e -> {
-            filter.iView.silenceFilters(true);
+            filter.view.silenceFilters(true);
             filter.getPropertiesVisibility().keySet().forEach(s -> filter.setPropertyVisibility(s, true));
             checkBoxes.forEach(jCheckBox -> jCheckBox.setSelected(true));
-            filter.iView.silenceFilters(false);
-            filter.iView.filter();
+            filter.view.silenceFilters(false);
+            filter.view.filter();
         });
         JButton selectNone = new JButton("Select none");
         selectNone.addActionListener(e -> {
-            filter.iView.silenceFilters(true);
+            filter.view.silenceFilters(true);
             filter.getPropertiesVisibility().keySet().forEach(s -> filter.setPropertyVisibility(s, false));
             checkBoxes.forEach(jCheckBox -> jCheckBox.setSelected(false));
-            filter.iView.silenceFilters(false);
-            filter.iView.filter();
+            filter.view.silenceFilters(false);
+            filter.view.filter();
         });
         LinePanel buttonsPanel = new LinePanel(backgroundColor);
         buttonsPanel.add(selectAll);

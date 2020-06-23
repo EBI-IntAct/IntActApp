@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import org.cytoscape.io.util.StreamUtil;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 
 import java.io.*;
 import java.net.*;
@@ -21,7 +21,7 @@ public class HttpUtils {
             .version(HttpClient.Version.HTTP_1_1)
             .build();
 
-    public static JsonNode getJSON(String url, Map<String, String> queryMap, IntactManager manager) {
+    public static JsonNode getJSON(String url, Map<String, String> queryMap, Manager manager) {
         URL trueURL;
         try {
             if (queryMap.size() > 0) {
@@ -49,7 +49,7 @@ public class HttpUtils {
         return jsonObject;
     }
 
-    public static JsonNode postJSON(String url, Map<Object, Object> data, IntactManager manager) {
+    public static JsonNode postJSON(String url, Map<Object, Object> data, Manager manager) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .POST(buildFormDataFromMap(data))
@@ -94,7 +94,7 @@ public class HttpUtils {
     }
 
 
-    private static URLConnection executeWithRedirect(IntactManager manager, String url, Map<String, String> queryMap) throws Exception {
+    private static URLConnection executeWithRedirect(Manager manager, String url, Map<String, String> queryMap) throws Exception {
         // Get the connection from Cytoscape
         HttpURLConnection connection = (HttpURLConnection) manager.utils.getService(StreamUtil.class).getURLConnection(new URL(url));
 

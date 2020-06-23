@@ -1,17 +1,17 @@
 package uk.ac.ebi.intact.app.internal.model.filters.edge;
 
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactCollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
 import uk.ac.ebi.intact.app.internal.model.filters.ContinuousFilter;
 
-public class EdgeNumberCollapsedFilter extends ContinuousFilter<IntactCollapsedEdge> {
+public class EdgeNumberCollapsedFilter extends ContinuousFilter<CollapsedEdge> {
 
-    public EdgeNumberCollapsedFilter(IntactNetworkView iView) {
-        super(iView, IntactCollapsedEdge.class, "# Collapsed edges");
+    public EdgeNumberCollapsedFilter(NetworkView view) {
+        super(view, CollapsedEdge.class, "# Collapsed edges");
     }
 
     @Override
-    public double getProperty(IntactCollapsedEdge element) {
+    public double getProperty(CollapsedEdge element) {
         return element.subEdgeSUIDs.size();
     }
 }

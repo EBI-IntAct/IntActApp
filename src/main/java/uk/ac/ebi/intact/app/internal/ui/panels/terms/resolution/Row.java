@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
-import uk.ac.ebi.intact.app.internal.model.core.Interactor;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.ui.components.diagrams.InteractorDiagram;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.CenteredLabel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;

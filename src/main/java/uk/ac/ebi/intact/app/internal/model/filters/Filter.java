@@ -2,24 +2,24 @@ package uk.ac.ebi.intact.app.internal.model.filters;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.IntactElement;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactCollapsedEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEvidenceEdge;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 
-public abstract class Filter<T extends IntactElement> {
-    public final transient IntactManager manager;
-    public final transient IntactNetwork iNetwork;
-    public final transient IntactNetworkView iView;
+public abstract class Filter<T extends Element> {
+    public final transient Manager manager;
+    public final transient Network network;
+    public final transient NetworkView view;
     public final String name;
     public final Class<T> elementType;
 
-    public Filter(IntactNetworkView iView, String name, Class<T> elementType) {
-        this.iView = iView;
-        iNetwork = iView.network;
-        manager = iView.manager;
+    public Filter(NetworkView view, String name, Class<T> elementType) {
+        this.view = view;
+        network = view.network;
+        manager = view.manager;
         this.name = name;
         this.elementType = elementType;
     }
@@ -34,8 +34,8 @@ public abstract class Filter<T extends IntactElement> {
 
     @JsonIgnore
     public boolean isEnabled() {
-        if (elementType == IntactCollapsedEdge.class && iView.getType() != IntactNetworkView.Type.COLLAPSED) return false;
-        if (elementType == IntactEvidenceEdge.class && iView.getType() == IntactNetworkView.Type.COLLAPSED) return false;
+        if (elementType == CollapsedEdge.class && view.getType() != NetworkView.Type.COLLAPSED) return false;
+        if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.COLLAPSED) return false;
         return true;
     }
 

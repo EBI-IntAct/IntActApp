@@ -1,17 +1,17 @@
 package uk.ac.ebi.intact.app.internal.model.filters.edge;
 
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEdge;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.filters.ContinuousFilter;
 
-public class EdgeMIScoreFilter extends ContinuousFilter<IntactEdge> {
+public class EdgeMIScoreFilter extends ContinuousFilter<Edge> {
 
-    public EdgeMIScoreFilter(IntactNetworkView iView) {
-        super(iView, IntactEdge.class, "MI Score", 0, 1);
+    public EdgeMIScoreFilter(NetworkView view) {
+        super(view, Edge.class, "MI Score", 0, 1);
     }
 
     @Override
-    public double getProperty(IntactEdge element) {
+    public double getProperty(Edge element) {
         return element.miScore;
     }
 }

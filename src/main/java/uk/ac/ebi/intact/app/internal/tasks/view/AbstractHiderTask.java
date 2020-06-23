@@ -9,84 +9,84 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
-import uk.ac.ebi.intact.app.internal.model.IntactNetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.SelectEdgesTaskFactory;
-import uk.ac.ebi.intact.app.internal.model.IntactNetwork;
-import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class AbstractHiderTask extends AbstractTask {
-    protected IntactManager manager;
+    protected Manager manager;
     protected HideTaskFactory hideTaskFactory;
     protected UnHideTaskFactory unHideTaskFactory;
 
     public final boolean currentView;
     @Tunable(description = "Network view", longDescription = "Network view to manipulate. If not set, the current one will be used if possible.", dependsOn = "currentView=false")
-    public ListSingleSelection<IntactNetworkView> view;
+    public ListSingleSelection<NetworkView> view;
     protected CyNetworkView cyView;
-    protected IntactNetwork iNetwork;
-    protected IntactNetworkView iView;
+    protected Network chosenNetwork;
+    protected NetworkView chosenView;
 
-    public AbstractHiderTask(IntactManager manager, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, boolean currentView) {
+    public AbstractHiderTask(Manager manager, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, boolean currentView) {
         this.manager = manager;
         this.hideTaskFactory = hideTaskFactory;
         this.unHideTaskFactory = unHideTaskFactory;
         this.currentView = currentView;
         if (!currentView) {
-            view = new ListSingleSelection<>(ArrayUtils.insert(0, manager.data.getIntactViews(), new CurrentIntactView(manager)));
+            view = new ListSingleSelection<>(ArrayUtils.insert(0, manager.data.getViews(), new CurrentView(manager)));
         }
     }
 
     protected void collapseEdgesIfNeeded() {
         chooseData();
-        if (iView != null && iView.getType() != IntactNetworkView.Type.COLLAPSED) {
-            CyNetwork network = iNetwork.getNetwork();
-            Set<CyEdge> edgesToSelect = iNetwork.getExpandedEdges().stream()
-                    .filter(cyEdge -> network.getRow(cyEdge).get(CyNetwork.SELECTED, Boolean.class))
-                    .map(iNetwork::getCollapsedEdge)
+        if (chosenView != null && chosenView.getType() != NetworkView.Type.COLLAPSED) {
+            CyNetwork cyNetwork = chosenNetwork.getCyNetwork();
+            Set<CyEdge> edgesToSelect = chosenNetwork.getExpandedEdges().stream()
+                    .filter(cyEdge -> cyNetwork.getRow(cyEdge).get(CyNetwork.SELECTED, Boolean.class))
+                    .map(chosenNetwork::getCollapsedEdge)
                     .collect(Collectors.toSet());
 
-            insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(network, edgesToSelect).createTaskIterator());
-            insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, iNetwork.getExpandedEdges()));
-            insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, iNetwork.getCollapsedEdges()));
+            insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(cyNetwork, edgesToSelect).createTaskIterator());
+            insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getExpandedEdges()));
+            insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getCollapsedEdges()));
         }
     }
 
     protected void expandEdgesIfNeeded() {
         chooseData();
-        if (iView != null && iView.getType() == IntactNetworkView.Type.COLLAPSED) {
-            CyNetwork network = iNetwork.getNetwork();
-            Set<CyEdge> edgesToSelect = iNetwork.getCollapsedEdges().stream()
-                    .filter(cyEdge -> network.getRow(cyEdge).get(CyNetwork.SELECTED, Boolean.class))
-                    .map(iNetwork::getEvidenceEdges)
+        if (chosenView != null && chosenView.getType() == NetworkView.Type.COLLAPSED) {
+            CyNetwork cyNetwork = chosenNetwork.getCyNetwork();
+            Set<CyEdge> edgesToSelect = chosenNetwork.getCollapsedEdges().stream()
+                    .filter(cyEdge -> cyNetwork.getRow(cyEdge).get(CyNetwork.SELECTED, Boolean.class))
+                    .map(chosenNetwork::getEvidenceEdges)
                     .flatMap(List::stream)
                     .collect(Collectors.toSet());
 
-            insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(network, edgesToSelect).createTaskIterator());
-            insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, iNetwork.getCollapsedEdges()));
-            insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, iNetwork.getExpandedEdges()));
+            insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(cyNetwork, edgesToSelect).createTaskIterator());
+            insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getCollapsedEdges()));
+            insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getExpandedEdges()));
         }
     }
 
     private void chooseData() {
         if (!currentView) {
-            iView = view.getSelectedValue();
-            if (iView instanceof CurrentIntactView) iView = manager.data.getCurrentIntactNetworkView();
+            chosenView = view.getSelectedValue();
+            if (chosenView instanceof CurrentView) chosenView = manager.data.getCurrentIntactNetworkView();
         } else {
-            iView = manager.data.getCurrentIntactNetworkView();
+            chosenView = manager.data.getCurrentIntactNetworkView();
         }
-        if (iView != null) {
-            cyView = iView.view;
-            iNetwork = iView.network;
+        if (chosenView != null) {
+            cyView = chosenView.cyView;
+            chosenNetwork = chosenView.network;
         }
     }
 
-    private static class CurrentIntactView extends IntactNetworkView {
+    private static class CurrentView extends NetworkView {
 
-        public CurrentIntactView(IntactManager manager) {
+        public CurrentView(Manager manager) {
             super(manager, null, false);
         }
 

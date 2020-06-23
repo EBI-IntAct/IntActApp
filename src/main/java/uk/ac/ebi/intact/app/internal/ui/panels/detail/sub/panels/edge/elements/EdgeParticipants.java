@@ -2,15 +2,15 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.elements;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.core.Feature;
-import uk.ac.ebi.intact.app.internal.model.core.IntactNode;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactCollapsedEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEdge;
-import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.ui.components.diagrams.NodeDiagram;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeBasics;
 import uk.ac.ebi.intact.app.internal.model.styles.CollapsedIntactStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.utils.StyleMapper;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeFeatures;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
@@ -36,16 +36,16 @@ public class EdgeParticipants extends AbstractEdgeElement {
     private NodeDiagram targetDiagram;
 
 
-    public EdgeParticipants(IntactEdge iEdge, OpenBrowser openBrowser) {
+    public EdgeParticipants(Edge iEdge, OpenBrowser openBrowser) {
         super(null, iEdge, openBrowser);
         executor.execute(this::fillContent);
     }
 
     @Override
-    protected void fillCollapsedEdgeContent(IntactCollapsedEdge edge) {
+    protected void fillCollapsedEdgeContent(CollapsedEdge edge) {
         createPanel(edge);
-        Map<IntactNode, List<Feature>> features = edge.getFeatures();
-        for (IntactNode iNode : List.of(edge.source, edge.target)) {
+        Map<Node, List<Feature>> features = edge.getFeatures();
+        for (Node iNode : List.of(edge.source, edge.target)) {
             JPanel nodePanel = iNode == edge.source ? sourcePanel : targetPanel;
             EasyGBC layoutHelper = new EasyGBC();
             nodePanel.setBackground(nodePanelBg);
@@ -68,10 +68,10 @@ public class EdgeParticipants extends AbstractEdgeElement {
     }
 
     @Override
-    protected void fillEvidenceEdgeContent(IntactEvidenceEdge edge) {
+    protected void fillEvidenceEdgeContent(EvidenceEdge edge) {
         createPanel(edge);
-        Map<IntactNode, List<Feature>> features = edge.getFeatures();
-        for (IntactNode iNode : List.of(edge.source, edge.target)) {
+        Map<Node, List<Feature>> features = edge.getFeatures();
+        for (Node iNode : List.of(edge.source, edge.target)) {
             JPanel nodePanel = iNode == edge.source ? sourcePanel : targetPanel;
             EasyGBC layoutHelper = new EasyGBC();
             nodePanel.setBackground(nodePanelBg);
@@ -97,7 +97,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
         content.add(new EdgeDiagram(StyleMapper.edgeTypeToPaint.get(edge.type), 4, edge.expansionType != null && !edge.expansionType.isBlank()));
     }
 
-    private static final Map<IntactNode, NodeDiagramInfo> nodeDiagramInfos = new HashMap<>();
+    private static final Map<Node, NodeDiagramInfo> nodeDiagramInfos = new HashMap<>();
 
     private static class NodeDiagramInfo {
         int width;
@@ -126,7 +126,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
         }
     }
 
-    private void createPanel(IntactEdge edge) {
+    private void createPanel(Edge edge) {
         content.setLayout(new OverlayLayout(content));
         content.setOpaque(false);
         JPanel mainPanel = new JPanel(new GridBagLayout());
@@ -142,7 +142,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
         CompoundBorder border = BorderFactory.createCompoundBorder(outsideBorder, insideBorder);
 
 
-        Map<IntactNode, List<Feature>> featuresMap = edge.getFeatures();
+        Map<Node, List<Feature>> featuresMap = edge.getFeatures();
         {
             sourcePanel = new JPanel(new GridBagLayout());
             sourcePanel.setBackground(nodePanelBg);

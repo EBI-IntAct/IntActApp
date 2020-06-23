@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.options.fields;
 
-import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.IntactOptionManager;
+import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
@@ -10,12 +10,12 @@ import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 
-public class IntegerOptionField extends OptionField<IntactOptionManager.NumericOption<Integer>> implements ChangeListener {
+public class IntegerOptionField extends OptionField<OptionManager.NumericOption<Integer>> implements ChangeListener {
     private final JSlider slider = new JSlider(SwingConstants.HORIZONTAL);
     private final JTextField textField;
     private boolean ignore = false;
 
-    public IntegerOptionField(IntactOptionManager.NumericOption<Integer> option, JPanel container, EasyGBC layoutHelper) {
+    public IntegerOptionField(OptionManager.NumericOption<Integer> option, JPanel container, EasyGBC layoutHelper) {
         super(option, container, layoutHelper);
         Integer value = option.getValue();
         textField = new JTextField(option.max.toString().length());

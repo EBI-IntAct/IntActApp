@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
-import uk.ac.ebi.intact.app.internal.model.core.Interactor;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 
 import java.util.function.Function;
 
