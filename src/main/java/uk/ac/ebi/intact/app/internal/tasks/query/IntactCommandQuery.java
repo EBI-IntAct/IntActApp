@@ -58,7 +58,7 @@ public class IntactCommandQuery extends AbstractTask {
         Map<Object, Object> postData = new HashMap<>();
         postData.put("query", String.join("\n",seedTerms.split("\\s+")));
         JsonNode resolutionResponse = HttpUtils.postJSON(Manager.INTACT_INTERACTOR_WS + "list/resolve", postData, manager);
-        Map<String, List<Interactor>> interactorsToResolve = Interactor.getInteractorsToResolve(resolutionResponse);
+        Map<String, List<Interactor>> interactorsToResolve = Interactor.getInteractorsToResolve(resolutionResponse, new HashMap<>());
         Stream<Interactor> interactors = interactorsToResolve.values().stream().flatMap(List::stream);
 
         if (types != null && !types.isBlank()) {

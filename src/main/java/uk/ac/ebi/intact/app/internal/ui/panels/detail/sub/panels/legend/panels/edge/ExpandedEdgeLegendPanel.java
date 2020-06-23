@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.EdgeLegend;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel;
+import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 

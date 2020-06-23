@@ -5,7 +5,7 @@ import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.MutationIntactStyle;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.shapes.Ball;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel;
+import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.AbstractLegendPanel;
 
 import javax.swing.*;

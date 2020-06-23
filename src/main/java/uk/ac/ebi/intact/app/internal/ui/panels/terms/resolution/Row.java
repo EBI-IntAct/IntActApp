@@ -23,6 +23,7 @@ import static uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution.TermColum
 class Row extends JPanel implements ItemListener {
     public static final Color SELECTED_COLOR = new Color(208, 196, 214);
     public static final Color UNSELECTED_COLOR = new Color(216, 216, 216);
+    public static final Color FORCED_COLOR = new Color(215, 168, 221);
     private final EasyGBC layoutHelper = new EasyGBC();
     final Interactor interactor;
     final TermTable table;
@@ -33,6 +34,7 @@ class Row extends JPanel implements ItemListener {
     private final static Pattern speciesPattern = Pattern.compile("[A-Z][a-z.]+ [a-z]+");
     JCheckBox selectionCheckBox;
     InteractorDiagram diagram;
+    private boolean selectionSilenced;
 
 
     public Row(Interactor interactor, TermTable table) {
@@ -116,6 +118,17 @@ class Row extends JPanel implements ItemListener {
         return cell;
     }
 
+    public void silenceSelection(boolean silenceSelection) {
+        this.selectionSilenced = silenceSelection;
+        if (silenceSelection) {
+            selectionCheckBox.setEnabled(false);
+            paintCells(FORCED_COLOR);
+        } else {
+            selectionCheckBox.setEnabled(true);
+            paintCells(selected ? SELECTED_COLOR : UNSELECTED_COLOR);
+        }
+    }
+
     public void updatePreview() {
         diagram.updateStyle();
     }
@@ -134,16 +147,22 @@ class Row extends JPanel implements ItemListener {
 
     @Override
     public void itemStateChanged(ItemEvent e) {
+        if (selectionSilenced) return;
         if (e.getStateChange() == ItemEvent.SELECTED) selected = true;
         else if (e.getStateChange() == ItemEvent.DESELECTED) selected = false;
 
-        cells.values().forEach(cell -> cell.setBackground(selected ? SELECTED_COLOR : UNSELECTED_COLOR));
+        paintCells(selected ? SELECTED_COLOR : UNSELECTED_COLOR);
+    }
+
+    private void paintCells(Color color) {
+        cells.values().forEach(cell -> cell.setBackground(color));
         repaint();
     }
 
     private final MouseAdapter mouseAdapter = new MouseAdapter() {
         @Override
         public void mousePressed(MouseEvent e) {
+            if (selectionSilenced) return;
             selected = !selected;
             selectionCheckBox.setSelected(selected);
         }

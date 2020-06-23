@@ -12,7 +12,7 @@ import uk.ac.ebi.intact.app.internal.ui.utils.LinkUtils;
 
 import javax.swing.*;
 
-import static uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.backgroundColor;
 
 public class EdgeBasics extends AbstractEdgeElement {
 

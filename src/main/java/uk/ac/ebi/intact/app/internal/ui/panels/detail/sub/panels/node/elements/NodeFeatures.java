@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.backgroundColor;
 import static uk.ac.ebi.intact.app.internal.ui.utils.GroupUtils.groupElementsInPanel;
 
 public class NodeFeatures extends AbstractNodeElement {

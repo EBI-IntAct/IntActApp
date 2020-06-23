@@ -6,8 +6,8 @@ import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 import javax.swing.*;
 import java.awt.*;
 
-import static uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel.backgroundColor;
-import static uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel.labelFont;
+import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.labelFont;
 
 public abstract class AbstractSelectedElementPanel extends JPanel {
     protected final OpenBrowser openBrowser;

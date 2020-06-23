@@ -1,10 +1,10 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
 import org.cytoscape.work.TaskFactory;
-import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ImportNetworkTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.components.filler.HorizontalFiller;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.CenteredLabel;
@@ -36,9 +36,8 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     public static final int TERM_SPACE = 8;
     private static final ImageIcon filterIcon = IconUtils.createImageIcon("/IntAct/DIGITAL/filter.png");
     public static final Color HEADER_CELLS_COLOR = new Color(104, 41, 124);
-    private final Manager manager;
-    private final EasyGBC layoutHelper = new EasyGBC();
-    private final Set<Interactor> interactorsToQuery = new HashSet<>();
+    final Manager manager;
+    final EasyGBC layoutHelper = new EasyGBC();
     final boolean includeNonAmbiguousTerms;
     final boolean selectedByDefault;
 
@@ -70,6 +69,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     final JPanel tableCornerPanel = new JPanel(new GridBagLayout());
     private JButton selectAllButton;
     private JButton unSelectAllButton;
+    private final Set<Interactor> interactorsToQuery = new HashSet<>();
 
     public ResolveTermsPanel(final Manager manager, Network network) {
         this(manager, network, true, true);
@@ -165,7 +165,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         displayPanel.setBackground(Color.WHITE);
         network.getInteractorsToResolve().forEach((term, interactors) -> {
             if (includeNonAmbiguousTerms || interactors.size() > 1) {
-                TermTable termTable = new TermTable(this, term, interactors);
+                TermTable termTable = new TermTable(this, term, interactors, network.getPagedTerms().get(term));
                 termTables.add(termTable);
                 displayPanel.add(termTable, c.down().expandHoriz());
                 displayPanel.add(Box.createVerticalStrut(TERM_SPACE), c.down().expandHoriz());
@@ -300,6 +300,14 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
 
         JButton importButton = new JButton("Build Network");
         importButton.addActionListener(e -> {
+            Map<String, List<Interactor>> missingInteractors = network.completeMissingInteractors(
+                    termTables.stream()
+                            .filter(termTable -> termTable.includeAll)
+                            .map(termTable -> termTable.term)
+                            .collect(toList()),
+                    includeNonAmbiguousTerms
+            );
+            missingInteractors.values().forEach(interactorsToQuery::addAll);
             termTables.stream()
                     .map(TermTable::getSelectedInteractors)
                     .flatMap(Collection::stream).forEach(interactorsToQuery::add);

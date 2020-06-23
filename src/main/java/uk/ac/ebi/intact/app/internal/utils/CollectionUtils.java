@@ -28,6 +28,10 @@ public class CollectionUtils {
         }
     }
 
+    public static <K, E> void addAllToGroups(Map<K, List<E>> groups, List<E> toAdd, Function<E, K> groupBy) {
+        toAdd.forEach(e -> addToGroups(groups, e, groupBy));
+    }
+
 
     public static <K, E> Map<K, List<E>> groupByMultipleKeys(Iterable<E> toGroup, Function<E, Set<K>> elementToGroupingKeys) {
         Map<K, List<E>> groups = new HashMap<>();

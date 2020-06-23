@@ -1,6 +1,6 @@
 Basic idea: three "modes"
 
-Mode 1: build an initial cyNetwork from Intact
+Mode 1: build an initial network from Intact
 
 1) Add to web service interface: get a list of identifiers.  Will also need to be able to use slider to change
    confidence cut-offs, a drop-down list of species, and buttons for evidence types.

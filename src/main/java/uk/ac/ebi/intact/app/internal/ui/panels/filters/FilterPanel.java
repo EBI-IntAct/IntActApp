@@ -10,7 +10,7 @@ import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 import java.awt.*;
 
-import static uk.ac.ebi.intact.app.internal.ui.panels.detail.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.backgroundColor;
 
 public abstract class FilterPanel<F extends Filter<? extends Element>> extends CollapsablePanel {
     protected EasyGBC layoutHelper = new EasyGBC();

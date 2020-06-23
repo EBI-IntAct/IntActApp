@@ -18,6 +18,7 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.IntactStyle;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
+import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
 import java.awt.*;
@@ -34,6 +35,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
     CyNetwork cyNetwork;
     Map<String, List<String>> termToAcs;
     Map<String, List<Interactor>> interactorsToResolve;
+    Map<String, Boolean> pagedTerms = new HashMap<>();
     CyTable edgeTable;
     CyTable nodeTable;
     CyTable featuresTable;
@@ -118,18 +120,46 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
     }
 
 
+    public Map<String, List<Interactor>> resolveTerms(final String terms, boolean exactQuery) {
+        Map<Object, Object> resolverData = new HashMap<>();
+        resolverData.put("query", terms.replaceAll("[\\n\\s\\r]", "\n"));
+        resolverData.put("fuzzySearch", !exactQuery);
+        resolverData.put("pageSize", manager.option.MAX_INTERACTOR_PER_TERM.getValue());
+        interactorsToResolve = Interactor.getInteractorsToResolve(HttpUtils.postJSON(Manager.INTACT_INTERACTOR_WS + "list/resolve", resolverData, manager), pagedTerms);
+        completeMissingNodeColorsFromInteractors();
+        return interactorsToResolve;
+    }
+
+    public Map<String, List<Interactor>> completeMissingInteractors(List<String> termsToComplete, boolean exactQuery) {
+        HashMap<String, List<Interactor>> newInteractors = new HashMap<>();
+        completeMissingInteractors(termsToComplete, exactQuery, newInteractors, 1);
+        return newInteractors;
+    }
+
+    private void completeMissingInteractors(List<String> termsToComplete, boolean exactQuery, Map<String, List<Interactor>> newInteractors, int page) {
+        Map<Object, Object> resolverData = new HashMap<>();
+        resolverData.put("query", String.join("\n", termsToComplete));
+        resolverData.put("fuzzySearch", !exactQuery);
+        resolverData.put("pageSize", manager.option.MAX_INTERACTOR_PER_TERM.getValue());
+        resolverData.put("page", page);
+        Map<String, List<Interactor>> additionalInteractors = Interactor.getInteractorsToResolve(HttpUtils.postJSON(Manager.INTACT_INTERACTOR_WS + "list/resolve", resolverData, manager), pagedTerms);
+        termsToComplete.removeIf(term -> additionalInteractors.get(term).isEmpty());
+        additionalInteractors.forEach((term, interactors) -> {
+            CollectionUtils.addAllToGroups(newInteractors, interactors, interactor -> term);
+            CollectionUtils.addAllToGroups(interactorsToResolve, interactors, interactor -> term);
+        });
+        if (!termsToComplete.isEmpty())
+            completeMissingInteractors(termsToComplete, exactQuery, newInteractors, page + 1);
+
+    }
+
+
     public Map<String, List<Interactor>> getInteractorsToResolve() {
         return interactorsToResolve;
     }
 
-    public Map<String, List<Interactor>> resolveTerms(final String terms, boolean exactQuery) {
-        Map<Object, Object> resolverData = new HashMap<>();
-        resolverData.put("query", terms.replaceAll("[\\n\\s\\r]", " "));
-        resolverData.put("fuzzySearch", !exactQuery);
-        resolverData.put("pageSize", manager.option.MAX_INTERACTOR_PER_TERM.getValue());
-        interactorsToResolve = Interactor.getInteractorsToResolve(HttpUtils.postJSON(Manager.INTACT_INTERACTOR_WS + "list/resolve", resolverData, manager));
-        completeMissingNodeColorsFromInteractors();
-        return interactorsToResolve;
+    public Map<String, Boolean> getPagedTerms() {
+        return pagedTerms;
     }
 
     public boolean hasNoAmbiguity() {
