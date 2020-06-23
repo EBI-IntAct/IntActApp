@@ -10,21 +10,20 @@ import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.model.core.IntactNode;
+import uk.ac.ebi.intact.app.internal.model.core.Interactor;
 import uk.ac.ebi.intact.app.internal.model.core.edges.IntactCollapsedEdge;
 import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEdge;
 import uk.ac.ebi.intact.app.internal.model.core.edges.IntactEvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.managers.IntactManager;
-import uk.ac.ebi.intact.app.internal.utils.TableUtil;
-import uk.ac.ebi.intact.app.internal.model.core.Interactor;
 import uk.ac.ebi.intact.app.internal.model.styles.IntactStyle;
 import uk.ac.ebi.intact.app.internal.model.styles.utils.StyleMapper;
+import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
 import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.stream.Collectors;
 
 import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.*;
 
@@ -351,7 +350,7 @@ public class IntactNetwork implements AddedEdgesListener, AboutToRemoveEdgesList
     }
 
     public List<IntactNode> getINodes() {
-        return network.getNodeList().stream().map(node -> new IntactNode(this, node)).collect(Collectors.toList());
+        return new ArrayList<>(iNodes);
     }
 
 
