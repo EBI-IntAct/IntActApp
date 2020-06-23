@@ -96,7 +96,7 @@ class TermTable extends JPanel implements ItemListener {
         selectAll = new IButton("Select all");
         selectAll.setEnabled(!resolver.selectedByDefault);
         selectAll.addActionListener(e -> {
-            if (includeAllInteractorsOption) selectRows(true);
+            if (!includeAll) selectRows(true);
         });
         selectAll.setAlignmentX(CENTER_ALIGNMENT);
         selectAll.setDisabledColor(Color.WHITE);
@@ -105,7 +105,7 @@ class TermTable extends JPanel implements ItemListener {
         unselectAll = new IButton("Unselect all");
         unselectAll.setEnabled(resolver.selectedByDefault);
         unselectAll.addActionListener(e -> {
-            if (includeAllInteractorsOption) selectRows(false);
+            if (!includeAll) selectRows(false);
         });
         unselectAll.setAlignmentX(CENTER_ALIGNMENT);
         unselectAll.setDisabledColor(Color.WHITE);
