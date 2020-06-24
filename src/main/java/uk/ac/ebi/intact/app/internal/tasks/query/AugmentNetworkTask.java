@@ -18,13 +18,13 @@ import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
 
 import java.util.*;
 
-public class AddNewTermsTask extends AbstractTask {
+public class AugmentNetworkTask extends AbstractTask {
     final Network stringNet;
     final List<String> intactAcs;
     @Tunable(description = "Re-layout network?")
     public boolean relayout = false;
 
-    public AddNewTermsTask(final Network network, final List<String> intactAcs) {
+    public AugmentNetworkTask(final Network network, final List<String> intactAcs) {
         this.stringNet = network;
         this.intactAcs = intactAcs;
     }

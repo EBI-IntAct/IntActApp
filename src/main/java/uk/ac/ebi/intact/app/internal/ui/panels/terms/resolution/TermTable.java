@@ -90,20 +90,16 @@ class TermTable extends JPanel implements ItemListener {
         label.setAlignmentX(CENTER_ALIGNMENT);
         termControlPanel.add(label);
 
-        selectAll = new IButton("Select all");
+        selectAll = new IButton("<div style=\"text-align: center;\">Select all<br>previewed<br>interactors</div>");
         selectAll.setEnabled(!resolver.selectedByDefault);
-        selectAll.addActionListener(e -> {
-            if (!includeAll) selectRows(true);
-        });
+        selectAll.addActionListener(e -> selectRows(true));
         selectAll.setAlignmentX(CENTER_ALIGNMENT);
         selectAll.setDisabledColor(Color.WHITE);
         termControlPanel.add(selectAll);
 
-        unselectAll = new IButton("Unselect all");
+        unselectAll = new IButton("<div style=\"text-align: center;\">Unselect all<br>previewed<br>interactors</div>");
         unselectAll.setEnabled(resolver.selectedByDefault);
-        unselectAll.addActionListener(e -> {
-            if (!includeAll) selectRows(false);
-        });
+        unselectAll.addActionListener(e -> selectRows(false));
         unselectAll.setAlignmentX(CENTER_ALIGNMENT);
         unselectAll.setDisabledColor(Color.WHITE);
         termControlPanel.add(unselectAll);

@@ -3,8 +3,8 @@ package uk.ac.ebi.intact.app.internal.tasks.query.factories;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.tasks.query.AddNewTermsTask;
-import uk.ac.ebi.intact.app.internal.tasks.query.LoadInteractions;
+import uk.ac.ebi.intact.app.internal.tasks.query.AugmentNetworkTask;
+import uk.ac.ebi.intact.app.internal.tasks.query.CreateNetworkTask;
 
 import java.util.List;
 
@@ -24,9 +24,9 @@ public class ImportNetworkTaskFactory extends AbstractTaskFactory {
 
     public TaskIterator createTaskIterator() {
         if (network.getCyNetwork() == null) {
-            return new TaskIterator(new LoadInteractions(network, intactAcs, includeNeighbours, netName));
+            return new TaskIterator(new CreateNetworkTask(network, intactAcs, includeNeighbours, netName));
         }
-        return new TaskIterator(new AddNewTermsTask(network, intactAcs));
+        return new TaskIterator(new AugmentNetworkTask(network, intactAcs));
     }
 
     public boolean isReady() {

@@ -19,10 +19,10 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.query.IntactCommandQuery;
+import uk.ac.ebi.intact.app.internal.tasks.query.CommandQuery;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.AddTermsTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.query.factories.IntactBroadSearchTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.query.factories.IntactExactQueryTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.query.factories.FuzzySearchTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.query.factories.ExactQueryTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.settings.SettingsTask;
 import uk.ac.ebi.intact.app.internal.tasks.version.factories.VersionTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.CollapseViewTaskFactory;
@@ -153,7 +153,7 @@ public class CyActivator extends AbstractCyActivator {
             AbstractTaskFactory intactCommandQueryFactory = new AbstractTaskFactory() {
                 @Override
                 public TaskIterator createTaskIterator() {
-                    return new TaskIterator(new IntactCommandQuery(manager));
+                    return new TaskIterator(new CommandQuery(manager));
                 }
             };
 
@@ -180,12 +180,12 @@ public class CyActivator extends AbstractCyActivator {
         // Register our Network search factories
 
         {
-            IntactExactQueryTaskFactory intactQuery = new IntactExactQueryTaskFactory(manager);
+            ExactQueryTaskFactory intactQuery = new ExactQueryTaskFactory(manager);
             Properties propsSearch = new Properties();
             registerService(bc, intactQuery, NetworkSearchTaskFactory.class, propsSearch);
         }
         {
-            IntactBroadSearchTaskFactory intactSearch = new IntactBroadSearchTaskFactory(manager);
+            FuzzySearchTaskFactory intactSearch = new FuzzySearchTaskFactory(manager);
             Properties propsSearch = new Properties();
             registerService(bc, intactSearch, NetworkSearchTaskFactory.class, propsSearch);
         }

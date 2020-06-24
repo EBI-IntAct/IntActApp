@@ -138,7 +138,7 @@ class Row extends JPanel implements ItemListener {
         }
         cells.put(column, cell);
 
-        container.add(cell, helper.expandBoth());
+        container.add(cell, helper.expandBoth().anchor("west"));
 
         int width = cellContent.getPreferredSize().width;
         if (table.resolver.maxWidthsOfColumns.get(column) < width) {

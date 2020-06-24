@@ -21,7 +21,7 @@ public class LimitRow extends Row {
         JCheckBox selectionCheckBox = createSelectionCheckBox(false);
         selectionCheckBox.addActionListener(e -> table.includeAll = selectionCheckBox.isSelected());
         addCell(selectionCheckBox, TermColumn.SELECT);
-        JLabel label = new JLabel("Next " + (table.totalInteractors - table.interactors.size()) + " matching interactors ...");
+        JLabel label = new JLabel("Include additional " + (table.totalInteractors - table.interactors.size()) + " matching interactors");
         label.setBorder(new EmptyBorder(5,5,5,0));
         Cell cell = new Cell(label);
         cell.setBackground(selected ? SELECTED_COLOR : UNSELECTED_COLOR);

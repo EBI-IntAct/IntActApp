@@ -18,16 +18,16 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-public class LoadInteractions extends AbstractTask implements TaskObserver {
+public class CreateNetworkTask extends AbstractTask implements TaskObserver {
     private final Network intactNet;
     private final List<String> intactAcs;
     private final boolean includeNeighbours;
     private final String netName;
     private Instant begin;
 
-    public LoadInteractions(final Network intactNet,
-                            final List<String> intactAcs,
-                            boolean includeNeighbours, final String netName) {
+    public CreateNetworkTask(final Network intactNet,
+                             final List<String> intactAcs,
+                             boolean includeNeighbours, final String netName) {
         this.intactNet = intactNet;
         this.intactAcs = intactAcs;
         this.includeNeighbours = includeNeighbours;

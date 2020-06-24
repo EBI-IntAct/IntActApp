@@ -14,7 +14,7 @@ import javax.swing.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class IntactBroadSearchTaskFactory extends AbstractNetworkSearchTaskFactory {
+public class FuzzySearchTaskFactory extends AbstractNetworkSearchTaskFactory {
     private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/ICON_PNG/Cropped_Gradient790.png");
     static String INTACT_ID = "uk.ac.ebi.intact.search";
     static URL INTACT_URL;
@@ -32,7 +32,7 @@ public class IntactBroadSearchTaskFactory extends AbstractNetworkSearchTaskFacto
     Manager manager;
     private SearchQueryComponent queryComponent = null;
 
-    public IntactBroadSearchTaskFactory(Manager manager) {
+    public FuzzySearchTaskFactory(Manager manager) {
         super(INTACT_ID, INTACT_NAME, INTACT_DESC, icon, INTACT_URL);
         this.manager = manager;
     }
