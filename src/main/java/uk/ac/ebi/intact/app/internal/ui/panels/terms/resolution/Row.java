@@ -25,8 +25,7 @@ import static uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution.TermColum
 class Row extends JPanel implements ItemListener {
     public static final Color SELECTED_COLOR = new Color(208, 196, 214);
     public static final Color UNSELECTED_COLOR = new Color(216, 216, 216);
-    public static final Color FORCED_COLOR = new Color(224, 194, 203);
-    private final EasyGBC layoutHelper = new EasyGBC();
+    protected final EasyGBC layoutHelper = new EasyGBC().expandBoth().anchor("west");
     final Interactor interactor;
     final TermTable table;
     final Map<TermColumn, Cell> cells = new HashMap<>();
@@ -36,22 +35,20 @@ class Row extends JPanel implements ItemListener {
     private final static Pattern speciesPattern = Pattern.compile("[A-Z][a-z.]+ [a-z]+");
     JCheckBox selectionCheckBox;
     InteractorDiagram diagram;
-    private boolean selectionSilenced;
 
 
     public Row(Interactor interactor, TermTable table) {
         this.interactor = interactor;
         this.table = table;
         selected = table.resolver.selectedByDefault;
-        init();
-    }
-
-    private void init() {
         this.setLayout(new GridBagLayout());
         this.setBackground(Color.WHITE);
         this.addMouseListener(mouseAdapter);
-        layoutHelper.expandBoth().anchor("west");
-        addCell(createSelectionCheckBox(), SELECT);
+        init();
+    }
+
+    protected void init() {
+        addCell(createSelectionCheckBox(true), SELECT);
         addCell(createPreview(), PREVIEW);
         addCell(createSpecies(), SPECIES);
         addCell(new CenteredLabel(interactor.type), TYPE);
@@ -65,13 +62,15 @@ class Row extends JPanel implements ItemListener {
         ComponentUtils.resizeHeight(cells.get(SELECT), getPreferredSize().height, ComponentUtils.SizeType.PREF);
     }
 
-    private JCheckBox createSelectionCheckBox() {
+    protected JCheckBox createSelectionCheckBox(boolean allListenersIncluded) {
         selectionCheckBox = new JCheckBox();
         selectionCheckBox.setAlignmentX(CENTER_ALIGNMENT);
         selectionCheckBox.setSelected(selected);
         selectionCheckBox.addItemListener(this);
-        selectionCheckBox.addItemListener(table);
-        selectionCheckBox.addItemListener(table.resolver);
+        if (allListenersIncluded) {
+            selectionCheckBox.addItemListener(table);
+            selectionCheckBox.addItemListener(table.resolver);
+        }
         return selectionCheckBox;
     }
 
@@ -126,7 +125,7 @@ class Row extends JPanel implements ItemListener {
     }
 
 
-    private Cell addCell(JComponent cellContent, TermColumn column) {
+    protected Cell addCell(JComponent cellContent, TermColumn column) {
         EasyGBC helper = column.isFixedInRowHeader ? table.resolver.rowHeaderHelper.noExpand() : layoutHelper;
         JPanel container = column.isFixedInRowHeader ? table.resolver.rowHeaderPanel : this;
 
@@ -148,16 +147,6 @@ class Row extends JPanel implements ItemListener {
         return cell;
     }
 
-    public void silenceSelection(boolean silenceSelection) {
-        this.selectionSilenced = silenceSelection;
-        if (silenceSelection) {
-            selectionCheckBox.setEnabled(false);
-            paintCells(FORCED_COLOR);
-        } else {
-            selectionCheckBox.setEnabled(true);
-            paintCells(selected ? SELECTED_COLOR : UNSELECTED_COLOR);
-        }
-    }
 
     public void updatePreview() {
         diagram.updateStyle();
@@ -177,7 +166,6 @@ class Row extends JPanel implements ItemListener {
 
     @Override
     public void itemStateChanged(ItemEvent e) {
-        if (selectionSilenced) return;
         if (e.getStateChange() == ItemEvent.SELECTED) selected = true;
         else if (e.getStateChange() == ItemEvent.DESELECTED) selected = false;
 
@@ -189,10 +177,9 @@ class Row extends JPanel implements ItemListener {
         repaint();
     }
 
-    private final MouseAdapter mouseAdapter = new MouseAdapter() {
+    protected final MouseAdapter mouseAdapter = new MouseAdapter() {
         @Override
         public void mousePressed(MouseEvent e) {
-            if (selectionSilenced) return;
             selected = !selected;
             selectionCheckBox.setSelected(selected);
         }

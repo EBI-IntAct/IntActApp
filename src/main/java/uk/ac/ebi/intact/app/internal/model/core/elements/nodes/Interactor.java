@@ -28,12 +28,12 @@ public class Interactor {
         this.interactionCount = interactionCount;
     }
 
-    public static Map<String, List<Interactor>> getInteractorsToResolve(JsonNode json, Map<String, Boolean> pagedTerms) {
+    public static Map<String, List<Interactor>> getInteractorsToResolve(JsonNode json, Map<String, Integer> totalInteractors) {
         Map<String, List<Interactor>> map = new HashMap<>();
-        return getInteractorsToResolve(json, map, pagedTerms);
+        return getInteractorsToResolve(json, map, totalInteractors);
     }
 
-    public static Map<String, List<Interactor>> getInteractorsToResolve(JsonNode json, Map<String, List<Interactor>> map, Map<String, Boolean> pagedTerms) {
+    public static Map<String, List<Interactor>> getInteractorsToResolve(JsonNode json, Map<String, List<Interactor>> map, Map<String, Integer> totalInteractors) {
         json.fields().forEachRemaining(term -> {
             List<Interactor> interactors = new ArrayList<>();
             JsonNode termData = term.getValue();
@@ -58,7 +58,7 @@ public class Interactor {
             }
             String termName = term.getKey();
             map.put(termName, interactors);
-            pagedTerms.put(termName, !termData.get("last").booleanValue());
+            totalInteractors.put(termName, termData.get("totalElements").intValue());
         });
 
         return map;

@@ -3,7 +3,6 @@ package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.ui.components.IButton;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.FloatingPanel;
-import uk.ac.ebi.intact.app.internal.ui.components.panels.LimitExceededPanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
@@ -26,6 +25,7 @@ class TermTable extends JPanel implements ItemListener {
     final String term;
     final List<Interactor> interactors;
     final boolean isPaged;
+    final int totalInteractors;
     final Map<Interactor, Row> rows = new HashMap<>();
     final EasyGBC layoutHelper = new EasyGBC();
     boolean includeAll = false;
@@ -34,11 +34,12 @@ class TermTable extends JPanel implements ItemListener {
     private IButton unselectAll;
     private JPanel termControlPanel;
 
-    public TermTable(ResolveTermsPanel resolver, String term, List<Interactor> interactors, boolean isPaged) {
+    public TermTable(ResolveTermsPanel resolver, String term, List<Interactor> interactors, int totalInteractors) {
         this.resolver = resolver;
         this.term = term;
         this.interactors = interactors;
-        this.isPaged = isPaged;
+        this.totalInteractors = totalInteractors;
+        this.isPaged = totalInteractors > interactors.size();
         includeAllInteractorsOption = resolver.manager.option.DEFAULT_INCLUDE_ALL_INTERACTORS.getValue();
         init();
     }
@@ -50,19 +51,15 @@ class TermTable extends JPanel implements ItemListener {
         if (interactors == null || interactors.isEmpty()) {
             add(new JLabel("Not found"), layoutHelper.right().expandHoriz());
         } else {
-
             for (Interactor interactor : interactors) {
                 Row row = new Row(interactor, this);
-                row.silenceSelection(isPaged && includeAllInteractorsOption);
                 resolver.rowHeaderHelper.down();
                 add(row, layoutHelper.down().expandBoth());
                 rows.put(interactor, row);
             }
             if (isPaged) {
-                LimitExceededPanel limitExceededPanel = new LimitExceededPanel("interactors", "matched", resolver.manager.option.MAX_INTERACTOR_PER_TERM.getValue(), "requery with a bigger number of interactor per terms via the option panel", JLabel.LEFT);
-                limitExceededPanel.setBorder(new EmptyBorder(1, 1, 1, 1));
-                add(limitExceededPanel, layoutHelper.down().expandHoriz());
-                resolver.rowHeaderPanel.add(Box.createVerticalStrut(limitExceededPanel.getPreferredSize().height), resolver.rowHeaderHelper.down().expandHoriz());
+                resolver.rowHeaderHelper.down();
+                add(new LimitRow(this), layoutHelper.down().expandBoth());
             }
         }
     }
@@ -110,24 +107,6 @@ class TermTable extends JPanel implements ItemListener {
         unselectAll.setAlignmentX(CENTER_ALIGNMENT);
         unselectAll.setDisabledColor(Color.WHITE);
         termControlPanel.add(unselectAll);
-
-        if (isPaged) {
-            JCheckBox includeAll = new JCheckBox("Include all interactors");
-            includeAll.setForeground(Color.white);
-            includeAll.setHorizontalAlignment(SwingConstants.CENTER);
-            includeAll.setAlignmentX(CENTER_ALIGNMENT);
-            includeAll.setSelected(includeAllInteractorsOption);
-            includeAll.addActionListener(e -> {
-                this.includeAll = includeAll.isSelected();
-                if (this.includeAll) {
-                    rows.values().forEach(row -> row.silenceSelection(true));
-                } else {
-                    rows.values().forEach(row -> row.silenceSelection(false));
-                }
-            });
-            termControlPanel.add(includeAll);
-        }
-
         return termControlPanel;
     }
 

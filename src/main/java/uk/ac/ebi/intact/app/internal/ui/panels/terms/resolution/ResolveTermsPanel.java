@@ -165,7 +165,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         displayPanel.setBackground(Color.WHITE);
         network.getInteractorsToResolve().forEach((term, interactors) -> {
             if (includeNonAmbiguousTerms || interactors.size() > 1) {
-                TermTable termTable = new TermTable(this, term, interactors, network.getPagedTerms().get(term));
+                TermTable termTable = new TermTable(this, term, interactors, network.getTotalInteractors().get(term));
                 termTables.add(termTable);
                 displayPanel.add(termTable, c.down().expandHoriz());
                 displayPanel.add(Box.createVerticalStrut(TERM_SPACE), c.down().expandHoriz());

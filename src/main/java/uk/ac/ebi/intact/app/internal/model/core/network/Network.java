@@ -35,7 +35,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
     CyNetwork cyNetwork;
     Map<String, List<String>> termToAcs;
     Map<String, List<Interactor>> interactorsToResolve;
-    Map<String, Boolean> pagedTerms = new HashMap<>();
+    Map<String, Integer> totalInteractors = new HashMap<>();
     CyTable edgeTable;
     CyTable nodeTable;
     CyTable featuresTable;
@@ -125,7 +125,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
         resolverData.put("query", terms.replaceAll("[\\n\\s\\r]", "\n"));
         resolverData.put("fuzzySearch", !exactQuery);
         resolverData.put("pageSize", manager.option.MAX_INTERACTOR_PER_TERM.getValue());
-        interactorsToResolve = Interactor.getInteractorsToResolve(HttpUtils.postJSON(Manager.INTACT_INTERACTOR_WS + "list/resolve", resolverData, manager), pagedTerms);
+        interactorsToResolve = Interactor.getInteractorsToResolve(HttpUtils.postJSON(Manager.INTACT_INTERACTOR_WS + "list/resolve", resolverData, manager), totalInteractors);
         completeMissingNodeColorsFromInteractors();
         return interactorsToResolve;
     }
@@ -142,7 +142,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
         resolverData.put("fuzzySearch", !exactQuery);
         resolverData.put("pageSize", manager.option.MAX_INTERACTOR_PER_TERM.getValue());
         resolverData.put("page", page);
-        Map<String, List<Interactor>> additionalInteractors = Interactor.getInteractorsToResolve(HttpUtils.postJSON(Manager.INTACT_INTERACTOR_WS + "list/resolve", resolverData, manager), pagedTerms);
+        Map<String, List<Interactor>> additionalInteractors = Interactor.getInteractorsToResolve(HttpUtils.postJSON(Manager.INTACT_INTERACTOR_WS + "list/resolve", resolverData, manager), totalInteractors);
         termsToComplete.removeIf(term -> additionalInteractors.get(term).isEmpty());
         additionalInteractors.forEach((term, interactors) -> {
             CollectionUtils.addAllToGroups(newInteractors, interactors, interactor -> term);
@@ -158,8 +158,8 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
         return interactorsToResolve;
     }
 
-    public Map<String, Boolean> getPagedTerms() {
-        return pagedTerms;
+    public Map<String, Integer> getTotalInteractors() {
+        return totalInteractors;
     }
 
     public boolean hasNoAmbiguity() {
