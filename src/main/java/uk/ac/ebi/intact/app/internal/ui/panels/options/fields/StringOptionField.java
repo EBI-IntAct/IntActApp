@@ -24,4 +24,15 @@ public class StringOptionField extends OptionField<OptionManager.Option<String>>
         container.add(textField, layoutHelper);
     }
 
+    @Override
+    public void addListener(Runnable listener) {
+        textField.addActionListener(e -> listener.run());
+        textField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                listener.run();
+            }
+        });
+    }
+
 }

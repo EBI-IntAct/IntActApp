@@ -45,6 +45,11 @@ public class IntegerOptionField extends OptionField<OptionManager.NumericOption<
         container.add(slider, layoutHelper.right().expandHoriz());
     }
 
+    @Override
+    public void addListener(Runnable listener) {
+        slider.addChangeListener(e -> listener.run());
+    }
+
 
     @Override
     public void stateChanged(ChangeEvent e) {

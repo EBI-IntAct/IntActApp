@@ -11,4 +11,9 @@ public class DoubleOptionField extends OptionField<OptionManager.NumericOption<D
         super(option, container, layoutHelper);
     }
 
+    @Override
+    public void addListener(Runnable listener) {
+
+    }
+
 }

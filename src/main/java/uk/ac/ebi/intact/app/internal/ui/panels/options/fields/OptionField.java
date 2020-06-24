@@ -29,4 +29,6 @@ public abstract class OptionField<O extends OptionManager.Option<?>> {
             return new StringOptionField((OptionManager.Option<String>) option, container, layoutHelper);
         return null;
     }
+
+    public abstract void addListener(Runnable listener);
 }

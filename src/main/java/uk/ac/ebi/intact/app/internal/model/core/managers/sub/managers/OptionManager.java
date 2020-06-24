@@ -21,6 +21,7 @@ public class OptionManager {
 
     public final NumericOption<Integer> MAX_INTERACTOR_PER_TERM = new NumericOption<>("maxInteractorPerTerm", "Maximal number of interactors shown per terms", Integer.class, 500, 1, 1000, List.of(Scope.SEARCH));
     public final Option<Boolean> DEFAULT_INCLUDE_ALL_INTERACTORS = new Option<>("includeUnseenInteractors", "DEFAULT: Include interactors after visible limit reached", Boolean.class, true, List.of(Scope.SEARCH));
+    public final Option<Boolean> SHOW_HIGHLIGHTS = new Option<>("showHighlights", "Highlight matching columns", Boolean.class, true, List.of(Scope.SEARCH, Scope.DISAMBIGUATION));
     public final Option<Boolean> ADD_INTERACTING_PARTNERS = new Option<>("addingInteractingPartners", "Add interacting partners of seed interactors to network", Boolean.class, true, List.of(Scope.SEARCH, Scope.DISAMBIGUATION));
 
     public class Option<T> {
@@ -60,6 +61,19 @@ public class OptionManager {
 
         public void setValue(T value) {
             setStringProperty(propertyService, key, value.toString());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Option<?> option = (Option<?>) o;
+            return key.equals(option.key);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(key);
         }
     }
 

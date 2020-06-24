@@ -97,7 +97,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         initScrollPanel();
         fillDisplayPanel();
         createFilters();
-        add(new CollapsablePanel("Options", new OptionsPanel(manager, OptionManager.Scope.DISAMBIGUATION), false), layoutHelper.down().expandHoriz());
+        createOptionPanel();
         createControlButtons();
         add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
     }
@@ -234,8 +234,6 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             this.column = column;
             add(new JLabel("Select values to show:"));
         }
-
-
     }
 
     private void createFilters() {
@@ -262,6 +260,15 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
                 });
             }
         }
+    }
+
+    private void createOptionPanel() {
+        OptionsPanel optionsPanel = new OptionsPanel(manager, OptionManager.Scope.DISAMBIGUATION);
+        optionsPanel.addListener(manager.option.SHOW_HIGHLIGHTS, () -> {
+            boolean showHighlightsValue = !manager.option.SHOW_HIGHLIGHTS.getValue();
+            termTables.forEach(table -> table.rows.values().forEach(row -> row.highlightMatchingColumns(showHighlightsValue)));
+        });
+        add(new CollapsablePanel("Options", optionsPanel, false), layoutHelper.down().expandHoriz());
     }
 
     private void filterInteractors() {

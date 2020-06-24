@@ -61,6 +61,7 @@ class Row extends JPanel implements ItemListener {
         addCell(new CenteredLabel(interactor.preferredId), ID);
         addCell(createMatchingColumns(), MATCHING_COLUMNS);
         addCell(new CenteredLabel(interactor.ac), AC);
+        highlightMatchingColumns(table.resolver.manager.option.SHOW_HIGHLIGHTS.getValue());
         ComponentUtils.resizeHeight(cells.get(SELECT), getPreferredSize().height, ComponentUtils.SizeType.PREF);
     }
 
@@ -105,9 +106,6 @@ class Row extends JPanel implements ItemListener {
         JPanel matchingColumns = new VerticalPanel();
         showMatchingColumns.setEnabled(!interactor.matchingColumns.isEmpty());
         interactor.matchingColumns.forEach((columnName, matchingValues) -> {
-            TermColumn column = getByHighlightName(columnName);
-            if (column != null) cells.get(column).highlight();
-
             String columnFancyName = StringUtils.capitalize(columnName.replaceAll("interactor_", ""));
             CollapsablePanel matchingColumn = new CollapsablePanel(columnFancyName, false);
             for (String matchingValue : matchingValues) {
@@ -116,13 +114,16 @@ class Row extends JPanel implements ItemListener {
             matchingColumns.add(matchingColumn);
         });
 
-
-        showMatchingColumns.addActionListener(e -> SwingUtilities.invokeLater(() -> {
-            JOptionPane.showConfirmDialog(showMatchingColumns, matchingColumns, "Matching columns", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE);
-        }));
+        showMatchingColumns.addActionListener(e -> JOptionPane.showConfirmDialog(showMatchingColumns, matchingColumns, "Matching columns", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE));
         return showMatchingColumns;
     }
 
+    public void highlightMatchingColumns(boolean highlight) {
+        interactor.matchingColumns.forEach((columnName, matchingValues) -> {
+            TermColumn column = getByHighlightName(columnName);
+            if (column != null) cells.get(column).highlight(highlight);
+        });
+    }
 
 
     private Cell addCell(JComponent cellContent, TermColumn column) {
@@ -132,7 +133,7 @@ class Row extends JPanel implements ItemListener {
         helper.gridx = column.ordinal();
         Cell cell = new Cell(cellContent);
         cell.setBackground(selected ? SELECTED_COLOR : UNSELECTED_COLOR);
-        if (column != SELECT && column != MATCHING_COLUMNS){
+        if (column != SELECT && column != MATCHING_COLUMNS) {
             cellContent.addMouseListener(mouseAdapter);
             cellContent.setFocusable(true);
         }
