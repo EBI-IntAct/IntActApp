@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CommandQuery extends AbstractTask {
+public class NoGUIQueryTask extends AbstractTask {
     @Tunable(context = "nogui", exampleStringValue = "gtp lrr* cell Q5S007 EBI-2624319", gravity = 0,
             description = "Space separated terms to search among interactors ids and names to build the network around them.")
     public String seedTerms;
@@ -42,7 +42,7 @@ public class CommandQuery extends AbstractTask {
 
     private final Manager manager;
 
-    public CommandQuery(Manager manager) {
+    public NoGUIQueryTask(Manager manager) {
         this.manager = manager;
     }
 

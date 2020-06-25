@@ -13,7 +13,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 
 public class HttpUtils {
@@ -174,8 +173,8 @@ public class HttpUtils {
             if (builder.length() > 0) {
                 builder.append("&");
             }
-            if (entry.getValue() instanceof List) {
-                for (Object element : (List<?>) entry.getValue()) {
+            if (entry.getValue() instanceof Iterable) {
+                for (Object element : (Iterable<?>) entry.getValue()) {
                     builder.append(URLEncoder.encode(entry.getKey().toString(), StandardCharsets.UTF_8));
                     builder.append("=");
                     builder.append(URLEncoder.encode(element.toString(), StandardCharsets.UTF_8));

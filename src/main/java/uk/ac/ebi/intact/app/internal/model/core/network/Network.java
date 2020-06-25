@@ -122,7 +122,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
 
     public Map<String, List<Interactor>> resolveTerms(final String terms, boolean exactQuery) {
         Map<Object, Object> resolverData = new HashMap<>();
-        resolverData.put("query", terms.replaceAll("[\\n\\s\\r]", "\n"));
+        resolverData.put("query", terms);
         resolverData.put("fuzzySearch", !exactQuery);
         resolverData.put("pageSize", manager.option.MAX_INTERACTOR_PER_TERM.getValue());
         interactorsToResolve = Interactor.getInteractorsToResolve(HttpUtils.postJSON(Manager.INTACT_INTERACTOR_WS + "list/resolve", resolverData, manager), totalInteractors);
@@ -286,7 +286,6 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
             }
         }
         eventHelper.unsilenceEventSource(table);
-
     }
 
     public List<CollapsedEdge> getCollapsedIEdges() {

@@ -70,7 +70,7 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
         return false;
     }
 
-    void importNetwork() {
+    private void importNetwork() {
         Map<String, String> acToTerm = new HashMap<>();
         List<String> intactAcs = network.combineAcs(acToTerm);
         TaskFactory factory = new ImportNetworkTaskFactory(network, intactAcs, true, null);

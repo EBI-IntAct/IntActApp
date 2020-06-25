@@ -19,7 +19,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.query.CommandQuery;
+import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIQueryTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.AddTermsTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.FuzzySearchTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ExactQueryTaskFactory;
@@ -153,7 +153,7 @@ public class CyActivator extends AbstractCyActivator {
             AbstractTaskFactory intactCommandQueryFactory = new AbstractTaskFactory() {
                 @Override
                 public TaskIterator createTaskIterator() {
-                    return new TaskIterator(new CommandQuery(manager));
+                    return new TaskIterator(new NoGUIQueryTask(manager));
                 }
             };
 

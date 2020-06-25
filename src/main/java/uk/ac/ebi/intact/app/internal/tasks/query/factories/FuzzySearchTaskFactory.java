@@ -18,7 +18,7 @@ public class FuzzySearchTaskFactory extends AbstractNetworkSearchTaskFactory {
     private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/ICON_PNG/Cropped_Gradient790.png");
     static String INTACT_ID = "uk.ac.ebi.intact.search";
     static URL INTACT_URL;
-    static String INTACT_NAME = "IntAct Broad Search";
+    static String INTACT_NAME = "IntAct Fuzzy Search";
     static String INTACT_DESC = "Search broadly all interactors which have given terms inside their name, ids or description, and build the network around";
 
     static {
