@@ -62,7 +62,6 @@ public class MIScoreSliderUI extends RangeSliderUI {
         int unselectedHeight = 4;
         int selectedHeight = 12;
         int halfThumb = thumbRect.width / 2;
-        Rectangle bounds = g.getClipBounds();
 
         RenderingHints qualityHints = new RenderingHints(
                 RenderingHints.KEY_ANTIALIASING,
@@ -85,7 +84,7 @@ public class MIScoreSliderUI extends RangeSliderUI {
 
         // Save color and shift position.
         Color oldColor = g.getColor();
-        int cy = bounds.y + bounds.height / 4;
+        int cy = slider.getHeight() / 4;
         g.translate(0, cy);
 
         g.setPaint(p);
@@ -130,7 +129,6 @@ public class MIScoreSliderUI extends RangeSliderUI {
 
         // Create default thumb shape.
         Shape thumbShape = createThumbShape(w - 2, h - 2);
-
 
         // Draw thumb.
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
