@@ -27,8 +27,8 @@ public class LimitRow extends Row {
         cell.setBackground(selected ? SELECTED_COLOR : UNSELECTED_COLOR);
         label.setHorizontalAlignment(JLabel.LEFT);
         label.setAlignmentX(LEFT_ALIGNMENT);
-        add(cell, layoutHelper.right().expandHoriz());
-        cells.put(null, cell);
+        add(cell, layoutHelper.right().expandBoth());
+        cells.put(null, cell); // Accept cell for repainting when selected
         ComponentUtils.resizeHeight(cells.get(SELECT), getPreferredSize().height, ComponentUtils.SizeType.PREF);
     }
 
