@@ -30,6 +30,7 @@ class TermTable extends JPanel implements ItemListener {
     final EasyGBC layoutHelper = new EasyGBC();
     boolean includeAll = false;
 
+    private LimitRow limitRow;
     private IButton selectAll;
     private IButton unselectAll;
     private JPanel termControlPanel;
@@ -59,7 +60,8 @@ class TermTable extends JPanel implements ItemListener {
             }
             if (isPaged) {
                 resolver.rowHeaderHelper.down();
-                add(new LimitRow(this), layoutHelper.down().expandBoth());
+                limitRow = new LimitRow(this);
+                add(limitRow, layoutHelper.down().expandBoth());
             }
         }
     }
@@ -115,6 +117,7 @@ class TermTable extends JPanel implements ItemListener {
 
     public void homogenizeWidth() {
         rows.values().forEach(Row::homogenizeWidth);
+        if (limitRow != null) limitRow.homogenizeWidth();
     }
 
     public void updatePreviews() {
