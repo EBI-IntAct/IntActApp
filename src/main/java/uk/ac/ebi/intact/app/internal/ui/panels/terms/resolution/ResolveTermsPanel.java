@@ -148,7 +148,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             });
         }
 
-        int width = label.getPreferredSize().width;
+        int width = content.getPreferredSize().width;
         if (maxWidthsOfColumns.get(column) < width) {
             maxWidthsOfColumns.put(column, width);
         }
