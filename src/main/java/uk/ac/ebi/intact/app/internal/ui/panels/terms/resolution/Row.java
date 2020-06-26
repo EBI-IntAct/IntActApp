@@ -32,7 +32,7 @@ class Row extends JPanel implements ItemListener {
     boolean selected;
 
 
-    private final static Pattern speciesPattern = Pattern.compile("[A-Z][a-z.]+ [a-z]+");
+    private final static Pattern speciesPattern = Pattern.compile("[A-Z][a-z.]+ [a-z]+\\.?");
     JCheckBox selectionCheckBox;
     InteractorDiagram diagram;
 
@@ -74,14 +74,9 @@ class Row extends JPanel implements ItemListener {
         return selectionCheckBox;
     }
 
-    private JPanel createPreview() {
-        JPanel cellContent = new VerticalPanel();
-
-        cellContent.add(Box.createVerticalGlue());
+    private InteractorDiagram createPreview() {
         diagram = new InteractorDiagram(interactor);
-        cellContent.add(diagram);
-        cellContent.add(Box.createVerticalGlue());
-        return cellContent;
+        return diagram;
     }
 
     private JComponent createSpecies() {
