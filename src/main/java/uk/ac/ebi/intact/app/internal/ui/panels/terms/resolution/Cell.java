@@ -2,9 +2,9 @@ package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseListener;
 
 class Cell extends JPanel {
-    public static final Color HIGHLIGHTED_COLOR = new Color(71, 0, 255, 34);
     private final JComponent component;
     private final Font originalFont;
 
@@ -25,6 +25,14 @@ class Cell extends JPanel {
             component.setBackground(bg);
         }
     }
+
+
+    @Override
+    public synchronized void addMouseListener(MouseListener l) {
+        super.addMouseListener(l);
+        component.addMouseListener(l);
+    }
+
 
     public void highlight(boolean highlight) {
         if (highlight) {

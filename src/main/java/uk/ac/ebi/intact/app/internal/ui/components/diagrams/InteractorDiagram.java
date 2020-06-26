@@ -16,6 +16,7 @@ public class InteractorDiagram extends JPanel implements StyleUpdatedListener {
     private final JPanel shapePanel = new JPanel(new BorderLayout());
     protected final AbstractNodeShape shape;
     private final Interactor interactor;
+    private JLabel2D label;
 
     public InteractorDiagram(Interactor interactor) {
         this.interactor = interactor;
@@ -24,7 +25,7 @@ public class InteractorDiagram extends JPanel implements StyleUpdatedListener {
         this.setLayout(new OverlayLayout(this));
         this.setAlignmentX(LEFT_ALIGNMENT);
         if (interactor.name != null && !interactor.name.isBlank()) {
-            JLabel2D label = new JLabel2D(interactor.name, JLabel.CENTER);
+            label = new JLabel2D(interactor.name, JLabel.CENTER);
             label.setFont(new Font("SansSerif", Font.BOLD, 12));
             label.setForeground(Color.WHITE);
             label.setOutlineColor(new Color(0, 0, 0, 130));
@@ -50,7 +51,7 @@ public class InteractorDiagram extends JPanel implements StyleUpdatedListener {
     @Override
     public synchronized void addMouseListener(MouseListener l) {
         super.addMouseListener(l);
-        shape.addMouseListener(l);
+        label.addMouseListener(l);
     }
 
     @Override
