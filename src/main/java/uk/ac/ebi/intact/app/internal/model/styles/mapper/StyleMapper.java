@@ -246,7 +246,6 @@ public class StyleMapper {
 
                 edgeTypeToPaint.putAll(originalColors);
 
-
                 edgeTypesReady = true;
             }
         });

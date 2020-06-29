@@ -16,7 +16,7 @@ import uk.ac.ebi.intact.app.internal.model.filters.node.NodeSpeciesFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.NetworkFields;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -73,7 +73,7 @@ public class NetworkView {
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
                 CyNetwork cyNetwork = this.network.getCyNetwork();
-                cyNetwork.getRow(cyNetwork).set(ModelUtils.NET_VIEW_STATE, objectMapper.writeValueAsString(this));
+                NetworkFields.VIEW_STATE.setValue(cyNetwork.getRow(cyNetwork), objectMapper.writeValueAsString(this));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
@@ -83,7 +83,7 @@ public class NetworkView {
 
     public void load() {
         CyNetwork cyNetwork = this.network.getCyNetwork();
-        String jsonText = cyNetwork.getRow(cyNetwork).get(ModelUtils.NET_VIEW_STATE, String.class);
+        String jsonText = NetworkFields.VIEW_STATE.getValue(cyNetwork.getRow(cyNetwork));
         if (jsonText == null || jsonText.isBlank()) return;
         try {
             JsonNode json = new ObjectMapper().readTree(jsonText);

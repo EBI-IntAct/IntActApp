@@ -6,7 +6,7 @@ import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields;
 
 import java.awt.*;
 
@@ -39,7 +39,7 @@ public class CollapsedIntactStyle extends IntactStyle {
 
     @Override
     protected void setEdgeWidth() {
-        ContinuousMapping<Integer, Double> nbCollapsedEdgesToThickness = (ContinuousMapping<Integer, Double>) continuousFactory.createVisualMappingFunction(ModelUtils.C_NB_EDGES, Integer.class, BasicVisualLexicon.EDGE_WIDTH);
+        ContinuousMapping<Integer, Double> nbCollapsedEdgesToThickness = (ContinuousMapping<Integer, Double>) continuousFactory.createVisualMappingFunction(EdgeFields.C_NB_EDGES.toString(), Integer.class, BasicVisualLexicon.EDGE_WIDTH);
 
         nbCollapsedEdgesToThickness.addPoint(edgeWidthValue1, new BoundaryRangeValues<>(edgeWidth1, edgeWidth1, edgeWidth1));
         nbCollapsedEdgesToThickness.addPoint(edgeWidthValue2, new BoundaryRangeValues<>(edgeWidth2, edgeWidth2, edgeWidth2));
@@ -53,7 +53,7 @@ public class CollapsedIntactStyle extends IntactStyle {
 
     @Override
     protected void setEdgePaintStyle() {
-        ContinuousMapping<Double, Paint> miScoreToEdgeColor = (ContinuousMapping<Double, Paint>) continuousFactory.createVisualMappingFunction(ModelUtils.MI_SCORE, Double.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+        ContinuousMapping<Double, Paint> miScoreToEdgeColor = (ContinuousMapping<Double, Paint>) continuousFactory.createVisualMappingFunction(EdgeFields.MI_SCORE.toString(), Double.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
         for (int i = 0; i < colors.length - 1; i++) {
             miScoreToEdgeColor.addPoint(i / 10.0, new BoundaryRangeValues<>(colors[i], colors[i], colors[i + 1]));
             miScoreToEdgeColor.addPoint((i / 10.0) + 0.001, new BoundaryRangeValues<>(colors[i + 1], colors[i + 1], colors[i + 1]));

@@ -26,12 +26,16 @@ import uk.ac.ebi.intact.app.internal.model.events.IntactViewChangedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.IntactViewTypeChangedListener;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.CollapsedIntactStyle;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.utils.tables.ModelUtils;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.FeatureFields;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.IdentifierFields;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.NetworkFields;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.*;
+import static uk.ac.ebi.intact.app.internal.utils.tables.ModelUtils.*;
 
 public class DataManager implements
         SessionLoadedListener,
@@ -60,7 +64,7 @@ public class DataManager implements
             Network network = new Network(manager);
             addIntactNetwork(network, cyNetwork);
             fireIntactNetworkCreated(network);
-            buildIntactNetworkTableFromExistingOne(network);
+            linkNetworkTablesFromTableData(network);
             network.completeMissingNodeColorsFromTables();
             for (CyNetworkView view : networkViewManager.getNetworkViews(cyNetwork)) {
                 addNetworkView(view, true);
@@ -227,7 +231,7 @@ public class DataManager implements
             CyNetwork cyNetwork = network.getCyNetwork();
             edgeMapping.put(cyNetwork, networkEdgeMapping);
             for (CyRow edgeRow : cyNetwork.getDefaultEdgeTable().getAllRows()) {
-                Long id = edgeRow.get(ModelUtils.INTACT_ID, Long.class);
+                Long id = EdgeFields.ID.getValue(edgeRow);
                 if (id == null) continue;
                 Long suid = edgeRow.get(CyEdge.SUID, Long.class);
                 networkEdgeMapping.put(id, suid);
@@ -239,17 +243,17 @@ public class DataManager implements
 
     void linkCollapsedEdgesIdsToSUIDs(CyTableMetadata tableM, Map<CyNetwork, Map<Long, Long>> edgeMapping) {
         CyTable edgeTable = tableM.getTable();
-        CyColumn collapsedIntactIdsColumn = edgeTable.getColumn(ModelUtils.C_INTACT_IDS);
+        CyColumn collapsedIntactIdsColumn = EdgeFields.C_INTACT_IDS.getColumn(edgeTable);
         if (collapsedIntactIdsColumn == null) return;
 
         Map<Long, Long> networkEdgeMapping = edgeMapping.get(rootNetworkManager.getRootNetwork(tableM.getNetwork()).getSubNetworkList().get(0));
         if (networkEdgeMapping == null) return;
 
         for (CyRow row : edgeTable.getAllRows()) {
-            List<Long> ids = row.getList(ModelUtils.C_INTACT_IDS, Long.class);
+            List<Long> ids = EdgeFields.C_INTACT_IDS.getValue(row);
             if (ids == null) continue;
             List<Long> list = ids.stream().filter(Objects::nonNull).map(networkEdgeMapping::get).collect(Collectors.toList());
-            row.set(ModelUtils.C_INTACT_SUIDS, list);
+            EdgeFields.C_INTACT_SUIDS.setValue(row, list);
         }
     }
 
@@ -258,7 +262,7 @@ public class DataManager implements
         for (CyTableMetadata tableM : tables) {
             linkCollapsedEdgesIdsToSUIDs(tableM, edgeMapping);
             CyTable table = tableM.getTable();
-            CyColumn networkUUIDColumn = table.getColumn(ModelUtils.NET_UUID);
+            CyColumn networkUUIDColumn = NetworkFields.UUID.getColumn(table);
             if (networkUUIDColumn == null) continue;
 
             List<String> uuids = networkUUIDColumn.getValues(String.class);
@@ -266,16 +270,16 @@ public class DataManager implements
             for (Network network : networkMap.values()) {
                 CyNetwork cyNetwork = network.getCyNetwork();
                 CyRow netRow = cyNetwork.getRow(cyNetwork);
-                if (netRow.get(NET_UUID, String.class).equals(uuids.get(0))) { // If the UUID referenced in defaultValue belong to this network
-                    if (table.getColumn(IDENTIFIER_ID) != null) {
+                if (NetworkFields.UUID.getValue(netRow).equals(uuids.get(0))) { // If the UUID referenced in defaultValue belong to this network
+                    if (IdentifierFields.ID.getColumn(table) != null) {
                         network.setIdentifiersTable(table);
-                    } else if (table.getColumn(FEATURE_EDGE_IDS) != null) {
+                    } else if (FeatureFields.EDGES_ID.getColumn(table) != null) {
                         network.setFeaturesTable(table);
                         Map<Long, Long> networkEdgeMapping = edgeMapping.get(cyNetwork);
                         for (CyRow featureRow : table.getAllRows()) {
-                            List<Long> edgeIds = featureRow.getList(FEATURE_EDGE_IDS, Long.class);
+                            List<Long> edgeIds = FeatureFields.EDGES_ID.getValue(featureRow);
                             if (edgeIds == null || edgeIds.isEmpty()) continue;
-                            featureRow.set(ModelUtils.FEATURE_EDGE_SUIDS, edgeIds.stream().map(networkEdgeMapping::get).collect(Collectors.toList()));
+                            FeatureFields.EDGES_SUID.setValue(featureRow, edgeIds.stream().map(networkEdgeMapping::get).collect(Collectors.toList()));
                         }
                     }
                     break;

@@ -7,22 +7,22 @@ import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields;
 
 import java.util.*;
 
-import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.SOURCE_FEATURES;
-import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.TARGET_FEATURES;
+import static uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields.SOURCE_FEATURES;
+import static uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields.TARGET_FEATURES;
 
 public abstract class Edge implements Element {
     public final Network network;
     public final CyEdge edge;
     public final String name;
-    public final double miScore;
     public boolean collapsed;
     public final CyRow edgeRow;
     public final Node source;
     public final Node target;
+    public final double miScore;
     public final List<String> sourceFeatureAcs;
     public final List<String> targetFeatureAcs;
 
@@ -31,7 +31,7 @@ public abstract class Edge implements Element {
         if (network == null || edge == null) return null;
         CyRow edgeRow = network.getCyNetwork().getRow(edge);
         if (edgeRow == null) return null;
-        Boolean isCollapsed = edgeRow.get(ModelUtils.C_IS_COLLAPSED, Boolean.class);
+        Boolean isCollapsed = EdgeFields.C_IS_COLLAPSED.getValue(edgeRow);
         if (isCollapsed == null) return null;
         if (isCollapsed) {
             return new CollapsedEdge(network, edge);
@@ -47,15 +47,15 @@ public abstract class Edge implements Element {
         edgeRow = network.getCyNetwork().getRow(edge);
 
         name = edgeRow.get(CyNetwork.NAME, String.class);
-        miScore = edgeRow.get(ModelUtils.MI_SCORE, Double.class);
+        miScore = EdgeFields.MI_SCORE.getValue(edgeRow);
         source = new Node(network, edge.getSource());
         target = edge.getTarget() != null ? new Node(network, edge.getTarget()) : null;
 
-        sourceFeatureAcs = edgeRow.getList(SOURCE_FEATURES, String.class);
+        sourceFeatureAcs = SOURCE_FEATURES.getValue(edgeRow);
         if (sourceFeatureAcs != null) {
             sourceFeatureAcs.removeIf(String::isBlank);
         }
-        targetFeatureAcs = edgeRow.getList(TARGET_FEATURES, String.class);
+        targetFeatureAcs = TARGET_FEATURES.getValue(edgeRow);
         if (targetFeatureAcs != null) {
             targetFeatureAcs.removeIf(String::isBlank);
         }

@@ -8,8 +8,8 @@ import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields;
 
 import java.awt.*;
 
@@ -25,7 +25,7 @@ public class ExpandedIntactStyle extends IntactStyle {
 
     @Override
     protected void setEdgeLineTypeStyle() {
-        DiscreteMapping<String, LineType> shapeToLineType = (DiscreteMapping<String, LineType>) discreteFactory.createVisualMappingFunction(ModelUtils.EXPANSION_TYPE, String.class, BasicVisualLexicon.EDGE_LINE_TYPE);
+        DiscreteMapping<String, LineType> shapeToLineType = (DiscreteMapping<String, LineType>) discreteFactory.createVisualMappingFunction(EdgeFields.EXPANSION_TYPE.toString(), String.class, BasicVisualLexicon.EDGE_LINE_TYPE);
         shapeToLineType.putMapValue("null", LineTypeVisualProperty.SOLID);
         shapeToLineType.putMapValue("spoke expansion", LineTypeVisualProperty.EQUAL_DASH);
 

@@ -19,7 +19,10 @@ import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.IntactStyle;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.NetworkFields;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.NodeFields;
 
 import java.awt.*;
 import java.util.List;
@@ -27,7 +30,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.*;
+import static uk.ac.ebi.intact.app.internal.utils.tables.ModelUtils.*;
 
 public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
     ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
@@ -75,7 +78,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
         edgeTable = cyNetwork.getDefaultEdgeTable();
         nodeTable = cyNetwork.getDefaultNodeTable();
 
-        TableUtil.NullAndNonNullEdges identifiedOrNotEdges = TableUtil.splitNullAndNonNullEdges(cyNetwork, INTACT_AC);
+        TableUtil.NullAndNonNullEdges identifiedOrNotEdges = TableUtil.splitNullAndNonNullEdges(cyNetwork, EdgeFields.AC);
 
         expandedEdges.addAll(identifiedOrNotEdges.nonNullEdges);
 
@@ -202,10 +205,10 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
     public void completeMissingNodeColorsFromTables() {
         executor.execute(() -> {
             for (CyRow row : nodeTable.getAllRows()) {
-                interactorTypes.add(row.get(TYPE, String.class));
-                Long taxId = row.get(TAX_ID, Long.class);
+                interactorTypes.add(NodeFields.TYPE.getValue(row));
+                Long taxId = NodeFields.TAX_ID.getValue(row);
                 taxIds.add(taxId);
-                String specieName = row.get(SPECIES, String.class);
+                String specieName = NodeFields.SPECIES.getValue(row);
                 speciesNameToId.put(specieName, taxId);
                 speciesIdToName.put(taxId, specieName);
             }
@@ -254,13 +257,13 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
                 CyRow summaryEdgeRow = table.getRow(summaryEdge.getSUID());
 
 
-                List<String> sourceFeatures = new ArrayList<>();
-                List<String> targetFeatures = new ArrayList<>();
+                Set<String> sourceFeatures = new HashSet<>();
+                Set<String> targetFeatures = new HashSet<>();
                 for (CyEdge edge : similarEdges) {
                     CyRow edgeRow = edgeTable.getRow(edge.getSUID());
 
-                    List<String> edgeSourceFeatures = edgeRow.getList(SOURCE_FEATURES, String.class);
-                    List<String> edgeTargetFeatures = edgeRow.getList(TARGET_FEATURES, String.class);
+                    List<String> edgeSourceFeatures = EdgeFields.SOURCE_FEATURES.getValue(edgeRow);
+                    List<String> edgeTargetFeatures = EdgeFields.TARGET_FEATURES.getValue(edgeRow);
                     if (edge.getSource().equals(couple.node1)) {
                         if (edgeSourceFeatures != null) sourceFeatures.addAll(edgeSourceFeatures);
                         if (edgeTargetFeatures != null) targetFeatures.addAll(edgeTargetFeatures);
@@ -269,16 +272,16 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
                         if (edgeSourceFeatures != null) targetFeatures.addAll(edgeSourceFeatures);
                     }
                 }
-                summaryEdgeRow.set(SOURCE_FEATURES, sourceFeatures);
-                summaryEdgeRow.set(TARGET_FEATURES, targetFeatures);
+                EdgeFields.SOURCE_FEATURES.setValue(summaryEdgeRow, new ArrayList<>(sourceFeatures));
+                EdgeFields.TARGET_FEATURES.setValue(summaryEdgeRow, new ArrayList<>(targetFeatures));
+                EdgeFields.NAME.setValue(summaryEdgeRow, getName(cyNetwork, couple.node1) + " (interact with) " + getName(cyNetwork, couple.node2));
 
-                summaryEdgeRow.set(C_INTACT_IDS, TableUtil.getColumnValuesOfEdges(edgeTable, INTACT_ID, Long.class, similarEdges, "???"));
-                summaryEdgeRow.set(C_INTACT_SUIDS, TableUtil.getColumnValuesOfEdges(edgeTable, CyEdge.SUID, Long.class, similarEdges, "???"));
                 CyRow firstEdgeRow = cyNetwork.getRow(similarEdges.get(0));
-                summaryEdgeRow.set(MI_SCORE, firstEdgeRow.get(MI_SCORE, Double.class));
-                summaryEdgeRow.set(C_IS_COLLAPSED, true);
-                summaryEdgeRow.set(C_NB_EDGES, similarEdges.size());
-                summaryEdgeRow.set(CyNetwork.NAME, getName(cyNetwork, couple.node1) + " (interact with) " + getName(cyNetwork, couple.node2));
+                EdgeFields.MI_SCORE.setValue(summaryEdgeRow, EdgeFields.MI_SCORE.getValue(firstEdgeRow));
+                EdgeFields.C_IS_COLLAPSED.setValue(summaryEdgeRow, true);
+                EdgeFields.C_NB_EDGES.setValue(summaryEdgeRow, similarEdges.size());
+                EdgeFields.C_INTACT_IDS.setValue(summaryEdgeRow, TableUtil.getFieldValuesOfEdges(edgeTable, EdgeFields.ID, similarEdges, null));
+                EdgeFields.C_INTACT_SUIDS.setValue(summaryEdgeRow, TableUtil.getFieldValuesOfEdges(edgeTable, EdgeFields.SUID, similarEdges, null));
 
             } else {
                 summaryEdge = collapsedEdges.get(couple);
@@ -345,7 +348,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
     public void setFeaturesTable(CyTable featuresTable) {
         this.featuresTable = featuresTable;
         if (cyNetwork != null) {
-            cyNetwork.getRow(cyNetwork).set(NET_FEATURES_TABLE_REF, featuresTable.getSUID());
+            NetworkFields.FEATURES_TABLE_REF.setValue(cyNetwork.getRow(cyNetwork), featuresTable.getSUID());
         }
     }
 
@@ -355,8 +358,9 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
 
     public void setIdentifiersTable(CyTable identifiersTable) {
         this.identifiersTable = identifiersTable;
-        if (cyNetwork != null)
-            cyNetwork.getRow(cyNetwork).set(NET_IDENTIFIERS_TABLE_REF, identifiersTable.getSUID());
+        if (cyNetwork != null) {
+            NetworkFields.IDENTIFIERS_TABLE_REF.setValue(cyNetwork.getRow(cyNetwork), identifiersTable.getSUID());
+        }
     }
 
     public List<CyEdge> getSelectedEdges() {

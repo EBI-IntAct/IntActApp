@@ -26,7 +26,7 @@ import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.EdgeDetailPanel
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.LegendDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.NodeDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.VersionPanel;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.utils.tables.ModelUtils;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;

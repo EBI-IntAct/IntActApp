@@ -5,7 +5,8 @@ import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.NodeFields;
 
 import java.awt.*;
 
@@ -22,7 +23,7 @@ public class MutationIntactStyle extends ExpandedIntactStyle {
 
     @Override
     protected void setNodeBorderPaintStyle() {
-        DiscreteMapping<Boolean, Paint> mutationToNodeBorder = (DiscreteMapping<Boolean, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.MUTATION, Boolean.class, BasicVisualLexicon.NODE_BORDER_PAINT);
+        DiscreteMapping<Boolean, Paint> mutationToNodeBorder = (DiscreteMapping<Boolean, Paint>) discreteFactory.createVisualMappingFunction(NodeFields.MUTATED.toString(), Boolean.class, BasicVisualLexicon.NODE_BORDER_PAINT);
         mutationToNodeBorder.putMapValue(true, mutatedColor);
 
         style.addVisualMappingFunction(mutationToNodeBorder);
@@ -31,7 +32,7 @@ public class MutationIntactStyle extends ExpandedIntactStyle {
 
     @Override
     protected void setNodeBorderWidth() {
-        DiscreteMapping<Boolean, Double> mutationToNodeBorderWidth = (DiscreteMapping<Boolean, Double>) discreteFactory.createVisualMappingFunction(ModelUtils.MUTATION, Boolean.class, BasicVisualLexicon.NODE_BORDER_WIDTH);
+        DiscreteMapping<Boolean, Double> mutationToNodeBorderWidth = (DiscreteMapping<Boolean, Double>) discreteFactory.createVisualMappingFunction(NodeFields.MUTATED.toString(), Boolean.class, BasicVisualLexicon.NODE_BORDER_WIDTH);
         mutationToNodeBorderWidth.putMapValue(true, 8.0);
         mutationToNodeBorderWidth.putMapValue(false, 0.0);
 
@@ -42,7 +43,7 @@ public class MutationIntactStyle extends ExpandedIntactStyle {
 
     @Override
     protected void setEdgePaintStyle() {
-        DiscreteMapping<Boolean, Paint> disruptedToNodeColor = (DiscreteMapping<Boolean, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.AFFECTED_BY_MUTATION, Boolean.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
+        DiscreteMapping<Boolean, Paint> disruptedToNodeColor = (DiscreteMapping<Boolean, Paint>) discreteFactory.createVisualMappingFunction(EdgeFields.AFFECTED_BY_MUTATION.toString(), Boolean.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
         disruptedToNodeColor.putMapValue(true, mutatedColor);
         disruptedToNodeColor.putMapValue(false, wildColor);
         style.addVisualMappingFunction(disruptedToNodeColor);
@@ -60,26 +61,12 @@ public class MutationIntactStyle extends ExpandedIntactStyle {
 
     @Override
     protected void setEdgeWidth() {
-        DiscreteMapping<Boolean, Double> disruptedToNodeBorderWidth = (DiscreteMapping<Boolean, Double>) discreteFactory.createVisualMappingFunction(ModelUtils.AFFECTED_BY_MUTATION, Boolean.class, BasicVisualLexicon.EDGE_WIDTH);
+        DiscreteMapping<Boolean, Double> disruptedToNodeBorderWidth = (DiscreteMapping<Boolean, Double>) discreteFactory.createVisualMappingFunction(EdgeFields.AFFECTED_BY_MUTATION.toString(), Boolean.class, BasicVisualLexicon.EDGE_WIDTH);
         disruptedToNodeBorderWidth.putMapValue(true, 4.0);
         disruptedToNodeBorderWidth.putMapValue(false, 1.0);
 
         style.addVisualMappingFunction(disruptedToNodeBorderWidth);
     }
-
-//    @Override
-//    protected void setEdgeSourceShape() {
-//        PassthroughMapping<String, ArrowShape> valueToSourceShape = (PassthroughMapping<String, ArrowShape>) passthroughFactory.createVisualMappingFunction(ModelUtils.SOURCE_SHAPE, String.class, BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE);
-//        style.setDefaultValue(BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE, ArrowShapeVisualProperty.NONE);
-//        style.addVisualMappingFunction(valueToSourceShape);
-//    }
-//
-//    @Override
-//    protected void setEdgeTargetShape() {
-//        PassthroughMapping<String, ArrowShape> valueToTargetShape = (PassthroughMapping<String, ArrowShape>) passthroughFactory.createVisualMappingFunction(ModelUtils.TARGET_SHAPE, String.class, BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE);
-//        style.setDefaultValue(BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE, ArrowShapeVisualProperty.NONE);
-//        style.addVisualMappingFunction(valueToTargetShape);
-//    }
 
     @Override
     public String getStyleName() {

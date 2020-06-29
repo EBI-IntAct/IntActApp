@@ -7,7 +7,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.query.AddTermsTask;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.utils.tables.ModelUtils;
 
 public class AddTermsTaskFactory extends AbstractNetworkTaskFactory
         implements NetworkViewTaskFactory {

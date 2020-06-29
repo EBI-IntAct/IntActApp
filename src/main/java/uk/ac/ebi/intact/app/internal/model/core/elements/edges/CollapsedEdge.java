@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.app.internal.model.core.elements.edges;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,7 +17,7 @@ public class CollapsedEdge extends Edge {
     CollapsedEdge(Network network, CyEdge edge) {
         super(network, edge);
         collapsed = true;
-        subEdgeSUIDs = new HashSet<>(edgeRow.getList(ModelUtils.C_INTACT_SUIDS, Long.class));
+        subEdgeSUIDs = new HashSet<>(EdgeFields.C_INTACT_SUIDS.getValue(edgeRow));
     }
 
     public Map<Long, EvidenceEdge> getSubEdges() {

@@ -18,8 +18,8 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.NodeFields;
 
 import java.awt.*;
 import java.util.Map;
@@ -92,7 +92,7 @@ public abstract class IntactStyle {
     }
 
     protected void setNodeShapeStyle() {
-        nodeTypeToShape = (DiscreteMapping<String, NodeShape>) discreteFactory.createVisualMappingFunction(ModelUtils.TYPE, String.class, BasicVisualLexicon.NODE_SHAPE);
+        nodeTypeToShape = (DiscreteMapping<String, NodeShape>) discreteFactory.createVisualMappingFunction(NodeFields.TYPE.toString(), String.class, BasicVisualLexicon.NODE_SHAPE);
         nodeTypeToShape.putAll(StyleMapper.nodeTypeToShape);
 
         style.addVisualMappingFunction(nodeTypeToShape);
@@ -113,7 +113,7 @@ public abstract class IntactStyle {
     }
 
     public void setNodePaintStyle() {
-        taxIdToNodeColor = (DiscreteMapping<Long, Paint>) discreteFactory.createVisualMappingFunction(ModelUtils.TAX_ID, Long.class, BasicVisualLexicon.NODE_FILL_COLOR);
+        taxIdToNodeColor = (DiscreteMapping<Long, Paint>) discreteFactory.createVisualMappingFunction(NodeFields.TAX_ID.toString(), Long.class, BasicVisualLexicon.NODE_FILL_COLOR);
         taxIdToNodeColor.putAll(StyleMapper.taxIdToPaint);
         style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, defaultNodeColor);
         style.addVisualMappingFunction(taxIdToNodeColor);
@@ -135,7 +135,7 @@ public abstract class IntactStyle {
             if (manager.utils.haveEnhancedGraphics()) {
 
                 fancyLabelsProperty = lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_3");
-                fancyLabelsMapping = (PassthroughMapping) passthroughFactory.createVisualMappingFunction(ModelUtils.ELABEL_STYLE, String.class, fancyLabelsProperty);
+                fancyLabelsMapping = (PassthroughMapping) passthroughFactory.createVisualMappingFunction(NodeFields.ELABEL_STYLE.toString(), String.class, fancyLabelsProperty);
                 style.addVisualMappingFunction(fancyLabelsMapping);
 
                 fancyLabelsPositionProperty = lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_POSITION_3");

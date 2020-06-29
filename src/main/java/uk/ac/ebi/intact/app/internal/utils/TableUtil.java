@@ -5,6 +5,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
+import uk.ac.ebi.intact.app.internal.utils.tables.fields.Field;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,19 +13,22 @@ import java.util.List;
 import static uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.SourceOntology.*;
 
 public class TableUtil {
-    public static <T> List<T> getColumnValuesOfEdges(CyTable table, String columnName, Class<? extends T> columnType, List<CyEdge> edges, T defaultValue) {
-        List<T> columnValues = new ArrayList<>();
+    public static <T> List<T> getFieldValuesOfEdges(CyTable table, Field<T> field, List<CyEdge> edges, T defaultValue) {
+        List<T> fieldValues = new ArrayList<>();
         for (CyEdge edge : edges) {
-            columnValues.add(table.getRow(edge.getSUID()).get(columnName, columnType, defaultValue));
+            T value = field.getValue(table.getRow(edge.getSUID()));
+            if (value == null) value = defaultValue;
+            fieldValues.add(value);
         }
-        return columnValues;
+        return fieldValues;
     }
 
-    public static NullAndNonNullEdges splitNullAndNonNullEdges(CyNetwork network, String filteredColumnName) {
+
+    public static NullAndNonNullEdges splitNullAndNonNullEdges(CyNetwork network, Field<String> keyFilter) {
         NullAndNonNullEdges result = new NullAndNonNullEdges();
 
         for (CyEdge edge : network.getEdgeList()) {
-            String value = network.getRow(edge).get(filteredColumnName, String.class);
+            String value = keyFilter.getValue(network.getRow(edge));
             if (value != null && !value.isBlank()) {
                 result.nonNullEdges.add(edge);
             } else {
@@ -39,25 +43,19 @@ public class TableUtil {
         public final List<CyEdge> nullEdges = new ArrayList<>();
     }
 
-    public static OntologyIdentifier getOntologyIdentifier(CyRow row, String miColumn, String modColumn, String parColumn) {
-        String mi = row.get(miColumn, String.class);
+    public static OntologyIdentifier getOntologyIdentifier(CyRow row, Field<String> miColumn, Field<String> modColumn, Field<String> parColumn) {
+        String mi = miColumn.getValue(row);
         if (mi != null && !mi.isBlank()) {
             return new OntologyIdentifier(mi, MI);
         } else {
-            String mod = row.get(modColumn, String.class);
+            String mod = modColumn.getValue(row);
             if (mod != null && !mod.isBlank()) {
                 return new OntologyIdentifier(mod, MOD);
             } else {
-                String par = row.get(parColumn, String.class);
+                String par = parColumn.getValue(row);
                 return new OntologyIdentifier(par, PAR);
             }
         }
-    }
-
-    public static OntologyIdentifier getOntologyIdentifier(String miID, String modID, String parID) {
-        if (modID != null && !modID.isBlank()) return new OntologyIdentifier(modID, MOD);
-        else if (miID != null && !miID.isBlank()) return new OntologyIdentifier(miID, MI);
-        else return new OntologyIdentifier(parID, PAR);
     }
 }
 

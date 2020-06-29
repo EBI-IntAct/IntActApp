@@ -2,7 +2,8 @@ package uk.ac.ebi.intact.app.internal.model.core.elements.edges;
 
 import org.cytoscape.model.CyEdge;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+
+import static uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields.*;
 
 public class EvidenceEdge extends Edge {
     public final String type;
@@ -19,16 +20,16 @@ public class EvidenceEdge extends Edge {
     EvidenceEdge(Network network, CyEdge edge) {
         super(network, edge);
         collapsed = false;
-        type = edgeRow.get(CyEdge.INTERACTION, String.class);
-        id = edgeRow.get(ModelUtils.INTACT_ID, Long.class);
-        ac = edgeRow.get(ModelUtils.INTACT_AC, String.class);
-        detectionMethod = edgeRow.get(ModelUtils.DETECTION_METHOD, String.class);
-        hostOrganism = edgeRow.get(ModelUtils.HOST_ORGANISM, String.class);
-        hostOrganismTaxId = edgeRow.get(ModelUtils.HOST_ORGANISM_ID, Long.class);
-        expansionType = edgeRow.get(ModelUtils.EXPANSION_TYPE, String.class);
-        sourceBiologicalRole = edgeRow.get(ModelUtils.SOURCE_BIOLOGICAL_ROLE, String.class);
-        targetBiologicalRole = edgeRow.get(ModelUtils.TARGET_BIOLOGICAL_ROLE, String.class);
-        pubMedId = edgeRow.get(ModelUtils.PUBMED_ID, String.class);
+        type = TYPE.getValue(edgeRow);
+        id = ID.getValue(edgeRow);
+        ac = AC.getValue(edgeRow);
+        detectionMethod = DETECTION_METHOD.getValue(edgeRow);
+        hostOrganism = HOST_ORGANISM.getValue(edgeRow);
+        hostOrganismTaxId = HOST_ORGANISM_ID.getValue(edgeRow);
+        expansionType = EXPANSION_TYPE.getValue(edgeRow);
+        sourceBiologicalRole = SOURCE_BIOLOGICAL_ROLE.getValue(edgeRow);
+        targetBiologicalRole = TARGET_BIOLOGICAL_ROLE.getValue(edgeRow);
+        pubMedId = PUBMED_ID.getValue(edgeRow);
     }
 
 
