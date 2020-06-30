@@ -17,6 +17,8 @@ public class Field<T> {
         NULL(""),
         INTACT("IntAct"),
         COLLAPSED("Collapsed"),
+        SOURCE("Source"),
+        TARGET("Target"),
         FEATURE("Feature"),
         IDENTIFIER("Identifier"),
         VIEW("View");
