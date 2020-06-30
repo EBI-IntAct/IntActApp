@@ -34,7 +34,7 @@ public class ReactomeIdentifierPanel extends IdentifierPanel {
         List<Term> terms = identifiers.stream()
                 .map(identifier -> {
                     Term term = reactomeTerms.get(identifier.id);
-                    term.qualifier = identifier.qualifier;
+                    if (term != null) term.qualifier = identifier.qualifier;
                     return term;
                 })
                 .collect(Collectors.toList());
