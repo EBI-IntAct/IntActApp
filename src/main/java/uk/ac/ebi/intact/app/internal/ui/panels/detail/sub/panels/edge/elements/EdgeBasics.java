@@ -51,7 +51,21 @@ public class EdgeBasics extends AbstractEdgeElement {
             ebiInfo.add(Box.createHorizontalGlue());
             content.add(ebiInfo);
         }
-        content.add(new JLabel("Detected with " + edge.detectionMethod));
+        {
+            LinePanel line = new LinePanel(backgroundColor);
+            line.add(new JLabel("Interaction detected with "));
+            line.add(new JLink(edge.interactionDetectionMethod, edge.interactionDetectionMethodMIId.getUserAccessURL(), openBrowser));
+            line.add(Box.createHorizontalGlue());
+            content.add(line);
+        }
+        {
+            LinePanel line = new LinePanel(backgroundColor);
+            line.add(new JLabel("Participants detected with "));
+            line.add(new JLink(edge.participantDetectionMethod, edge.participantDetectionMethodMIId.getUserAccessURL(), openBrowser));
+            line.add(Box.createHorizontalGlue());
+            content.add(line);
+        }
+
         if (edge.expansionType != null && !edge.expansionType.isEmpty()) {
             content.add(new JLabel("Expanded with a " + edge.expansionType));
         }

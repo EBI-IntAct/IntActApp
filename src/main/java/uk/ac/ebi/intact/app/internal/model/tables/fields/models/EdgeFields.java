@@ -17,8 +17,10 @@ public class EdgeFields {
     public static final Field<String> HOST_ORGANISM = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Host organism", "host_organism", String.class);
     public static final Field<Long> HOST_ORGANISM_ID = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Host organism taxon id", "host_organism_tax_id", Long.class);
     public static final Field<String> PUBMED_ID = new Field<>(Table.EDGE, Field.Namespace.INTACT, "PubMed Id", "pubmed_id", String.class);
-    public static final Field<String> DETECTION_METHOD = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Detection method", "interaction_detection_method", String.class);
-    public static final Field<String> DETECTION_METHOD_MI_ID = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Detection method MI Id", "interaction_detection_method_mi_identifier", String.class);
+    public static final Field<String> INTERACTION_DETECTION_METHOD = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Interaction detection method", "interaction_detection_method", String.class);
+    public static final Field<String> INTERACTION_DETECTION_METHOD_MI_ID = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Interaction detection method MI Id", "interaction_detection_method_mi_identifier", String.class);
+    public static final Field<String> PARTICIPANT_DETECTION_METHOD = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Participant detection method", "participant_detection_method", String.class);
+    public static final Field<String> PARTICIPANT_DETECTION_METHOD_MI_ID = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Participant detection method MI Id", "participant_detection_method_mi_identifier", String.class);
     public static final Field<Boolean> AFFECTED_BY_MUTATION = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Affected by mutation", null, Boolean.class, false);
 
     public static final Field<Boolean> C_IS_COLLAPSED = new Field<>(Table.EDGE, Field.Namespace.INTACT, "is collapsed", null, Boolean.class, false);

@@ -54,7 +54,8 @@ public class NetworkView {
         filters.add(new NodeSpeciesFilter(this));
 
         filters.add(new EdgeMIScoreFilter(this));
-        filters.add(new EdgeDetectionMethodFilter(this));
+        filters.add(new EdgeInteractionDetectionMethodFilter(this));
+        filters.add(new EdgeParticipantDetectionMethodFilter(this));
         filters.add(new EdgeHostOrganismFilter(this));
         filters.add(new EdgeExpansionTypeFilter(this));
         filters.add(new EdgeTypeFilter(this));
