@@ -326,15 +326,16 @@ public class ModelUtils {
         CyRow networkRow = cyNetwork.getDefaultNetworkTable().getRow(cyNetwork.getSUID());
         Manager manager = network.getManager();
         CyTableManager tableManager = manager.utils.getService(CyTableManager.class);
-        Long identifiersSUID = NetworkFields.IDENTIFIERS_TABLE_REF.getValue(networkRow);
 
-        if (identifiersSUID != null) {
-            network.setIdentifiersTable(tableManager.getTable(identifiersSUID));
-            network.setFeaturesTable(tableManager.getTable(NetworkFields.FEATURES_TABLE_REF.getValue(networkRow)));
-        } else {
-            System.out.println("Identifiers and features SUID not found");
-        }
+        Long identifiersSUID = NetworkFields.IDENTIFIERS_TABLE_REF.getValue(networkRow);
+        if (identifiersSUID != null) network.setIdentifiersTable(tableManager.getTable(identifiersSUID));
+        else System.out.println("Identifiers SUID not found");
+
+        Long featuresSUID = NetworkFields.FEATURES_TABLE_REF.getValue(networkRow);
+        if (featuresSUID != null) network.setFeaturesTable(tableManager.getTable(featuresSUID));
+        else System.out.println("Features SUID not found");
     }
+
 
     public static void buildSubTablesForSubIntactNetwork(Network subNetwork, Network parentNetwork) {
         Manager manager = subNetwork.getManager();
