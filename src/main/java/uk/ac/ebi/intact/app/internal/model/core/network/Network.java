@@ -19,18 +19,16 @@ import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.IntactStyle;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.NetworkFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NetworkFields;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.NodeFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NodeFields;
 
 import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import static uk.ac.ebi.intact.app.internal.utils.tables.ModelUtils.*;
 
 public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
     ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
@@ -274,7 +272,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
                 }
                 EdgeFields.SOURCE_FEATURES.setValue(summaryEdgeRow, new ArrayList<>(sourceFeatures));
                 EdgeFields.TARGET_FEATURES.setValue(summaryEdgeRow, new ArrayList<>(targetFeatures));
-                EdgeFields.NAME.setValue(summaryEdgeRow, getName(cyNetwork, couple.node1) + " (interact with) " + getName(cyNetwork, couple.node2));
+                EdgeFields.NAME.setValue(summaryEdgeRow, TableUtil.getName(cyNetwork, couple.node1) + " (interact with) " + TableUtil.getName(cyNetwork, couple.node2));
 
                 CyRow firstEdgeRow = cyNetwork.getRow(similarEdges.get(0));
                 EdgeFields.MI_SCORE.setValue(summaryEdgeRow, EdgeFields.MI_SCORE.getValue(firstEdgeRow));

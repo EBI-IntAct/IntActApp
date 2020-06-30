@@ -26,16 +26,16 @@ import uk.ac.ebi.intact.app.internal.model.events.IntactViewChangedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.IntactViewTypeChangedListener;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.CollapsedIntactStyle;
-import uk.ac.ebi.intact.app.internal.utils.tables.ModelUtils;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.FeatureFields;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.IdentifierFields;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.NetworkFields;
+import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.FeatureFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.IdentifierFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NetworkFields;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static uk.ac.ebi.intact.app.internal.utils.tables.ModelUtils.*;
+import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.*;
 
 public class DataManager implements
         SessionLoadedListener,

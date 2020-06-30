@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.app.internal.utils.tables;
+package uk.ac.ebi.intact.app.internal.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.*;
@@ -7,15 +7,15 @@ import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.utils.TableUtil;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.Field;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.*;
+import uk.ac.ebi.intact.app.internal.model.tables.Table;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.Field;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static uk.ac.ebi.intact.app.internal.utils.TableUtil.*;
 
 public class ModelUtils {
-
 
     public static List<CyNode> augmentNetworkFromJSON(Manager manager, Network network, Map<String, CyNode> idToNode, Map<String, String> idToName, List<CyEdge> newEdges, JsonNode json) {
         return loadJSON(manager, network, network.getCyNetwork(), idToNode, idToName, newEdges, json);
@@ -32,65 +32,6 @@ public class ModelUtils {
         return columns != null && columns.size() > 0;
     }
 
-    public static void createColumnIfNeeded(CyTable table, Class<?> clazz, String columnName) {
-        if (table.getColumn(columnName) != null)
-            return;
-        table.createColumn(columnName, clazz, false);
-    }
-
-    public static <T> void createColumnIfNeeded(CyTable table, Class<T> clazz, String columnName, T defaultValue) {
-        if (table.getColumn(columnName) != null)
-            return;
-        table.createColumn(columnName, clazz, false, defaultValue);
-    }
-
-    public static void replaceColumnIfNeeded(CyTable table, Class<?> clazz, String columnName) {
-        if (table.getColumn(columnName) != null)
-            table.deleteColumn(columnName);
-
-        table.createColumn(columnName, clazz, false);
-    }
-
-    public static void createListColumnIfNeeded(CyTable table, Class<?> clazz, String columnName) {
-        if (table.getColumn(columnName) != null)
-            return;
-
-        table.createListColumn(columnName, clazz, false);
-    }
-
-    public static void replaceListColumnIfNeeded(CyTable table, Class<?> clazz, String columnName) {
-        if (table.getColumn(columnName) != null)
-            table.deleteColumn(columnName);
-
-        table.createListColumn(columnName, clazz, false);
-    }
-
-    public static void deleteColumnIfExisting(CyTable table, String columnName) {
-        if (table.getColumn(columnName) != null)
-            table.deleteColumn(columnName);
-    }
-
-    public static String getName(CyNetwork network, CyIdentifiable ident) {
-        return getString(network, ident, CyNetwork.NAME);
-    }
-
-    public static String getString(CyNetwork network, CyIdentifiable ident, String column) {
-        if (network.getRow(ident, CyNetwork.DEFAULT_ATTRS) != null)
-            return network.getRow(ident, CyNetwork.DEFAULT_ATTRS).get(column, String.class);
-        return null;
-    }
-
-
-    public static void copyRow(CyTable fromTable, CyTable toTable, java.io.Serializable fromPrimaryKey, java.io.Serializable toPrimaryKey, Set<String> fieldsToExclude) {
-        Map<String, Class<?>> fromColumnNames = fromTable.getColumns().stream().filter(column -> !fieldsToExclude.contains(column.getName())).collect(Collectors.toMap(CyColumn::getName, CyColumn::getType));
-        Map<String, Class<?>> toColumnNames = toTable.getColumns().stream().filter(column -> !fieldsToExclude.contains(column.getName())).collect(Collectors.toMap(CyColumn::getName, CyColumn::getType));
-        if (!toColumnNames.keySet().containsAll(fromColumnNames.keySet())) return;
-        if (fromTable.getPrimaryKey().getType() != fromPrimaryKey.getClass()) return;
-        if (toTable.getPrimaryKey().getType() != toPrimaryKey.getClass()) return;
-        CyRow fromRow = fromTable.getRow(fromPrimaryKey);
-        CyRow toRow = toTable.getRow(toPrimaryKey);
-        fromColumnNames.forEach((columnName, type) -> toRow.set(columnName, type != List.class ? fromRow.get(columnName, type) : fromRow.getList(columnName, fromTable.getColumn(columnName).getListElementType())));
-    }
 
     /////////////////////////////////////////////////////////////////////
 
@@ -221,7 +162,6 @@ public class ModelUtils {
                 }
             });
         }
-
 
         List<String> jsonKeysSorted = new ArrayList<>(columnToType.keySet());
         Collections.sort(jsonKeysSorted);
@@ -372,7 +312,7 @@ public class ModelUtils {
 
                 Table.FEATURE.setRowFromJson(featureRow, feature);
 
-                OntologyIdentifier featureTypeId = TableUtil.getOntologyIdentifier(featureRow, FeatureFields.TYPE_MI_ID, FeatureFields.TYPE_MOD_ID, FeatureFields.TYPE_PAR_ID);
+                OntologyIdentifier featureTypeId = getOntologyIdentifier(featureRow, FeatureFields.TYPE_MI_ID, FeatureFields.TYPE_MOD_ID, FeatureFields.TYPE_PAR_ID);
                 if (featureTypeId.id != null && FeatureClassifier.mutation.contains(featureTypeId)) {
                     NodeFields.MUTATED.setValue(network.getRow(participantNode), true);
                     EdgeFields.AFFECTED_BY_MUTATION.setValue(edgeRow, true);

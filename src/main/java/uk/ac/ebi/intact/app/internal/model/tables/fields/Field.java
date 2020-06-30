@@ -1,11 +1,11 @@
-package uk.ac.ebi.intact.app.internal.utils.tables.fields;
+package uk.ac.ebi.intact.app.internal.model.tables.fields;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import uk.ac.ebi.intact.app.internal.utils.tables.ModelUtils;
-import uk.ac.ebi.intact.app.internal.utils.tables.Table;
+import uk.ac.ebi.intact.app.internal.utils.TableUtil;
+import uk.ac.ebi.intact.app.internal.model.tables.Table;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -61,8 +61,8 @@ public class Field<T> {
     }
 
     public void createColumn(CyTable table) {
-        if (defaultValue == null) ModelUtils.createColumnIfNeeded(table, type, toString());
-        else ModelUtils.createColumnIfNeeded(table, type, toString(), defaultValue);
+        if (defaultValue == null) TableUtil.createColumnIfNeeded(table, type, toString());
+        else TableUtil.createColumnIfNeeded(table, type, toString(), defaultValue);
     }
 
     public void setValueFromJson(CyRow row, JsonNode json) {

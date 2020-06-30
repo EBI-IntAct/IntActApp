@@ -2,7 +2,7 @@ package uk.ac.ebi.intact.app.internal.ui.panels.filters;
 
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.filters.BooleanFilter;
-import uk.ac.ebi.intact.app.internal.ui.components.ToggleSwitch;
+import uk.ac.ebi.intact.app.internal.ui.components.buttons.ToggleSwitch;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

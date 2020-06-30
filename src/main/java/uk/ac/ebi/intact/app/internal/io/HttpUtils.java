@@ -69,7 +69,6 @@ public class HttpUtils {
 
     }
 
-
     public static String getStringArguments(Map<String, String> args) {
         StringBuilder s = null;
         try {

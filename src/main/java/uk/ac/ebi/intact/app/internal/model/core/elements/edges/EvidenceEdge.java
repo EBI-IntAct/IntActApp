@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.app.internal.model.core.elements.edges;
 import org.cytoscape.model.CyEdge;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 
-import static uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields.*;
+import static uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields.*;
 
 public class EvidenceEdge extends Edge {
     public final String type;

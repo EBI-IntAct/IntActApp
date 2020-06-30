@@ -1,10 +1,10 @@
-package uk.ac.ebi.intact.app.internal.utils.tables;
+package uk.ac.ebi.intact.app.internal.model.tables;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.Field;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.ListField;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.Field;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.ListField;
 
 import java.util.*;
 

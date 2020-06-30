@@ -16,7 +16,7 @@ import uk.ac.ebi.intact.app.internal.model.filters.node.NodeSpeciesFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.NetworkFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NetworkFields;
 
 import java.util.*;
 import java.util.stream.Collectors;

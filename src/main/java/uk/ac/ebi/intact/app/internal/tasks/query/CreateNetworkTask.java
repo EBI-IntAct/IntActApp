@@ -11,9 +11,9 @@ import org.cytoscape.work.*;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.utils.tables.ModelUtils;
+import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
 
 import java.time.Duration;
 import java.time.Instant;

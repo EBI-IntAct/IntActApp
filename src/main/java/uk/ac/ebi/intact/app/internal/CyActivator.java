@@ -28,7 +28,7 @@ import uk.ac.ebi.intact.app.internal.tasks.version.factories.VersionTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.CollapseViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.ExpandViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.MutationViewTaskFactory;
-import uk.ac.ebi.intact.app.internal.utils.tables.ModelUtils;
+import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
 import java.util.Properties;
 

@@ -6,7 +6,7 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.FeatureFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.FeatureFields;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.app.internal.ui.components;
+package uk.ac.ebi.intact.app.internal.ui.components.buttons;
 
 import javax.swing.*;
 import java.awt.*;

@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.app.internal.model.core.elements.edges;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
 
 import java.util.HashMap;
 import java.util.HashSet;

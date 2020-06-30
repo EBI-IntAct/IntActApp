@@ -1,10 +1,10 @@
-package uk.ac.ebi.intact.app.internal.utils.tables.fields.models;
+package uk.ac.ebi.intact.app.internal.model.tables.fields.models;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import uk.ac.ebi.intact.app.internal.utils.tables.Table;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.Field;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.ListField;
+import uk.ac.ebi.intact.app.internal.model.tables.Table;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.Field;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.ListField;
 
 public class EdgeFields {
     public static final Field<Long> SUID = new Field<>(Table.EDGE, Field.Namespace.NULL, CyEdge.SUID, null, Long.class);

@@ -5,8 +5,8 @@ import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.NodeFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NodeFields;
 
 import java.awt.*;
 

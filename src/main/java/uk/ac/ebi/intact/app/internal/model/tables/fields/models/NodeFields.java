@@ -1,9 +1,9 @@
-package uk.ac.ebi.intact.app.internal.utils.tables.fields.models;
+package uk.ac.ebi.intact.app.internal.model.tables.fields.models;
 
 import org.cytoscape.model.CyNetwork;
-import uk.ac.ebi.intact.app.internal.utils.tables.Table;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.Field;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.ListField;
+import uk.ac.ebi.intact.app.internal.model.tables.Table;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.Field;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.ListField;
 
 public class NodeFields {
     public static final Field<String> AC = new Field<>(Table.NODE, Field.Namespace.INTACT, "AC", "id", String.class);

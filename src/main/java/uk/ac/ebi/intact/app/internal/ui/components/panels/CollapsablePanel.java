@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.components.panels;
 
-import uk.ac.ebi.intact.app.internal.ui.components.CollapseAllButton;
+import uk.ac.ebi.intact.app.internal.ui.components.buttons.CollapseAllButton;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 
 import javax.swing.*;

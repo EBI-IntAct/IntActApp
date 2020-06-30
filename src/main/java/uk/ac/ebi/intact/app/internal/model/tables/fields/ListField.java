@@ -1,10 +1,10 @@
-package uk.ac.ebi.intact.app.internal.utils.tables.fields;
+package uk.ac.ebi.intact.app.internal.model.tables.fields;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import uk.ac.ebi.intact.app.internal.utils.tables.ModelUtils;
-import uk.ac.ebi.intact.app.internal.utils.tables.Table;
+import uk.ac.ebi.intact.app.internal.utils.TableUtil;
+import uk.ac.ebi.intact.app.internal.model.tables.Table;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class ListField<E> extends Field<List<E>> {
 
     @Override
     public void createColumn(CyTable table) {
-        ModelUtils.createListColumnIfNeeded(table, elementsType, toString());
+        TableUtil.createListColumnIfNeeded(table, elementsType, toString());
     }
 
     public void addValue(CyRow row, E value) {

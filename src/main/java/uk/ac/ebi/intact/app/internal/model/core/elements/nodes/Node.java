@@ -18,7 +18,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
-import static uk.ac.ebi.intact.app.internal.utils.tables.fields.models.NodeFields.*;
+import static uk.ac.ebi.intact.app.internal.model.tables.fields.models.NodeFields.*;
 
 public class Node extends Interactor implements Comparable<Interactor>, Element {
     public final Network network;

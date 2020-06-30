@@ -7,12 +7,12 @@ import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
 
 import java.util.*;
 
-import static uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields.SOURCE_FEATURES;
-import static uk.ac.ebi.intact.app.internal.utils.tables.fields.models.EdgeFields.TARGET_FEATURES;
+import static uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields.SOURCE_FEATURES;
+import static uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields.TARGET_FEATURES;
 
 public abstract class Edge implements Element {
     public final Network network;
