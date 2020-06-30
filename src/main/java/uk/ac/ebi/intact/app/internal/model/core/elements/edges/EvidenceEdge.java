@@ -19,7 +19,13 @@ public class EvidenceEdge extends Edge {
     public final String expansionType;
     public final String pubMedId;
     public final String sourceBiologicalRole;
+    public final OntologyIdentifier sourceBiologicalRoleMIId;
+    public final String sourceExperimentalRole;
+    public final OntologyIdentifier sourceExperimentalRoleMIId;
     public final String targetBiologicalRole;
+    public final OntologyIdentifier targetBiologicalRoleMIId;
+    public final String targetExperimentalRole;
+    public final OntologyIdentifier targetExperimentalRoleMIId;
     public final long hostOrganismTaxId;
     public final long id;
 
@@ -36,8 +42,21 @@ public class EvidenceEdge extends Edge {
         hostOrganism = HOST_ORGANISM.getValue(edgeRow);
         hostOrganismTaxId = HOST_ORGANISM_ID.getValue(edgeRow);
         expansionType = EXPANSION_TYPE.getValue(edgeRow);
-        sourceBiologicalRole = SOURCE_BIOLOGICAL_ROLE.getValue(edgeRow);
-        targetBiologicalRole = TARGET_BIOLOGICAL_ROLE.getValue(edgeRow);
+        {
+            sourceBiologicalRole = SOURCE_BIOLOGICAL_ROLE.getValue(edgeRow);
+            sourceBiologicalRoleMIId = new OntologyIdentifier(SOURCE_BIOLOGICAL_ROLE_MI_ID.getValue(edgeRow), SourceOntology.MI);
+
+            sourceExperimentalRole = SOURCE_EXPERIMENTAL_ROLE.getValue(edgeRow);
+            sourceExperimentalRoleMIId = new OntologyIdentifier(SOURCE_EXPERIMENTAL_ROLE_MI_ID.getValue(edgeRow), SourceOntology.MI);
+        }
+        {
+            targetBiologicalRole = TARGET_BIOLOGICAL_ROLE.getValue(edgeRow);
+            targetBiologicalRoleMIId = new OntologyIdentifier(TARGET_BIOLOGICAL_ROLE_MI_ID.getValue(edgeRow), SourceOntology.MI);
+
+            targetExperimentalRole = TARGET_EXPERIMENTAL_ROLE.getValue(edgeRow);
+            targetExperimentalRoleMIId = new OntologyIdentifier(TARGET_EXPERIMENTAL_ROLE_MI_ID.getValue(edgeRow), SourceOntology.MI);
+        }
+
         pubMedId = PUBMED_ID.getValue(edgeRow);
         collapsed = false;
     }

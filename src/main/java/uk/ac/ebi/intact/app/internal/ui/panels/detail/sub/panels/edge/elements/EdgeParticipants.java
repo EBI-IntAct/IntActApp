@@ -7,7 +7,10 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
 import uk.ac.ebi.intact.app.internal.ui.components.diagrams.NodeDiagram;
+import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
+import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeBasics;
 import uk.ac.ebi.intact.app.internal.model.styles.CollapsedIntactStyle;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
@@ -72,6 +75,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
         createPanel(edge);
         Map<Node, List<Feature>> features = edge.getFeatures();
         for (Node iNode : List.of(edge.source, edge.target)) {
+
             JPanel nodePanel = iNode == edge.source ? sourcePanel : targetPanel;
             EasyGBC layoutHelper = new EasyGBC();
             nodePanel.setBackground(nodePanelBg);
@@ -81,12 +85,17 @@ public class EdgeParticipants extends AbstractEdgeElement {
             nodeBasics.setBackground(nodePanelBg);
             nodePanel.add(nodeBasics, layoutHelper.down().anchor("north").expandHoriz());
 
-            String biologicalRole = StringUtils.capitalize(iNode == edge.source ? edge.sourceBiologicalRole : edge.targetBiologicalRole);
-            JLabel biologicalRoleLabel = new JLabel("Biological role : " + biologicalRole);
-            biologicalRoleLabel.setBackground(nodePanelBg);
-            biologicalRoleLabel.setOpaque(true);
-            biologicalRoleLabel.setAlignmentY(Component.TOP_ALIGNMENT);
-            nodePanel.add(biologicalRoleLabel, layoutHelper.down().anchor("north").expandHoriz());
+            nodePanel.add(new ParticipantInfoPanel("Biological role : ",
+                            iNode == edge.source ? edge.sourceBiologicalRole : edge.targetBiologicalRole,
+                            iNode == edge.source ? edge.sourceBiologicalRoleMIId : edge.targetBiologicalRoleMIId),
+                    layoutHelper.down().anchor("north").expandHoriz()
+            );
+
+            nodePanel.add(new ParticipantInfoPanel("Experimental role : ",
+                            iNode == edge.source ? edge.sourceExperimentalRole : edge.targetExperimentalRole,
+                            iNode == edge.source ? edge.sourceExperimentalRoleMIId : edge.targetExperimentalRoleMIId),
+                    layoutHelper.down().anchor("north").expandHoriz()
+            );
 
             NodeFeatures nodeFeatures = new NodeFeatures(iNode, features.get(iNode), openBrowser, false, null, nodePanelBg);
             nodePanel.add(nodeFeatures, layoutHelper.down().anchor("north").expandHoriz());
@@ -95,6 +104,22 @@ public class EdgeParticipants extends AbstractEdgeElement {
         }
 
         content.add(new EdgeDiagram(StyleMapper.edgeTypeToPaint.get(edge.type), 4, edge.expansionType != null && !edge.expansionType.isBlank()));
+    }
+
+    private class ParticipantInfoPanel extends LinePanel {
+        public ParticipantInfoPanel(String infoType, String infoValue, OntologyIdentifier infoID) {
+            super(nodePanelBg);
+            setOpaque(true);
+            setAlignmentY(Component.TOP_ALIGNMENT);
+            JLabel typeLabel = new JLabel(StringUtils.capitalize(infoType));
+            typeLabel.setBackground(nodePanelBg);
+            typeLabel.setOpaque(true);
+            add(typeLabel);
+            JLink valueLink = new JLink(infoValue, infoID.getUserAccessURL(), openBrowser);
+            valueLink.setBackground(nodePanelBg);
+            valueLink.setOpaque(true);
+            add(valueLink);
+        }
     }
 
     private static final Map<Node, NodeDiagramInfo> nodeDiagramInfos = new HashMap<>();

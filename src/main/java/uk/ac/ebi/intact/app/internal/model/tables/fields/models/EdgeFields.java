@@ -32,9 +32,13 @@ public class EdgeFields {
 
     public static final Field<String> SOURCE_BIOLOGICAL_ROLE = new Field<>(Table.EDGE, Field.Namespace.SOURCE, "Source biological role", null, String.class);
     public static final Field<String> SOURCE_BIOLOGICAL_ROLE_MI_ID = new Field<>(Table.EDGE, Field.Namespace.SOURCE, "Source biological role MI Id", null, String.class);
+    public static final Field<String> SOURCE_EXPERIMENTAL_ROLE = new Field<>(Table.EDGE, Field.Namespace.SOURCE, "Source experimental role", null, String.class);
+    public static final Field<String> SOURCE_EXPERIMENTAL_ROLE_MI_ID = new Field<>(Table.EDGE, Field.Namespace.SOURCE, "Source experimental role MI Id", null, String.class);
     public static final ListField<String> SOURCE_FEATURES = new ListField<>(Table.EDGE, Field.Namespace.SOURCE, "Source features", String.class);
 
     public static final Field<String> TARGET_BIOLOGICAL_ROLE = new Field<>(Table.EDGE, Field.Namespace.TARGET, "Target biological role", null, String.class);
     public static final Field<String> TARGET_BIOLOGICAL_ROLE_MI_ID = new Field<>(Table.EDGE, Field.Namespace.TARGET, "Target biological role MI Id", null, String.class);
+    public static final Field<String> TARGET_EXPERIMENTAL_ROLE = new Field<>(Table.EDGE, Field.Namespace.SOURCE, "Target experimental role", null, String.class);
+    public static final Field<String> TARGET_EXPERIMENTAL_ROLE_MI_ID = new Field<>(Table.EDGE, Field.Namespace.SOURCE, "Target experimental role MI Id", null, String.class);
     public static final ListField<String> TARGET_FEATURES = new ListField<>(Table.EDGE, Field.Namespace.TARGET, "Target features", String.class);
 }

@@ -275,21 +275,27 @@ public class ModelUtils {
     }
 
     private enum Position {
-        SOURCE(EdgeFields.SOURCE_BIOLOGICAL_ROLE, EdgeFields.SOURCE_BIOLOGICAL_ROLE_MI_ID),
-        TARGET(EdgeFields.TARGET_BIOLOGICAL_ROLE, EdgeFields.TARGET_BIOLOGICAL_ROLE_MI_ID);
+        SOURCE(EdgeFields.SOURCE_BIOLOGICAL_ROLE, EdgeFields.SOURCE_BIOLOGICAL_ROLE_MI_ID, EdgeFields.SOURCE_EXPERIMENTAL_ROLE, EdgeFields.SOURCE_EXPERIMENTAL_ROLE_MI_ID),
+        TARGET(EdgeFields.TARGET_BIOLOGICAL_ROLE, EdgeFields.TARGET_BIOLOGICAL_ROLE_MI_ID, EdgeFields.TARGET_EXPERIMENTAL_ROLE, EdgeFields.TARGET_EXPERIMENTAL_ROLE_MI_ID);
 
         final Field<String> biologicalRole;
         final Field<String> biologicalRoleMIId;
+        final Field<String> experimentalRole;
+        final Field<String> experimentalRoleMIId;
 
-        Position(Field<String> biologicalRole, Field<String> biologicalRoleMIId) {
+        Position(Field<String> biologicalRole, Field<String> biologicalRoleMIId, Field<String> experimentalRole, Field<String> experimentalRoleMIId) {
             this.biologicalRole = biologicalRole;
             this.biologicalRoleMIId = biologicalRoleMIId;
+            this.experimentalRole = experimentalRole;
+            this.experimentalRoleMIId = experimentalRoleMIId;
         }
     }
 
     private static void fillParticipantData(CyTable featuresTable, CyNetwork network, JsonNode participantJson, CyNode participantNode, CyEdge edge, CyRow edgeRow, Long edgeId, Position position) {
         position.biologicalRole.setValue(edgeRow, participantJson.get("participant_biological_role_name").textValue());
         position.biologicalRoleMIId.setValue(edgeRow, participantJson.get("participant_biological_role_mi_identifier").textValue());
+        position.experimentalRole.setValue(edgeRow, participantJson.get("participant_experimental_role_name").textValue());
+        position.experimentalRoleMIId.setValue(edgeRow, participantJson.get("participant_experimental_role_mi_identifier").textValue());
         for (JsonNode feature : participantJson.get("participant_features")) {
             if (!feature.get("feature_type").isNull()) {
                 String featureAc = feature.get("feature_ac").textValue();
