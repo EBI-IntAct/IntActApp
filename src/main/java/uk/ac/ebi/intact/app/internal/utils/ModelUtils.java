@@ -89,7 +89,7 @@ public class ModelUtils {
                 identifiersTable = tableFactory.createTable("Identifiers of " + networkName, IdentifierFields.AC.toString(), String.class, true, true);
             }
 
-            initTables(network, cyNetwork, defaultNodeTable, defaultEdgeTable, tableManager, featuresTable, identifiersTable);
+            initTables(network, cyNetwork, cyNetwork.getDefaultNetworkTable(), defaultNodeTable, defaultEdgeTable, tableManager, featuresTable, identifiersTable);
 
             JsonNode nodesJSON = json.get("nodes");
             JsonNode edgesJSON = json.get("edges");
@@ -114,15 +114,15 @@ public class ModelUtils {
         return new ArrayList<>();
     }
 
-    private static void initTables(Network network, CyNetwork cyNetwork, CyTable nodeTable, CyTable edgeTable, CyTableManager tableManager, CyTable featuresTable, CyTable xRefsTable) {
-        Table.NETWORK.initTable(cyNetwork.getDefaultNetworkTable());
+    private static void initTables(Network network, CyNetwork cyNetwork, CyTable networkTable, CyTable nodeTable, CyTable edgeTable, CyTableManager tableManager, CyTable featuresTable, CyTable xRefsTable) {
+        System.out.println(NetworkFields.UUID); //Do not suppress: Allow NetworkFields to be loaded and so to populate Table.NETWORK.fields
+        Table.NETWORK.initTable(networkTable);
         Table.NODE.initTable(nodeTable);
         Table.EDGE.initTable(edgeTable);
-        initLowerTables(network, cyNetwork, tableManager, featuresTable, xRefsTable);
+        initLowerTables(network, cyNetwork, tableManager, networkTable, featuresTable, xRefsTable);
     }
 
-    private static void initLowerTables(Network network, CyNetwork cyNetwork, CyTableManager tableManager, CyTable featuresTable, CyTable identifiersTable) {
-        CyTable networkTable = cyNetwork.getDefaultNetworkTable();
+    private static void initLowerTables(Network network, CyNetwork cyNetwork, CyTableManager tableManager, CyTable networkTable, CyTable featuresTable, CyTable identifiersTable) {
         CyRow networkRow = networkTable.getRow(cyNetwork.getSUID());
         String uuid = UUID.randomUUID().toString();
         NetworkFields.UUID.setValue(networkRow, uuid);
@@ -351,11 +351,12 @@ public class ModelUtils {
         CyTable featuresTable = tableFactory.createTable("Features of " + subNetwork.toString(), FeatureFields.AC.toString(), String.class, true, true);
         CyTable identifiersTable = tableFactory.createTable("Identifiers of " + subNetwork.toString(), IdentifierFields.AC.toString(), String.class, true, true);
 
-        initLowerTables(subNetwork, subNetwork.getCyNetwork(), tableManager, featuresTable, identifiersTable);
+        CyNetwork cyNetwork = subNetwork.getCyNetwork();
+        initLowerTables(subNetwork, cyNetwork, tableManager, cyNetwork.getDefaultNetworkTable(), featuresTable, identifiersTable);
 
         // Copy included features
         Set<String> featuresAcsToAdd = new HashSet<>();
-        CyTable edgeTable = subNetwork.getCyNetwork().getDefaultEdgeTable();
+        CyTable edgeTable = cyNetwork.getDefaultEdgeTable();
         EdgeFields.SOURCE_FEATURES.getColumn(edgeTable).getValues(List.class).forEach(list -> {
             if (list != null) ((List<?>) list).forEach(o -> featuresAcsToAdd.add((String) o));
         });
@@ -368,7 +369,7 @@ public class ModelUtils {
         }
 
         // Copy included identifiers
-        CyTable nodeTable = subNetwork.getCyNetwork().getDefaultNodeTable();
+        CyTable nodeTable = cyNetwork.getDefaultNodeTable();
         Set<String> identifierAcsToAdd = new HashSet<>();
         NodeFields.IDENTIFIERS.getColumn(nodeTable).getValues(List.class).forEach(list -> {
             if (list != null) ((List<?>) list).forEach(o -> identifierAcsToAdd.add((String) o));
