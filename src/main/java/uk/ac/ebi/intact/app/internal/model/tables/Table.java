@@ -20,7 +20,9 @@ public enum Table {
 
 
     Table(String... keysToIgnore) {
-        this.keysToIgnore.addAll(Arrays.asList(keysToIgnore));
+        List<String> keys = Arrays.asList(keysToIgnore);
+        this.keysToIgnore.addAll(keys);
+        Field.keys.addAll(keys);
     }
 
 
