@@ -2,26 +2,28 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
-import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
-import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
-import uk.ac.ebi.intact.app.internal.tasks.view.factories.ExpandViewTaskFactory;
-import uk.ac.ebi.intact.app.internal.ui.utils.LinkUtils;
-import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.ExpandViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
+import uk.ac.ebi.intact.app.internal.ui.utils.LinkUtils;
+import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -33,6 +35,7 @@ public class NodeFeatures extends AbstractNodeElement {
     private final List<Feature> features;
     private final boolean showFeatureEdge;
     private final CollapsedEdge summaryEdge;
+    private Map<FeatureClassifier.FeatureClass, List<Feature>> classification;
 
     public NodeFeatures(Node iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, CollapsedEdge summaryEdge) {
         this(iNode, features, openBrowser, showFeatureEdge, summaryEdge, backgroundColor);
@@ -55,10 +58,10 @@ public class NodeFeatures extends AbstractNodeElement {
     }
 
     private void fillReportedFeatures() {
-        Map<FeatureClassifier.FeatureClass, List<Feature>> classification = FeatureClassifier.classify(features);
+        classification = FeatureClassifier.classify(features);
         boolean empty = true;
         for (FeatureClassifier.FeatureClass featureClass : FeatureClassifier.root) {
-            CollapsablePanel featurePanel = recursivelyBuildFeatures(classification, featureClass);
+            CollapsablePanel featurePanel = recursivelyBuildFeatures(featureClass);
             if (featurePanel != null) {
                 empty = false;
                 content.add(featurePanel);
@@ -70,12 +73,12 @@ public class NodeFeatures extends AbstractNodeElement {
 
     }
 
-    private CollapsablePanel recursivelyBuildFeatures(Map<FeatureClassifier.FeatureClass, List<Feature>> classification, FeatureClassifier.FeatureClass featureClass) {
+    private CollapsablePanel recursivelyBuildFeatures(FeatureClassifier.FeatureClass featureClass) {
         if (featureClass instanceof FeatureClassifier.InnerFeatureClass) {
             FeatureClassifier.InnerFeatureClass innerFeatureClass = (FeatureClassifier.InnerFeatureClass) featureClass;
             List<CollapsablePanel> subFeaturePanels = new ArrayList<>();
             for (FeatureClassifier.FeatureClass subFeatureClass : innerFeatureClass.subClasses) {
-                CollapsablePanel subFeaturePanel = recursivelyBuildFeatures(classification, subFeatureClass);
+                CollapsablePanel subFeaturePanel = recursivelyBuildFeatures(subFeatureClass);
                 if (subFeaturePanel != null) {
                     subFeaturePanels.add(subFeaturePanel);
                 }
@@ -88,7 +91,7 @@ public class NodeFeatures extends AbstractNodeElement {
                 for (CollapsablePanel subFeaturePanel : subFeaturePanels) {
                     featureListPanel.add(subFeaturePanel);
                 }
-                return new CollapsablePanel(innerFeatureClass.name, featureListPanel, false);
+                return new CollapsablePanel(getFeaturePanelTitle(featureClass), featureListPanel, false);
             }
             return null;
         } else if (classification.containsKey(featureClass)) {
@@ -96,7 +99,20 @@ public class NodeFeatures extends AbstractNodeElement {
         } else {
             return null;
         }
+    }
 
+    private String getFeaturePanelTitle(FeatureClassifier.FeatureClass featureClass) {
+        return String.format("%s (%d)", featureClass.name, getFeatureCount(featureClass));
+    }
+
+    private int getFeatureCount(FeatureClassifier.FeatureClass featureClass) {
+        if (featureClass instanceof FeatureClassifier.InnerFeatureClass) {
+            FeatureClassifier.InnerFeatureClass innerFeatureClass = (FeatureClassifier.InnerFeatureClass) featureClass;
+            return innerFeatureClass.subClasses.stream().mapToInt(this::getFeatureCount).sum();
+        } else {
+            if (classification.containsKey(featureClass)) return classification.get(featureClass).size();
+            return 0;
+        }
     }
 
     private CollapsablePanel createFeatureList(FeatureClassifier.FeatureClass featureClass, List<Feature> features) {
@@ -140,7 +156,7 @@ public class NodeFeatures extends AbstractNodeElement {
             }
         }
 
-        return new CollapsablePanel(featureClass.name, featureListPanel, true);
+        return new CollapsablePanel(getFeaturePanelTitle(featureClass), featureListPanel, true);
     }
 
     public static Map<EvidenceEdge, List<SelectEdgeButton>> edgeToCheckBoxes = new HashMap<>();
