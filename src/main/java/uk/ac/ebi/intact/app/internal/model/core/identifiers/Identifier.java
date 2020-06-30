@@ -2,11 +2,11 @@ package uk.ac.ebi.intact.app.internal.model.core.identifiers;
 
 import org.cytoscape.model.CyRow;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
-import uk.ac.ebi.intact.app.internal.utils.tables.fields.models.IdentifierFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.IdentifierFields;
 
 import java.util.Objects;
 
-public class Identifier {
+public class Identifier implements Comparable<Identifier> {
     public final String databaseName;
     public final OntologyIdentifier databaseIdentifier;
     public final String id;
@@ -43,6 +43,15 @@ public class Identifier {
     @Override
     public String toString() {
         return id + " from " + databaseName;
+    }
+
+    @Override
+    public int compareTo(Identifier o) {
+        int score = 0;
+        if (qualifier != null && qualifier.equals("identity")) score--;
+        if (o.qualifier != null && o.qualifier.equals("identity")) score++;
+        if (score == 0) return id.compareTo(o.id);
+        return score;
     }
 }
 

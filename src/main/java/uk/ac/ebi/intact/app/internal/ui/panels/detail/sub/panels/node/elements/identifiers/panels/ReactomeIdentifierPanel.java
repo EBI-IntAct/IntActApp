@@ -32,11 +32,15 @@ public class ReactomeIdentifierPanel extends IdentifierPanel {
                     }
                 });
         List<Term> terms = identifiers.stream()
-                .map(identifier -> reactomeTerms.get(identifier.id))
+                .map(identifier -> {
+                    Term term = reactomeTerms.get(identifier.id);
+                    term.qualifier = identifier.qualifier;
+                    return term;
+                })
                 .collect(Collectors.toList());
         GroupUtils.groupElementsByMultipleKeysInPanel(content, terms, term -> term.topLevelPathways, (toFill, topLevelSubPathways) -> {
             for (Term term : topLevelSubPathways) {
-                JLink termLink = new JLink(String.format("%s - %s", term.id, term.name), "https://reactome.org/content/detail/" + term.id, openBrowser);
+                JLink termLink = new JLink(String.format("%s - %s", term.id, term.name), "https://reactome.org/content/detail/" + term.id, openBrowser,term.qualifier != null && term.qualifier.equals("identity"));
                 toFill.add(termLink);
             }
         });
@@ -47,6 +51,7 @@ public class ReactomeIdentifierPanel extends IdentifierPanel {
         final String id;
         final String name;
         final Set<String> topLevelPathways;
+        String qualifier;
 
         public Term(JsonNode reactomeAncestors) {
             JsonNode currentPathway = reactomeAncestors.get(0);

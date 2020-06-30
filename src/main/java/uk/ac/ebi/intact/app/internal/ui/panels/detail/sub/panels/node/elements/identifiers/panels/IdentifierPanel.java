@@ -28,7 +28,7 @@ public class IdentifierPanel extends CollapsablePanel {
 
     protected void fillContent() {
         for (Identifier identifier : identifiers) {
-            addContent(new JLink(identifier.id, DbIdentifiersToLink.getLink(identifier), openBrowser));
+            addContent(new JLink(identifier.id, DbIdentifiersToLink.getLink(identifier), openBrowser, identifier.qualifier != null && identifier.qualifier.equals("identity")));
         }
     }
 }

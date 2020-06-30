@@ -1,14 +1,15 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.identifiers;
 
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.core.identifiers.Identifier;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.Identifier;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.AbstractNodeElement;
-import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.identifiers.panels.IdentifierPanelFactory;
+import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,8 +38,8 @@ public class NodeIdentifiers extends AbstractNodeElement {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        for (List<Identifier> identifiersOfDB : dbToIdentifiers.values()) {
-            content.add(IdentifierPanelFactory.createPanel(identifiersOfDB, openBrowser));
-        }
+        dbToIdentifiers.values().stream()
+                .sorted(Comparator.comparing(identifiersOfDb -> identifiersOfDb.get(0).databaseName))
+                .forEach(identifiersOfDb -> content.add(IdentifierPanelFactory.createPanel(identifiersOfDb, openBrowser)));
     }
 }
