@@ -312,7 +312,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
                             .filter(termTable -> termTable.includeAll)
                             .map(termTable -> termTable.term)
                             .collect(toList()),
-                    includeNonAmbiguousTerms
+                    !includeNonAmbiguousTerms
             );
             missingInteractors.values().forEach(interactorsToQuery::addAll);
             termTables.stream()
