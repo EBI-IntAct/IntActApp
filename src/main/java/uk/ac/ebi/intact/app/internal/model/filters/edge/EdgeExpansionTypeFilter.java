@@ -1,17 +1,16 @@
 package uk.ac.ebi.intact.app.internal.model.filters.edge;
 
-import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
-import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.filters.BooleanFilter;
 
-public class EdgeExpansionTypeFilter extends DiscreteFilter<EvidenceEdge> {
-
+public class EdgeExpansionTypeFilter extends BooleanFilter<EvidenceEdge> {
     public EdgeExpansionTypeFilter(NetworkView view) {
-        super(view, EvidenceEdge.class, "Expansion type");
+        super(view, EvidenceEdge.class, "Expansion", "Hide spoke expanded");
     }
 
     @Override
-    public String getPropertyValue(EvidenceEdge element) {
-        return element.expansionType != null ? element.expansionType : "not expanded";
+    public boolean isToHide(EvidenceEdge element) {
+        return element.expansionType != null && element.expansionType.equals("spoke expansion");
     }
 }
