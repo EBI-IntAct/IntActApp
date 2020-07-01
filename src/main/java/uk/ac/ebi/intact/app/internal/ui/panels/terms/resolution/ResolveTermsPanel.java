@@ -38,7 +38,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     public static final Color HEADER_CELLS_COLOR = new Color(104, 41, 124);
     final Manager manager;
     final EasyGBC layoutHelper = new EasyGBC();
-    final boolean includeNonAmbiguousTerms;
+    final boolean fuzzySearch;
     final boolean selectedByDefault;
 
     Network network;
@@ -75,17 +75,17 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         this(manager, network, true, true);
     }
 
-    public ResolveTermsPanel(final Manager manager, Network network, boolean selectedByDefault, boolean includeNonAmbiguousTerms) {
+    public ResolveTermsPanel(final Manager manager, Network network, boolean selectedByDefault, boolean fuzzySearch) {
         super(new GridBagLayout());
         this.manager = manager;
         this.network = network;
         this.selectedByDefault = selectedByDefault;
-        this.includeNonAmbiguousTerms = includeNonAmbiguousTerms;
+        this.fuzzySearch = fuzzySearch;
         init();
     }
 
     private void init() {
-        if (includeNonAmbiguousTerms) {
+        if (fuzzySearch) {
             add(new CenteredLabel("The terms you have given matches all these interactors.", 15, HEADER_CELLS_COLOR), layoutHelper.expandHoriz());
             add(new CenteredLabel("Select interactors you want to use as seeds to build the cyNetwork around", 14, HEADER_CELLS_COLOR), layoutHelper.down().expandHoriz());
         } else {
@@ -164,7 +164,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         c.anchor("west");
         displayPanel.setBackground(Color.WHITE);
         network.getInteractorsToResolve().forEach((term, interactors) -> {
-            if (includeNonAmbiguousTerms || interactors.size() > 1) {
+            if (fuzzySearch || interactors.size() > 1) {
                 TermTable termTable = new TermTable(this, term, interactors, network.getTotalInteractors().get(term));
                 termTables.add(termTable);
                 displayPanel.add(termTable, c.down().expandHoriz());
@@ -316,7 +316,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
                             .filter(termTable -> termTable.includeAll)
                             .map(termTable -> termTable.term)
                             .collect(toList()),
-                    !includeNonAmbiguousTerms
+                    !fuzzySearch
             );
             missingInteractors.values().forEach(interactorsToQuery::addAll);
             termTables.stream()
