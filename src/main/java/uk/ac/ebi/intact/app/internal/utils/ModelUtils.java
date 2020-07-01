@@ -70,6 +70,10 @@ public class ModelUtils {
     }
 
     public static List<CyNode> loadJSON(Manager manager, Network network, CyNetwork cyNetwork, Map<String, CyNode> idToNode, Map<String, String> idToName, List<CyEdge> newEdges, JsonNode json) {
+        if (json == null) {
+            manager.utils.error("IntAct servers did not respond");
+            return new ArrayList<>();
+        }
         try {
             CyTable defaultNodeTable = cyNetwork.getDefaultNodeTable();
             CyTable defaultEdgeTable = cyNetwork.getDefaultEdgeTable();

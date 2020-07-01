@@ -59,6 +59,7 @@ public class HttpUtils {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + data.toString());
             return new ObjectMapper().readTree(response.body());
 
         } catch (Exception e) {
