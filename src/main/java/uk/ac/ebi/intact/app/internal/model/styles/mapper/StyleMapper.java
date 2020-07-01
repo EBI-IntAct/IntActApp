@@ -252,7 +252,9 @@ public class StyleMapper {
     }
 
     private static <T> void setChildrenValues(Map<String, T> mapToFill, String parentLabel, T parentValue, Map<String, List<String>> parentToChildLabelMap) {
-        String jsonQuery = SourceOntology.MI.getDescendantsURL(typesToIds.get(parentLabel));
+        String id = typesToIds.get(parentLabel);
+        if (id == null) return;
+        String jsonQuery = SourceOntology.MI.getDescendantsURL(id);
 
         try {
             boolean hasNext = true;
