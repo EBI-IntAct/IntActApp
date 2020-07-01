@@ -201,6 +201,10 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
 
         scrollPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, tableCornerPanel);
 
+        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+        verticalScrollBar.setUnitIncrement(2);
+        verticalScrollBar.setBlockIncrement(5);
+
         HorizontalFiller corner = new HorizontalFiller();
         corner.setBorder(BorderFactory.createMatteBorder(2, 1, 0, 1, Color.WHITE));
         scrollPane.setCorner(JScrollPane.LOWER_LEFT_CORNER, corner);
