@@ -14,7 +14,7 @@ public class Manager {
 //    public static final String INTACT_GRAPH_WS = INTACT_WEBSERVICES + "graph/";
 //    public static final String INTACT_INTERACTOR_WS = "http://127.0.0.1:8081/intact/ws/interactor/";
     public static final String INTACT_INTERACTOR_WS = INTACT_WEBSERVICES + "interactor/";
-    public static final String INTACT_INTERACTION_WS = "http://127.0.0.1:8082/intact/ws/interaction/";
+    public static final String INTACT_INTERACTION_WS = INTACT_WEBSERVICES + "interaction/";
 
 
     public final CytoUtils utils;
