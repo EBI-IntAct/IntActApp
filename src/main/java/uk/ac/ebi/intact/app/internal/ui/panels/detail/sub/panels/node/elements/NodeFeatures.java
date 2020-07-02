@@ -118,7 +118,7 @@ public class NodeFeatures extends AbstractNodeElement {
     private int getFeatureCount(FeatureClassifier.FeatureClass featureClass) {
         if (featureClass instanceof FeatureClassifier.InnerFeatureClass) {
             FeatureClassifier.InnerFeatureClass innerFeatureClass = (FeatureClassifier.InnerFeatureClass) featureClass;
-            return innerFeatureClass.subClasses.stream().mapToInt(this::getFeatureCount).sum();
+            return innerFeatureClass.subClasses.stream().mapToInt(this::getFeatureCount).sum() + getFeatureCount(innerFeatureClass.nonDefinedLeaf);
         } else {
             if (classification.containsKey(featureClass)) return classification.get(featureClass).size();
             return 0;
