@@ -15,8 +15,8 @@ public class CollapseViewTask extends AbstractHiderTask {
     @Override
     public void run(TaskMonitor taskMonitor) {
         collapseEdgesIfNeeded();
-        if (chosenView != null && chosenView.getType() != NetworkView.Type.COLLAPSED) {
-            manager.data.intactViewChanged(NetworkView.Type.COLLAPSED, chosenView);
+        if (chosenView != null && chosenView.getType() != NetworkView.Type.SUMMARY) {
+            manager.data.intactViewChanged(NetworkView.Type.SUMMARY, chosenView);
         }
     }
 }

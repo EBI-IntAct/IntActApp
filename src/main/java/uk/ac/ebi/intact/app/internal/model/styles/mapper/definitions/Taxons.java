@@ -6,13 +6,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public enum Taxons {
-    D_MELANOGASTER(7227L, "Drosophila melanogaster", true, new Color(50, 147, 143)),
-    C_ELEGANS(6239L, "Caenorhabditis elegans", true, new Color(74, 147, 121)),
+    D_MELANOGASTER(7227L, "Drosophila melanogaster", true, new Color(59, 148, 144)),
+    C_ELEGANS(6239L, "Caenorhabditis elegans", true, new Color(55, 109, 104)),
     H_SAPIENS(9606L, "Homo sapiens", true, new Color(51, 94, 148)),
-    M_MUSCULUS(10090L, "Mus musculus", true, new Color(28, 67, 156)),
-    A_THALIANA(3702L, "Arabidopsis thaliana", true, new Color(46, 93, 46)),
-    S_CEREVISIAE(4932L, "Saccharomyces cerevisiae", true, new Color(174, 125, 52)),
-    E_COLI(562L, "Escherichia coli", true, new Color(137, 51, 54)),
+    M_MUSCULUS(10090L, "Mus musculus", true, new Color(49, 51, 110)),
+    A_THALIANA(3702L, "Arabidopsis thaliana", true, new Color(60, 115, 60)),
+    S_CEREVISIAE(4932L, "Saccharomyces cerevisiae", true, new Color(174, 131, 67)),
+    E_COLI(562L, "Escherichia coli", true, new Color(140, 60, 63)),
 
     CHEMICAL_SYNTHESIS(-2L, "Chemical Synthesis", true, new Color(141, 102, 102)),
 

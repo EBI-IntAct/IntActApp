@@ -5,9 +5,9 @@ import org.cytoscape.work.TaskIterator;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.view.CollapseViewTask;
 
-public class CollapseViewTaskFactory extends AbstractHiderTaskFactory {
+public class SummaryViewTaskFactory extends AbstractHiderTaskFactory {
 
-    public CollapseViewTaskFactory(Manager manager, boolean currentView) {
+    public SummaryViewTaskFactory(Manager manager, boolean currentView) {
         super(manager, currentView);
     }
 

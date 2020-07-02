@@ -2,7 +2,7 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.elements;
 
 import org.cytoscape.util.swing.OpenBrowser;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
@@ -21,14 +21,14 @@ public class EdgeBasics extends AbstractEdgeElement {
         fillContent();
     }
 
-    protected void fillCollapsedEdgeContent(CollapsedEdge edge) {
+    protected void fillSummaryEdgeContent(SummaryEdge edge) {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
-        VerticalPanel collapsedEdgesPanel = new VerticalPanel(backgroundColor);
-        for (EvidenceEdge iEEdge : edge.getSubEdges().values()) {
-            collapsedEdgesPanel.add(LinkUtils.createIntactEdgeLink(openBrowser, iEEdge));
+        VerticalPanel summaryEdgesPanel = new VerticalPanel(backgroundColor);
+        for (EvidenceEdge evidenceEdge : edge.getSubEdges().values()) {
+            summaryEdgesPanel.add(LinkUtils.createIntactEdgeLink(openBrowser, evidenceEdge));
         }
-        CollapsablePanel collapsablePanel = new CollapsablePanel("Collapsed edges (" + edge.subEdgeSUIDs.size() + ")", collapsedEdgesPanel, true);
+        CollapsablePanel collapsablePanel = new CollapsablePanel("Summarized edges (" + edge.subEdgeSUIDs.size() + ")", summaryEdgesPanel, true);
         collapsablePanel.setAlignmentX(LEFT_ALIGNMENT);
         content.add(collapsablePanel);
     }
@@ -54,14 +54,14 @@ public class EdgeBasics extends AbstractEdgeElement {
         {
             LinePanel line = new LinePanel(backgroundColor);
             line.add(new JLabel("Interaction detected with "));
-            line.add(new JLink(edge.interactionDetectionMethod, edge.interactionDetectionMethodMIId.getUserAccessURL(), openBrowser));
+            line.add(LinkUtils.createCVTermLink(openBrowser, edge.interactionDetectionMethod));
             line.add(Box.createHorizontalGlue());
             content.add(line);
         }
         {
             LinePanel line = new LinePanel(backgroundColor);
             line.add(new JLabel("Participants detected with "));
-            line.add(new JLink(edge.participantDetectionMethod, edge.participantDetectionMethodMIId.getUserAccessURL(), openBrowser));
+            line.add(LinkUtils.createCVTermLink(openBrowser, edge.participantDetectionMethod));
             line.add(Box.createHorizontalGlue());
             content.add(line);
         }
@@ -72,7 +72,7 @@ public class EdgeBasics extends AbstractEdgeElement {
         if (edge.pubMedId != null && !edge.pubMedId.isEmpty()) {
             LinePanel publication = new LinePanel(backgroundColor);
             publication.add(new JLabel("Described in "));
-            publication.add(new JLink("PubMed - " + edge.pubMedId, "https://www.ncbi.nlm.nih.gov/pubmed/" + edge.pubMedId, openBrowser));
+            publication.add(new JLink("European PMC - " + edge.pubMedId, "https://europepmc.org/search?query=" + edge.pubMedId, openBrowser));
             publication.add(Box.createHorizontalGlue());
             content.add(publication);
         }

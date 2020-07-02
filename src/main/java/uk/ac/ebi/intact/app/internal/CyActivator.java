@@ -25,8 +25,8 @@ import uk.ac.ebi.intact.app.internal.tasks.query.factories.FuzzySearchTaskFactor
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ExactQueryTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.settings.SettingsTask;
 import uk.ac.ebi.intact.app.internal.tasks.version.factories.VersionTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.view.factories.CollapseViewTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.view.factories.ExpandViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.MutationViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
@@ -74,7 +74,7 @@ public class CyActivator extends AbstractCyActivator {
         }
 
         {
-            CollapseViewTaskFactory collapseViewTaskFactory = new CollapseViewTaskFactory(manager, false);
+            SummaryViewTaskFactory summaryViewTaskFactory = new SummaryViewTaskFactory(manager, false);
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
             properties.setProperty(COMMAND, "collapse");
@@ -83,10 +83,10 @@ public class CyActivator extends AbstractCyActivator {
             properties.setProperty(TITLE, "Collapse");
             properties.setProperty(MENU_GRAVITY, "1.0");
             properties.setProperty(IN_MENU_BAR, "true");
-            registerService(bc, collapseViewTaskFactory, TaskFactory.class, properties);
+            registerService(bc, summaryViewTaskFactory, TaskFactory.class, properties);
         }
         {
-            ExpandViewTaskFactory expendTaskFactory = new ExpandViewTaskFactory(manager, false);
+            EvidenceViewTaskFactory expendTaskFactory = new EvidenceViewTaskFactory(manager, false);
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
             properties.setProperty(COMMAND, "expand");

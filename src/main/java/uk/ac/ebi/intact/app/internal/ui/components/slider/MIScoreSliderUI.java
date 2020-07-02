@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.components.slider;
 
-import uk.ac.ebi.intact.app.internal.model.styles.CollapsedIntactStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
 import uk.ac.ebi.intact.app.internal.ui.utils.PaintUtils;
 
 import java.awt.*;
@@ -12,20 +12,20 @@ import java.awt.geom.Point2D;
  */
 public class MIScoreSliderUI extends RangeSliderUI {
 
-    public static Color[] colors = new Color[(CollapsedIntactStyle.colors.length - 1) * 2 - 1];
-    public static float[] floats = new float[(CollapsedIntactStyle.colors.length - 1) * 2 - 1];
+    public static Color[] colors = new Color[(SummaryStyle.colors.length - 1) * 2 - 1];
+    public static float[] floats = new float[(SummaryStyle.colors.length - 1) * 2 - 1];
 
     public MIScoreSliderUI(RangeSlider b) {
         super(b);
     }
 
     static {
-        for (int i = 0; i < CollapsedIntactStyle.colors.length - 1; i++) {
-            Color color = CollapsedIntactStyle.colors[i];
+        for (int i = 0; i < SummaryStyle.colors.length - 1; i++) {
+            Color color = SummaryStyle.colors[i];
             colors[2 * i] = color;
             floats[2 * i] = (i / 10.0f);
-            if (i < CollapsedIntactStyle.colors.length - 2) {
-                colors[2 * i + 1] = CollapsedIntactStyle.colors[i + 1];
+            if (i < SummaryStyle.colors.length - 2) {
+                colors[2 * i + 1] = SummaryStyle.colors[i + 1];
                 floats[2 * i + 1] = (i / 10.0f) + 0.001f;
             }
         }

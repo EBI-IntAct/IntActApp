@@ -1,7 +1,6 @@
 package uk.ac.ebi.intact.app.internal.model.styles;
 
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
@@ -15,16 +14,16 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
-import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
-import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NodeFields;
+import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 
 import java.awt.*;
 import java.util.Map;
 
-public abstract class IntactStyle {
+public abstract class Style {
     public static final Color defaultNodeColor = new Color(157, 177, 128);
     protected VisualStyle style;
     protected Manager manager;
@@ -45,7 +44,7 @@ public abstract class IntactStyle {
     private static VisualProperty fancyLabelsPositionProperty;
     private static Object fancyLabelsPositionValue;
 
-    public IntactStyle(Manager manager) {
+    public Style(Manager manager) {
         this.manager = manager;
         vmm = manager.utils.getService(VisualMappingManager.class);
         eventHelper = manager.utils.getService(CyEventHelper.class);
@@ -131,7 +130,7 @@ public abstract class IntactStyle {
     private void setNodeLabel() {
         if (fastLabelsMapping == null) {
             VisualLexicon lex = manager.utils.getService(RenderingEngineManager.class).getDefaultVisualLexicon();
-            fastLabelsMapping = (PassthroughMapping<String, String>) passthroughFactory.createVisualMappingFunction(CyNetwork.NAME, String.class, BasicVisualLexicon.NODE_LABEL);
+            fastLabelsMapping = (PassthroughMapping<String, String>) passthroughFactory.createVisualMappingFunction(NodeFields.NAME.toString(), String.class, BasicVisualLexicon.NODE_LABEL);
             if (manager.utils.haveEnhancedGraphics()) {
 
                 fancyLabelsProperty = lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_3");

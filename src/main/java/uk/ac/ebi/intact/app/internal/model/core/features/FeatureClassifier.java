@@ -41,7 +41,7 @@ public class FeatureClassifier {
     }
 
     public static Map<FeatureClass, List<Feature>> classify(Collection<Feature> features) {
-        return CollectionUtils.groupBy(features, feature -> recursiveFinder(feature.typeIdentifier, root));
+        return CollectionUtils.groupBy(features, feature -> recursiveFinder(feature.type.id, root));
     }
 
     private static FeatureClass recursiveFinder(OntologyIdentifier idToFind, Collection<FeatureClass> searchInto) {

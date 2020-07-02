@@ -25,7 +25,7 @@ import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedListener;
 import uk.ac.ebi.intact.app.internal.model.events.IntactViewChangedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.IntactViewTypeChangedListener;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.styles.CollapsedIntactStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.FeatureFields;
@@ -125,7 +125,7 @@ public class DataManager implements
                 .createNetworkView(cyNetwork);
         if (networkMap.containsKey(cyNetwork)) {
             networkMap.get(cyNetwork).hideExpandedEdgesOnViewCreation(view);
-            manager.style.intactStyles.get(CollapsedIntactStyle.type).applyStyle(view);
+            manager.style.intactStyles.get(SummaryStyle.type).applyStyle(view);
         }
         return view;
     }
@@ -241,26 +241,26 @@ public class DataManager implements
         return edgeMapping;
     }
 
-    void linkCollapsedEdgesIdsToSUIDs(CyTableMetadata tableM, Map<CyNetwork, Map<Long, Long>> edgeMapping) {
+    void linkSummaryEdgesIdsToSUIDs(CyTableMetadata tableM, Map<CyNetwork, Map<Long, Long>> edgeMapping) {
         CyTable edgeTable = tableM.getTable();
-        CyColumn collapsedIntactIdsColumn = EdgeFields.C_INTACT_IDS.getColumn(edgeTable);
-        if (collapsedIntactIdsColumn == null) return;
+        CyColumn summarizedEdgesIdColumn = EdgeFields.SUMMARY_EDGES_ID.getColumn(edgeTable);
+        if (summarizedEdgesIdColumn == null) return;
 
         Map<Long, Long> networkEdgeMapping = edgeMapping.get(rootNetworkManager.getRootNetwork(tableM.getNetwork()).getSubNetworkList().get(0));
         if (networkEdgeMapping == null) return;
 
         for (CyRow row : edgeTable.getAllRows()) {
-            List<Long> ids = EdgeFields.C_INTACT_IDS.getValue(row);
+            List<Long> ids = EdgeFields.SUMMARY_EDGES_ID.getValue(row);
             if (ids == null) continue;
             List<Long> list = ids.stream().filter(Objects::nonNull).map(networkEdgeMapping::get).collect(Collectors.toList());
-            EdgeFields.C_INTACT_SUIDS.setValue(row, list);
+            EdgeFields.SUMMARY_EDGES_SUID.setValue(row, list);
         }
     }
 
 
     void linkIntactTablesToNetwork(Collection<CyTableMetadata> tables, Map<CyNetwork, Map<Long, Long>> edgeMapping) {
         for (CyTableMetadata tableM : tables) {
-            linkCollapsedEdgesIdsToSUIDs(tableM, edgeMapping);
+            linkSummaryEdgesIdsToSUIDs(tableM, edgeMapping);
             CyTable table = tableM.getTable();
             CyColumn networkUUIDColumn = NetworkFields.UUID.getColumn(table);
             if (networkUUIDColumn == null) continue;

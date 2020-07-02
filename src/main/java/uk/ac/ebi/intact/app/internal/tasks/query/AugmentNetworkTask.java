@@ -34,7 +34,7 @@ public class AugmentNetworkTask extends AbstractTask {
         Map<String, CyNode> idToNode = new HashMap<>();
         Map<String, String> idToName = new HashMap<>();
         network.getINodes().forEach(node -> {
-            idToNode.put(node.ac, node.node);
+            idToNode.put(node.ac, node.cyNode);
             idToName.put(node.ac, node.name);
         });
 

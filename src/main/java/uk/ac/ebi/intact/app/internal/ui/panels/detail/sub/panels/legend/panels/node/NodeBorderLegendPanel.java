@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.styles.MutationIntactStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.MutationStyle;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.shapes.Ball;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.AbstractLegendPanel;
@@ -20,7 +20,7 @@ public class NodeBorderLegendPanel extends AbstractLegendPanel {
         linePanel.setBackground(AbstractDetailPanel.backgroundColor);
 
         Ball mutated = new Ball(Color.lightGray, 30);
-        mutated.setBorderColor(MutationIntactStyle.mutatedColor);
+        mutated.setBorderColor(MutationStyle.mutatedColor);
         mutated.setBorderThickness(4);
         linePanel.add(mutated);
         JLabel label = new JLabel("Mutated  interactor");

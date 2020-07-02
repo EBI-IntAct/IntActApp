@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.elements;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.ui.utils.GroupUtils;
@@ -20,7 +20,7 @@ public class EdgeAnnotations extends AbstractEdgeElement {
     }
 
     @Override
-    protected void fillCollapsedEdgeContent(CollapsedEdge edge) {
+    protected void fillSummaryEdgeContent(SummaryEdge edge) {
     }
 
     @Override

@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge;
 
-import uk.ac.ebi.intact.app.internal.model.styles.CollapsedIntactStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.ContinuousColorLegend;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.ContinuousEdgeWidthLegend;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
@@ -12,8 +12,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-public class CollapsedEdgeLegendPanel extends AbstractEdgeLegendPanel {
-    public CollapsedEdgeLegendPanel() {
+public class SummaryEdgeLegendPanel extends AbstractEdgeLegendPanel {
+    public SummaryEdgeLegendPanel() {
         super();
         add(createEdgeColorPanel(), layoutHelper.down().anchor("west").expandHoriz());
         add(createEdgeWidthPanel(), layoutHelper.down().anchor("west").expandHoriz());
@@ -39,7 +39,7 @@ public class CollapsedEdgeLegendPanel extends AbstractEdgeLegendPanel {
         {
             EasyGBC d = new EasyGBC();
             edgeWidthPanel.setBackground(AbstractDetailPanel.backgroundColor);
-            ContinuousEdgeWidthLegend edgeWidthLegend = new ContinuousEdgeWidthLegend(CollapsedIntactStyle.edgeWidth1, CollapsedIntactStyle.edgeWidth2, CollapsedIntactStyle.edgeWidthValue1, CollapsedIntactStyle.edgeWidthValue2);
+            ContinuousEdgeWidthLegend edgeWidthLegend = new ContinuousEdgeWidthLegend(SummaryStyle.edgeWidth1, SummaryStyle.edgeWidth2, SummaryStyle.edgeWidthValue1, SummaryStyle.edgeWidthValue2);
             edgeWidthLegend.setBackground(AbstractDetailPanel.backgroundColor);
             edgeWidthLegend.setBorder(new EmptyBorder(5, 0, 0, 15));
             edgeWidthPanel.add(edgeWidthLegend, d.down().anchor("west").expandHoriz());

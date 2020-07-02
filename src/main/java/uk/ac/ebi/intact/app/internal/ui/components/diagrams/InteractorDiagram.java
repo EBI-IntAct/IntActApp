@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.app.internal.ui.components.diagrams;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLabel2D;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.model.events.StyleUpdatedListener;
-import uk.ac.ebi.intact.app.internal.model.styles.IntactStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.shapes.AbstractNodeShape;
 import uk.ac.ebi.intact.app.internal.ui.utils.StyleUtils;
@@ -32,7 +32,7 @@ public class InteractorDiagram extends JPanel implements StyleUpdatedListener {
             label.setStroke(5);
             this.add(label);
         }
-        shape = StyleUtils.nodeTypeToShape(interactor.type, IntactStyle.defaultNodeColor, 50);
+        shape = StyleUtils.nodeTypeToShape(interactor.type, Style.defaultNodeColor, 50);
         shapePanel.add(shape, BorderLayout.CENTER);
         StyleMapper.addStyleUpdatedListener(this);
         updateStyle();

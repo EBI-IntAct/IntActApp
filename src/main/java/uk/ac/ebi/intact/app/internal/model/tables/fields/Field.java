@@ -16,7 +16,7 @@ public class Field<T> {
     public enum Namespace {
         NULL(""),
         INTACT("IntAct"),
-        COLLAPSED("Collapsed"),
+        SUMMARY("Summary"),
         SOURCE("Source"),
         TARGET("Target"),
         FEATURE("Feature"),

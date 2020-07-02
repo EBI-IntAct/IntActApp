@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 
@@ -34,8 +34,8 @@ public abstract class Filter<T extends Element> {
 
     @JsonIgnore
     public boolean isEnabled() {
-        if (elementType == CollapsedEdge.class && view.getType() != NetworkView.Type.COLLAPSED) return false;
-        if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.COLLAPSED) return false;
+        if (elementType == SummaryEdge.class && view.getType() != NetworkView.Type.SUMMARY) return false;
+        if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.SUMMARY) return false;
         return true;
     }
 

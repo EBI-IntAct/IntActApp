@@ -4,9 +4,9 @@ import org.cytoscape.work.TaskIterator;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.view.ExpandViewTask;
 
-public class ExpandViewTaskFactory extends AbstractHiderTaskFactory {
+public class EvidenceViewTaskFactory extends AbstractHiderTaskFactory {
 
-    public ExpandViewTaskFactory(Manager manager, boolean currentView) {
+    public EvidenceViewTaskFactory(Manager manager, boolean currentView) {
         super(manager, currentView);
     }
 

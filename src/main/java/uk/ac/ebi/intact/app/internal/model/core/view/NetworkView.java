@@ -27,7 +27,7 @@ public class NetworkView {
     public final transient Manager manager;
     public final transient Network network;
     public final transient CyNetworkView cyView;
-    private Type type = Type.COLLAPSED;
+    private Type type = Type.SUMMARY;
     public final transient Set<Node> visibleNodes = new HashSet<>();
     public final transient Set<Edge> visibleEdges = new HashSet<>();
     private final List<Filter<?>> filters = new ArrayList<>();
@@ -115,7 +115,7 @@ public class NetworkView {
         visibleEdges.clear();
 
         List<Node> nodesToFilter = network.getINodes();
-        List<? extends Edge> edgesToFilter = (getType() == Type.COLLAPSED) ? network.getCollapsedIEdges() : network.getEvidenceIEdges();
+        List<? extends Edge> edgesToFilter = (getType() == Type.SUMMARY) ? network.getSummaryEdges() : network.getEvidenceEdges();
 
         visibleNodes.addAll(nodesToFilter);
         visibleEdges.addAll(edgesToFilter);
@@ -125,12 +125,12 @@ public class NetworkView {
         }
 
         nodesToFilter.removeAll(visibleNodes);
-        nodesToFilter.forEach(nodeToHide -> cyView.getNodeView(nodeToHide.node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false));
-        visibleNodes.forEach(nodeToHide -> cyView.getNodeView(nodeToHide.node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true));
+        nodesToFilter.forEach(nodeToHide -> cyView.getNodeView(nodeToHide.cyNode).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false));
+        visibleNodes.forEach(nodeToHide -> cyView.getNodeView(nodeToHide.cyNode).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true));
 
         edgesToFilter.removeAll(visibleEdges);
-        edgesToFilter.forEach(edgeToHide -> cyView.getEdgeView(edgeToHide.edge).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false));
-        visibleEdges.forEach(edgeToHide -> cyView.getEdgeView(edgeToHide.edge).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true));
+        edgesToFilter.forEach(edgeToHide -> cyView.getEdgeView(edgeToHide.cyEdge).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false));
+        visibleEdges.forEach(edgeToHide -> cyView.getEdgeView(edgeToHide.cyEdge).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true));
 
         save();
     }
@@ -152,8 +152,8 @@ public class NetworkView {
     }
 
     public enum Type {
-        COLLAPSED("COLLAPSED"),
-        EXPANDED("EXPANDED"),
+        SUMMARY("SUMMARY"),
+        EVIDENCE("EVIDENCE"),
         MUTATION("MUTATION");
 
         private final String name;

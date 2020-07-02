@@ -13,13 +13,13 @@ import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
 
 import java.awt.*;
 
-public class ExpandedIntactStyle extends IntactStyle {
+public class ExpandedStyle extends Style {
 
     public static final String TITLE = "Intact - Evidence";
-    public final static NetworkView.Type type = NetworkView.Type.EXPANDED;
+    public final static NetworkView.Type type = NetworkView.Type.EVIDENCE;
 
 
-    public ExpandedIntactStyle(Manager manager) {
+    public ExpandedStyle(Manager manager) {
         super(manager);
     }
 

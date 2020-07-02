@@ -10,14 +10,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class CollapsedEdge extends Edge {
+public class SummaryEdge extends Edge {
     public final Set<Long> subEdgeSUIDs;
     private final Map<Long, EvidenceEdge> edges = new HashMap<>();
 
-    CollapsedEdge(Network network, CyEdge edge) {
+    SummaryEdge(Network network, CyEdge edge) {
         super(network, edge);
-        collapsed = true;
-        subEdgeSUIDs = new HashSet<>(EdgeFields.C_INTACT_SUIDS.getValue(edgeRow));
+        summary = true;
+        subEdgeSUIDs = new HashSet<>(EdgeFields.SUMMARY_EDGES_SUID.getValue(edgeRow));
     }
 
     public Map<Long, EvidenceEdge> getSubEdges() {

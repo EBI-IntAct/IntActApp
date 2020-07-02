@@ -12,6 +12,6 @@ public class EdgeParticipantDetectionMethodFilter extends DiscreteFilter<Evidenc
 
     @Override
     public String getPropertyValue(EvidenceEdge element) {
-        return element.participantDetectionMethod;
+        return element.participantDetectionMethod.value;
     }
 }

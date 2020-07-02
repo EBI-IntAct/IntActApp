@@ -16,9 +16,9 @@ import static uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeField
 
 public abstract class Edge implements Element {
     public final Network network;
-    public final CyEdge edge;
+    public final CyEdge cyEdge;
     public final String name;
-    public boolean collapsed;
+    public boolean summary;
     public final CyRow edgeRow;
     public final Node source;
     public final Node target;
@@ -31,25 +31,25 @@ public abstract class Edge implements Element {
         if (network == null || edge == null) return null;
         CyRow edgeRow = network.getCyNetwork().getRow(edge);
         if (edgeRow == null) return null;
-        Boolean isCollapsed = EdgeFields.C_IS_COLLAPSED.getValue(edgeRow);
-        if (isCollapsed == null) return null;
-        if (isCollapsed) {
-            return new CollapsedEdge(network, edge);
+        Boolean isSummarized = EdgeFields.IS_SUMMARY.getValue(edgeRow);
+        if (isSummarized == null) return null;
+        if (isSummarized) {
+            return new SummaryEdge(network, edge);
         } else {
             return new EvidenceEdge(network, edge);
         }
     }
 
 
-    Edge(Network network, CyEdge edge) {
+    Edge(Network network, CyEdge cyEdge) {
         this.network = network;
-        this.edge = edge;
-        edgeRow = network.getCyNetwork().getRow(edge);
+        this.cyEdge = cyEdge;
+        edgeRow = network.getCyNetwork().getRow(cyEdge);
 
         name = edgeRow.get(CyNetwork.NAME, String.class);
         miScore = EdgeFields.MI_SCORE.getValue(edgeRow);
-        source = new Node(network, edge.getSource());
-        target = edge.getTarget() != null ? new Node(network, edge.getTarget()) : null;
+        source = new Node(network, cyEdge.getSource());
+        target = cyEdge.getTarget() != null ? new Node(network, cyEdge.getTarget()) : null;
 
         sourceFeatureAcs = SOURCE_FEATURES.getValue(edgeRow);
         if (sourceFeatureAcs != null) {
@@ -83,16 +83,16 @@ public abstract class Edge implements Element {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Edge that = (Edge) o;
-        return edge.equals(that.edge);
+        return cyEdge.equals(that.cyEdge);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(edge);
+        return Objects.hash(cyEdge);
     }
 
     @Override
     public String toString() {
-        return edge.toString();
+        return cyEdge.toString();
     }
 }

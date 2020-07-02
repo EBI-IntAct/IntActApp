@@ -4,24 +4,24 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge.AbstractEdgeLegendPanel;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge.CollapsedEdgeLegendPanel;
+import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge.SummaryEdgeLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge.ExpandedEdgeLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge.MutationEdgeLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 public class EdgeLegendPanel extends AbstractLegendPanel {
-    private final CollapsedEdgeLegendPanel collapsedEdgeLegendPanel;
+    private final SummaryEdgeLegendPanel summaryEdgeLegendPanel;
     private final ExpandedEdgeLegendPanel expandedEdgeLegendPanel;
     private final MutationEdgeLegendPanel mutationEdgeLegendPanel;
 
     public EdgeLegendPanel(Manager manager, Network currentINetwork, NetworkView currentIView) {
         super("Edges", manager, currentINetwork, currentIView);
 
-        collapsedEdgeLegendPanel = new CollapsedEdgeLegendPanel();
+        summaryEdgeLegendPanel = new SummaryEdgeLegendPanel();
         expandedEdgeLegendPanel = new ExpandedEdgeLegendPanel();
         mutationEdgeLegendPanel = new MutationEdgeLegendPanel();
 
-        content.add(collapsedEdgeLegendPanel, new EasyGBC().anchor("west").expandHoriz());
+        content.add(summaryEdgeLegendPanel, new EasyGBC().anchor("west").expandHoriz());
     }
 
     @Override
@@ -35,10 +35,10 @@ public class EdgeLegendPanel extends AbstractLegendPanel {
 
         switch (newType) {
             default:
-            case COLLAPSED:
-                newPanel = collapsedEdgeLegendPanel;
+            case SUMMARY:
+                newPanel = summaryEdgeLegendPanel;
                 break;
-            case EXPANDED:
+            case EVIDENCE:
                 newPanel = expandedEdgeLegendPanel;
                 break;
             case MUTATION:

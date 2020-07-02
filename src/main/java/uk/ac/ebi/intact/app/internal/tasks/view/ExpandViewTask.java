@@ -14,8 +14,8 @@ public class ExpandViewTask extends AbstractHiderTask {
     @Override
     public void run(TaskMonitor taskMonitor) {
         expandEdgesIfNeeded();
-        if (chosenView != null && chosenView.getType() != NetworkView.Type.EXPANDED) {
-            manager.data.intactViewChanged(NetworkView.Type.EXPANDED, chosenView);
+        if (chosenView != null && chosenView.getType() != NetworkView.Type.EVIDENCE) {
+            manager.data.intactViewChanged(NetworkView.Type.EVIDENCE, chosenView);
         }
     }
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 
@@ -31,10 +31,10 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
         List<? extends Element> elements;
         if (Node.class.isAssignableFrom(elementType)) {
             elements = network.getINodes();
-        } else if (elementType == CollapsedEdge.class) {
-            elements = network.getCollapsedIEdges();
+        } else if (elementType == SummaryEdge.class) {
+            elements = network.getSummaryEdges();
         } else if (elementType == EvidenceEdge.class) {
-            elements = network.getEvidenceIEdges();
+            elements = network.getEvidenceEdges();
         } else throw new IllegalArgumentException();
 
         DoubleSummaryStatistics stats = elements.stream().mapToDouble(value -> getProperty(elementType.cast(value))).summaryStatistics();
@@ -65,8 +65,8 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
         if (Node.class.isAssignableFrom(elementType)) {
             elementsToFilter = view.visibleNodes;
         } else if (Edge.class.isAssignableFrom(elementType)) {
-            if (elementType == CollapsedEdge.class && view.getType() != NetworkView.Type.COLLAPSED) return;
-            if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.COLLAPSED) return;
+            if (elementType == SummaryEdge.class && view.getType() != NetworkView.Type.SUMMARY) return;
+            if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.SUMMARY) return;
             elementsToFilter = view.visibleEdges;
         } else {
             return;

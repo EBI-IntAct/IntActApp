@@ -24,7 +24,7 @@ public class NodeSchematic extends AbstractNodeElement {
     @Override
     protected void fillContent() {
         content.setLayout(new GridBagLayout());
-        nodeDiagram = new NodeDiagram(iNode, features);
+        nodeDiagram = new NodeDiagram(node, features);
         EasyGBC c = new EasyGBC();
         content.add(nodeDiagram, c.anchor("west").noExpand());
         content.add(Box.createHorizontalGlue(), c.right().anchor("west").expandHoriz());

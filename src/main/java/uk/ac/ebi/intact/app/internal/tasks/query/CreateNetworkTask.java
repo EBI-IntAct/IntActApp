@@ -62,7 +62,7 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
             return;
         }
 
-        monitor.setTitle("Create collapsed edges");
+        monitor.setTitle("Create summary edges");
         monitor.setProgress(0.6);
         manager.data.addIntactNetwork(intactNet, network);
         manager.data.fireIntactNetworkCreated(intactNet);

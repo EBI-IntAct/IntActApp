@@ -2,20 +2,21 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.elements;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
-import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
-import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.CVTerm;
+import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.ui.components.diagrams.NodeDiagram;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeBasics;
-import uk.ac.ebi.intact.app.internal.model.styles.CollapsedIntactStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeFeatures;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
+import uk.ac.ebi.intact.app.internal.ui.utils.LinkUtils;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 
 import javax.swing.*;
@@ -45,7 +46,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
     }
 
     @Override
-    protected void fillCollapsedEdgeContent(CollapsedEdge edge) {
+    protected void fillSummaryEdgeContent(SummaryEdge edge) {
         createPanel(edge);
         Map<Node, List<Feature>> features = edge.getFeatures();
         for (Node iNode : List.of(edge.source, edge.target)) {
@@ -67,7 +68,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
 
         int thickness = edge.subEdgeSUIDs.size() + 2;
         thickness = Integer.min(thickness, 25);
-        content.add(new EdgeDiagram(CollapsedIntactStyle.getColor(edge.miScore), thickness, false));
+        content.add(new EdgeDiagram(SummaryStyle.getColor(edge.miScore), thickness, false));
     }
 
     @Override
@@ -86,14 +87,12 @@ public class EdgeParticipants extends AbstractEdgeElement {
             nodePanel.add(nodeBasics, layoutHelper.down().anchor("north").expandHoriz());
 
             nodePanel.add(new ParticipantInfoPanel("Biological role : ",
-                            iNode == edge.source ? edge.sourceBiologicalRole : edge.targetBiologicalRole,
-                            iNode == edge.source ? edge.sourceBiologicalRoleMIId : edge.targetBiologicalRoleMIId),
+                            iNode == edge.source ? edge.sourceBiologicalRole : edge.targetBiologicalRole),
                     layoutHelper.down().anchor("north").expandHoriz()
             );
 
             nodePanel.add(new ParticipantInfoPanel("Experimental role : ",
-                            iNode == edge.source ? edge.sourceExperimentalRole : edge.targetExperimentalRole,
-                            iNode == edge.source ? edge.sourceExperimentalRoleMIId : edge.targetExperimentalRoleMIId),
+                            iNode == edge.source ? edge.sourceExperimentalRole : edge.targetExperimentalRole),
                     layoutHelper.down().anchor("north").expandHoriz()
             );
 
@@ -103,11 +102,11 @@ public class EdgeParticipants extends AbstractEdgeElement {
             nodePanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
         }
 
-        content.add(new EdgeDiagram(StyleMapper.edgeTypeToPaint.get(edge.type), 4, edge.expansionType != null && !edge.expansionType.isBlank()));
+        content.add(new EdgeDiagram(StyleMapper.edgeTypeToPaint.get(edge.type.value), 4, edge.expansionType != null && !edge.expansionType.isBlank()));
     }
 
     private class ParticipantInfoPanel extends LinePanel {
-        public ParticipantInfoPanel(String infoType, String infoValue, OntologyIdentifier infoID) {
+        public ParticipantInfoPanel(String infoType, CVTerm term) {
             super(nodePanelBg);
             setOpaque(true);
             setAlignmentY(Component.TOP_ALIGNMENT);
@@ -115,7 +114,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
             typeLabel.setBackground(nodePanelBg);
             typeLabel.setOpaque(true);
             add(typeLabel);
-            JLink valueLink = new JLink(infoValue, infoID.getUserAccessURL(), openBrowser);
+            JLink valueLink = LinkUtils.createCVTermLink(openBrowser, term);
             valueLink.setBackground(nodePanelBg);
             valueLink.setOpaque(true);
             add(valueLink);

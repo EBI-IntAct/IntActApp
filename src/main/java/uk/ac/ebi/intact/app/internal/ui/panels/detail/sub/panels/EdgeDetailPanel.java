@@ -7,11 +7,12 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
+import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.spinner.LoadingSpinner;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.elements.EdgeBasics;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.elements.EdgeDetails;
@@ -19,6 +20,7 @@ import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.elements.E
 import uk.ac.ebi.intact.app.internal.ui.panels.filters.FilterPanel;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
+import uk.ac.ebi.intact.app.internal.ui.utils.LinkUtils;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 
 import javax.swing.*;
@@ -158,8 +160,8 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
     }
 
     private boolean isEdgeOfCurrentViewType(Edge edge) {
-        return (currentIView.getType() == NetworkView.Type.COLLAPSED && edge.collapsed) ||
-                (currentIView.getType() != NetworkView.Type.COLLAPSED && !edge.collapsed);
+        return (currentIView.getType() == NetworkView.Type.SUMMARY && edge.summary) ||
+                (currentIView.getType() != NetworkView.Type.SUMMARY && !edge.summary);
     }
 
 
@@ -187,15 +189,17 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
             content.setAlignmentX(LEFT_ALIGNMENT);
             setBackground(backgroundColor);
 
-            JLabel title;
-            if (edge instanceof CollapsedEdge) {
-                title = new JLabel("Collapsed edge between " + edge.source.name + " and " + edge.target.name + " (MI Score = " + edge.miScore + ")");
+            LinePanel header = new LinePanel(backgroundColor);
+            if (edge instanceof SummaryEdge) {
+                header.add(new JLabel("Summary edge between " + edge.source.name + " and " + edge.target.name + " (MI Score = " + edge.miScore + ")"));
             } else {
-                EvidenceEdge iEEdge = (EvidenceEdge) edge;
-                title = new JLabel("Evidence of " + iEEdge.type + " between " + iEEdge.source.name + " and " + iEEdge.target.name);
+                EvidenceEdge evidenceEdge = (EvidenceEdge) edge;
+                header.add(new JLabel("Evidence of "));
+                header.add(LinkUtils.createCVTermLink(openBrowser, evidenceEdge.type));
+                header.add(new JLabel( " between " + evidenceEdge.source.name + " and " + evidenceEdge.target.name));
             }
 
-            setHeader(title);
+            setHeader(header);
 
             content.add(new EdgeBasics(edge, openBrowser));
             content.add(new EdgeDetails(edge, openBrowser));

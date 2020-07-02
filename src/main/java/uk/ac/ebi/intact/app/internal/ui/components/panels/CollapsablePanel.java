@@ -175,6 +175,8 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
         JButton expandButton;
         JComponent headerComponent;
         boolean expanded;
+        public final EmptyBorder BORDER = new EmptyBorder(0, 4, 0, 0);
+
 
         public HeaderPanel(String text, boolean collapsed) {
             this.expanded = !collapsed;
@@ -192,9 +194,9 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
             expandButton.setPreferredSize(new Dimension(20, 20));
             this.add(expandButton);
             headerComponent = new JLabel(text);
-            headerComponent.setBorder(new EmptyBorder(0, 4, 0, 0));
+            headerComponent.setBorder(BORDER);
             this.add(headerComponent);
-            collapseAllButton.setBorder(new EmptyBorder(0, 4, 0, 0));
+            collapseAllButton.setBorder(BORDER);
             collapseAllButton.setVisible(false);
             collapseAllButton.setEnabled(!collapsed);
             this.add(collapseAllButton);
@@ -203,6 +205,7 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
         }
 
         public void setHeaderComponent(JComponent component) {
+            component.setBorder(BORDER);
             this.remove(1);
             this.add(component, 1);
         }

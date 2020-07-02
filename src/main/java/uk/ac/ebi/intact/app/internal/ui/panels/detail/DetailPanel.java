@@ -20,8 +20,8 @@ import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedListener;
 import uk.ac.ebi.intact.app.internal.model.events.IntactViewChangedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.IntactViewTypeChangedListener;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
-import uk.ac.ebi.intact.app.internal.tasks.view.factories.CollapseViewTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.view.factories.ExpandViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.MutationViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.EdgeDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.LegendDetailPanel;
@@ -50,12 +50,12 @@ public class DetailPanel extends JPanel
     private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/Gradient_over_Transparent/favicon_32x32.ico");
     final Manager manager;
 
-    private final JRadioButton collapsedViewType = new JRadioButton("Collapse");
-    private final JRadioButton expandedViewType = new JRadioButton("Expanded");
+    private final JRadioButton summaryViewType = new JRadioButton("Summary");
+    private final JRadioButton evidenceViewType = new JRadioButton("Evidence");
     private final JRadioButton mutationViewType = new JRadioButton("Mutation");
 
-    private final CollapseViewTaskFactory collapseViewTaskFactory;
-    private final ExpandViewTaskFactory expandViewTaskFactory;
+    private final SummaryViewTaskFactory summaryViewTaskFactory;
+    private final EvidenceViewTaskFactory evidenceViewTaskFactory;
     private final MutationViewTaskFactory mutationViewTaskFactory;
 
     private final NodeDetailPanel nodePanel;
@@ -71,27 +71,27 @@ public class DetailPanel extends JPanel
         manager.data.addIntactViewChangedListener(this);
         this.setLayout(new BorderLayout());
 
-        collapseViewTaskFactory = new CollapseViewTaskFactory(manager, true);
-        expandViewTaskFactory = new ExpandViewTaskFactory(manager, true);
+        summaryViewTaskFactory = new SummaryViewTaskFactory(manager, true);
+        evidenceViewTaskFactory = new EvidenceViewTaskFactory(manager, true);
         mutationViewTaskFactory = new MutationViewTaskFactory(manager, true);
 
         ButtonGroup viewTypes = new ButtonGroup();
-        viewTypes.add(collapsedViewType);
-        viewTypes.add(expandedViewType);
+        viewTypes.add(summaryViewType);
+        viewTypes.add(evidenceViewType);
         viewTypes.add(mutationViewType);
 
 
         NetworkView view = manager.data.getCurrentIntactNetworkView();
-        collapsedViewType.addActionListener(e -> manager.utils.execute(collapseViewTaskFactory.createTaskIterator()));
-        expandedViewType.addActionListener(e -> manager.utils.execute(expandViewTaskFactory.createTaskIterator()));
+        summaryViewType.addActionListener(e -> manager.utils.execute(summaryViewTaskFactory.createTaskIterator()));
+        evidenceViewType.addActionListener(e -> manager.utils.execute(evidenceViewTaskFactory.createTaskIterator()));
         mutationViewType.addActionListener(e -> manager.utils.execute(mutationViewTaskFactory.createTaskIterator()));
         if (view != null) {
             switch (view.getType()) {
-                case COLLAPSED:
-                    collapsedViewType.setSelected(true);
+                case SUMMARY:
+                    summaryViewType.setSelected(true);
                     break;
-                case EXPANDED:
-                    expandedViewType.setSelected(true);
+                case EVIDENCE:
+                    evidenceViewType.setSelected(true);
                     break;
                 case MUTATION:
                     mutationViewType.setSelected(true);
@@ -101,8 +101,8 @@ public class DetailPanel extends JPanel
 
         JPanel viewTypesPanel = new JPanel(new GridLayout(3, 1));
         viewTypesPanel.setBorder(BorderFactory.createTitledBorder("View types"));
-        viewTypesPanel.add(collapsedViewType);
-        viewTypesPanel.add(expandedViewType);
+        viewTypesPanel.add(summaryViewType);
+        viewTypesPanel.add(evidenceViewType);
         viewTypesPanel.add(mutationViewType);
         JPanel upperPanel = new JPanel(new GridLayout(1, 2));
         upperPanel.add(viewTypesPanel);
@@ -213,11 +213,11 @@ public class DetailPanel extends JPanel
         NetworkView networkView = manager.data.getNetworkView(cyView);
         if (networkView != null) {
             switch (networkView.getType()) {
-                case COLLAPSED:
-                    collapsedViewType.setSelected(true);
+                case SUMMARY:
+                    summaryViewType.setSelected(true);
                     break;
-                case EXPANDED:
-                    expandedViewType.setSelected(true);
+                case EVIDENCE:
+                    evidenceViewType.setSelected(true);
                     break;
                 case MUTATION:
                     mutationViewType.setSelected(true);
@@ -291,11 +291,11 @@ public class DetailPanel extends JPanel
         legendPanel.viewTypeChanged(event.newType);
         edgePanel.viewTypeChanged();
         switch (event.newType) {
-            case COLLAPSED:
-                collapsedViewType.setSelected(true);
+            case SUMMARY:
+                summaryViewType.setSelected(true);
                 break;
-            case EXPANDED:
-                expandedViewType.setSelected(true);
+            case EVIDENCE:
+                evidenceViewType.setSelected(true);
                 break;
             case MUTATION:
                 mutationViewType.setSelected(true);

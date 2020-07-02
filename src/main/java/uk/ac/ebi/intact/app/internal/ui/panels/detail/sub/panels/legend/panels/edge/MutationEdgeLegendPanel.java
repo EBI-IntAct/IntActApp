@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge;
 
-import uk.ac.ebi.intact.app.internal.model.styles.MutationIntactStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.MutationStyle;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.EdgeLegend;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
@@ -27,7 +27,7 @@ public class MutationEdgeLegendPanel extends AbstractEdgeLegendPanel {
         {
             LinePanel linePanel = new LinePanel(AbstractDetailPanel.backgroundColor);
             EdgeLegend dashed = new EdgeLegend(EdgeLegend.LineType.DASHED);
-            dashed.setPaint(MutationIntactStyle.wildColor);
+            dashed.setPaint(MutationStyle.wildColor);
             dashed.setThickness(2);
             linePanel.add(dashed);
             JLabel label = new JLabel("Spoke expanded");
@@ -48,7 +48,7 @@ public class MutationEdgeLegendPanel extends AbstractEdgeLegendPanel {
 
         {
             LinePanel linePanel = new LinePanel(AbstractDetailPanel.backgroundColor);
-            EdgeLegend mutated = new EdgeLegend(MutationIntactStyle.mutatedColor);
+            EdgeLegend mutated = new EdgeLegend(MutationStyle.mutatedColor);
             linePanel.add(mutated);
             JLabel label = new JLabel("Affected by mutation");
             label.setBorder(new EmptyBorder(0, 4, 0, 0));

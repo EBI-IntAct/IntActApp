@@ -17,7 +17,7 @@ public class EdgeMutationFilter extends BooleanFilter<Edge> {
     public boolean isToHide(Edge element) {
         for (List<Feature> features : element.getFeatures().values()) {
             for (Feature feature : features) {
-                if (FeatureClassifier.mutation.contains(feature.typeIdentifier)) {
+                if (FeatureClassifier.mutation.contains(feature.type.id)) {
                     return false;
                 }
             }

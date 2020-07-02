@@ -29,9 +29,9 @@ public class NodeDetails extends AbstractNodeElement {
     protected void fillContent() {
         executor.execute(() -> {
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-            JsonNode nodeDetails = HttpUtils.getJSON(INTACT_GRAPH_WS + "network/node/details/" + iNode.ac, new HashMap<>(), iNode.network.getManager());
+            JsonNode nodeDetails = HttpUtils.getJSON(INTACT_GRAPH_WS + "network/node/details/" + node.ac, new HashMap<>(), node.network.getManager());
             if (nodeDetails != null) {
-                content.add(new NodeAliases(iNode, openBrowser, nodeDetails.get("aliases")));
+                content.add(new NodeAliases(node, openBrowser, nodeDetails.get("aliases")));
                 addNodeCrossReferences(nodeDetails.get("xrefs"));
             }
         });
@@ -52,6 +52,6 @@ public class NodeDetails extends AbstractNodeElement {
 
             identifiers.add(new Identifier(databaseName, databaseIdentifier, identifier, qualifier));
         }
-        content.add(new NodeIdentifiers("Cross References", iNode, openBrowser, identifiers));
+        content.add(new NodeIdentifiers("Cross References", node, openBrowser, identifiers));
     }
 }

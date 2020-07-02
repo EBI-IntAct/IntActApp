@@ -10,15 +10,15 @@ import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
 
 import java.awt.*;
 
-public class CollapsedIntactStyle extends IntactStyle {
-    public final static String TITLE = "Intact - Collapsed";
-    public final static NetworkView.Type type = NetworkView.Type.COLLAPSED;
+public class SummaryStyle extends Style {
+    public final static String TITLE = "Intact - Summary";
+    public final static NetworkView.Type type = NetworkView.Type.SUMMARY;
     public static final int edgeWidthValue1 = 1;
     public static final int edgeWidthValue2 = 25;
     public static final double edgeWidth1 = 2d;
     public static final double edgeWidth2 = 25d;
 
-    public CollapsedIntactStyle(Manager manager) {
+    public SummaryStyle(Manager manager) {
         super(manager);
     }
 
@@ -39,11 +39,11 @@ public class CollapsedIntactStyle extends IntactStyle {
 
     @Override
     protected void setEdgeWidth() {
-        ContinuousMapping<Integer, Double> nbCollapsedEdgesToThickness = (ContinuousMapping<Integer, Double>) continuousFactory.createVisualMappingFunction(EdgeFields.C_NB_EDGES.toString(), Integer.class, BasicVisualLexicon.EDGE_WIDTH);
+        ContinuousMapping<Integer, Double> nbSummarizedEdgesToThickness = (ContinuousMapping<Integer, Double>) continuousFactory.createVisualMappingFunction(EdgeFields.SUMMARY_NB_EDGES.toString(), Integer.class, BasicVisualLexicon.EDGE_WIDTH);
 
-        nbCollapsedEdgesToThickness.addPoint(edgeWidthValue1, new BoundaryRangeValues<>(edgeWidth1, edgeWidth1, edgeWidth1));
-        nbCollapsedEdgesToThickness.addPoint(edgeWidthValue2, new BoundaryRangeValues<>(edgeWidth2, edgeWidth2, edgeWidth2));
-        style.addVisualMappingFunction(nbCollapsedEdgesToThickness);
+        nbSummarizedEdgesToThickness.addPoint(edgeWidthValue1, new BoundaryRangeValues<>(edgeWidth1, edgeWidth1, edgeWidth1));
+        nbSummarizedEdgesToThickness.addPoint(edgeWidthValue2, new BoundaryRangeValues<>(edgeWidth2, edgeWidth2, edgeWidth2));
+        style.addVisualMappingFunction(nbSummarizedEdgesToThickness);
     }
 
     @Override

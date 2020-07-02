@@ -102,13 +102,13 @@ public class ModelUtils {
             if (nodesJSON.size() > 0) {
                 createUnknownColumnsFromIntactJSON(nodesJSON, defaultNodeTable);
                 for (JsonNode node : nodesJSON) {
-                    nodes.add(createIntactNode(cyNetwork, node, idToNode, idToName, identifiersTable));
+                    nodes.add(createNode(cyNetwork, node, idToNode, idToName, identifiersTable));
                 }
             }
             if (edgesJSON.size() > 0) {
                 createUnknownColumnsFromIntactJSON(edgesJSON, defaultEdgeTable);
                 for (JsonNode edge : edgesJSON) {
-                    createIntactEdge(cyNetwork, edge, idToNode, idToName, newEdges, featuresTable);
+                    createEdge(cyNetwork, edge, idToNode, idToName, newEdges, featuresTable);
                 }
             }
             return nodes;
@@ -205,7 +205,7 @@ public class ModelUtils {
     }
 
 
-    private static CyNode createIntactNode(CyNetwork cyNetwork, JsonNode nodeJSON, Map<String, CyNode> idToNode, Map<String, String> idToName, CyTable xRefsTable) {
+    private static CyNode createNode(CyNetwork cyNetwork, JsonNode nodeJSON, Map<String, CyNode> idToNode, Map<String, String> idToName, CyTable xRefsTable) {
         String intactId = nodeJSON.get("id").textValue();
 
         if (idToNode.containsKey(intactId)) return idToNode.get(intactId);
@@ -234,7 +234,7 @@ public class ModelUtils {
     }
 
 
-    private static void createIntactEdge(CyNetwork network, JsonNode edgeJSON, Map<String, CyNode> idToNode, Map<String, String> idToName, List<CyEdge> newEdges, CyTable featuresTable) {
+    private static void createEdge(CyNetwork network, JsonNode edgeJSON, Map<String, CyNode> idToNode, Map<String, String> idToName, List<CyEdge> newEdges, CyTable featuresTable) {
         JsonNode source = edgeJSON.get("source");
         JsonNode target = edgeJSON.get("target");
         boolean selfInteracting = false;
