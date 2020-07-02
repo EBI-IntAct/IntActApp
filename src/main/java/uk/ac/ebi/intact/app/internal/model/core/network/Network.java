@@ -15,7 +15,7 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
@@ -305,7 +305,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
         return new ArrayList<>(evidenceCyEdges);
     }
 
-    public List<CyEdge> getEvidenceEdges(CyEdge edge) {
+    public List<CyEdge> getSimilarEvidenceEdges(CyEdge edge) {
         return coupleToEdges.get(new NodeCouple(edge));
     }
 

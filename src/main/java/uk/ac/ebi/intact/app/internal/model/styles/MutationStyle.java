@@ -4,7 +4,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NodeFields;
 

@@ -3,9 +3,9 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.
 import org.apache.commons.lang3.StringUtils;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.AbstractLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 import uk.ac.ebi.intact.app.internal.ui.utils.StyleUtils;
@@ -27,7 +27,7 @@ public class NodeShapeLegendPanel extends AbstractLegendPanel {
         super("<html>Node Shape <em>~ Interactor Type</em></html>", manager, currentINetwork, currentIView);
         for (String nodeType : StyleMapper.originalNodeTypeToShape.keySet()) {
             JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT,4,2));
-            linePanel.setBackground(AbstractDetailPanel.backgroundColor);
+            linePanel.setBackground(UIColors.lightBackground);
             linePanel.add(StyleUtils.nodeTypeToShape(nodeType, Color.lightGray, 30));
             JLabel label = new JLabel(StringUtils.capitalize(nodeType));
             label.setBorder(new EmptyBorder(0, 4, 0, 0));

@@ -1,7 +1,7 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.options;
 
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.sub.managers.OptionManager;
 import uk.ac.ebi.intact.app.internal.ui.panels.options.fields.OptionField;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 

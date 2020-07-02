@@ -2,10 +2,10 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.
 
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorPicker;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.AbstractLegendPanel;
 import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
@@ -39,7 +39,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
     private void createNodeColorLegend(List<Taxons> taxons) {
         JPanel panel = new JPanel(new GridBagLayout());
 
-        panel.setBackground(AbstractDetailPanel.backgroundColor);
+        panel.setBackground(UIColors.lightBackground);
 
         taxons.forEach((taxon) -> {
             Map<Long, Paint> reference = (taxon.isSpecies) ? StyleMapper.taxIdToPaint : StyleMapper.kingdomColors;
@@ -57,7 +57,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
     private void createUserDefinedNodeColors() {
         JPanel userDefinedSpeciesPanel = new JPanel(new GridBagLayout());
         content.add(userDefinedSpeciesPanel, layoutHelper.down().expandHoriz());
-        addNodeColorPanel.setBackground(AbstractDetailPanel.backgroundColor);
+        addNodeColorPanel.setBackground(UIColors.lightBackground);
         addNodeColorPanel.setLayout(new FlowLayout(FlowLayout.LEFT,4,2));
 
         addNodeColorButton.addActionListener(e -> {
@@ -68,7 +68,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
             repaint();
         });
 
-        addNodeColorButton.setBackground(AbstractDetailPanel.backgroundColor);
+        addNodeColorButton.setBackground(UIColors.lightBackground);
         addNodeColorButton.setOpaque(true);
         addNodeColorButton.setBorder(new EmptyBorder(0, 0, 0, 0));
         addNodeColorPanel.add(addNodeColorButton);

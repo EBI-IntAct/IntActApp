@@ -16,13 +16,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.app.internal.model.styles.UIColors.lightBackground;
 import static uk.ac.ebi.intact.app.internal.utils.CollectionUtils.groupBy;
 import static uk.ac.ebi.intact.app.internal.utils.CollectionUtils.groupByMultipleKeys;
 
 public class GroupUtils {
     public static <E> void groupElementsInPanel(JPanel toFill, Iterable<E> toGroup, Function<E, String> elementToTitle, PanelFillingFunction<E> panelFillingFunction) {
-        buildSubGroupPanels(toFill, backgroundColor, panelFillingFunction, groupBy(toGroup, elementToTitle));
+        buildSubGroupPanels(toFill, lightBackground, panelFillingFunction, groupBy(toGroup, elementToTitle));
     }
 
     public static <E> void groupElementsInPanel(JPanel toFill, Color background, Iterable<E> toGroup, Function<E, String> elementToTitle, PanelFillingFunction<E> panelFillingFunction) {
@@ -30,7 +30,7 @@ public class GroupUtils {
     }
 
     public static <E> void groupElementsByMultipleKeysInPanel(JPanel toFill, Iterable<E> toGroup, Function<E, Set<String>> elementToTitle, PanelFillingFunction<E> panelFillingFunction) {
-        buildSubGroupPanels(toFill, backgroundColor, panelFillingFunction, groupByMultipleKeys(toGroup, elementToTitle));
+        buildSubGroupPanels(toFill, lightBackground, panelFillingFunction, groupByMultipleKeys(toGroup, elementToTitle));
     }
 
     public static <E> void groupElementsByMultipleKeysInPanel(JPanel toFill, Color background, Iterable<E> toGroup, Function<E, Set<String>> elementToTitle, PanelFillingFunction<E> panelFillingFunction) {
@@ -51,7 +51,7 @@ public class GroupUtils {
     }
 
     public static <E> void groupElementsInPanel(JPanel toFill, Iterable<E> toGroup, Function<E, CVTerm> elementToCVTerm, OpenBrowser openBrowser, PanelFillingFunction<E> panelFillingFunction) {
-        buildSubGroupPanels(toFill, backgroundColor, panelFillingFunction, groupBy(toGroup, elementToCVTerm), openBrowser);
+        buildSubGroupPanels(toFill, lightBackground, panelFillingFunction, groupBy(toGroup, elementToCVTerm), openBrowser);
     }
 
     public static <E> void groupElementsInPanel(JPanel toFill, Color background, Iterable<E> toGroup, Function<E, CVTerm> elementToCVTerm, OpenBrowser openBrowser, PanelFillingFunction<E> panelFillingFunction) {

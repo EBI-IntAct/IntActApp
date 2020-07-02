@@ -2,9 +2,9 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels;
 
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
@@ -25,7 +25,7 @@ public abstract class AbstractLegendPanel extends CollapsablePanel {
         this.currentINetwork = currentINetwork;
         this.currentIView = currentIView;
         content.setLayout(new GridBagLayout());
-        setBackground(AbstractDetailPanel.backgroundColor);
+        setBackground(UIColors.lightBackground);
     }
 
     public void addSeparator() {

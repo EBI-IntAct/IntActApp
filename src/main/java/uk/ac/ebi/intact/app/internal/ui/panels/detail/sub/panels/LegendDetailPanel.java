@@ -4,7 +4,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.StyleUpdatedListener;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.EdgeLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.NodeLegendPanel;
@@ -21,14 +22,14 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
     public LegendDetailPanel(final Manager manager) {
         super(manager,0,"legend");
         JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBackground(backgroundColor);
+        mainPanel.setBackground(UIColors.lightBackground);
         JScrollPane scrollPane = new JScrollPane(mainPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setAlignmentX(LEFT_ALIGNMENT);
         setLayout(new GridBagLayout());
         StyleMapper.addStyleUpdatedListener(this);
 
-        nodePanel = new NodeLegendPanel(manager, currentINetwork, currentIView);
-        edgePanel = new EdgeLegendPanel(manager, currentINetwork, currentIView);
+        nodePanel = new NodeLegendPanel(manager, currentNetwork, currentView);
+        edgePanel = new EdgeLegendPanel(manager, currentNetwork, currentView);
 
         EasyGBC layoutHelper = new EasyGBC();
         mainPanel.add(createResetStyleButton(), layoutHelper.anchor("north"));
@@ -36,7 +37,7 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
         mainPanel.add(edgePanel, layoutHelper.down().anchor("west").expandHoriz());
         mainPanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
         add(scrollPane, new EasyGBC().down().anchor("west").expandBoth());
-        if (currentINetwork != null && currentIView != null) {
+        if (currentNetwork != null && currentView != null) {
             filterCurrentLegends();
         }
     }
@@ -55,14 +56,14 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
     public void networkViewChanged(CyNetworkView view) {
         NetworkView networkView = manager.data.getNetworkView(view);
         if (networkView != null) {
-            currentIView = networkView;
-            currentINetwork = currentIView.network;
+            currentView = networkView;
+            currentNetwork = currentView.network;
 
             filterCurrentLegends();
 
-            viewTypeChanged(currentIView.getType());
-            nodePanel.networkViewChanged(currentIView);
-            edgePanel.networkViewChanged(currentIView);
+            viewTypeChanged(currentView.getType());
+            nodePanel.networkViewChanged(currentView);
+            edgePanel.networkViewChanged(currentView);
         }
     }
 
@@ -77,7 +78,7 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
     }
 
     public void networkChanged(Network newNetwork) {
-        currentINetwork = newNetwork;
+        currentNetwork = newNetwork;
         nodePanel.networkChanged(newNetwork);
         edgePanel.networkChanged(newNetwork);
         for (NodeColorLegendEditor nodeColorLegendEditor : NodeColorLegendEditor.getNodeColorLegendEditorList()) {

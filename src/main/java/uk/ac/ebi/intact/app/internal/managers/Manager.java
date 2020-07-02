@@ -1,11 +1,11 @@
-package uk.ac.ebi.intact.app.internal.model.core.managers;
+package uk.ac.ebi.intact.app.internal.managers;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
-import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.CytoUtils;
-import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.DataManager;
-import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
-import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.StyleManager;
+import uk.ac.ebi.intact.app.internal.managers.sub.managers.CytoUtils;
+import uk.ac.ebi.intact.app.internal.managers.sub.managers.DataManager;
+import uk.ac.ebi.intact.app.internal.managers.sub.managers.OptionManager;
+import uk.ac.ebi.intact.app.internal.managers.sub.managers.StyleManager;
 
 public class Manager {
     private static final String INTACT_WEBSERVICES = "https://wwwdev.ebi.ac.uk/intact/ws/";

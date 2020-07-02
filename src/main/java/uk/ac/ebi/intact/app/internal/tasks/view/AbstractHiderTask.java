@@ -12,7 +12,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.SelectEdgesTaskFactory;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 
 import java.util.List;
 import java.util.Set;
@@ -49,9 +49,9 @@ public abstract class AbstractHiderTask extends AbstractTask {
                     .map(chosenNetwork::getSummaryEdge)
                     .collect(Collectors.toSet());
 
-            insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(cyNetwork, edgesToSelect).createTaskIterator());
             insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getEvidenceCyEdges()));
             insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getSummaryCyEdges()));
+            insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(cyNetwork, edgesToSelect).createTaskIterator());
         }
     }
 
@@ -61,13 +61,13 @@ public abstract class AbstractHiderTask extends AbstractTask {
             CyNetwork cyNetwork = chosenNetwork.getCyNetwork();
             Set<CyEdge> edgesToSelect = chosenNetwork.getSummaryCyEdges().stream()
                     .filter(cyEdge -> cyNetwork.getRow(cyEdge).get(CyNetwork.SELECTED, Boolean.class))
-                    .map(chosenNetwork::getEvidenceEdges)
+                    .map(chosenNetwork::getSimilarEvidenceEdges)
                     .flatMap(List::stream)
                     .collect(Collectors.toSet());
 
-            insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(cyNetwork, edgesToSelect).createTaskIterator());
             insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getSummaryCyEdges()));
             insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getEvidenceCyEdges()));
+            insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(cyNetwork, edgesToSelect).createTaskIterator());
         }
     }
 

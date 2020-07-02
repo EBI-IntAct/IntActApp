@@ -23,10 +23,10 @@ public class EdgeFields {
     public static final Field<String> PARTICIPANT_DETECTION_METHOD_MI_ID = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Participant detection method MI Id", "participant_detection_method_mi_identifier", String.class);
     public static final Field<Boolean> AFFECTED_BY_MUTATION = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Affected by mutation", null, Boolean.class, false);
 
-    public static final Field<Boolean> IS_SUMMARY = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Is summary", null, Boolean.class, false);
-    public static final ListField<Long> SUMMARY_EDGES_ID = new ListField<>(Table.EDGE, Field.Namespace.INTACT, "Summarized edges Id", Long.class);
-    public static final ListField<Long> SUMMARY_EDGES_SUID = new ListField<>(Table.EDGE, Field.Namespace.INTACT, "Summarized edges SUID", Long.class);
-    public static final Field<Integer> SUMMARY_NB_EDGES = new Field<>(Table.EDGE, Field.Namespace.INTACT, "# Summarized edges", null, Integer.class);
+    public static final Field<Boolean> IS_SUMMARY = new Field<>(Table.EDGE, Field.Namespace.SUMMARY, "Is summary", null, Boolean.class, false);
+    public static final ListField<Long> SUMMARY_EDGES_ID = new ListField<>(Table.EDGE, Field.Namespace.SUMMARY, "Summarized edges Id", Long.class);
+    public static final ListField<Long> SUMMARY_EDGES_SUID = new ListField<>(Table.EDGE, Field.Namespace.SUMMARY, "Summarized edges SUID", Long.class);
+    public static final Field<Integer> SUMMARY_NB_EDGES = new Field<>(Table.EDGE, Field.Namespace.SUMMARY, "# Summarized edges", null, Integer.class);
 
     public static final Field<Long> ID = new Field<>(Table.EDGE, Field.Namespace.INTACT, "ID", "id", Long.class);
 

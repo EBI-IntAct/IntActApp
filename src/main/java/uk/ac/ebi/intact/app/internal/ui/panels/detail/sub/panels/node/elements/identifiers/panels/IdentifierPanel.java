@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.app.internal.model.styles.UIColors.lightBackground;
 
 public class IdentifierPanel extends CollapsablePanel {
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(15);
@@ -21,7 +21,7 @@ public class IdentifierPanel extends CollapsablePanel {
         super(DbIdentifiersToLink.getFancyDatabaseName(identifiers.get(0)) + " (" + identifiers.size() + ")", true);
         this.identifiers = identifiers;
         this.openBrowser = openBrowser;
-        setBackground(backgroundColor);
+        setBackground(lightBackground);
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         executor.execute(this::fillContent);
     }

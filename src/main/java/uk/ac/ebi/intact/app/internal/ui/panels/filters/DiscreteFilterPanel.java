@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.app.internal.model.styles.UIColors.lightBackground;
 
 public class DiscreteFilterPanel<T extends Element> extends FilterPanel<DiscreteFilter<T>> {
 
@@ -43,7 +43,7 @@ public class DiscreteFilterPanel<T extends Element> extends FilterPanel<Discrete
             filter.view.silenceFilters(false);
             filter.view.filter();
         });
-        LinePanel buttonsPanel = new LinePanel(backgroundColor);
+        LinePanel buttonsPanel = new LinePanel(lightBackground);
         buttonsPanel.add(selectAll);
         buttonsPanel.add(selectNone);
         content.add(buttonsPanel, layoutHelper.down().expandHoriz());

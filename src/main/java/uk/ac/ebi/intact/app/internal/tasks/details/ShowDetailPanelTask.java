@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.app.internal.tasks.details;
 import org.cytoscape.application.swing.*;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.DetailPanel;
 

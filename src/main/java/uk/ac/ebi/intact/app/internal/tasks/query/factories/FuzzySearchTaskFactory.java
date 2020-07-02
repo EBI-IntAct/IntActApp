@@ -2,11 +2,11 @@ package uk.ac.ebi.intact.app.internal.tasks.query.factories;
 
 import org.cytoscape.application.swing.search.AbstractNetworkSearchTaskFactory;
 import org.cytoscape.work.TaskIterator;
-import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
+import uk.ac.ebi.intact.app.internal.managers.sub.managers.OptionManager;
 import uk.ac.ebi.intact.app.internal.ui.SearchQueryComponent;
 import uk.ac.ebi.intact.app.internal.ui.panels.options.OptionsPanel;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.query.TermsResolvingTask;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 

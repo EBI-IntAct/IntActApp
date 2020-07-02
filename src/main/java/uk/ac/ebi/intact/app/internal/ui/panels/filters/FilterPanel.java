@@ -10,7 +10,7 @@ import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 import java.awt.*;
 
-import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.app.internal.model.styles.UIColors.lightBackground;
 
 public abstract class FilterPanel<F extends Filter<? extends Element>> extends CollapsablePanel {
     protected EasyGBC layoutHelper = new EasyGBC();
@@ -20,7 +20,7 @@ public abstract class FilterPanel<F extends Filter<? extends Element>> extends C
         super(filter.name, true);
         this.filter = filter;
         content.setLayout(new GridBagLayout());
-        setBackground(backgroundColor);
+        setBackground(lightBackground);
     }
 
     public F getFilter() {

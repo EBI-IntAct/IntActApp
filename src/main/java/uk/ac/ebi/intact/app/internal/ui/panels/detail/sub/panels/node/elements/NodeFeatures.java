@@ -7,7 +7,7 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
 import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.app.internal.model.styles.UIColors.lightBackground;
 import static uk.ac.ebi.intact.app.internal.ui.utils.GroupUtils.groupElementsInPanel;
 
 public class NodeFeatures extends AbstractNodeElement {
@@ -39,7 +39,7 @@ public class NodeFeatures extends AbstractNodeElement {
     private Map<FeatureClassifier.FeatureClass, List<Feature>> classification;
 
     public NodeFeatures(Node iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, SummaryEdge summaryEdge) {
-        this(iNode, features, openBrowser, showFeatureEdge, summaryEdge, backgroundColor);
+        this(iNode, features, openBrowser, showFeatureEdge, summaryEdge, lightBackground);
     }
 
     public NodeFeatures(Node iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, SummaryEdge summaryEdge, Color background) {
@@ -54,7 +54,7 @@ public class NodeFeatures extends AbstractNodeElement {
     @Override
     protected void fillContent() {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-        content.setBackground(backgroundColor);
+        content.setBackground(lightBackground);
         executor.execute(this::fillReportedFeatures);
     }
 
@@ -105,7 +105,7 @@ public class NodeFeatures extends AbstractNodeElement {
     }
 
     private LinePanel getFeaturePanelTitle(FeatureClassifier.FeatureClass featureClass) {
-        LinePanel title = new LinePanel(backgroundColor);
+        LinePanel title = new LinePanel(getBackground());
         if (featureClass.identifier != null) {
             title.add(new JLink(featureClass.name, featureClass.identifier.getUserAccessURL(), openBrowser));
         } else {

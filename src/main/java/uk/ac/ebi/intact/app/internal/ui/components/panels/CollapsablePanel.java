@@ -217,5 +217,11 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
         public void setButton(Icon buttonState) {
             expandButton.setIcon(buttonState);
         }
+
+        @Override
+        public void setBackground(Color bg) {
+            super.setBackground(bg);
+            if (headerComponent != null) headerComponent.setBackground(bg);
+        }
     }
 }

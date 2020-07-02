@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge;
 
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
@@ -12,6 +12,6 @@ public abstract class AbstractEdgeLegendPanel extends JPanel {
 
     public AbstractEdgeLegendPanel() {
         super(new GridBagLayout());
-        setBackground(AbstractDetailPanel.backgroundColor);
+        setBackground(UIColors.lightBackground);
     }
 }

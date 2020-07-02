@@ -1,10 +1,10 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge;
 
 import uk.ac.ebi.intact.app.internal.model.styles.MutationStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.EdgeLegend;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
@@ -22,10 +22,10 @@ public class MutationEdgeLegendPanel extends AbstractEdgeLegendPanel {
     protected CollapsablePanel createEdgeShapeLegendPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         EasyGBC d = new EasyGBC();
-        panel.setBackground(AbstractDetailPanel.backgroundColor);
+        panel.setBackground(UIColors.lightBackground);
 
         {
-            LinePanel linePanel = new LinePanel(AbstractDetailPanel.backgroundColor);
+            LinePanel linePanel = new LinePanel(UIColors.lightBackground);
             EdgeLegend dashed = new EdgeLegend(EdgeLegend.LineType.DASHED);
             dashed.setPaint(MutationStyle.wildColor);
             dashed.setThickness(2);
@@ -44,10 +44,10 @@ public class MutationEdgeLegendPanel extends AbstractEdgeLegendPanel {
     protected CollapsablePanel createEdgeColorAndWidthPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         EasyGBC d = new EasyGBC();
-        panel.setBackground(AbstractDetailPanel.backgroundColor);
+        panel.setBackground(UIColors.lightBackground);
 
         {
-            LinePanel linePanel = new LinePanel(AbstractDetailPanel.backgroundColor);
+            LinePanel linePanel = new LinePanel(UIColors.lightBackground);
             EdgeLegend mutated = new EdgeLegend(MutationStyle.mutatedColor);
             linePanel.add(mutated);
             JLabel label = new JLabel("Affected by mutation");

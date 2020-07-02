@@ -8,7 +8,7 @@ import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ImportNetworkTaskFactory;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -6,7 +6,7 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ImportNetworkTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution.ResolveTermsPanel;
 

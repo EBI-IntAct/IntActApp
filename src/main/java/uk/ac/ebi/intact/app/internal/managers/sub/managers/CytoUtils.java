@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers;
+package uk.ac.ebi.intact.app.internal.managers.sub.managers;
 
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyUserLog;

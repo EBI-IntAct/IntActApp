@@ -121,7 +121,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
         }
     }
 
-    private static final Map<Node, NodeDiagramInfo> nodeDiagramInfos = new HashMap<>();
+    public static final Map<Node, NodeDiagramInfo> nodeDiagramInfos = new Hashtable<>();
 
     private static class NodeDiagramInfo {
         int width;
@@ -145,6 +145,8 @@ public class EdgeParticipants extends AbstractEdgeElement {
                     Dimension preferredSize = nodeDiagram.getPreferredSize();
                     preferredSize.width = maxWidth;
                     nodeDiagram.setPreferredSize(preferredSize);
+                    nodeDiagram.revalidate();
+                    nodeDiagram.repaint();
                 }
             }
         }
@@ -207,6 +209,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
         }
         for (NodeDiagram nodeDiagram : List.of(sourceDiagram, targetDiagram)) {
             NodeDiagramInfo nodeDiagramInfo = nodeDiagramInfos.get(nodeDiagram.node);
+            if (nodeDiagramInfo == null) continue;
             nodeDiagramInfo.nodeDiagrams.remove(nodeDiagram);
             if (nodeDiagramInfo.nodeDiagrams.isEmpty()) {
                 nodeDiagramInfos.remove(nodeDiagram.node);

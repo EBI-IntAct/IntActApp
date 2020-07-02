@@ -1,10 +1,10 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge;
 
 import org.apache.commons.lang3.StringUtils;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.EdgeLegend;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
@@ -23,9 +23,9 @@ public class ExpandedEdgeLegendPanel extends AbstractEdgeLegendPanel {
     protected CollapsablePanel createEdgeShapePanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         EasyGBC d = new EasyGBC();
-        panel.setBackground(AbstractDetailPanel.backgroundColor);
+        panel.setBackground(UIColors.lightBackground);
         {
-            JPanel linePanel = new LinePanel(AbstractDetailPanel.backgroundColor);
+            JPanel linePanel = new LinePanel(UIColors.lightBackground);
             linePanel.add(new EdgeLegend(EdgeLegend.LineType.DASHED));
             JLabel label = new JLabel("Spoke expanded");
             label.setBorder(new EmptyBorder(0, 4, 0, 0));
@@ -40,12 +40,12 @@ public class ExpandedEdgeLegendPanel extends AbstractEdgeLegendPanel {
     protected CollapsablePanel createEdgeColorPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         EasyGBC d = new EasyGBC();
-        panel.setBackground(AbstractDetailPanel.backgroundColor);
+        panel.setBackground(UIColors.lightBackground);
 
         String[] types = {"colocalization", "association", "physical association", "direct interaction", "phosphorylation", "dephosphorylation"};
 
         for (String type : types) {
-            JPanel linePanel = new LinePanel(AbstractDetailPanel.backgroundColor);
+            JPanel linePanel = new LinePanel(UIColors.lightBackground);
             linePanel.add(new EdgeLegend(StyleMapper.edgeTypeToPaint.get(type)));
             JLabel label = new JLabel(StringUtils.capitalize(type));
             label.setBorder(new EmptyBorder(0, 4, 0, 0));

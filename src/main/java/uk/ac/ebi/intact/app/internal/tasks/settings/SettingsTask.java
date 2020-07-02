@@ -2,7 +2,7 @@ package uk.ac.ebi.intact.app.internal.tasks.settings;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.panels.options.OptionsPanel;
 
 import javax.swing.*;

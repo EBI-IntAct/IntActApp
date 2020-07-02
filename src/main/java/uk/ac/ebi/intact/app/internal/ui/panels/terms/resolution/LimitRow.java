@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.utils.ComponentUtils;
 
 import javax.swing.*;
@@ -24,7 +25,7 @@ public class LimitRow extends Row {
         JLabel label = new JLabel("Include additional " + (table.totalInteractors - table.interactors.size()) + " matching interactors");
         label.setBorder(new EmptyBorder(5,5,5,0));
         Cell cell = new Cell(label);
-        cell.setBackground(selected ? SELECTED_COLOR : UNSELECTED_COLOR);
+        cell.setBackground(selected ? UIColors.xLightPink : UIColors.xLightGray);
         label.setHorizontalAlignment(JLabel.LEFT);
         label.setAlignmentX(LEFT_ALIGNMENT);
         add(cell, layoutHelper.right().expandBoth());

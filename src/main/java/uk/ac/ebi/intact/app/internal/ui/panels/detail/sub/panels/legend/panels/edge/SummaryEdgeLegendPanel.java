@@ -1,11 +1,11 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge;
 
 import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.ContinuousColorLegend;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.ContinuousEdgeWidthLegend;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.slider.MIScoreSliderUI;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
@@ -21,12 +21,12 @@ public class SummaryEdgeLegendPanel extends AbstractEdgeLegendPanel {
 
     protected CollapsablePanel createEdgeColorPanel() {
         JPanel edgeColorPanel = new JPanel(new GridBagLayout());
-        edgeColorPanel.setBackground(AbstractDetailPanel.backgroundColor);
+        edgeColorPanel.setBackground(UIColors.lightBackground);
         {
             EasyGBC d = new EasyGBC();
-            edgeColorPanel.setBackground(AbstractDetailPanel.backgroundColor);
+            edgeColorPanel.setBackground(UIColors.lightBackground);
             ContinuousColorLegend miScoreLegend = new ContinuousColorLegend(MIScoreSliderUI.colors, MIScoreSliderUI.floats, 10);
-            miScoreLegend.setBackground(AbstractDetailPanel.backgroundColor);
+            miScoreLegend.setBackground(UIColors.lightBackground);
             miScoreLegend.setBorder(new EmptyBorder(5, 0, 10, 15));
             edgeColorPanel.add(miScoreLegend, d.down().anchor("west").expandHoriz());
         }
@@ -35,12 +35,12 @@ public class SummaryEdgeLegendPanel extends AbstractEdgeLegendPanel {
 
     protected CollapsablePanel createEdgeWidthPanel() {
         JPanel edgeWidthPanel = new JPanel(new GridBagLayout());
-        edgeWidthPanel.setBackground(AbstractDetailPanel.backgroundColor);
+        edgeWidthPanel.setBackground(UIColors.lightBackground);
         {
             EasyGBC d = new EasyGBC();
-            edgeWidthPanel.setBackground(AbstractDetailPanel.backgroundColor);
+            edgeWidthPanel.setBackground(UIColors.lightBackground);
             ContinuousEdgeWidthLegend edgeWidthLegend = new ContinuousEdgeWidthLegend(SummaryStyle.edgeWidth1, SummaryStyle.edgeWidth2, SummaryStyle.edgeWidthValue1, SummaryStyle.edgeWidthValue2);
-            edgeWidthLegend.setBackground(AbstractDetailPanel.backgroundColor);
+            edgeWidthLegend.setBackground(UIColors.lightBackground);
             edgeWidthLegend.setBorder(new EmptyBorder(5, 0, 0, 15));
             edgeWidthPanel.add(edgeWidthLegend, d.down().anchor("west").expandHoriz());
         }

@@ -7,7 +7,8 @@ import org.cytoscape.model.CyTableUtil;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeBasics;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeDetails;
@@ -30,7 +31,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
     private static final int MAXIMUM_SELECTED_NODE_SHOWN = 100;
     private final EasyGBC layoutHelper = new EasyGBC();
     public volatile boolean selectionRunning;
-    private final Map<String, NodePanel> nodeIdToNodePanel = new HashMap<>();
+    private final Map<String, NodePanel> nodeIdToNodePanel = new Hashtable<>();
     private final JPanel filtersPanel = new JPanel(new GridBagLayout());
     private final EasyGBC filterHelper = new EasyGBC();
     private final Map<Class<? extends Filter>, FilterPanel> filterPanels = new HashMap<>();
@@ -51,10 +52,10 @@ public class NodeDetailPanel extends AbstractDetailPanel {
         JPanel mainPanel = new JPanel();
         {
             mainPanel.setLayout(new GridBagLayout());
-            mainPanel.setBackground(backgroundColor);
+            mainPanel.setBackground(UIColors.lightBackground);
             EasyGBC d = new EasyGBC();
             CollapsablePanel filters = new CollapsablePanel("Filters", filtersPanel, true);
-            filters.setBackground(backgroundColor);
+            filters.setBackground(UIColors.lightBackground);
             mainPanel.add(filters, d.down().anchor("north").expandHoriz());
             mainPanel.add(createNodesPanel(), d.down().anchor("north").expandHoriz());
             mainPanel.add(Box.createVerticalGlue(), d.down().expandVert());
@@ -89,10 +90,10 @@ public class NodeDetailPanel extends AbstractDetailPanel {
 
     private JPanel createNodesPanel() {
         nodesPanel = new JPanel();
-        nodesPanel.setBackground(backgroundColor);
+        nodesPanel.setBackground(UIColors.lightBackground);
         nodesPanel.setLayout(new GridBagLayout());
 
-        selectedNodes(CyTableUtil.getNodesInState(currentINetwork.getCyNetwork(), CyNetwork.SELECTED, true));
+        selectedNodes(CyTableUtil.getNodesInState(currentNetwork.getCyNetwork(), CyNetwork.SELECTED, true));
 
         nodesPanel.setAlignmentX(LEFT_ALIGNMENT);
         selectedNodes = new CollapsablePanel("Selected nodes info", nodesPanel, false);
@@ -101,7 +102,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
 
 
     public void networkChanged(Network newNetwork) {
-        this.currentINetwork = newNetwork;
+        this.currentNetwork = newNetwork;
         selectedNodes(newNetwork.getSelectedNodes());
     }
 
@@ -111,7 +112,8 @@ public class NodeDetailPanel extends AbstractDetailPanel {
             selectionRunning = true;
 
             List<Node> iNodes = nodes.stream()
-                    .map(node -> new Node(currentINetwork, node))
+                    .map(node -> new Node(currentNetwork, node))
+                    .filter(node -> currentView.visibleNodes.contains(node))
                     .collect(Comparators.least(MAXIMUM_SELECTED_NODE_SHOWN, Node::compareTo));
 
             List<String> nodesIds = iNodes.stream().map(iNode -> iNode.preferredId).collect(Collectors.toList());
@@ -160,7 +162,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
             this.node = node;
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
             content.setAlignmentX(LEFT_ALIGNMENT);
-            setBackground(backgroundColor);
+            setBackground(UIColors.lightBackground);
             List<Feature> features = node.getFeatures();
             setHeader(new NodeSchematic(node, features, openBrowser));
             content.add(new NodeBasics(node, openBrowser));

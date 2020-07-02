@@ -1,8 +1,8 @@
 package uk.ac.ebi.intact.app.internal.ui.components.legend;
 
 import org.cytoscape.util.swing.CyColorChooser;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.shapes.Ball;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.LegendDetailPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,7 +26,7 @@ public class NodeColorPicker extends JPanel implements MouseListener {
 
     public NodeColorPicker() {
         self = this;
-        setBackground(LegendDetailPanel.backgroundColor);
+        setBackground(UIColors.lightBackground);
         addMouseListener(this);
         setLayout(new FlowLayout(FlowLayout.LEFT, 4, 2));
     }
@@ -46,12 +46,12 @@ public class NodeColorPicker extends JPanel implements MouseListener {
 
     private void init() {
         editableBall = new EditableBall(currentColor, 30);
-        editableBall.setBackground(LegendDetailPanel.backgroundColor);
+        editableBall.setBackground(UIColors.lightBackground);
         add(editableBall, BorderLayout.WEST);
 
         JLabel label = new JLabel(descriptor, SwingConstants.LEFT);
         label.setVerticalAlignment(SwingConstants.CENTER);
-        label.setBackground(LegendDetailPanel.backgroundColor);
+        label.setBackground(UIColors.lightBackground);
         label.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
         if (definedSpecies) {
             label.setFont(italicFont);

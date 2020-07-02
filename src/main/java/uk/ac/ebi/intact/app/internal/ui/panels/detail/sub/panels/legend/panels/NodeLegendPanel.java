@@ -2,8 +2,8 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels;
 
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.node.NodeBorderLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.node.NodeColorLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.node.NodeShapeLegendPanel;
@@ -17,7 +17,7 @@ public class NodeLegendPanel extends AbstractLegendPanel {
 
     public NodeLegendPanel(Manager manager, Network currentINetwork, NetworkView currentIView) {
         super("Nodes", manager, currentINetwork, currentIView);
-        content.setBackground(AbstractDetailPanel.backgroundColor);
+        content.setBackground(UIColors.lightBackground);
         content.setLayout(new GridBagLayout());
         nodeColorLegendPanel = new NodeColorLegendPanel(manager, currentINetwork, currentIView);
         nodeShapeLegendPanel = new NodeShapeLegendPanel(manager, currentINetwork, currentIView);

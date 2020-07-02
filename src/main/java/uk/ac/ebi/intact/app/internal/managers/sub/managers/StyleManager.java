@@ -1,8 +1,8 @@
-package uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers;
+package uk.ac.ebi.intact.app.internal.managers.sub.managers;
 
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
 import uk.ac.ebi.intact.app.internal.model.styles.ExpandedStyle;
 import uk.ac.ebi.intact.app.internal.model.styles.Style;

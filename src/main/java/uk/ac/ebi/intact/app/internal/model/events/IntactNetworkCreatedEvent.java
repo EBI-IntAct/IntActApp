@@ -1,7 +1,7 @@
 package uk.ac.ebi.intact.app.internal.model.events;
 
 import org.cytoscape.event.AbstractCyEvent;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 
 public class IntactNetworkCreatedEvent extends AbstractCyEvent<Manager> {

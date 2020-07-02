@@ -12,7 +12,7 @@ import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
 import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedEvent;

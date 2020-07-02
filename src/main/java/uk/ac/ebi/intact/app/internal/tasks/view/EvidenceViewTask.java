@@ -4,10 +4,10 @@ import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 
-public class ExpandViewTask extends AbstractHiderTask {
-    public ExpandViewTask(Manager manager, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, boolean currentView) {
+public class EvidenceViewTask extends AbstractHiderTask {
+    public EvidenceViewTask(Manager manager, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, boolean currentView) {
         super(manager, hideTaskFactory, unHideTaskFactory, currentView);
     }
 

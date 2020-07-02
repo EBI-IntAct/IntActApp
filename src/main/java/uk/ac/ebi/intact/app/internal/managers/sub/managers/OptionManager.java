@@ -1,7 +1,7 @@
-package uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers;
+package uk.ac.ebi.intact.app.internal.managers.sub.managers;
 
 import org.cytoscape.property.CyProperty;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 
 import java.util.*;
@@ -19,8 +19,8 @@ public class OptionManager {
         this.propertyService = getPropertyService(manager, CyProperty.SavePolicy.CONFIG_DIR);
     }
 
-    public final NumericOption<Integer> MAX_INTERACTOR_PER_TERM = new NumericOption<>("maxInteractorPerTerm", "Maximal number of interactors shown per terms", Integer.class, 500, 1, 1000, List.of(Scope.SEARCH));
-    public final Option<Boolean> DEFAULT_INCLUDE_ALL_INTERACTORS = new Option<>("includeUnseenInteractors", "DEFAULT: Include interactors after visible limit reached", Boolean.class, true, List.of(Scope.SEARCH));
+    public final NumericOption<Integer> MAX_INTERACTOR_PER_TERM = new NumericOption<>("maxInteractorPerTerm", "Maximum number of disambiguation choices shown", Integer.class, 500, 1, 1000, List.of(Scope.SEARCH));
+    public final Option<Boolean> DEFAULT_INCLUDE_ALL_INTERACTORS = new Option<>("includeUnseenInteractors", "Include extra choices in search when maximum exceeded", Boolean.class, true, List.of(Scope.SEARCH));
     public final Option<Boolean> SHOW_HIGHLIGHTS = new Option<>("showHighlights", "Highlight matching columns", Boolean.class, true, List.of(Scope.SEARCH, Scope.DISAMBIGUATION));
     public final Option<Boolean> ADD_INTERACTING_PARTNERS = new Option<>("addingInteractingPartners", "Add interacting partners of seed interactors to network", Boolean.class, true, List.of(Scope.SEARCH, Scope.DISAMBIGUATION));
 

@@ -17,7 +17,7 @@ import org.cytoscape.work.TaskIterator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIQueryTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.AddTermsTaskFactory;
@@ -77,10 +77,10 @@ public class CyActivator extends AbstractCyActivator {
             SummaryViewTaskFactory summaryViewTaskFactory = new SummaryViewTaskFactory(manager, false);
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
-            properties.setProperty(COMMAND, "collapse");
+            properties.setProperty(COMMAND, "summary");
 
             properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
-            properties.setProperty(TITLE, "Collapse");
+            properties.setProperty(TITLE, "Summary");
             properties.setProperty(MENU_GRAVITY, "1.0");
             properties.setProperty(IN_MENU_BAR, "true");
             registerService(bc, summaryViewTaskFactory, TaskFactory.class, properties);
@@ -89,10 +89,10 @@ public class CyActivator extends AbstractCyActivator {
             EvidenceViewTaskFactory expendTaskFactory = new EvidenceViewTaskFactory(manager, false);
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
-            properties.setProperty(COMMAND, "expand");
+            properties.setProperty(COMMAND, "evidence");
 
             properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
-            properties.setProperty(TITLE, "Expand");
+            properties.setProperty(TITLE, "Evidence");
             properties.setProperty(MENU_GRAVITY, "2.0");
             properties.setProperty(IN_MENU_BAR, "true");
             registerService(bc, expendTaskFactory, TaskFactory.class, properties);

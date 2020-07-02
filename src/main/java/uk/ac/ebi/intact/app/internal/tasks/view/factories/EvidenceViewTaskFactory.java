@@ -1,8 +1,8 @@
 package uk.ac.ebi.intact.app.internal.tasks.view.factories;
 
 import org.cytoscape.work.TaskIterator;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.tasks.view.ExpandViewTask;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.tasks.view.EvidenceViewTask;
 
 public class EvidenceViewTaskFactory extends AbstractHiderTaskFactory {
 
@@ -12,6 +12,6 @@ public class EvidenceViewTaskFactory extends AbstractHiderTaskFactory {
 
     @Override
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new ExpandViewTask(manager, hideTaskFactory, unHideTaskFactory, currentView));
+        return new TaskIterator(new EvidenceViewTask(manager, hideTaskFactory, unHideTaskFactory, currentView));
     }
 }

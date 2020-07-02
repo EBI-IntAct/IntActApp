@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers;
+package uk.ac.ebi.intact.app.internal.managers.sub.managers;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.*;
@@ -24,7 +24,7 @@ import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedListener;
 import uk.ac.ebi.intact.app.internal.model.events.IntactViewChangedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.IntactViewTypeChangedListener;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;

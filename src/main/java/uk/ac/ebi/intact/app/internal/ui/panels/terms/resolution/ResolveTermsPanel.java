@@ -2,9 +2,10 @@ package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
 import org.cytoscape.work.TaskFactory;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.sub.managers.OptionManager;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ImportNetworkTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.components.filler.HorizontalFiller;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.CenteredLabel;
@@ -35,7 +36,6 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     public static final int HEIGHT = 400;
     public static final int TERM_SPACE = 8;
     private static final ImageIcon filterIcon = IconUtils.createImageIcon("/IntAct/DIGITAL/filter.png");
-    public static final Color HEADER_CELLS_COLOR = new Color(104, 41, 124);
     final Manager manager;
     final EasyGBC layoutHelper = new EasyGBC();
     final boolean fuzzySearch;
@@ -86,11 +86,11 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
 
     private void init() {
         if (fuzzySearch) {
-            add(new CenteredLabel("The terms you have given matches all these interactors.", 15, HEADER_CELLS_COLOR), layoutHelper.expandHoriz());
-            add(new CenteredLabel("Select interactors you want to use as seeds to build the cyNetwork around", 14, HEADER_CELLS_COLOR), layoutHelper.down().expandHoriz());
+            add(new CenteredLabel("The terms you have given matches all these interactors.", 15, UIColors.deepPurple), layoutHelper.expandHoriz());
+            add(new CenteredLabel("Select interactors you want to use as seeds to build network.", 14, UIColors.deepPurple), layoutHelper.down().expandHoriz());
         } else {
-            add(new CenteredLabel("There is ambiguity among the terms you gave.", 15, HEADER_CELLS_COLOR), layoutHelper.down().expandHoriz());
-            add(new CenteredLabel("Please select the interactors that you meant to query as seeds to build the cyNetwork around.", 14, HEADER_CELLS_COLOR), layoutHelper.down().expandHoriz());
+            add(new CenteredLabel("There is ambiguity among the terms you gave.", 15, UIColors.deepPurple), layoutHelper.down().expandHoriz());
+            add(new CenteredLabel("Please select the interactors that you meant to query as seeds to build network.", 14, UIColors.deepPurple), layoutHelper.down().expandHoriz());
         }
         createColumnHeader();
         createRowHeader();
@@ -153,7 +153,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             maxWidthsOfColumns.put(column, width);
         }
 
-        cell.setBackground(HEADER_CELLS_COLOR);
+        cell.setBackground(UIColors.deepPurple);
         resizeHeight(cell, 30, SizeType.ALL);
         columns.put(column, cell);
     }

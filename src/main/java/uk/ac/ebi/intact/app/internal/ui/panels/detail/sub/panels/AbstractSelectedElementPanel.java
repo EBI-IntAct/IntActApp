@@ -6,7 +6,7 @@ import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 import javax.swing.*;
 import java.awt.*;
 
-import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.app.internal.model.styles.UIColors.lightBackground;
 import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.labelFont;
 
 public abstract class AbstractSelectedElementPanel extends JPanel {
@@ -19,7 +19,7 @@ public abstract class AbstractSelectedElementPanel extends JPanel {
         this.openBrowser = openBrowser;
         this.titled = title != null && !title.isBlank();
         setLayout(new GridBagLayout());
-        setBackground(backgroundColor);
+        setBackground(lightBackground);
         setAlignmentX(LEFT_ALIGNMENT);
         if (titled) {
             initTitle(title);
@@ -29,7 +29,6 @@ public abstract class AbstractSelectedElementPanel extends JPanel {
 
     private void initTitle(String title) {
         JLabel lbl = new JLabel(title);
-        lbl.setBackground(backgroundColor);
         lbl.setFont(labelFont);
         lbl.setAlignmentX(LEFT_ALIGNMENT);
         lbl.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
@@ -38,11 +37,11 @@ public abstract class AbstractSelectedElementPanel extends JPanel {
 
     private void initContent() {
         if (titled) {
-            content.setBorder(BorderFactory.createMatteBorder(0, 10, 0, 0, backgroundColor));
+            content.setBorder(BorderFactory.createMatteBorder(0, 10, 0, 0, lightBackground));
         }
         content.setAlignmentX(LEFT_ALIGNMENT);
         content.setAlignmentY(TOP_ALIGNMENT);
-        content.setBackground(backgroundColor);
+        content.setBackground(lightBackground);
         add(content, layoutHelper.anchor("west").down().expandBoth());
     }
 

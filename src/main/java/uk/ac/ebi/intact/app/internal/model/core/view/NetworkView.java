@@ -15,7 +15,7 @@ import uk.ac.ebi.intact.app.internal.model.filters.edge.*;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeSpeciesFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NetworkFields;
 
 import java.util.*;
@@ -27,11 +27,11 @@ public class NetworkView {
     public final transient Manager manager;
     public final transient Network network;
     public final transient CyNetworkView cyView;
-    private Type type = Type.SUMMARY;
     public final transient Set<Node> visibleNodes = new HashSet<>();
     public final transient Set<Edge> visibleEdges = new HashSet<>();
     private final List<Filter<?>> filters = new ArrayList<>();
     private boolean filtersSilenced = false;
+    private Type type = Type.SUMMARY;
 
     public NetworkView(Manager manager, CyNetworkView cyView, boolean loadData) {
         this.manager = manager;
@@ -64,7 +64,7 @@ public class NetworkView {
         filters.add(new OrphanNodeFilter(this)); // Must be after edge filters
 
         if (loadData) load();
-
+        filter();
         manager.data.fireIntactViewChangedEvent(new IntactViewChangedEvent(manager, this));
     }
 
@@ -99,7 +99,6 @@ public class NetworkView {
                     }
                 }
             }
-            filter();
         } catch (JsonProcessingException | IllegalArgumentException e) {
             e.printStackTrace();
         }
@@ -166,6 +165,5 @@ public class NetworkView {
         public String toString() {
             return name;
         }
-
     }
 }

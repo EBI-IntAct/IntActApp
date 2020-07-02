@@ -11,7 +11,7 @@ import uk.ac.ebi.intact.app.internal.ui.components.slider.RangeSlider;
 import javax.swing.*;
 import java.awt.*;
 
-import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.app.internal.model.styles.UIColors.lightBackground;
 
 public class ContinuousFilterPanel<T extends Element> extends FilterPanel<ContinuousFilter<T>> implements RangeChangeListener {
     private final RangeSlider slider = new RangeSlider(0, 100);
@@ -25,7 +25,7 @@ public class ContinuousFilterPanel<T extends Element> extends FilterPanel<Contin
             expand();
         }
         slider.setForeground(Color.LIGHT_GRAY);
-        slider.setBackground(backgroundColor);
+        slider.setBackground(lightBackground);
         slider.addRangeChangeListener(this);
         setupSlider();
     }

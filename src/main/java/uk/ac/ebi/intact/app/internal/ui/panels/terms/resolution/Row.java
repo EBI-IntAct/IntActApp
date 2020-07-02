@@ -2,6 +2,7 @@ package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
 import org.apache.commons.lang3.StringUtils;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.diagrams.InteractorDiagram;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.CenteredLabel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
@@ -23,8 +24,6 @@ import java.util.regex.Pattern;
 import static uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution.TermColumn.*;
 
 class Row extends JPanel implements ItemListener {
-    public static final Color SELECTED_COLOR = new Color(208, 196, 214);
-    public static final Color UNSELECTED_COLOR = new Color(216, 216, 216);
     protected final EasyGBC layoutHelper = new EasyGBC().expandBoth().anchor("west");
     final Interactor interactor;
     final TermTable table;
@@ -126,7 +125,7 @@ class Row extends JPanel implements ItemListener {
 
         helper.gridx = column.ordinal();
         Cell cell = new Cell(cellContent);
-        cell.setBackground(selected ? SELECTED_COLOR : UNSELECTED_COLOR);
+        cell.setBackground(selected ? UIColors.xLightPink : UIColors.xLightGray);
         if (column != SELECT && column != MATCHING_COLUMNS) {
             cellContent.addMouseListener(mouseAdapter);
             cellContent.setFocusable(true);
@@ -164,7 +163,7 @@ class Row extends JPanel implements ItemListener {
         if (e.getStateChange() == ItemEvent.SELECTED) selected = true;
         else if (e.getStateChange() == ItemEvent.DESELECTED) selected = false;
 
-        paintCells(selected ? SELECTED_COLOR : UNSELECTED_COLOR);
+        paintCells(selected ? UIColors.xLightPink : UIColors.xLightGray);
     }
 
     private void paintCells(Color color) {
