@@ -22,8 +22,8 @@ import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedListener;
-import uk.ac.ebi.intact.app.internal.model.events.IntactViewChangedEvent;
-import uk.ac.ebi.intact.app.internal.model.events.IntactViewTypeChangedListener;
+import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedEvent;
+import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedListener;
 import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
@@ -46,7 +46,7 @@ public class DataManager implements
     private final Manager manager;
     final CyRootNetworkManager rootNetworkManager;
     final List<IntactNetworkCreatedListener> intactNetworkCreatedListeners = new ArrayList<>();
-    final List<IntactViewTypeChangedListener> intactViewTypeChangedListeners = new ArrayList<>();
+    final List<IntactViewUpdatedListener> intactViewUpdatedListeners = new ArrayList<>();
     final Map<CyNetwork, Network> networkMap;
     final Map<CyNetworkView, NetworkView> intactNetworkViewMap;
 
@@ -217,7 +217,7 @@ public class DataManager implements
 
         NetworkView currentView = getCurrentIntactNetworkView();
         if (currentView != null) {
-            fireIntactViewChangedEvent(new IntactViewChangedEvent(manager, currentView));
+            fireIntactViewChangedEvent(new IntactViewUpdatedEvent(manager, currentView));
             manager.utils.showResultsPanel();
         } else {
             manager.utils.hideResultsPanel();
@@ -345,20 +345,20 @@ public class DataManager implements
     public void intactViewChanged(NetworkView.Type newType, NetworkView view) {
         manager.style.intactStyles.get(newType).applyStyle(view.cyView);
         view.setType(newType);
-        fireIntactViewChangedEvent(new IntactViewChangedEvent(manager, view));
+        fireIntactViewChangedEvent(new IntactViewUpdatedEvent(manager, view));
     }
 
-    public void fireIntactViewChangedEvent(IntactViewChangedEvent event) {
-        for (IntactViewTypeChangedListener listener : intactViewTypeChangedListeners) {
+    public void fireIntactViewChangedEvent(IntactViewUpdatedEvent event) {
+        for (IntactViewUpdatedListener listener : intactViewUpdatedListeners) {
             listener.handleEvent(event);
         }
     }
 
-    public void addIntactViewChangedListener(IntactViewTypeChangedListener listener) {
-        intactViewTypeChangedListeners.add(listener);
+    public void addIntactViewChangedListener(IntactViewUpdatedListener listener) {
+        intactViewUpdatedListeners.add(listener);
     }
 
-    public void removeIntactViewChangedListener(IntactViewTypeChangedListener listener) {
-        intactViewTypeChangedListeners.remove(listener);
+    public void removeIntactViewChangedListener(IntactViewUpdatedListener listener) {
+        intactViewUpdatedListeners.remove(listener);
     }
 }

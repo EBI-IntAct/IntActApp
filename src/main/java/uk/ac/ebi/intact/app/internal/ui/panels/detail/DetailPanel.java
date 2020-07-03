@@ -17,8 +17,8 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedListener;
-import uk.ac.ebi.intact.app.internal.model.events.IntactViewChangedEvent;
-import uk.ac.ebi.intact.app.internal.model.events.IntactViewTypeChangedListener;
+import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedEvent;
+import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedListener;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
@@ -45,7 +45,7 @@ public class DetailPanel extends JPanel
         SetCurrentNetworkViewListener,
         SelectedNodesAndEdgesListener,
         IntactNetworkCreatedListener,
-        IntactViewTypeChangedListener {
+        IntactViewUpdatedListener {
 
     private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/Gradient_over_Transparent/favicon_32x32.ico");
     final Manager manager;
@@ -125,7 +125,7 @@ public class DetailPanel extends JPanel
         registered = true;
         if (view != null) {
             setupFilters(view);
-            legendPanel.viewTypeChanged(view.getType());
+            legendPanel.viewUpdated(view.getType());
         }
         revalidate();
         repaint();
@@ -287,9 +287,10 @@ public class DetailPanel extends JPanel
     }
 
     @Override
-    public void handleEvent(IntactViewChangedEvent event) {
-        legendPanel.viewTypeChanged(event.newType);
-        edgePanel.viewTypeChanged();
+    public void handleEvent(IntactViewUpdatedEvent event) {
+        legendPanel.viewUpdated(event.newType);
+        nodePanel.viewUpdated();
+        edgePanel.viewUpdated();
         switch (event.newType) {
             case SUMMARY:
                 summaryViewType.setSelected(true);

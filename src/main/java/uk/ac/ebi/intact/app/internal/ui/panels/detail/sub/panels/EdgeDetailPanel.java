@@ -21,13 +21,14 @@ import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.elements.E
 import uk.ac.ebi.intact.app.internal.ui.panels.filters.FilterPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 import uk.ac.ebi.intact.app.internal.ui.utils.LinkUtils;
-import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static java.util.Comparator.comparing;
@@ -38,9 +39,9 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
     private JPanel edgesPanel;
     private CollapsablePanel selectedEdges;
     private static final int MAXIMUM_SELECTED_EDGE_SHOWN = 100;
-    private final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+    private final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
-    private final Map<Edge, EdgePanel> edgeToPanel = new Hashtable<>();
+    private final ConcurrentHashMap<Edge, EdgePanel> edgeToPanel = new ConcurrentHashMap<>();
     private final JPanel mainPanel = new JPanel(new GridBagLayout());
     private final JPanel filtersPanel = new JPanel(new GridBagLayout());
     private final EasyGBC filterHelper = new EasyGBC();
@@ -108,7 +109,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
 
     public void networkChanged(Network newNetwork) {
         this.currentNetwork = newNetwork;
-        selectedEdges(newNetwork.getSelectedEdges());
+        selectedEdges(newNetwork.getSelectedCyEdges());
     }
 
     public volatile boolean selectionRunning;
@@ -129,12 +130,12 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
                 if (!selectionRunning)
                     break;
 
-                if (!edgeToPanel.containsKey(edge)) {
-                    EdgePanel edgePanel = new EdgePanel(edge);
+                edgeToPanel.computeIfAbsent(edge, keyEdge -> {
+                    EdgePanel edgePanel = new EdgePanel(keyEdge);
                     edgePanel.setAlignmentX(LEFT_ALIGNMENT);
                     edgesPanel.add(edgePanel, layoutHelper.anchor("west").down().expandHoriz());
-                    edgeToPanel.put(edge, edgePanel);
-                }
+                    return edgePanel;
+                });
 
             }
 
@@ -167,13 +168,15 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
         currentView = manager.data.getNetworkView(view);
     }
 
-    public void viewTypeChanged() {
-        executor.execute(() -> {
-                    hideDisabledFilters();
-                    TimeUtils.sleep(1000);
-                    selectedEdges(currentNetwork.getSelectedEdges());
-                }
-        );
+    //    private Thread thread;
+    private Future<?> lastSelection;
+
+    public void viewUpdated() {
+        if (lastSelection != null) lastSelection.cancel(true);
+        lastSelection = executor.submit(() -> {
+            hideDisabledFilters();
+            selectedEdges(currentNetwork.getSelectedCyEdges());
+        });
     }
 
 
@@ -194,7 +197,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
                 EvidenceEdge evidenceEdge = (EvidenceEdge) edge;
                 header.add(new JLabel("Evidence of "));
                 header.add(LinkUtils.createCVTermLink(openBrowser, evidenceEdge.type));
-                header.add(new JLabel( " between " + evidenceEdge.source.name + " and " + evidenceEdge.target.name));
+                header.add(new JLabel(" between " + evidenceEdge.source.name + " and " + evidenceEdge.target.name));
             }
 
             setHeader(header);

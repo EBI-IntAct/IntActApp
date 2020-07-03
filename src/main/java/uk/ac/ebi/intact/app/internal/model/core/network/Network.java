@@ -361,7 +361,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
         }
     }
 
-    public List<CyEdge> getSelectedEdges() {
+    public List<CyEdge> getSelectedCyEdges() {
         List<CyEdge> selectedEdges = new ArrayList<>();
         for (CyEdge edge : cyNetwork.getEdgeList()) {
             if (cyNetwork.getRow(edge).get(CyNetwork.SELECTED, Boolean.class)) {
@@ -371,7 +371,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
         return selectedEdges;
     }
 
-    public List<CyNode> getSelectedNodes() {
+    public List<CyNode> getSelectedCyNodes() {
         List<CyNode> selectedNodes = new ArrayList<>();
         for (CyNode node : cyNetwork.getNodeList()) {
             if (cyNetwork.getRow(node).get(CyNetwork.SELECTED, Boolean.class)) {

@@ -61,7 +61,7 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
 
             filterCurrentLegends();
 
-            viewTypeChanged(currentView.getType());
+            viewUpdated(currentView.getType());
             nodePanel.networkViewChanged(currentView);
             edgePanel.networkViewChanged(currentView);
         }
@@ -72,7 +72,7 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
         edgePanel.filterCurrentLegend();
     }
 
-    public void viewTypeChanged(NetworkView.Type newType) {
+    public void viewUpdated(NetworkView.Type newType) {
         nodePanel.viewTypeChanged(newType);
         edgePanel.viewTypeChanged(newType);
     }
