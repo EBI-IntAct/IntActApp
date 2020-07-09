@@ -9,6 +9,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.SelectEdgesTaskFactory;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
@@ -44,9 +46,9 @@ public abstract class AbstractHiderTask extends AbstractTask {
         chooseData();
         if (chosenView != null && chosenView.getType() != NetworkView.Type.SUMMARY) {
             CyNetwork cyNetwork = chosenNetwork.getCyNetwork();
-            Set<CyEdge> edgesToSelect = chosenNetwork.getEvidenceCyEdges().stream()
-                    .filter(cyEdge -> cyNetwork.getRow(cyEdge).get(CyNetwork.SELECTED, Boolean.class))
-                    .map(chosenNetwork::getSummaryCyEdge)
+            Set<CyEdge> edgesToSelect = chosenNetwork.getEvidenceEdges().stream()
+                    .filter(Edge::isSelected)
+                    .map(edge -> chosenNetwork.getSummaryEdge(edge.cyEdge).cyEdge)
                     .collect(Collectors.toSet());
 
             insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getEvidenceCyEdges()));
@@ -59,9 +61,9 @@ public abstract class AbstractHiderTask extends AbstractTask {
         chooseData();
         if (chosenView != null && chosenView.getType() == NetworkView.Type.SUMMARY) {
             CyNetwork cyNetwork = chosenNetwork.getCyNetwork();
-            Set<CyEdge> edgesToSelect = chosenNetwork.getSummaryCyEdges().stream()
-                    .filter(cyEdge -> cyNetwork.getRow(cyEdge).get(CyNetwork.SELECTED, Boolean.class))
-                    .map(chosenNetwork::getSimilarEvidenceCyEdges)
+            Set<CyEdge> edgesToSelect = chosenNetwork.getSummaryEdges().stream()
+                    .filter(Edge::isSelected)
+                    .map((SummaryEdge edge) -> chosenNetwork.getSimilarEvidenceCyEdges(edge.cyEdge))
                     .flatMap(List::stream)
                     .collect(Collectors.toSet());
 
