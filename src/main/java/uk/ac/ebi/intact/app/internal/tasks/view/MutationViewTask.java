@@ -11,6 +11,10 @@ public class MutationViewTask extends AbstractHiderTask {
         super(manager, hideTaskFactory, unHideTaskFactory, currentView);
     }
 
+    public MutationViewTask(Manager manager, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, NetworkView networkView) {
+        super(manager, hideTaskFactory, unHideTaskFactory, networkView);
+    }
+
     @Override
     public void run(TaskMonitor taskMonitor) {
         expandEdgesIfNeeded();

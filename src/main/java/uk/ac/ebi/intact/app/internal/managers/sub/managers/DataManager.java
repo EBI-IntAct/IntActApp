@@ -12,6 +12,8 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.task.hide.HideTaskFactory;
+import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -20,6 +22,7 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
@@ -45,17 +48,22 @@ public class DataManager implements
         NetworkViewAboutToBeDestroyedListener {
     private final Manager manager;
     final CyRootNetworkManager rootNetworkManager;
-    final List<IntactNetworkCreatedListener> intactNetworkCreatedListeners = new ArrayList<>();
-    final List<IntactViewUpdatedListener> intactViewUpdatedListeners = new ArrayList<>();
+    final CyNetworkViewManager networkViewManager;
+    final HideTaskFactory hideTaskFactory;
+    final UnHideTaskFactory unHideTaskFactory;
+    final List<IntactNetworkCreatedListener> networkCreatedListeners = new ArrayList<>();
+    final List<IntactViewUpdatedListener> viewUpdatedListeners = new ArrayList<>();
     final Map<CyNetwork, Network> networkMap;
-    final Map<CyNetworkView, NetworkView> intactNetworkViewMap;
+    final Map<CyNetworkView, NetworkView> networkViewMap;
 
     public DataManager(Manager manager) {
         this.manager = manager;
         networkMap = new HashMap<>();
-        intactNetworkViewMap = new HashMap<>();
+        networkViewMap = new HashMap<>();
         rootNetworkManager = manager.utils.getService(CyRootNetworkManager.class);
-
+        networkViewManager = manager.utils.getService(CyNetworkViewManager.class);
+        hideTaskFactory = manager.utils.getService(HideTaskFactory.class);
+        unHideTaskFactory = manager.utils.getService(UnHideTaskFactory.class);
         // Load Fields
         System.out.println(NodeFields.SPECIES.toString());
         System.out.println(EdgeFields.SUMMARY_NB_EDGES.toString());
@@ -141,10 +149,15 @@ public class DataManager implements
         }
         manager.utils.getService(CyApplicationManager.class).setCurrentNetwork(cyNetwork);
     }
-
     public NetworkView addNetworkView(CyNetworkView cyView, boolean loadData) {
         NetworkView view = new NetworkView(manager, cyView, loadData);
-        intactNetworkViewMap.put(cyView, view);
+        networkViewMap.put(cyView, view);
+        return view;
+    }
+
+    public NetworkView addNetworkView(CyNetworkView cyView, boolean loadData, NetworkView.Type type) {
+        NetworkView view = new NetworkView(manager, cyView, loadData, type);
+        networkViewMap.put(cyView, view);
         return view;
     }
 
@@ -165,7 +178,7 @@ public class DataManager implements
 
     @Override
     public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
-        intactNetworkViewMap.remove(e.getNetworkView());
+        networkViewMap.remove(e.getNetworkView());
     }
 
     @Override
@@ -177,23 +190,37 @@ public class DataManager implements
         addSubNetwork((CySubNetwork) newNetwork, baseNetwork);
     }
 
+    private final Map<CyNetwork, NetworkView.Type> networkViewTypesToSet = new HashMap<>();
+
     private void addSubNetwork(CySubNetwork subCyNetwork, CySubNetwork parentCyNetwork) {
         if (networkMap.containsKey(parentCyNetwork)) {
             Network parentNetwork = networkMap.get(parentCyNetwork);
             handleSubNetworkEdges(subCyNetwork, parentNetwork);
             Network subNetwork = new Network(manager);
             addNetwork(subNetwork, subCyNetwork);
+
+            for (CyNetworkView cyNetworkView: networkViewManager.getNetworkViews(parentCyNetwork)) {
+                NetworkView networkView = networkViewMap.get(cyNetworkView);
+                if (networkView == null) continue;
+                networkViewTypesToSet.put(subCyNetwork, networkView.getType());
+                break;
+            }
+
             subNetwork.setFeaturesTable(parentNetwork.getFeaturesTable());
             subNetwork.setIdentifiersTable(parentNetwork.getIdentifiersTable());
             NetworkFields.UUID.setValue(subCyNetwork.getRow(subCyNetwork), NetworkFields.UUID.getValue(parentCyNetwork.getRow(parentCyNetwork)));
             subNetwork.getNodes().forEach(Node::updateMutationStatus);
+            subNetwork.getSummaryEdges().forEach(SummaryEdge::updateSummary);
         }
     }
 
     @Override
     public void handleEvent(NetworkViewAddedEvent e) {
-        if (networkMap.containsKey(e.getNetworkView().getModel())) {
-            addNetworkView(e.getNetworkView(), false);
+        CyNetwork cyNetwork = e.getNetworkView().getModel();
+        if (networkMap.containsKey(cyNetwork)) {
+            if (networkViewTypesToSet.containsKey(cyNetwork)) {
+                addNetworkView(e.getNetworkView(), false, networkViewTypesToSet.get(cyNetwork));
+            } else addNetworkView(e.getNetworkView(), false);
         }
     }
 
@@ -201,7 +228,7 @@ public class DataManager implements
     public void handleEvent(SessionLoadedEvent event) {
         // Create string networks for any networks loaded by string
         networkMap.clear();
-        intactNetworkViewMap.clear();
+        networkViewMap.clear();
         CySession loadedSession = event.getLoadedSession();
         Set<CyNetwork> cyNetworks = loadedSession.getNetworks();
         for (CyNetwork cyNetwork : cyNetworks) {
@@ -306,21 +333,21 @@ public class DataManager implements
     }
 
     public NetworkView getNetworkView(CyNetworkView view) {
-        return intactNetworkViewMap.get(view);
+        return networkViewMap.get(view);
     }
 
     public NetworkView getCurrentIntactNetworkView() {
-        return intactNetworkViewMap.get(getCurrentCyView());
+        return networkViewMap.get(getCurrentCyView());
     }
 
     public NetworkView[] getViews() {
-        return intactNetworkViewMap.values().toArray(NetworkView[]::new);
+        return networkViewMap.values().toArray(NetworkView[]::new);
     }
 
     //================= IntactNetworkCreated =================//
 
     public void fireIntactNetworkCreated(Network network) {
-        for (IntactNetworkCreatedListener listener : intactNetworkCreatedListeners) {
+        for (IntactNetworkCreatedListener listener : networkCreatedListeners) {
             try {
                 listener.handleEvent(new IntactNetworkCreatedEvent(manager, network));
             } catch (Exception e) {
@@ -330,11 +357,11 @@ public class DataManager implements
     }
 
     public void addIntactNetworkCreatedListener(IntactNetworkCreatedListener listener) {
-        intactNetworkCreatedListeners.add(listener);
+        networkCreatedListeners.add(listener);
     }
 
     public void removeIntactNetworkCreatedListener(IntactNetworkCreatedListener listener) {
-        intactNetworkCreatedListeners.remove(listener);
+        networkCreatedListeners.remove(listener);
     }
 
 
@@ -346,7 +373,7 @@ public class DataManager implements
     }
 
     public void fireIntactViewChangedEvent(IntactViewUpdatedEvent event) {
-        for (IntactViewUpdatedListener listener : intactViewUpdatedListeners) {
+        for (IntactViewUpdatedListener listener : viewUpdatedListeners) {
             try {
                 listener.handleEvent(event);
             } catch (Exception e) {
@@ -356,10 +383,10 @@ public class DataManager implements
     }
 
     public void addIntactViewChangedListener(IntactViewUpdatedListener listener) {
-        intactViewUpdatedListeners.add(listener);
+        viewUpdatedListeners.add(listener);
     }
 
     public void removeIntactViewChangedListener(IntactViewUpdatedListener listener) {
-        intactViewUpdatedListeners.remove(listener);
+        viewUpdatedListeners.remove(listener);
     }
 }

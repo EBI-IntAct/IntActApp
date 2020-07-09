@@ -19,13 +19,10 @@ import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NetworkFields;
 
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class NetworkView {
-    private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
     private Thread thread;
     public final transient Manager manager;
     public final transient Network network;
@@ -34,14 +31,25 @@ public class NetworkView {
     public final transient Set<Edge> visibleEdges = new HashSet<>();
     private final List<Filter<?>> filters = new ArrayList<>();
     private boolean filtersSilenced = false;
-    private Type type = Type.SUMMARY;
+    private Type type;
 
     public NetworkView(Manager manager, CyNetworkView cyView, boolean loadData) {
+        this(manager, cyView, loadData, Type.SUMMARY);
+    }
+
+    public NetworkView(Manager manager, CyNetworkView cyView, boolean loadData, Type type) {
         this.manager = manager;
+        this.type = type;
         if (cyView != null) {
             this.cyView = cyView;
             this.network = manager.data.getNetwork(cyView.getModel());
-            executor.execute(() -> setupFilters(loadData));
+
+            if (type != Type.SUMMARY)
+                network.getSummaryCyEdges().
+                        forEach(cyEdge -> cyView.getEdgeView(cyEdge)
+                                .setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false));
+
+            setupFilters(loadData);
         } else {
             this.cyView = null;
             this.network = null;
@@ -89,11 +97,11 @@ public class NetworkView {
 
         nodesToFilter.removeAll(visibleNodes);
         nodesToFilter.forEach(nodeToHide -> cyView.getNodeView(nodeToHide.cyNode).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false));
-        visibleNodes.forEach(nodeToHide -> cyView.getNodeView(nodeToHide.cyNode).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true));
+        visibleNodes.forEach(nodeToShow -> cyView.getNodeView(nodeToShow.cyNode).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true));
 
         edgesToFilter.removeAll(visibleEdges);
         edgesToFilter.forEach(edgeToHide -> cyView.getEdgeView(edgeToHide.cyEdge).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false));
-        visibleEdges.forEach(edgeToHide -> cyView.getEdgeView(edgeToHide.cyEdge).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true));
+        visibleEdges.forEach(edgeToShow -> cyView.getEdgeView(edgeToShow.cyEdge).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true));
 
         save();
         manager.data.fireIntactViewChangedEvent(new IntactViewUpdatedEvent(manager, this));

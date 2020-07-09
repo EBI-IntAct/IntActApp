@@ -42,6 +42,14 @@ public abstract class AbstractHiderTask extends AbstractTask {
         }
     }
 
+    public AbstractHiderTask(Manager manager, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, NetworkView networkView) {
+        this.manager = manager;
+        this.hideTaskFactory = hideTaskFactory;
+        this.unHideTaskFactory = unHideTaskFactory;
+        this.currentView = false;
+        chosenView = networkView;
+    }
+
     protected void collapseEdgesIfNeeded() {
         chooseData();
         if (chosenView != null && chosenView.getType() != NetworkView.Type.SUMMARY) {
@@ -75,7 +83,7 @@ public abstract class AbstractHiderTask extends AbstractTask {
 
     private void chooseData() {
         if (!currentView) {
-            chosenView = view.getSelectedValue();
+            if (chosenView == null) chosenView = view.getSelectedValue();
             if (chosenView instanceof CurrentView) chosenView = manager.data.getCurrentIntactNetworkView();
         } else {
             chosenView = manager.data.getCurrentIntactNetworkView();

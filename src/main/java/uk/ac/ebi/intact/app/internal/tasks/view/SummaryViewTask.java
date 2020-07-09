@@ -12,6 +12,10 @@ public class SummaryViewTask extends AbstractHiderTask {
         super(manager, hideTaskFactory, unHideTaskFactory, currentView);
     }
 
+    public SummaryViewTask(Manager manager, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, NetworkView networkView) {
+        super(manager, hideTaskFactory, unHideTaskFactory, networkView);
+    }
+
     @Override
     public void run(TaskMonitor taskMonitor) {
         collapseEdgesIfNeeded();
