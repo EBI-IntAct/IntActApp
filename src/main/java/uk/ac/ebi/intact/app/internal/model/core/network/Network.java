@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
-public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
+public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, RemovedEdgesListener {
     ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
     final Manager manager;
     CyNetwork cyNetwork;
@@ -92,6 +92,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
         cyNetwork.getNodeList().forEach(node -> nodes.put(node, new Node(this, node)));
 
         completeMissingNodeColorsFromTables();
+        manager.utils.registerAllServices(this, new Properties());
     }
 
     public Set<String> getInteractorTypes() {
@@ -333,16 +334,43 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
         }
     }
 
+    private boolean removing = false;
+    private List<Node> nodesToUpdate = new ArrayList<>();
 
     @Override
     public void handleEvent(AboutToRemoveEdgesEvent e) {
+        if (removing) return;
         if (e.getSource() == cyNetwork) {
             Collection<CyEdge> removedEdges = e.getEdges();
-            evidenceCyEdges.removeAll(removedEdges);
-            Map<NodeCouple, List<CyEdge>> couplesToRemove = new HashMap<>();
-            NodeCouple.putEdgesToCouples(removedEdges, couplesToRemove);
-            couplesToRemove.forEach((couple, cyEdges) -> coupleToEdges.get(couple).removeAll(cyEdges));
-            updateSummaryEdges(couplesToRemove.keySet());
+            for (CyEdge removedEdge : removedEdges) {
+                NodeCouple nodeCouple = new NodeCouple(removedEdge);
+                if (evidenceEdges.containsKey(removedEdge)) {
+                    evidenceEdges.remove(removedEdge);
+                    List<CyEdge> summarizedEdges = coupleToSummarizedEdges.get(nodeCouple);
+                    summarizedEdges.remove(removedEdge);
+                    if (summarizedEdges.isEmpty()) {
+                        SummaryEdge summaryEdge = summaryEdges.get(nodeCouple);
+                        if (summaryEdge != null) cyNetwork.removeEdges(Collections.singleton(summaryEdge.cyEdge));
+                    }
+                } else if (summaryEdges.containsKey(nodeCouple)) {
+                    List<CyEdge> summarizedEdges = coupleToSummarizedEdges.get(nodeCouple);
+                    summarizedEdges.forEach(evidenceEdges::remove);
+                    removing = true;
+                    cyNetwork.removeEdges(summarizedEdges);
+                    removing = false;
+                    coupleToSummarizedEdges.remove(nodeCouple);
+                    summaryEdges.remove(nodeCouple);
+                }
+                nodesToUpdate.add(getNode(removedEdge.getSource()));
+                nodesToUpdate.add(getNode(removedEdge.getTarget()));
+            }
+        }
+    }
+
+    @Override
+    public void handleEvent(RemovedEdgesEvent e) {
+        while (!nodesToUpdate.isEmpty()) {
+            nodesToUpdate.remove(nodesToUpdate.size() - 1).updateMutationStatus();
         }
     }
 
