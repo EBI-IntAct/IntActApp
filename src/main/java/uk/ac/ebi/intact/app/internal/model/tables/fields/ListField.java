@@ -8,6 +8,7 @@ import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -65,12 +66,10 @@ public class ListField<E> extends Field<List<E>> {
     }
 
     public void map(CyRow row, UnaryOperator<E> mapping) {
-        List<E> values = getValue(row);
-        if (values != null) setValue(row, values.stream().map(mapping).collect(Collectors.toList()));
+        setValue(row, getValue(row).stream().map(mapping).filter(Objects::nonNull).collect(Collectors.toList()));
     }
 
     public void filter(CyRow row, Predicate<E> filter) {
-        List<E> values = getValue(row);
-        if (values != null) setValue(row, values.stream().filter(filter).collect(Collectors.toList()));
+        setValue(row, getValue(row).stream().filter(filter).collect(Collectors.toList()));
     }
 }

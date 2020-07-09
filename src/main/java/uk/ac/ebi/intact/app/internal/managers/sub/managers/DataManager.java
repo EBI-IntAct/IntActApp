@@ -275,7 +275,11 @@ public class DataManager implements
         for (CyRow row : sourceTable.getAllRows()) {
             List<Long> suids = linkField.getValue(row);
             if (!suids.isEmpty() && loadingSession.getObject(suids.get(0), targetType) == null) return;
-            linkField.map(row, oldSUID -> loadingSession.getObject(oldSUID, targetType).getSUID());
+            linkField.map(row, oldSUID -> {
+                CyIdentifiable object = loadingSession.getObject(oldSUID, targetType);
+                if (object != null) return object.getSUID();
+                return null;
+            });
         }
     }
 
