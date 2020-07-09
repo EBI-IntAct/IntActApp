@@ -367,8 +367,12 @@ public class ModelUtils {
 
         if (isSummaryRows.containsKey(false)) {
             for (CyRow evidenceEdgeRow: isSummaryRows.get(false)) {
-                subCyNetwork.addEdge(parentNetwork.getSummaryCyEdge(evidenceEdgeRow));
+                subCyNetwork.addEdge(getSummaryEdge(parentNetwork, evidenceEdgeRow));
             }
         }
+    }
+
+    public static CyEdge getSummaryEdge(Network network, CyRow evidenceEdgeRow) {
+        return network.getSummaryEdge(network.getCyEdge(network.getSUID(evidenceEdgeRow))).cyEdge;
     }
 }
