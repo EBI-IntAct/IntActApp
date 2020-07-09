@@ -2,33 +2,31 @@ package uk.ac.ebi.intact.app.internal.model.core.network;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.*;
-import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
-import org.cytoscape.model.events.AboutToRemoveEdgesListener;
-import org.cytoscape.model.events.AddedEdgesEvent;
-import org.cytoscape.model.events.AddedEdgesListener;
+import org.cytoscape.model.events.*;
 import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.NodeCouple;
-import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.NodeCouple;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
-import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NetworkFields;
-import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NodeFields;
+import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
+import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
 import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
     ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
