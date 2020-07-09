@@ -27,7 +27,7 @@ public abstract class Edge implements Element {
     public final List<String> targetFeatureAcs;
 
 
-    public static Edge createIntactEdge(Network network, CyEdge edge) {
+    public static Edge createEdge(Network network, CyEdge edge) {
         if (network == null || edge == null) return null;
         CyRow edgeRow = network.getCyNetwork().getRow(edge);
         if (edgeRow == null) return null;

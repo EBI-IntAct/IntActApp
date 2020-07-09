@@ -27,12 +27,14 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
     public final Identifier preferredIdentifier;
     public final List<String> featureAcs = new ArrayList<>();
     public final List<String> identifierAcs = new ArrayList<>();
+    public final CyRow nodeRow;
+    public boolean mutated;
 
     public Node(final Network network, final CyNode cyNode) {
         this(network, cyNode, network.getCyNetwork().getRow(cyNode));
     }
 
-    public Node(final Network network, final CyNode cyNode, CyRow nodeRow) {
+    private Node(final Network network, final CyNode cyNode, CyRow nodeRow) {
         super(
                 AC.getValue(nodeRow),
                 NAME.getValue(nodeRow),
@@ -46,6 +48,8 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
         this.network = network;
         this.cyNode = cyNode;
         this.typeMIId = new OntologyIdentifier(TYPE_MI_ID.getValue(nodeRow), SourceOntology.MI);
+        this.nodeRow = nodeRow;
+        this.mutated = MUTATED.getValue(nodeRow);
         String preferredIdDbName = PREFERRED_ID_DB.getValue(nodeRow);
         OntologyIdentifier preferredIdDbMIId = new OntologyIdentifier(PREFERRED_ID_DB_MI_ID.getValue(nodeRow), SourceOntology.MI);
         this.preferredIdentifier = new Identifier(preferredIdDbName, preferredIdDbMIId, preferredId, "preferred id");
@@ -62,7 +66,7 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
     }
 
     public List<Edge> getAdjacentEdges() {
-        return network.getCyNetwork().getAdjacentEdgeList(cyNode, CyEdge.Type.ANY).stream().map(edge -> Edge.createIntactEdge(network, edge)).collect(toList());
+        return network.getCyNetwork().getAdjacentEdgeList(cyNode, CyEdge.Type.ANY).stream().map(edge -> Edge.createEdge(network, edge)).collect(toList());
     }
 
     public List<Identifier> getIdentifiers() {
