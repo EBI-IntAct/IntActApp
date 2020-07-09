@@ -317,7 +317,6 @@ public class ModelUtils {
                 }
 
                 NodeFields.FEATURES.addValueIfAbsent(network.getRow(participantNode), featureAc);
-                FeatureFields.EDGES_ID.addValue(featureRow, edgeId);
                 FeatureFields.EDGES_SUID.addValue(featureRow, edge.getSUID());
 
                 Table.FEATURE.setRowFromJson(featureRow, feature);
