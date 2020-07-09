@@ -1,12 +1,14 @@
 package uk.ac.ebi.intact.app.internal.model.tables;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.Field;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.ListField;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public enum Table {
     NODE("identifiers", "label"),
@@ -32,9 +34,9 @@ public enum Table {
         }
     }
 
-    public void initTable(CyTable table) {
+    public void initTable(CyTable sharedTable, CyTable localTable) {
         for (Field<?> field : fields) {
-            field.createColumn(table);
+            field.createColumn(field.shared ? sharedTable : localTable);
         }
     }
 
