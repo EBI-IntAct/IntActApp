@@ -25,7 +25,7 @@ public class EdgeBasics extends AbstractEdgeElement {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
         VerticalPanel summaryEdgesPanel = new VerticalPanel(lightBackground);
-        for (EvidenceEdge evidenceEdge : edge.getSubEdges().values()) {
+        for (EvidenceEdge evidenceEdge : edge.getSummarizedEdges()) {
             summaryEdgesPanel.add(LinkUtils.createEvidenceEdgeLink(openBrowser, evidenceEdge));
         }
         CollapsablePanel collapsablePanel = new CollapsablePanel("Summarized edges (" + edge.subEdgeSUIDs.size() + ")", summaryEdgesPanel, true);
