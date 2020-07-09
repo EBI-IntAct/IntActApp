@@ -133,22 +133,22 @@ public class NodeFeatures extends AbstractNodeElement {
                             (featureNamePanel, featuresOfName) -> {
                                 for (Feature feature : featuresOfName) {
                                     List<EvidenceEdge> featureEdges = feature.getEdges();
-                                    for (EvidenceEdge edge : featureEdges) {
+                                    for (EvidenceEdge featureEdge : featureEdges) {
                                         LinePanel line = new LinePanel(getBackground());
-                                        if (summaryEdge == null) {
+                                        if (summaryEdge == null) { // Node features
                                             Node otherNode;
-                                            if (node.equals(edge.source)) {
-                                                otherNode = edge.target;
-                                            } else if (node.equals(edge.target)) {
-                                                otherNode = edge.source;
+                                            if (node.equals(featureEdge.source)) {
+                                                otherNode = featureEdge.target;
+                                            } else if (node.equals(featureEdge.target)) {
+                                                otherNode = featureEdge.source;
                                             } else {
                                                 continue;
                                             }
-                                            line.add(new SelectEdgeButton(edge));
-                                            line.add(new JLabel("Observed on edge with " + otherNode.name + " (" + edge.ac + ")"));
-                                        } else {
-                                            if (summaryEdge.subEdgeSUIDs.contains(edge.cyEdge.getSUID())) {
-                                                line.add(LinkUtils.createIntactEdgeLink(openBrowser, edge));
+                                            line.add(new SelectEdgeButton(featureEdge));
+                                            line.add(new JLabel("Observed on edge with " + otherNode.name + " (" + featureEdge.ac + ")"));
+                                        } else { // Summary edge features
+                                            if (summaryEdge.subEdgeSUIDs.contains(featureEdge.cyEdge.getSUID())) {
+                                                line.add(LinkUtils.createEvidenceEdgeLink(openBrowser, featureEdge));
                                             }
                                         }
                                         featureNamePanel.add(line);
@@ -157,7 +157,7 @@ public class NodeFeatures extends AbstractNodeElement {
                             }
                     )
             );
-        } else {
+        } else { // Evidence edge features
             for (Feature feature : features) {
                 LinePanel line = new LinePanel(getBackground());
                 line.add(new JLabel(feature.type + " (" + feature.name + ")"));

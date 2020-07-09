@@ -13,8 +13,8 @@ public class LinkUtils {
                 openBrowser);
     }
 
-    public static JLink createIntactEdgeLink(OpenBrowser openBrowser, EvidenceEdge iEEdge) {
-        return new JLink(iEEdge.ac, "https://www.ebi.ac.uk/intact/interaction/" + iEEdge.ac, openBrowser);
+    public static JLink createEvidenceEdgeLink(OpenBrowser openBrowser, EvidenceEdge evidenceEdge) {
+        return new JLink(evidenceEdge.ac, "https://www.ebi.ac.uk/intact/interaction/" + evidenceEdge.ac, openBrowser);
     }
 
     public static JLink createCVTermLink(OpenBrowser openBrowser, CVTerm term) {
