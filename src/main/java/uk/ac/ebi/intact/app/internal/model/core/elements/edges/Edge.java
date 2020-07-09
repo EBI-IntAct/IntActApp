@@ -73,7 +73,8 @@ public abstract class Edge implements Element {
         if (participant == null || featureAcs == null) return;
 
         for (String featureAc : featureAcs) {
-            features.get(participant).add(new Feature(network, network.getFeaturesTable().getRow(featureAc)));
+            Feature feature = new Feature(network, network.getFeaturesTable().getRow(featureAc));
+            if (feature.isPresent()) features.get(participant).add(feature);
         }
     }
 
