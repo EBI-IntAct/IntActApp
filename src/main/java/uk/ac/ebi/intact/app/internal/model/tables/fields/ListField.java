@@ -37,8 +37,11 @@ public class ListField<E> extends Field<List<E>> {
 
     public void addValueIfAbsent(CyRow row, E value) {
         List<E> list = row.getList(toString(), elementsType);
-        if (list != null && !list.contains(value)) list.add(value);
-        else row.set(toString(), List.of(value));
+        if (list != null) {
+            if (!list.contains(value)) list.add(value);
+        } else {
+            row.set(toString(), List.of(value));
+        }
     }
 
     public void addValues(CyRow row, List<E> values) {
