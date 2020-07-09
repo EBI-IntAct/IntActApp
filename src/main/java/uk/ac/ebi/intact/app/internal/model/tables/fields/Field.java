@@ -13,12 +13,12 @@ public class Field<T> {
     public enum Namespace {
         NULL(""),
         INTACT("IntAct"),
-        SUMMARY("Summary"),
-        SOURCE("Source"),
-        TARGET("Target"),
-        FEATURE("Feature"),
-        IDENTIFIER("Identifier"),
-        VIEW("View");
+        SUMMARY("IntAct - Summary"),
+        SOURCE("IntAct - Source"),
+        TARGET("IntAct - Target"),
+        FEATURE("IntAct - Feature"),
+        IDENTIFIER("IntAct - Identifier"),
+        VIEW("IntAct - View");
 
         public final String name;
 
