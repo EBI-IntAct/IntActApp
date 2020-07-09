@@ -26,6 +26,9 @@ import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedListener;
 import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
+import uk.ac.ebi.intact.app.internal.model.tables.Table;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.ListField;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.models.*;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.FeatureFields;
@@ -55,6 +58,14 @@ public class DataManager implements
         networkMap = new HashMap<>();
         intactNetworkViewMap = new HashMap<>();
         rootNetworkManager = manager.utils.getService(CyRootNetworkManager.class);
+
+        // Load Fields
+        System.out.println(NodeFields.SPECIES.toString());
+        System.out.println(EdgeFields.SUMMARY_NB_EDGES.toString());
+        System.out.println(NetworkFields.FEATURES_TABLE_REF.toString());
+        System.out.println(FeatureFields.TYPE.toString());
+        System.out.println(FeatureFields.TYPE.toString());
+        System.out.println(IdentifierFields.ID.toString());
     }
 
     public void loadCurrentSession() {

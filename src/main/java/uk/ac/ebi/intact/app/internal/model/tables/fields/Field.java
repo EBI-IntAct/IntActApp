@@ -4,13 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
+import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Field<T> {
     public enum Namespace {
@@ -41,18 +38,28 @@ public class Field<T> {
     public final String name;
     public final String jsonKey;
     public final Class<T> type;
+    public final boolean shared;
 
     public final T defaultValue;
 
     public Field(Table table, Namespace namespace, String name, String jsonKey, Class<T> type) {
-        this(table, namespace, name, jsonKey, type, null);
+        this(table, namespace, name, jsonKey, type, true, null);
+    }
+
+    public Field(Table table, Namespace namespace, String name, String jsonKey, Class<T> type, boolean shared) {
+        this(table, namespace, name, jsonKey, type, shared, null);
     }
 
     public Field(Table table, Namespace namespace, String name, String jsonKey, Class<T> type, T defaultValue) {
+        this(table, namespace, name, jsonKey, type, true, defaultValue);
+    }
+
+    public Field(Table table, Namespace namespace, String name, String jsonKey, Class<T> type, boolean shared, T defaultValue) {
         this.namespace = namespace;
         this.name = name;
         this.jsonKey = jsonKey;
         this.type = type;
+        this.shared = shared;
         this.defaultValue = defaultValue;
         fields.add(this);
         table.fields.add(this);

@@ -11,6 +11,5 @@ public class FeatureFields {
     public static final Field<String> TYPE_MI_ID = new Field<>(Table.FEATURE, Field.Namespace.FEATURE, "Type MI Id", "feature_type_mi_identifier", String.class);
     public static final Field<String> TYPE_MOD_ID = new Field<>(Table.FEATURE, Field.Namespace.FEATURE, "Type Mod Id", "feature_type_mod_identifier", String.class);
     public static final Field<String> TYPE_PAR_ID = new Field<>(Table.FEATURE, Field.Namespace.FEATURE, "Type Par Id", "feature_type_par_identifier", String.class);
-    public static final ListField<Long> EDGES_ID = new ListField<>(Table.FEATURE, Field.Namespace.FEATURE, "Edge IDs", Long.class);
     public static final ListField<Long> EDGES_SUID = new ListField<>(Table.FEATURE, Field.Namespace.FEATURE, "Edge SUIDs", Long.class);
 }

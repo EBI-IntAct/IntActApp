@@ -118,12 +118,11 @@ public class ModelUtils {
         return new ArrayList<>();
     }
 
-    private static void initTables(Network network, CyNetwork cyNetwork, CyTable networkTable, CyTable nodeTable, CyTable edgeTable, CyTableManager tableManager, CyTable featuresTable, CyTable xRefsTable) {
-        System.out.println(NetworkFields.UUID); //Do not suppress: Allow NetworkFields to be loaded and so to populate Table.NETWORK.fields
-        Table.NETWORK.initTable(networkTable);
-        Table.NODE.initTable(nodeTable);
-        Table.EDGE.initTable(edgeTable);
-        initLowerTables(network, cyNetwork, tableManager, networkTable, featuresTable, xRefsTable);
+    private static void initTables(Network network, CyNetwork cyNetwork, CyTable networkTable, CyTable nodeTable, CyTable edgeTable, CyTable featuresTable, CyTable xRefsTable) {
+        Table.NETWORK.initTable(networkTable, cyNetwork.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
+        Table.NODE.initTable(nodeTable, cyNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
+        Table.EDGE.initTable(edgeTable, cyNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS));
+        initLowerTables(network, cyNetwork, networkTable, featuresTable, xRefsTable);
     }
 
     private static void initLowerTables(Network network, CyNetwork cyNetwork, CyTableManager tableManager, CyTable networkTable, CyTable featuresTable, CyTable identifiersTable) {

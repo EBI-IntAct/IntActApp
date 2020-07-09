@@ -37,6 +37,11 @@ public enum Table {
             field.createColumn(table);
         }
     }
+
+    public boolean containsAllFields(CyTable table) {
+        Set<String> columnNames = table.getColumns().stream().map(CyColumn::getName).collect(Collectors.toSet());
+        return columnNames.size() >= fields.size() && fields.stream().map(Field::toString).allMatch(columnNames::contains);
+    }
 }
 
 
