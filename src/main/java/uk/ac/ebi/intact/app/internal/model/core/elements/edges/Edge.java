@@ -95,4 +95,9 @@ public abstract class Edge implements Element {
     public String toString() {
         return cyEdge.toString();
     }
+
+    @Override
+    public boolean isSelected() {
+        return edgeRow.get(CyNetwork.SELECTED, Boolean.class);
+    }
 }

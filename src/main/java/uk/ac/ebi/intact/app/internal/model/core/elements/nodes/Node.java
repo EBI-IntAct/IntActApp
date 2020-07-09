@@ -101,4 +101,15 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
     }
 
 
+    @Override
+    public boolean isSelected() {
+        return nodeRow.get(CyNetwork.SELECTED, Boolean.class);
+    }
+
+    public boolean updateMutationStatus() {
+        if (!mutated) return false;
+        mutated = getFeatures().stream().anyMatch(feature -> FeatureClassifier.mutation.contains(feature.type.id));
+        MUTATED.setValue(nodeRow, mutated);
+        return mutated;
+    }
 }
