@@ -17,12 +17,12 @@ public class NodeIdentifiers extends AbstractNodeElement {
 
     private final List<Identifier> identifiers;
 
-    public NodeIdentifiers(Node iNode, OpenBrowser openBrowser) {
-        this("Identifiers", iNode, openBrowser, iNode.getIdentifiers());
+    public NodeIdentifiers(Node node, OpenBrowser openBrowser) {
+        this("Identifiers", node, openBrowser, node.getIdentifiers());
     }
 
-    public NodeIdentifiers(String title, Node iNode, OpenBrowser openBrowser, List<Identifier> identifiers) {
-        super(title, iNode, openBrowser);
+    public NodeIdentifiers(String title, Node node, OpenBrowser openBrowser, List<Identifier> identifiers) {
+        super(title, node, openBrowser);
         this.identifiers = identifiers;
         fillContent();
     }

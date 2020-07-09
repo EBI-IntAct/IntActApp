@@ -20,8 +20,8 @@ import static uk.ac.ebi.intact.app.internal.managers.Manager.INTACT_GRAPH_WS;
 public class NodeDetails extends AbstractNodeElement {
     private final static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
-    public NodeDetails(Node iNode, OpenBrowser openBrowser) {
-        super(null, iNode, openBrowser);
+    public NodeDetails(Node node, OpenBrowser openBrowser) {
+        super(null, node, openBrowser);
         fillContent();
     }
 

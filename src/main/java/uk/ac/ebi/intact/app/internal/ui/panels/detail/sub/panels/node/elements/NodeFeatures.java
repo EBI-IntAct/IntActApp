@@ -38,12 +38,12 @@ public class NodeFeatures extends AbstractNodeElement {
     private final SummaryEdge summaryEdge;
     private Map<FeatureClassifier.FeatureClass, List<Feature>> classification;
 
-    public NodeFeatures(Node iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, SummaryEdge summaryEdge) {
-        this(iNode, features, openBrowser, showFeatureEdge, summaryEdge, lightBackground);
+    public NodeFeatures(Node node, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, SummaryEdge summaryEdge) {
+        this(node, features, openBrowser, showFeatureEdge, summaryEdge, lightBackground);
     }
 
-    public NodeFeatures(Node iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, SummaryEdge summaryEdge, Color background) {
-        super("Features summary", iNode, openBrowser);
+    public NodeFeatures(Node node, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, SummaryEdge summaryEdge, Color background) {
+        super("Features summary", node, openBrowser);
         this.features = features;
         this.showFeatureEdge = showFeatureEdge;
         this.summaryEdge = summaryEdge;

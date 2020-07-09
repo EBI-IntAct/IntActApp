@@ -11,8 +11,8 @@ import javax.swing.*;
 public class NodeAliases extends AbstractNodeElement {
     private final JsonNode aliases;
 
-    public NodeAliases(Node iNode, OpenBrowser openBrowser, JsonNode aliases) {
-        super("Aliases", iNode, openBrowser);
+    public NodeAliases(Node node, OpenBrowser openBrowser, JsonNode aliases) {
+        super("Aliases", node, openBrowser);
         this.aliases = aliases;
         fillContent();
     }
