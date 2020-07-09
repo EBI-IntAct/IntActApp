@@ -154,13 +154,14 @@ public class DataManager implements
     @Override
     public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
         CyNetwork cyNetwork = e.getNetwork();
-        // delete enrichment tables
         CyTableManager tableManager = manager.utils.getService(CyTableManager.class);
         Network network = networkMap.get(cyNetwork);
         if (network != null) {
-            tableManager.deleteTable(network.getFeaturesTable().getSUID());
-            tableManager.deleteTable(network.getIdentifiersTable().getSUID());
-            // remove as string network
+            CyTable featuresTable = network.getFeaturesTable();
+            if (featuresTable != null) tableManager.deleteTable(featuresTable.getSUID());
+            CyTable identifiersTable = network.getIdentifiersTable();
+            if (identifiersTable != null) tableManager.deleteTable(identifiersTable.getSUID());
+
             networkMap.remove(cyNetwork);
         }
     }

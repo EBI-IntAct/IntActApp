@@ -88,7 +88,6 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         }
         updateSummaryEdges(coupleToSummarizedEdges.keySet());
 
-
         cyNetwork.getNodeList().forEach(node -> nodes.put(node, new Node(this, node)));
 
         completeMissingNodeColorsFromTables();
@@ -335,7 +334,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     }
 
     private boolean removing = false;
-    private List<Node> nodesToUpdate = new ArrayList<>();
+    private final List<Node> nodesToUpdate = new ArrayList<>();
 
     @Override
     public void handleEvent(AboutToRemoveEdgesEvent e) {
