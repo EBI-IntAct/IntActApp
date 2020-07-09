@@ -3,10 +3,10 @@ package uk.ac.ebi.intact.app.internal.model.core.elements.edges;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
-import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
-import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
 
 import java.util.*;
@@ -31,9 +31,8 @@ public abstract class Edge implements Element {
         if (network == null || edge == null) return null;
         CyRow edgeRow = network.getCyNetwork().getRow(edge);
         if (edgeRow == null) return null;
-        Boolean isSummarized = EdgeFields.IS_SUMMARY.getValue(edgeRow);
-        if (isSummarized == null) return null;
-        if (isSummarized) {
+        Boolean isSummary = EdgeFields.IS_SUMMARY.getValue(edgeRow);
+        if (isSummary) {
             return new SummaryEdge(network, edge);
         } else {
             return new EvidenceEdge(network, edge);
