@@ -75,8 +75,8 @@ public class ModelUtils {
             return new ArrayList<>();
         }
         try {
-            CyTable defaultNodeTable = cyNetwork.getDefaultNodeTable();
-            CyTable defaultEdgeTable = cyNetwork.getDefaultEdgeTable();
+            CyTable nodeTable = cyNetwork.getDefaultNodeTable();
+            CyTable edgeTable = cyNetwork.getDefaultEdgeTable();
 
             String networkName = cyNetwork.getRow(cyNetwork).get(CyNetwork.NAME, String.class);
 
@@ -86,27 +86,29 @@ public class ModelUtils {
             CyTable featuresTable = network.getFeaturesTable();
             if (featuresTable == null) {
                 featuresTable = tableFactory.createTable("Features of " + networkName, FeatureFields.AC.toString(), String.class, true, true);
+                tableManager.addTable(featuresTable);
             }
 
             CyTable identifiersTable = network.getIdentifiersTable();
             if (identifiersTable == null) {
                 identifiersTable = tableFactory.createTable("Identifiers of " + networkName, IdentifierFields.AC.toString(), String.class, true, true);
+                tableManager.addTable(identifiersTable);
             }
 
-            initTables(network, cyNetwork, cyNetwork.getDefaultNetworkTable(), defaultNodeTable, defaultEdgeTable, tableManager, featuresTable, identifiersTable);
+            initTables(network, cyNetwork, cyNetwork.getDefaultNetworkTable(), nodeTable, edgeTable, featuresTable, identifiersTable);
 
             JsonNode nodesJSON = json.get("nodes");
             JsonNode edgesJSON = json.get("edges");
 
             List<CyNode> nodes = new ArrayList<>();
             if (nodesJSON.size() > 0) {
-                createUnknownColumnsFromIntactJSON(nodesJSON, defaultNodeTable);
+                createUnknownColumnsFromIntactJSON(nodesJSON, nodeTable);
                 for (JsonNode node : nodesJSON) {
                     nodes.add(createNode(cyNetwork, node, idToNode, idToName, identifiersTable));
                 }
             }
             if (edgesJSON.size() > 0) {
-                createUnknownColumnsFromIntactJSON(edgesJSON, defaultEdgeTable);
+                createUnknownColumnsFromIntactJSON(edgesJSON, edgeTable);
                 for (JsonNode edge : edgesJSON) {
                     createEdge(cyNetwork, edge, idToNode, idToName, newEdges, featuresTable);
                 }
@@ -125,28 +127,26 @@ public class ModelUtils {
         initLowerTables(network, cyNetwork, networkTable, featuresTable, xRefsTable);
     }
 
-    private static void initLowerTables(Network network, CyNetwork cyNetwork, CyTableManager tableManager, CyTable networkTable, CyTable featuresTable, CyTable identifiersTable) {
+    private static void initLowerTables(Network network, CyNetwork cyNetwork, CyTable networkTable, CyTable featuresTable, CyTable identifiersTable) {
         CyRow networkRow = networkTable.getRow(cyNetwork.getSUID());
         String uuid = UUID.randomUUID().toString();
         NetworkFields.UUID.setValue(networkRow, uuid);
         NetworkFields.FEATURES_TABLE_REF.setValue(networkRow, featuresTable.getSUID());
         NetworkFields.IDENTIFIERS_TABLE_REF.setValue(networkRow, identifiersTable.getSUID());
-        initFeaturesTable(network, uuid, tableManager, featuresTable);
-        initIdentifierTable(network, uuid, tableManager, identifiersTable);
+        initFeaturesTable(network, uuid, featuresTable);
+        initIdentifierTable(network, uuid, identifiersTable);
     }
 
-    private static void initFeaturesTable(Network network, String networkUUID, CyTableManager tableManager, CyTable featuresTable) {
-        tableManager.addTable(featuresTable);
+    private static void initFeaturesTable(Network network, String networkUUID, CyTable featuresTable) {
         featuresTable.createColumn(NetworkFields.UUID.toString(), String.class, true, networkUUID);
         network.setFeaturesTable(featuresTable);
-        Table.FEATURE.initTable(featuresTable);
+        Table.FEATURE.initTable(featuresTable, featuresTable);
     }
 
-    private static void initIdentifierTable(Network network, String networkUUID, CyTableManager tableManager, CyTable identifiersTable) {
-        tableManager.addTable(identifiersTable);
+    private static void initIdentifierTable(Network network, String networkUUID, CyTable identifiersTable) {
         identifiersTable.createColumn(NetworkFields.UUID.toString(), String.class, true, networkUUID);
         network.setIdentifiersTable(identifiersTable);
-        Table.IDENTIFIER.initTable(identifiersTable);
+        Table.IDENTIFIER.initTable(identifiersTable, identifiersTable);
     }
 
     public static void createUnknownColumnsFromIntactJSON(JsonNode elements, CyTable table) {
