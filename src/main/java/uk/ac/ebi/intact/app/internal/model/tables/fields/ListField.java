@@ -6,7 +6,11 @@ import org.cytoscape.model.CyTable;
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 public class ListField<E> extends Field<List<E>> {
     public final Class<E> elementsType;
@@ -58,5 +62,15 @@ public class ListField<E> extends Field<List<E>> {
             return getValue(row);
         }
         return values;
+    }
+
+    public void map(CyRow row, UnaryOperator<E> mapping) {
+        List<E> values = getValue(row);
+        if (values != null) setValue(row, values.stream().map(mapping).collect(Collectors.toList()));
+    }
+
+    public void filter(CyRow row, Predicate<E> filter) {
+        List<E> values = getValue(row);
+        if (values != null) setValue(row, values.stream().filter(filter).collect(Collectors.toList()));
     }
 }
