@@ -38,7 +38,6 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
     private final EasyGBC layoutHelper = new EasyGBC();
     private JPanel edgesPanel;
     private CollapsablePanel selectedEdges;
-    private static final int MAXIMUM_SELECTED_EDGE_SHOWN = 100;
     private final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
     private final ConcurrentHashMap<Edge, EdgePanel> edgeToPanel = new ConcurrentHashMap<>();
@@ -46,9 +45,11 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
     private final JPanel filtersPanel = new JPanel(new GridBagLayout());
     private final EasyGBC filterHelper = new EasyGBC();
     private final Map<Class<? extends Filter>, FilterPanel> filterPanels = new HashMap<>();
+    private Integer maxSelectedEdgeInfoShown;
 
     public EdgeDetailPanel(final Manager manager) {
-        super(manager, MAXIMUM_SELECTED_EDGE_SHOWN, "edges");
+        super(manager, manager.option.MAX_SELECTED_EDGE_INFO_SHOWN.getValue(), "edges");
+        maxSelectedEdgeInfoShown = manager.option.MAX_SELECTED_EDGE_INFO_SHOWN.getValue();
         init();
         revalidate();
         repaint();
@@ -57,7 +58,6 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
     private void init() {
         setBackground(UIColors.lightBackground);
         setLayout(new GridBagLayout());
-//        createScorePanel();
         createScrollablePanel();
     }
 
@@ -91,7 +91,6 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
         CollapsablePanel filtersCP = new CollapsablePanel("Filters", filtersPanel, false);
         filtersCP.setBackground(UIColors.lightBackground);
         mainPanel.add(filtersCP, layoutHelper.anchor("northwest").down().expandHoriz());
-//        mainPanel.add(Box.createHorizontalGlue(), layoutHelper.anchor("west").right().right().expandHoriz());
         mainPanel.add(createEdgesPanel(), layoutHelper.anchor("north").down().expandHoriz());
         mainPanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
     }
@@ -119,16 +118,15 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
         if (checkCurrentNetwork() && checkCurrentView()) {
             selectionRunning = true;
             loadingSpinner.start();
+            maxSelectedEdgeInfoShown = manager.option.MAX_SELECTED_EDGE_INFO_SHOWN.getValue();
 
             List<Edge> edges = cyEdges.stream()
                     .map(edge -> Edge.createIntactEdge(currentNetwork, edge))
                     .filter(this::isEdgeVisible)
-                    .collect(Comparators.greatest(MAXIMUM_SELECTED_EDGE_SHOWN, comparing(o -> o.miScore)));
-
+                    .collect(Comparators.greatest(maxSelectedEdgeInfoShown, comparing(o -> o.miScore)));
 
             for (Edge edge : edges) {
-                if (!selectionRunning)
-                    break;
+                if (!selectionRunning) break;
 
                 edgeToPanel.computeIfAbsent(edge, keyEdge -> {
                     EdgePanel edgePanel = new EdgePanel(keyEdge);
@@ -139,9 +137,10 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
 
             }
 
-            if (edges.size() < MAXIMUM_SELECTED_EDGE_SHOWN) {
+            if (edges.size() < maxSelectedEdgeInfoShown) {
                 edgesPanel.remove(limitExceededPanel);
             } else {
+                limitExceededPanel.setLimit(maxSelectedEdgeInfoShown);
                 edgesPanel.add(limitExceededPanel, layoutHelper.expandHoriz().down());
             }
 

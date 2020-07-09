@@ -34,7 +34,7 @@ public abstract class AbstractDetailPanel extends JPanel {
         setBackground(UIColors.lightBackground);
         IconManager iconManager = manager.utils.getService(IconManager.class);
         iconFont = iconManager.getIconFont(17.0f);
-        limitExceededPanel = new LimitExceededPanel(limitOfWhat, "selected", selectionLimit, "select less " + limitOfWhat);
+        limitExceededPanel = new LimitExceededPanel(limitOfWhat, "selected", selectionLimit, "select less " + limitOfWhat + " or change related settings");
     }
 
     protected boolean checkCurrentNetwork() {

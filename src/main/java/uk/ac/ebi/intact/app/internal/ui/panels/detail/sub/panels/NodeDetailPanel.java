@@ -31,7 +31,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class NodeDetailPanel extends AbstractDetailPanel {
     private JPanel nodesPanel = null;
     private CollapsablePanel selectedNodes;
-    private static final int MAXIMUM_SELECTED_NODE_SHOWN = 100;
     private final EasyGBC layoutHelper = new EasyGBC();
     public volatile boolean selectionRunning;
     private final ConcurrentHashMap<Node, NodePanel> nodeToPanel = new ConcurrentHashMap<>();
@@ -40,9 +39,11 @@ public class NodeDetailPanel extends AbstractDetailPanel {
     private final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
     private final Map<Class<? extends Filter>, FilterPanel> filterPanels = new HashMap<>();
+    private int maxSelectedNodeInfoShown;
 
     public NodeDetailPanel(final Manager manager) {
-        super(manager, MAXIMUM_SELECTED_NODE_SHOWN, "nodes");
+        super(manager, manager.option.MAX_SELECTED_NODE_INFO_SHOWN.getValue(), "nodes");
+        maxSelectedNodeInfoShown = manager.option.MAX_SELECTED_NODE_INFO_SHOWN.getValue();
         init();
         revalidate();
         repaint();
@@ -126,10 +127,11 @@ public class NodeDetailPanel extends AbstractDetailPanel {
         if (checkCurrentNetwork() && checkCurrentView()) {
             selectionRunning = true;
 
+            maxSelectedNodeInfoShown = manager.option.MAX_SELECTED_NODE_INFO_SHOWN.getValue();
             List<Node> nodes = cyNodes.stream()
                     .map(node -> new Node(currentNetwork, node))
                     .filter(node -> currentView.visibleNodes.contains(node))
-                    .collect(Comparators.least(MAXIMUM_SELECTED_NODE_SHOWN, Node::compareTo));
+                    .collect(Comparators.least(maxSelectedNodeInfoShown, Node::compareTo));
 
             for (Node node : nodes) {
                 if (!selectionRunning) {
@@ -144,9 +146,10 @@ public class NodeDetailPanel extends AbstractDetailPanel {
                 });
 
             }
-            if (nodes.size() < MAXIMUM_SELECTED_NODE_SHOWN) {
+            if (nodes.size() < maxSelectedNodeInfoShown) {
                 nodesPanel.remove(limitExceededPanel);
             } else {
+                limitExceededPanel.setLimit(maxSelectedNodeInfoShown);
                 nodesPanel.add(limitExceededPanel, layoutHelper.anchor("west").down().expandHoriz());
             }
             HashSet<Node> unselectedNodes = new HashSet<>(nodeToPanel.keySet());
