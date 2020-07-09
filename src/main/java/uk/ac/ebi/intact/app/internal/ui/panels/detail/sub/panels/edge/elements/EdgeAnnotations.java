@@ -13,8 +13,8 @@ import javax.swing.*;
 public class EdgeAnnotations extends AbstractEdgeElement {
     private final JsonNode annotationsData;
 
-    public EdgeAnnotations(Edge iEdge, OpenBrowser openBrowser, JsonNode annotationsData) {
-        super("Annotations", iEdge, openBrowser);
+    public EdgeAnnotations(Edge edge, OpenBrowser openBrowser, JsonNode annotationsData) {
+        super("Annotations", edge, openBrowser);
         this.annotationsData = annotationsData;
         fillContent();
     }
