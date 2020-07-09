@@ -17,7 +17,6 @@ public class Feature {
     public final String ac;
     public final CVTerm type;
     public final String name;
-    public final List<Long> edgeIDs = new ArrayList<>();
     public final List<Long> edgeSUIDs = new ArrayList<>();
 
     public Feature(Network network, CyRow featureRow) {
@@ -25,13 +24,12 @@ public class Feature {
         this.ac = FeatureFields.AC.getValue(featureRow);
         this.name = FeatureFields.NAME.getValue(featureRow);
         this.type = new CVTerm(featureRow, FeatureFields.TYPE, FeatureFields.TYPE_MI_ID, FeatureFields.TYPE_MOD_ID, FeatureFields.TYPE_PAR_ID);
-        edgeIDs.addAll(FeatureFields.EDGES_ID.getValue(featureRow));
-        edgeSUIDs.addAll(FeatureFields.EDGES_SUID.getValue(featureRow));
+        this.edgeSUIDs.addAll(FeatureFields.EDGES_SUID.getValue(featureRow));
     }
 
     public List<EvidenceEdge> getEdges() {
         return edgeSUIDs.stream()
-                .map(suid -> (EvidenceEdge) Edge.createIntactEdge(network, network.getCyNetwork().getEdge(suid)))
+                .map(suid -> (EvidenceEdge) Edge.createEdge(network, network.getCyNetwork().getEdge(suid)))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }

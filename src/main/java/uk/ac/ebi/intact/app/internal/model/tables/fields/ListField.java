@@ -49,6 +49,11 @@ public class ListField<E> extends Field<List<E>> {
 
     @Override
     public List<E> getValue(CyRow row) {
-        return row.getList(toString(), elementsType);
+        List<E> values = row.getList(toString(), elementsType);
+        if (values  == null) {
+            setValue(row, new ArrayList<>());
+            return getValue(row);
+        }
+        return values;
     }
 }
