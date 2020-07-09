@@ -121,7 +121,7 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
             maxSelectedEdgeInfoShown = manager.option.MAX_SELECTED_EDGE_INFO_SHOWN.getValue();
 
             List<Edge> edges = cyEdges.stream()
-                    .map(edge -> Edge.createIntactEdge(currentNetwork, edge))
+                    .map(edge -> Edge.createEdge(currentNetwork, edge))
                     .filter(this::isEdgeVisible)
                     .collect(Comparators.greatest(maxSelectedEdgeInfoShown, comparing(o -> o.miScore)));
 
