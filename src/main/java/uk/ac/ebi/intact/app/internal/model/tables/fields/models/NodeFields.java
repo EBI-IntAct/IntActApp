@@ -16,7 +16,7 @@ public class NodeFields {
     public static final Field<String> SPECIES = new Field<>(Table.NODE, Field.Namespace.INTACT, "Species", "species", String.class);
     public static final Field<Long> TAX_ID = new Field<>(Table.NODE, Field.Namespace.INTACT, "Taxon Id", "taxId", Long.class);
     public static final Field<String> FULL_NAME = new Field<>(Table.NODE, Field.Namespace.INTACT, "Description", "full_name", String.class);
-    public static final Field<Boolean> MUTATED = new Field<>(Table.NODE, Field.Namespace.INTACT, "Mutation", null, Boolean.class, Boolean.FALSE);
+    public static final Field<Boolean> MUTATED = new Field<>(Table.NODE, Field.Namespace.INTACT, "Mutation", null, Boolean.class,false, Boolean.FALSE);
     public static final ListField<String> FEATURES = new ListField<>(Table.NODE, Field.Namespace.FEATURE, "Features", String.class);
     public static final ListField<String> IDENTIFIERS = new ListField<>(Table.NODE, Field.Namespace.IDENTIFIER, "Identifiers", String.class);
     public static final Field<String> ELABEL_STYLE = new Field<>(Table.NODE, Field.Namespace.NULL, "enhancedLabel Passthrough", null, String.class, "label: attribute=\"name\" labelsize=12 labelAlignment=center outline=true outlineColor=black outlineTransparency=130 outlineWidth=5 background=false color=white dropShadow=false");

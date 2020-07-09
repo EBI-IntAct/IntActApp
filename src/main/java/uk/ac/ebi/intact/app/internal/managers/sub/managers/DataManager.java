@@ -20,6 +20,7 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedEvent;
@@ -123,10 +124,6 @@ public class DataManager implements
         network.setNetwork(cyNetwork);
     }
 
-    public String getNetworkName(CyNetwork net) {
-        return net.getRow(net).get(CyNetwork.NAME, String.class);
-    }
-
     public CyNetworkView createNetworkView(CyNetwork cyNetwork) {
         CyNetworkView view = manager.utils.getService(CyNetworkViewFactory.class)
                 .createNetworkView(cyNetwork);
@@ -180,15 +177,16 @@ public class DataManager implements
         addSubNetwork((CySubNetwork) newNetwork, baseNetwork);
     }
 
-    private void addSubNetwork(CySubNetwork newCyNetwork, CySubNetwork baseNetwork) {
-        if (networkMap.containsKey(baseNetwork)) {
-            Network parent = networkMap.get(baseNetwork);
-            handleSubNetworkEdges(newCyNetwork, parent);
-            Network newNetwork = new Network(manager);
-            addNetwork(newNetwork, newCyNetwork);
-            newNetwork.setFeaturesTable(parent.getFeaturesTable());
-            newNetwork.setIdentifiersTable(parent.getIdentifiersTable());
-            NetworkFields.UUID.setValue(newCyNetwork.getRow(newCyNetwork), NetworkFields.UUID.getValue(baseNetwork.getRow(baseNetwork)));
+    private void addSubNetwork(CySubNetwork subCyNetwork, CySubNetwork parentCyNetwork) {
+        if (networkMap.containsKey(parentCyNetwork)) {
+            Network parentNetwork = networkMap.get(parentCyNetwork);
+            handleSubNetworkEdges(subCyNetwork, parentNetwork);
+            Network subNetwork = new Network(manager);
+            addNetwork(subNetwork, subCyNetwork);
+            subNetwork.setFeaturesTable(parentNetwork.getFeaturesTable());
+            subNetwork.setIdentifiersTable(parentNetwork.getIdentifiersTable());
+            NetworkFields.UUID.setValue(subCyNetwork.getRow(subCyNetwork), NetworkFields.UUID.getValue(parentCyNetwork.getRow(parentCyNetwork)));
+            subNetwork.getNodes().forEach(Node::updateMutationStatus);
         }
     }
 

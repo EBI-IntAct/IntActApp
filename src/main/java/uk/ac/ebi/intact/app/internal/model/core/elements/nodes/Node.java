@@ -112,7 +112,6 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
     }
 
     public void updateMutationStatus() {
-        if (!mutated) return;
         mutated = getFeatures().stream().anyMatch(feature -> FeatureClassifier.mutation.contains(feature.type.id));
         MUTATED.setValue(nodeRow, mutated);
     }
