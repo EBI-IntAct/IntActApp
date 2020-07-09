@@ -119,7 +119,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
 
     public Map<String, List<Interactor>> resolveTerms(final String terms, boolean exactQuery) {
         Map<Object, Object> resolverData = new HashMap<>();
-        resolverData.put("query", terms.replaceAll("\n", ",")); //TODO Remove replacement when backend handle \n
+        resolverData.put("query", terms.replaceAll("\n", ",").toUpperCase()); //TODO Remove replacement when backend handle \n //TODO Remove upper case when handled by backend
         resolverData.put("fuzzySearch", !exactQuery);
         resolverData.put("pageSize", manager.option.MAX_INTERACTOR_PER_TERM.getValue());
         interactorsToResolve = Interactor.getInteractorsToResolve(HttpUtils.postJSON(Manager.INTACT_INTERACTOR_WS + "list/resolve", resolverData, manager), totalInteractors);
