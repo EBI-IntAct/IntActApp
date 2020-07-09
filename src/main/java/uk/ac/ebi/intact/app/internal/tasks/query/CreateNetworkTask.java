@@ -88,6 +88,7 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         TunableSetter setter = manager.utils.getService(TunableSetter.class);
         Map<String, Object> layoutArgs = new HashMap<>();
         layoutArgs.put("defaultNodeMass", 10.0);
+        layoutArgs.put("type", "-Log(value)");
         setter.applyTunables(context, layoutArgs);
         Set<View<CyNode>> nodeViews = new HashSet<>(networkView.getNodeViews());
         TaskIterator taskIterator = alg.createTaskIterator(networkView, context, nodeViews, EdgeFields.MI_SCORE.toString());
