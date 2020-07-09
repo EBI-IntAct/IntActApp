@@ -30,7 +30,7 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
         super(view, name, elementType);
         List<? extends Element> elements;
         if (Node.class.isAssignableFrom(elementType)) {
-            elements = network.getINodes();
+            elements = network.getNodes();
         } else if (elementType == SummaryEdge.class) {
             elements = network.getSummaryEdges();
         } else if (elementType == EvidenceEdge.class) {
