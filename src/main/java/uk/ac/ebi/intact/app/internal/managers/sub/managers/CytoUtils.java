@@ -140,6 +140,10 @@ public class CytoUtils {
         registrar.registerAllServices(service, props);
     }
 
+    public void registerAllServices(Object service, Properties props) {
+        registrar.registerAllServices(service, props);
+    }
+
     public void unregisterService(Object service, Class<?> clazz) {
         registrar.unregisterService(service, clazz);
     }
