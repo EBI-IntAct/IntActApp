@@ -14,14 +14,8 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Displays information about a protein taken from STRING
- *
- * @author Scooter Morris
- */
 public abstract class AbstractDetailPanel extends JPanel {
     public final static Font labelFont = new Font("SansSerif", Font.BOLD, 12);
-    public final static Font textFont = new Font("SansSerif", Font.PLAIN, 12);
 
     protected final Manager manager;
     protected final OpenBrowser openBrowser;
@@ -44,19 +38,13 @@ public abstract class AbstractDetailPanel extends JPanel {
     }
 
     protected boolean checkCurrentNetwork() {
-        if (currentNetwork == null) {
-            currentNetwork = manager.data.getCurrentNetwork();
-            return currentNetwork != null;
-        }
-        return true;
+        currentNetwork = manager.data.getCurrentNetwork();
+        return currentNetwork != null;
     }
 
     protected boolean checkCurrentView() {
-        if (currentView == null) {
-            currentView = manager.data.getCurrentIntactNetworkView();
-            return currentView != null;
-        }
-        return true;
+        currentView = manager.data.getCurrentIntactNetworkView();
+        return currentView != null;
     }
 
 }
