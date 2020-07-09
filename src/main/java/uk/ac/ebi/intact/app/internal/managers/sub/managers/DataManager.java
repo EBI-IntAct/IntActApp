@@ -79,8 +79,8 @@ public class DataManager implements
             if (!isIntactNetwork(cyNetwork)) continue;
             Network network = new Network(manager);
             addNetwork(network, cyNetwork);
-            fireIntactNetworkCreated(network);
             linkNetworkTablesFromTableData(network);
+            fireIntactNetworkCreated(network);
             network.completeMissingNodeColorsFromTables();
             for (CyNetworkView view : networkViewManager.getNetworkViews(cyNetwork)) {
                 addNetworkView(view, true);
@@ -149,6 +149,7 @@ public class DataManager implements
         }
         manager.utils.getService(CyApplicationManager.class).setCurrentNetwork(cyNetwork);
     }
+
     public NetworkView addNetworkView(CyNetworkView cyView, boolean loadData) {
         NetworkView view = new NetworkView(manager, cyView, loadData);
         networkViewMap.put(cyView, view);
@@ -167,10 +168,12 @@ public class DataManager implements
         CyTableManager tableManager = manager.utils.getService(CyTableManager.class);
         Network network = networkMap.get(cyNetwork);
         if (network != null) {
-            CyTable featuresTable = network.getFeaturesTable();
-            if (featuresTable != null) tableManager.deleteTable(featuresTable.getSUID());
-            CyTable identifiersTable = network.getIdentifiersTable();
-            if (identifiersTable != null) tableManager.deleteTable(identifiersTable.getSUID());
+            if (rootNetworkManager.getRootNetwork(cyNetwork).getSubNetworkList().size() == 1) {
+                CyTable featuresTable = network.getFeaturesTable();
+                if (featuresTable != null) tableManager.deleteTable(featuresTable.getSUID());
+                CyTable identifiersTable = network.getIdentifiersTable();
+                if (identifiersTable != null) tableManager.deleteTable(identifiersTable.getSUID());
+            }
 
             networkMap.remove(cyNetwork);
         }
@@ -199,7 +202,7 @@ public class DataManager implements
             Network subNetwork = new Network(manager);
             addNetwork(subNetwork, subCyNetwork);
 
-            for (CyNetworkView cyNetworkView: networkViewManager.getNetworkViews(parentCyNetwork)) {
+            for (CyNetworkView cyNetworkView : networkViewManager.getNetworkViews(parentCyNetwork)) {
                 NetworkView networkView = networkViewMap.get(cyNetworkView);
                 if (networkView == null) continue;
                 networkViewTypesToSet.put(subCyNetwork, networkView.getType());

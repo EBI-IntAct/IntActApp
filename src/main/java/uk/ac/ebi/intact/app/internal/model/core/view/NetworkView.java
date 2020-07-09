@@ -43,11 +43,9 @@ public class NetworkView {
         if (cyView != null) {
             this.cyView = cyView;
             this.network = manager.data.getNetwork(cyView.getModel());
-
-            if (type != Type.SUMMARY)
-                network.getSummaryCyEdges().
-                        forEach(cyEdge -> cyView.getEdgeView(cyEdge)
-                                .setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false));
+            (type != Type.SUMMARY ? network.getSummaryCyEdges() : network.getEvidenceCyEdges())
+                    .forEach(cyEdge -> cyView.getEdgeView(cyEdge)
+                    .setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false));
 
             setupFilters(loadData);
         } else {
