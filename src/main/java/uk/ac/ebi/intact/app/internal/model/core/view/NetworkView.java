@@ -6,8 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
@@ -15,14 +16,16 @@ import uk.ac.ebi.intact.app.internal.model.filters.edge.*;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeSpeciesFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NetworkFields;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class NetworkView {
+    private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
     private Thread thread;
     public final transient Manager manager;
     public final transient Network network;
@@ -38,7 +41,7 @@ public class NetworkView {
         if (cyView != null) {
             this.cyView = cyView;
             this.network = manager.data.getNetwork(cyView.getModel());
-            setupFilters(loadData);
+            executor.execute(() -> setupFilters(loadData));
         } else {
             this.cyView = null;
             this.network = null;
@@ -74,7 +77,7 @@ public class NetworkView {
         visibleNodes.clear();
         visibleEdges.clear();
 
-        List<Node> nodesToFilter = network.getINodes();
+        List<Node> nodesToFilter = network.getNodes();
         List<? extends Edge> edgesToFilter = (getType() == Type.SUMMARY) ? network.getSummaryEdges() : network.getEvidenceEdges();
 
         visibleNodes.addAll(nodesToFilter);
@@ -122,7 +125,7 @@ public class NetworkView {
             JsonNode json = new ObjectMapper().readTree(jsonText);
             type = Type.valueOf(json.get("type").textValue());
             List<JsonNode> filterDataList = StreamSupport.stream(json.get("filters").spliterator(), false).collect(Collectors.toList());
-            for (Filter<?> filter: filters) {
+            for (Filter<?> filter : filters) {
                 for (Iterator<JsonNode> iterator = filterDataList.iterator(); iterator.hasNext(); ) {
                     JsonNode filterJson = iterator.next();
                     if (filter.load(filterJson)) {
