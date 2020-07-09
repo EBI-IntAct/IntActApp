@@ -319,7 +319,11 @@ public class DataManager implements
 
     public void fireIntactNetworkCreated(Network network) {
         for (IntactNetworkCreatedListener listener : intactNetworkCreatedListeners) {
-            listener.handleEvent(new IntactNetworkCreatedEvent(manager, network));
+            try {
+                listener.handleEvent(new IntactNetworkCreatedEvent(manager, network));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -341,7 +345,11 @@ public class DataManager implements
 
     public void fireIntactViewChangedEvent(IntactViewUpdatedEvent event) {
         for (IntactViewUpdatedListener listener : intactViewUpdatedListeners) {
-            listener.handleEvent(event);
+            try {
+                listener.handleEvent(event);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
