@@ -41,15 +41,15 @@ public class FeatureClassifier {
     }
 
     public static Map<FeatureClass, List<Feature>> classify(Collection<Feature> features) {
-        return CollectionUtils.groupBy(features, feature -> recursiveFinder(feature.type.id, root));
+        return CollectionUtils.groupBy(features, feature -> recursiveFinder(feature, root));
     }
 
-    private static FeatureClass recursiveFinder(OntologyIdentifier idToFind, Collection<FeatureClass> searchInto) {
+    private static FeatureClass recursiveFinder(Feature feature, Collection<FeatureClass> searchInto) {
         for (FeatureClass featureClass : searchInto) {
-            if (featureClass.contains(idToFind)) {
+            if (featureClass.contains(feature.type.id)) {
                 if (featureClass instanceof InnerFeatureClass) {
                     InnerFeatureClass innerFeatureClass = (InnerFeatureClass) featureClass;
-                    FeatureClass finalClass = recursiveFinder(idToFind, innerFeatureClass.subClasses);
+                    FeatureClass finalClass = recursiveFinder(feature, innerFeatureClass.subClasses);
                     return finalClass != null ? finalClass : innerFeatureClass.nonDefinedLeaf;
                 } else {
                     return featureClass;
