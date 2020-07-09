@@ -337,12 +337,18 @@ public class ModelUtils {
         CyTableManager tableManager = manager.utils.getService(CyTableManager.class);
 
         Long identifiersSUID = NetworkFields.IDENTIFIERS_TABLE_REF.getValue(networkRow);
-        if (identifiersSUID != null) network.setIdentifiersTable(tableManager.getTable(identifiersSUID));
-        else System.out.println("Identifiers SUID not found");
+        if (identifiersSUID != null) {
+            CyTable identifierTable = tableManager.getTable(identifiersSUID);
+            if (identifierTable != null) network.setIdentifiersTable(identifierTable);
+            else System.out.println("Identifier table not found");
+        } else System.out.println("Identifiers SUID not found");
 
         Long featuresSUID = NetworkFields.FEATURES_TABLE_REF.getValue(networkRow);
-        if (featuresSUID != null) network.setFeaturesTable(tableManager.getTable(featuresSUID));
-        else System.out.println("Features SUID not found");
+        if (featuresSUID != null) {
+            CyTable featureTable = tableManager.getTable(featuresSUID);
+            if (featureTable != null) network.setFeaturesTable(featureTable);
+            else System.out.println("Feature table not found");
+        } else System.out.println("Features SUID not found");
     }
 
 
