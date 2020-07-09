@@ -105,7 +105,12 @@ public class Field<T> {
     }
 
     public T getValue(CyRow row) {
-        return row.get(toString(), type);
+        T value = row.get(toString(), type);
+        if (value == null && defaultValue != null) {
+            setValue(row, defaultValue);
+            return defaultValue;
+        }
+        return value;
     }
 
     @Override
