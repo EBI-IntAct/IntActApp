@@ -1,12 +1,10 @@
 package uk.ac.ebi.intact.app.internal.model.core.elements.nodes;
 
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
+import org.cytoscape.model.*;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.Identifier;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.SourceOntology;
@@ -76,7 +74,10 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
 
     public List<Feature> getFeatures() {
         CyTable featuresTable = network.getFeaturesTable();
-        return featureAcs.stream().map(featureAC -> new Feature(network, featuresTable.getRow(featureAC))).collect(Collectors.toList());
+        return featureAcs.stream()
+                .map(featureAC -> new Feature(network, featuresTable.getRow(featureAC)))
+                .filter(Feature::isPresent)
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -34,6 +34,10 @@ public class Feature {
                 .collect(Collectors.toList());
     }
 
+    public boolean isPresent() {
+        return edgeSUIDs.stream().anyMatch(edgeSUID -> network.getCyNetwork().getEdge(edgeSUID) != null);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
