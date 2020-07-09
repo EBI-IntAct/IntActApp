@@ -129,7 +129,8 @@ public class NodeDetailPanel extends AbstractDetailPanel {
 
             maxSelectedNodeInfoShown = manager.option.MAX_SELECTED_NODE_INFO_SHOWN.getValue();
             List<Node> nodes = cyNodes.stream()
-                    .map(node -> new Node(currentNetwork, node))
+                    .map(currentNetwork::getNode)
+                    .filter(Objects::nonNull)
                     .filter(node -> currentView.visibleNodes.contains(node))
                     .collect(Comparators.least(maxSelectedNodeInfoShown, Node::compareTo));
 

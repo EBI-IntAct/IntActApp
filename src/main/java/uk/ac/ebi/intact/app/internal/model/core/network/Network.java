@@ -69,6 +69,8 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     public void setNetwork(CyNetwork cyNetwork) {
         this.cyNetwork = cyNetwork;
 
+        cyNetwork.getNodeList().forEach(node -> nodes.put(node, new Node(this, node)));
+
         edgeTable = cyNetwork.getDefaultEdgeTable();
         nodeTable = cyNetwork.getDefaultNodeTable();
 
@@ -88,7 +90,6 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         }
         updateSummaryEdges(coupleToSummarizedEdges.keySet());
 
-        cyNetwork.getNodeList().forEach(node -> nodes.put(node, new Node(this, node)));
 
         completeMissingNodeColorsFromTables();
         manager.utils.registerAllServices(this, new Properties());

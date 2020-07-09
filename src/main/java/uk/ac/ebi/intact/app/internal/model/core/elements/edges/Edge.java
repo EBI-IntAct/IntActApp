@@ -47,8 +47,8 @@ public abstract class Edge implements Element {
 
         name = edgeRow.get(CyNetwork.NAME, String.class);
         miScore = EdgeFields.MI_SCORE.getValue(edgeRow);
-        source = new Node(network, cyEdge.getSource());
-        target = cyEdge.getTarget() != null ? new Node(network, cyEdge.getTarget()) : null;
+        source = network.getNode(cyEdge.getSource());
+        target = cyEdge.getTarget() != null ? network.getNode(cyEdge.getTarget()) : null;
 
         sourceFeatureAcs = SOURCE_FEATURES.getValue(edgeRow);
         if (sourceFeatureAcs != null) {
