@@ -26,7 +26,7 @@ public class SummaryEdge extends Edge {
         CyNetwork cyNetwork = network.getCyNetwork();
         for (Long edgeSUID : subEdgeSUIDs) {
             CyEdge cyEdge = cyNetwork.getEdge(edgeSUID);
-            edges.put(edgeSUID, new EvidenceEdge(network, cyEdge));
+            if (cyEdge != null) edges.put(edgeSUID, new EvidenceEdge(network, cyEdge));
         }
         return edges;
     }
