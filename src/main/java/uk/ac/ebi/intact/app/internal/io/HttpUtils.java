@@ -24,7 +24,7 @@ public class HttpUtils {
         URL trueURL;
         try {
             if (queryMap.size() > 0) {
-                String args = HttpUtils.getStringArguments(queryMap);
+                String args = getStringArguments(queryMap);
                 manager.utils.info("URL: " + url + "?" + args);
                 trueURL = new URL(url + "?" + args);
             } else {
@@ -41,6 +41,7 @@ public class HttpUtils {
         try {
             InputStream entityStream = trueURL.openStream();
             jsonObject = new ObjectMapper().readTree(entityStream);
+            entityStream.close();
 
         } catch (Exception e) {
             e.printStackTrace();
