@@ -40,13 +40,11 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
     CyTable featuresTable;
     CyTable identifiersTable;
 
-    private final List<Node> iNodes = new ArrayList<>();
+    private final Map<CyNode, Node> nodes = new HashMap<>();
     // Summary edges
-    private final Map<NodeCouple, List<CyEdge>> coupleToEdges = new HashMap<>();
-    private final Map<NodeCouple, CyEdge> summaryCyEdges = new HashMap<>();
-    private final List<SummaryEdge> summaryEdges = new ArrayList<>();
-    private final List<CyEdge> evidenceCyEdges = new ArrayList<>();
-    private final List<EvidenceEdge> evidenceEdges = new ArrayList<>();
+    private final Map<NodeCouple, List<CyEdge>> coupleToSummarizedEdges = new HashMap<>();
+    private final Map<NodeCouple, SummaryEdge> summaryEdges = new HashMap<>();
+    private final Map<CyEdge, EvidenceEdge> evidenceEdges = new HashMap<>();
 
     private final Set<Long> taxIds = new HashSet<>();
     private final Set<String> interactorTypes = new HashSet<>();
@@ -76,22 +74,22 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
 
         TableUtil.NullAndNonNullEdges identifiedOrNotEdges = TableUtil.splitNullAndNonNullEdges(cyNetwork, EdgeFields.AC);
 
-        evidenceCyEdges.addAll(identifiedOrNotEdges.nonNullEdges);
+        for (CyEdge evidenceCyEdge : identifiedOrNotEdges.nonNullEdges) {
+            evidenceEdges.put(evidenceCyEdge, (EvidenceEdge) Edge.createEdge(this, evidenceCyEdge));
+        }
 
-        NodeCouple.putEdgesToCouples(evidenceCyEdges, coupleToEdges);
+        NodeCouple.putEdgesToCouples(evidenceEdges.keySet(), coupleToSummarizedEdges);
 
         if (identifiedOrNotEdges.nullEdges.size() > 0) {
             for (CyEdge existingEdge : identifiedOrNotEdges.nullEdges) {
                 NodeCouple existingCouple = new NodeCouple(existingEdge);
-                summaryCyEdges.put(existingCouple, existingEdge);
+                summaryEdges.put(existingCouple, (SummaryEdge) Edge.createEdge(this, existingEdge));
             }
-        } else {
-            updateSummaryEdges(coupleToEdges.keySet());
         }
+        updateSummaryEdges(coupleToSummarizedEdges.keySet());
 
-        cyNetwork.getNodeList().forEach(node -> iNodes.add(new Node(this, node)));
-        summaryCyEdges.values().forEach(edge -> summaryEdges.add((SummaryEdge) Edge.createIntactEdge(this, edge)));
-        evidenceCyEdges.forEach(edge -> evidenceEdges.add((EvidenceEdge) Edge.createIntactEdge(this, edge)));
+
+        cyNetwork.getNodeList().forEach(node -> nodes.put(node, new Node(this, node)));
 
         completeMissingNodeColorsFromTables();
     }
@@ -194,7 +192,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
 
     public void hideExpandedEdgesOnViewCreation(CyNetworkView networkView) {
         HideTaskFactory hideTaskFactory = manager.utils.getService(HideTaskFactory.class);
-        manager.utils.execute(hideTaskFactory.createTaskIterator(networkView, null, evidenceCyEdges));
+        manager.utils.execute(hideTaskFactory.createTaskIterator(networkView, null, evidenceEdges.keySet()));
         manager.data.addNetworkView(networkView, false);
     }
 
@@ -242,20 +240,20 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
         eventHelper.silenceEventSource(table);
         for (NodeCouple couple : couplesToUpdate) {
             CyEdge summaryEdge;
-            List<CyEdge> similarEdges = coupleToEdges.get(couple);
-            if (!similarEdges.isEmpty()) {
-                if (!summaryCyEdges.containsKey(couple)) {
+            List<CyEdge> summarizedEdges = coupleToSummarizedEdges.get(couple);
+            if (!summarizedEdges.isEmpty()) {
+                boolean newSummaryEdge = false;
+                if (!summaryEdges.containsKey(couple)) {
                     summaryEdge = cyNetwork.addEdge(couple.node1, couple.node2, false);
-                    summaryCyEdges.put(couple, summaryEdge);
+                    newSummaryEdge = true;
                 } else {
-                    summaryEdge = summaryCyEdges.get(couple);
+                    summaryEdge = summaryEdges.get(couple).cyEdge;
                 }
                 CyRow summaryEdgeRow = table.getRow(summaryEdge.getSUID());
 
-
                 Set<String> sourceFeatures = new HashSet<>();
                 Set<String> targetFeatures = new HashSet<>();
-                for (CyEdge edge : similarEdges) {
+                for (CyEdge edge : summarizedEdges) {
                     CyRow edgeRow = edgeTable.getRow(edge.getSUID());
 
                     List<String> edgeSourceFeatures = EdgeFields.SOURCE_FEATURES.getValue(edgeRow);
@@ -272,43 +270,54 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
                 EdgeFields.TARGET_FEATURES.setValue(summaryEdgeRow, new ArrayList<>(targetFeatures));
                 EdgeFields.NAME.setValue(summaryEdgeRow, TableUtil.getName(cyNetwork, couple.node1) + " (interact with) " + TableUtil.getName(cyNetwork, couple.node2));
 
-                CyRow firstEdgeRow = cyNetwork.getRow(similarEdges.get(0));
+                CyRow firstEdgeRow = cyNetwork.getRow(summarizedEdges.get(0));
                 EdgeFields.MI_SCORE.setValue(summaryEdgeRow, EdgeFields.MI_SCORE.getValue(firstEdgeRow));
                 EdgeFields.IS_SUMMARY.setValue(summaryEdgeRow, true);
-                EdgeFields.SUMMARY_NB_EDGES.setValue(summaryEdgeRow, similarEdges.size());
-                EdgeFields.SUMMARY_EDGES_ID.setValue(summaryEdgeRow, TableUtil.getFieldValuesOfEdges(edgeTable, EdgeFields.ID, similarEdges, null));
-                EdgeFields.SUMMARY_EDGES_SUID.setValue(summaryEdgeRow, TableUtil.getFieldValuesOfEdges(edgeTable, EdgeFields.SUID, similarEdges, null));
+                EdgeFields.SUMMARY_NB_EDGES.setValue(summaryEdgeRow, summarizedEdges.size());
+                EdgeFields.SUMMARY_EDGES_SUID.setValue(summaryEdgeRow, TableUtil.getFieldValuesOfEdges(edgeTable, EdgeFields.SUID, summarizedEdges, null));
 
+                if (newSummaryEdge) summaryEdges.put(couple, (SummaryEdge) Edge.createEdge(this, summaryEdge));
             } else {
-                summaryEdge = summaryCyEdges.get(couple);
+                summaryEdge = summaryEdges.get(couple).cyEdge;
+                summaryEdges.remove(couple);
                 cyNetwork.removeEdges(Collections.singleton(summaryEdge));
             }
         }
         eventHelper.unsilenceEventSource(table);
     }
 
+    public Edge getEdge(CyEdge cyEdge) {
+        if (evidenceEdges.containsKey(cyEdge)) return evidenceEdges.get(cyEdge);
+        return summaryEdges.get(new NodeCouple(cyEdge));
+    }
+
+    public Node getNode(CyNode cyNode) {
+        return nodes.get(cyNode);
+    }
+
+
     public List<SummaryEdge> getSummaryEdges() {
-        return new ArrayList<>(summaryEdges);
+        return new ArrayList<>(summaryEdges.values());
     }
 
     public List<EvidenceEdge> getEvidenceEdges() {
-        return new ArrayList<>(evidenceEdges);
+        return new ArrayList<>(evidenceEdges.values());
     }
 
     public List<CyEdge> getSummaryCyEdges() {
-        return new ArrayList<>(summaryCyEdges.values());
+        return summaryEdges.values().stream().map(summaryEdge -> summaryEdge.cyEdge).collect(Collectors.toList());
     }
 
     public List<CyEdge> getEvidenceCyEdges() {
-        return new ArrayList<>(evidenceCyEdges);
+        return new ArrayList<>(evidenceEdges.keySet());
     }
 
-    public List<CyEdge> getSimilarEvidenceEdges(CyEdge edge) {
-        return coupleToEdges.get(new NodeCouple(edge));
+    public List<CyEdge> getSummarizedEdges(CyEdge summaryCyEdge) {
+        return coupleToSummarizedEdges.get(new NodeCouple(summaryCyEdge));
     }
 
-    public CyEdge getSummaryEdge(CyEdge edge) {
-        return summaryCyEdges.get(new NodeCouple(edge));
+    public CyEdge getSummaryCyEdge(CyEdge edge) {
+        return summaryEdges.get(new NodeCouple(edge)).cyEdge;
     }
 
 
@@ -316,9 +325,10 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
     public void handleEvent(AddedEdgesEvent e) {
         if (e.getSource() == cyNetwork) {
             Collection<CyEdge> addedEdges = e.getPayloadCollection();
-            evidenceCyEdges.addAll(addedEdges);
-//            expandedIEdges.addAll(addedEdges.stream().map(edge -> (IntactEvidenceEdge) IntactEdge.createIntactEdge(this, edge)).filter(Objects::nonNull).collect(Collectors.toList()));
-            Set<NodeCouple> updatedCouples = NodeCouple.putEdgesToCouples(addedEdges, coupleToEdges);
+            for (CyEdge addedEdge : addedEdges) {
+                evidenceEdges.put(addedEdge, (EvidenceEdge) Edge.createEdge(this, addedEdge));
+            }
+            Set<NodeCouple> updatedCouples = NodeCouple.putEdgesToCouples(addedEdges, coupleToSummarizedEdges);
             updateSummaryEdges(updatedCouples);
         }
     }
@@ -379,8 +389,8 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener {
         return selectedNodes;
     }
 
-    public List<Node> getINodes() {
-        return new ArrayList<>(iNodes);
+    public List<Node> getNodes() {
+        return new ArrayList<>(nodes.values());
     }
 
 
