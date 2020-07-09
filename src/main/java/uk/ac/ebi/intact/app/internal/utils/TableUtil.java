@@ -4,10 +4,7 @@ import org.cytoscape.model.*;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.Field;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.SourceOntology.*;
@@ -36,6 +33,11 @@ public class TableUtil {
             }
         }
         return result;
+    }
+
+    public static class NullAndNonNullEdges {
+        public final List<CyEdge> nonNullEdges = new ArrayList<>();
+        public final List<CyEdge> nullEdges = new ArrayList<>();
     }
 
     public static void createColumnIfNeeded(CyTable table, Class<?> clazz, String columnName) {
@@ -101,19 +103,20 @@ public class TableUtil {
         }
     }
 
-    public static void copyRow(CyTable fromTable, CyTable toTable, java.io.Serializable fromPrimaryKey, java.io.Serializable toPrimaryKey, Set<String> fieldsToExclude) {
-        Map<String, Class<?>> fromColumnNames = fromTable.getColumns().stream().filter(column -> !fieldsToExclude.contains(column.getName())).collect(Collectors.toMap(CyColumn::getName, CyColumn::getType));
-        Map<String, Class<?>> toColumnNames = toTable.getColumns().stream().filter(column -> !fieldsToExclude.contains(column.getName())).collect(Collectors.toMap(CyColumn::getName, CyColumn::getType));
-        if (!toColumnNames.keySet().containsAll(fromColumnNames.keySet())) return;
-        if (fromTable.getPrimaryKey().getType() != fromPrimaryKey.getClass()) return;
-        if (toTable.getPrimaryKey().getType() != toPrimaryKey.getClass()) return;
+    public static void copyRow(CyTable fromTable, CyTable toTable, Object fromPrimaryKey, Object toPrimaryKey, Set<String> fieldsToExclude) {
+        Set<String> nonNullFieldsToExclude = (fieldsToExclude != null) ? new HashSet<>(fieldsToExclude) : new HashSet<>();
+        nonNullFieldsToExclude.add(CyIdentifiable.SUID);
+        Map<String, Class<?>> fromColumnNames = fromTable.getColumns().stream().filter(column -> !nonNullFieldsToExclude.contains(column.getName())).collect(Collectors.toMap(CyColumn::getName, CyColumn::getType));
+        Map<String, Class<?>> toColumnNames = toTable.getColumns().stream().filter(column -> !nonNullFieldsToExclude.contains(column.getName())).collect(Collectors.toMap(CyColumn::getName, CyColumn::getType));
+        if (!toColumnNames.keySet().containsAll(fromColumnNames.keySet()))
+            return;
+        if (fromTable.getPrimaryKey().getType() != fromPrimaryKey.getClass())
+            return;
+        if (toTable.getPrimaryKey().getType() != toPrimaryKey.getClass())
+            return;
         CyRow fromRow = fromTable.getRow(fromPrimaryKey);
         CyRow toRow = toTable.getRow(toPrimaryKey);
         fromColumnNames.forEach((columnName, type) -> toRow.set(columnName, type != List.class ? fromRow.get(columnName, type) : fromRow.getList(columnName, fromTable.getColumn(columnName).getListElementType())));
-    }
-    public static class NullAndNonNullEdges {
-        public final List<CyEdge> nonNullEdges = new ArrayList<>();
-        public final List<CyEdge> nullEdges = new ArrayList<>();
     }
 }
 
