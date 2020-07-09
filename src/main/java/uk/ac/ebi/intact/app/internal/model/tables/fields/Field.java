@@ -5,6 +5,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
+import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
 import java.util.*;
@@ -102,6 +103,10 @@ public class Field<T> {
 
     public Collection<CyRow> getMatchingRows(CyTable table, T value) {
         return table.getMatchingRows(toString(), value);
+    }
+
+    public Map<T , List<CyRow>> groupRows(CyTable table) {
+        return CollectionUtils.groupBy(table.getAllRows(), this::getValue);
     }
 
     public void setValue(CyRow row, T value) {

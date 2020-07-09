@@ -353,12 +353,21 @@ public class ModelUtils {
 
     public static void handleSubNetworkEdges(CySubNetwork subCyNetwork, Network parentNetwork) {
         CyTable edgeTable = subCyNetwork.getDefaultEdgeTable();
-        Collection<CyRow> summaryEdgeRows = EdgeFields.IS_SUMMARY.getMatchingRows(edgeTable, true);
-        for (CyRow summaryEdgeRow : summaryEdgeRows) {
-            for (Long summarizedEdgeSUID : EdgeFields.SUMMARY_EDGES_SUID.getValue(summaryEdgeRow)) {
-                if (!edgeTable.rowExists(summarizedEdgeSUID)) {
-                    subCyNetwork.addEdge(parentNetwork.getCyNetwork().getEdge(summarizedEdgeSUID));
+
+        Map<Boolean, List<CyRow>> isSummaryRows = EdgeFields.IS_SUMMARY.groupRows(edgeTable);
+        if (isSummaryRows.containsKey(true)) {
+            for (CyRow summaryEdgeRow : isSummaryRows.get(true)) {
+                for (Long summarizedEdgeSUID : EdgeFields.SUMMARY_EDGES_SUID.getValue(summaryEdgeRow)) {
+                    if (!edgeTable.rowExists(summarizedEdgeSUID)) {
+                        subCyNetwork.addEdge(parentNetwork.getCyNetwork().getEdge(summarizedEdgeSUID));
+                    }
                 }
+            }
+        }
+
+        if (isSummaryRows.containsKey(false)) {
+            for (CyRow evidenceEdgeRow: isSummaryRows.get(false)) {
+                subCyNetwork.addEdge(parentNetwork.getSummaryCyEdge(evidenceEdgeRow));
             }
         }
     }

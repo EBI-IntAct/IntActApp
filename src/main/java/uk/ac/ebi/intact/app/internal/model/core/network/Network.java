@@ -317,10 +317,21 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return coupleToSummarizedEdges.get(new NodeCouple(cyEdge));
     }
 
+    public SummaryEdge getSummaryEdge(CyEdge edge) {
+        return summaryEdges.get(new NodeCouple(edge));
+    }
+
     public CyEdge getSummaryCyEdge(CyEdge edge) {
         return summaryEdges.get(new NodeCouple(edge)).cyEdge;
     }
 
+    public CyEdge getSummaryCyEdge(CyRow edgeRow) {
+        return summaryEdges.get(new NodeCouple(getCyEdge(edgeRow))).cyEdge;
+    }
+
+    public CyEdge getCyEdge(CyRow edgeRow) {
+        return cyNetwork.getEdge(edgeRow.get(CyNetwork.SUID, Long.class));
+    }
 
     @Override
     public void handleEvent(AddedEdgesEvent e) {
