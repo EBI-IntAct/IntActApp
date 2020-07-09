@@ -274,7 +274,7 @@ public class DataManager implements
     private void updateSUIDList(CyTable sourceTable, ListField<Long> linkField, Class<? extends CyIdentifiable> targetType, CySession loadingSession) {
         for (CyRow row : sourceTable.getAllRows()) {
             List<Long> suids = linkField.getValue(row);
-            if (suids != null && loadingSession.getObject(suids.get(0), targetType) == null) return;
+            if (!suids.isEmpty() && loadingSession.getObject(suids.get(0), targetType) == null) return;
             linkField.map(row, oldSUID -> loadingSession.getObject(oldSUID, targetType).getSUID());
         }
     }
