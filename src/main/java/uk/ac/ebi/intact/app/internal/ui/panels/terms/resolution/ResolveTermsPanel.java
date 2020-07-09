@@ -159,6 +159,39 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     }
 
 
+    private void initScrollPanel() {
+        JScrollPane scrollPane = new JScrollPane(displayPanel, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setAutoscrolls(true);
+
+        scrollPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, tableCornerPanel);
+
+        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+        verticalScrollBar.setUnitIncrement(2);
+        verticalScrollBar.setBlockIncrement(5);
+
+        HorizontalFiller corner = new HorizontalFiller();
+        corner.setBorder(BorderFactory.createMatteBorder(2, 1, 0, 1, Color.WHITE));
+        scrollPane.setCorner(JScrollPane.LOWER_LEFT_CORNER, corner);
+
+        {
+            JViewport viewport = new JViewport();
+            viewport.setView(columnHeaderPanel);
+            scrollPane.setColumnHeader(viewport);
+        }
+        {
+            JViewport viewport = new JViewport();
+            viewport.setView(rowHeaderContainerPanel);
+            scrollPane.setRowHeader(viewport);
+        }
+
+        displayPanel.setMinimumSize(new Dimension(900, HEIGHT));
+        displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
+        scrollPane.setMinimumSize(new Dimension(900, HEIGHT));
+        scrollPane.setPreferredSize(new Dimension(900, HEIGHT));
+        scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
+        add(scrollPane, layoutHelper.down().expandHoriz());
+    }
+
     private void fillDisplayPanel() {
         EasyGBC c = new EasyGBC();
         c.anchor("west");
@@ -195,77 +228,6 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         termTables.forEach(TermTable::homogenizeWidth);
     }
 
-    private void initScrollPanel() {
-        JScrollPane scrollPane = new JScrollPane(displayPanel, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setAutoscrolls(true);
-
-        scrollPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, tableCornerPanel);
-
-        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
-        verticalScrollBar.setUnitIncrement(2);
-        verticalScrollBar.setBlockIncrement(5);
-
-        HorizontalFiller corner = new HorizontalFiller();
-        corner.setBorder(BorderFactory.createMatteBorder(2, 1, 0, 1, Color.WHITE));
-        scrollPane.setCorner(JScrollPane.LOWER_LEFT_CORNER, corner);
-
-        {
-            JViewport viewport = new JViewport();
-            viewport.setView(columnHeaderPanel);
-            scrollPane.setColumnHeader(viewport);
-        }
-        {
-            JViewport viewport = new JViewport();
-            viewport.setView(rowHeaderContainerPanel);
-            scrollPane.setRowHeader(viewport);
-        }
-
-        displayPanel.setMinimumSize(new Dimension(900, HEIGHT));
-        displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
-        scrollPane.setMinimumSize(new Dimension(900, HEIGHT));
-        scrollPane.setPreferredSize(new Dimension(900, HEIGHT));
-        scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
-        add(scrollPane, layoutHelper.down().expandHoriz());
-    }
-
-
-    private static class FilterMenu extends JPopupMenu {
-
-        public final TermColumn column;
-
-        public FilterMenu(TermColumn column) {
-            super();
-            this.column = column;
-            add(new JLabel("Select values to show:"));
-        }
-    }
-
-    private void createFilters() {
-        for (TermTable table : termTables) {
-            for (Interactor interactor : table.interactors) {
-                visibleColumnValues.forEach((column, visibleValues) -> {
-                    Object value = column.getValue.apply(interactor);
-                    if (!visibleValues.contains(value)) {
-                        visibleValues.add(value);
-                        JCheckBox checkBox = new JCheckBox(value != null ? value.toString() : "", true);
-                        columnFilterMenus.get(column).add(checkBox);
-                        checkBox.addItemListener(e -> {
-                            switch (e.getStateChange()) {
-                                case ItemEvent.SELECTED:
-                                    visibleValues.add(value);
-                                    break;
-                                case ItemEvent.DESELECTED:
-                                    visibleValues.remove(value);
-                                    break;
-                            }
-                            filterInteractors();
-                        });
-                    }
-                });
-            }
-        }
-    }
-
     private void createOptionPanel() {
         OptionsPanel optionsPanel = new OptionsPanel(manager, OptionManager.Scope.DISAMBIGUATION);
         optionsPanel.addListener(manager.option.SHOW_HIGHLIGHTS, () -> {
@@ -273,23 +235,6 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             termTables.forEach(table -> table.rows.values().forEach(row -> row.highlightMatchingColumns(showHighlightsValue)));
         });
         add(new CollapsablePanel("Options", optionsPanel, false), layoutHelper.down().expandHoriz());
-    }
-
-    private void filterInteractors() {
-        for (TermTable table : termTables) {
-            table.rows.forEach((interactor, row) -> row.setVisible(isToKeep(interactor)));
-        }
-    }
-
-    private boolean isToKeep(Interactor interactor) {
-        for (Map.Entry<TermColumn, Set<Object>> entry : visibleColumnValues.entrySet()) {
-            Object value = entry.getKey().getValue.apply(interactor);
-            Set<Object> visibleValues = entry.getValue();
-            if (!visibleValues.contains(value)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private void createControlButtons() {
@@ -333,6 +278,62 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         controlPanel.add(importButton);
 
         add(controlPanel, layoutHelper.down().expandHoriz());
+    }
+
+
+    private static class FilterMenu extends JPopupMenu {
+
+        public final TermColumn column;
+
+        public FilterMenu(TermColumn column) {
+            super();
+            this.column = column;
+            add(new JLabel("Select values to show:"));
+        }
+    }
+
+    private void createFilters() {
+        for (TermTable table : termTables) {
+            for (Interactor interactor : table.interactors) {
+                visibleColumnValues.forEach((column, visibleValues) -> {
+                    Object value = column.getValue.apply(interactor);
+                    if (!visibleValues.contains(value)) {
+                        visibleValues.add(value);
+                        JCheckBox checkBox = new JCheckBox(value != null ? value.toString() : "", true);
+                        columnFilterMenus.get(column).add(checkBox);
+                        checkBox.addItemListener(e -> {
+                            switch (e.getStateChange()) {
+                                case ItemEvent.SELECTED:
+                                    visibleValues.add(value);
+                                    break;
+                                case ItemEvent.DESELECTED:
+                                    visibleValues.remove(value);
+                                    break;
+                            }
+                            filterInteractors();
+                        });
+                    }
+                });
+            }
+        }
+    }
+
+
+    private void filterInteractors() {
+        for (TermTable table : termTables) {
+            table.rows.forEach((interactor, row) -> row.setVisible(isToKeep(interactor)));
+        }
+    }
+
+    private boolean isToKeep(Interactor interactor) {
+        for (Map.Entry<TermColumn, Set<Object>> entry : visibleColumnValues.entrySet()) {
+            Object value = entry.getKey().getValue.apply(interactor);
+            Set<Object> visibleValues = entry.getValue();
+            if (!visibleValues.contains(value)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void close() {
