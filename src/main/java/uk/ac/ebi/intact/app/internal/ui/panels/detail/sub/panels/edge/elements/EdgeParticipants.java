@@ -207,7 +207,10 @@ public class EdgeParticipants extends AbstractEdgeElement {
         for (NodeFeatures participantSummary : participantSummaries) {
             participantSummary.deleteEdgeSelectionCheckboxes();
         }
-        for (NodeDiagram nodeDiagram : List.of(sourceDiagram, targetDiagram)) {
+        List<NodeDiagram> nodeDiagrams = new ArrayList<>();
+        if (sourceDiagram != null) nodeDiagrams.add(sourceDiagram);
+        if (targetDiagram != null) nodeDiagrams.add(targetDiagram);
+        for (NodeDiagram nodeDiagram : nodeDiagrams) {
             NodeDiagramInfo nodeDiagramInfo = nodeDiagramInfos.get(nodeDiagram.node);
             if (nodeDiagramInfo == null) continue;
             nodeDiagramInfo.nodeDiagrams.remove(nodeDiagram);
