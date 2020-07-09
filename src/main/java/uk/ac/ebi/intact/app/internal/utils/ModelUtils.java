@@ -351,59 +351,15 @@ public class ModelUtils {
         } else System.out.println("Features SUID not found");
     }
 
-
-    public static void buildSubTablesForSubIntactNetwork(Network subNetwork, Network parentNetwork) {
-        Manager manager = subNetwork.getManager();
-        CyTableManager tableManager = manager.utils.getService(CyTableManager.class);
-        CyTableFactory tableFactory = manager.utils.getService(CyTableFactory.class);
-
-        CyTable featuresTable = tableFactory.createTable("Features of " + subNetwork.toString(), FeatureFields.AC.toString(), String.class, true, true);
-        CyTable identifiersTable = tableFactory.createTable("Identifiers of " + subNetwork.toString(), IdentifierFields.AC.toString(), String.class, true, true);
-
-        CyNetwork cyNetwork = subNetwork.getCyNetwork();
-        initLowerTables(subNetwork, cyNetwork, tableManager, cyNetwork.getDefaultNetworkTable(), featuresTable, identifiersTable);
-
-        // Copy included features
-        Set<String> featuresAcsToAdd = new HashSet<>();
-        CyTable edgeTable = cyNetwork.getDefaultEdgeTable();
-        EdgeFields.SOURCE_FEATURES.getColumn(edgeTable).getValues(List.class).forEach(list -> {
-            if (list != null) ((List<?>) list).forEach(o -> featuresAcsToAdd.add((String) o));
-        });
-        EdgeFields.TARGET_FEATURES.getColumn(edgeTable).getValues(List.class).forEach(list -> {
-            if (list != null) ((List<?>) list).forEach(o -> featuresAcsToAdd.add((String) o));
-        });
-
-        for (String featureAc : featuresAcsToAdd) {
-            copyRow(parentNetwork.getFeaturesTable(), featuresTable, featureAc, featureAc, Set.of(NetworkFields.UUID.toString()));
-        }
-
-        // Copy included identifiers
-        CyTable nodeTable = cyNetwork.getDefaultNodeTable();
-        Set<String> identifierAcsToAdd = new HashSet<>();
-        NodeFields.IDENTIFIERS.getColumn(nodeTable).getValues(List.class).forEach(list -> {
-            if (list != null) ((List<?>) list).forEach(o -> identifierAcsToAdd.add((String) o));
-        });
-
-        for (String identifierAc : identifierAcsToAdd) {
-            copyRow(parentNetwork.getIdentifiersTable(), identifiersTable, identifierAc, identifierAc, Set.of(NetworkFields.UUID.toString()));
-        }
-
-        // Remove excluded features and identifiers from nodes
-        for (CyRow nodeRow : nodeTable.getAllRows()) {
-            NodeFields.FEATURES.getValue(nodeRow).removeIf(ac -> !featuresTable.rowExists(ac));
-            NodeFields.IDENTIFIERS.getValue(nodeRow).removeIf(ac -> !identifiersTable.rowExists(ac));
-        }
-
-        // Remove excluded edges from features
-        for (CyRow featureRow : featuresTable.getAllRows()) {
-            Set<Long> idsToKeep = new HashSet<>();
-            FeatureFields.EDGES_SUID.getValue(featureRow).removeIf(suid -> {
-                boolean edgeExistInSubNetwork = edgeTable.rowExists(suid);
-                if (edgeExistInSubNetwork) idsToKeep.add(EdgeFields.ID.getValue(edgeTable.getRow(suid)));
-                return !edgeExistInSubNetwork;
-            });
-
-            FeatureFields.EDGES_ID.getValue(featureRow).removeIf(id -> !idsToKeep.contains(id));
+    public static void handleSubNetworkEdges(CySubNetwork subCyNetwork, Network parentNetwork) {
+        CyTable edgeTable = subCyNetwork.getDefaultEdgeTable();
+        Collection<CyRow> summaryEdgeRows = EdgeFields.IS_SUMMARY.getMatchingRows(edgeTable, true);
+        for (CyRow summaryEdgeRow : summaryEdgeRows) {
+            for (Long summarizedEdgeSUID : EdgeFields.SUMMARY_EDGES_SUID.getValue(summaryEdgeRow)) {
+                if (!edgeTable.rowExists(summarizedEdgeSUID)) {
+                    subCyNetwork.addEdge(parentNetwork.getCyNetwork().getEdge(summarizedEdgeSUID));
+                }
+            }
         }
     }
 }

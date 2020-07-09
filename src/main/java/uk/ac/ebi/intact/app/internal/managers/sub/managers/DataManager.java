@@ -181,15 +181,18 @@ public class DataManager implements
         CyRootNetwork rootNetwork = rootNetworkManager.getRootNetwork(newNetwork);
         CySubNetwork baseNetwork = rootNetwork.getBaseNetwork();
         if (baseNetwork.getSUID().equals(newNetwork.getSUID())) return;
-        addSubNetwork(newNetwork, baseNetwork);
+        addSubNetwork((CySubNetwork) newNetwork, baseNetwork);
     }
 
     private void addSubNetwork(CyNetwork newNetwork, CySubNetwork baseNetwork) {
         if (networkMap.containsKey(baseNetwork)) {
             Network parent = networkMap.get(baseNetwork);
-            Network newINetwork = new Network(manager);
-            addIntactNetwork(newINetwork, newNetwork);
-            ModelUtils.buildSubTablesForSubIntactNetwork(newINetwork, parent);
+            handleSubNetworkEdges(newCyNetwork, parent);
+            Network newNetwork = new Network(manager);
+            addIntactNetwork(newNetwork, newCyNetwork);
+            newNetwork.setFeaturesTable(parent.getFeaturesTable());
+            newNetwork.setIdentifiersTable(parent.getIdentifiersTable());
+            NetworkFields.UUID.setValue(newCyNetwork.getRow(newCyNetwork), NetworkFields.UUID.getValue(baseNetwork.getRow(baseNetwork)));
         }
     }
 
