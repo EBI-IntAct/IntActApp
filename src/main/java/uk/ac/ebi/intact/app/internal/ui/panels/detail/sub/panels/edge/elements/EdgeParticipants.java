@@ -40,8 +40,8 @@ public class EdgeParticipants extends AbstractEdgeElement {
     private NodeDiagram targetDiagram;
 
 
-    public EdgeParticipants(Edge iEdge, OpenBrowser openBrowser) {
-        super(null, iEdge, openBrowser);
+    public EdgeParticipants(Edge edge, OpenBrowser openBrowser) {
+        super(null, edge, openBrowser);
         executor.execute(this::fillContent);
     }
 
@@ -49,17 +49,17 @@ public class EdgeParticipants extends AbstractEdgeElement {
     protected void fillSummaryEdgeContent(SummaryEdge edge) {
         createPanel(edge);
         Map<Node, List<Feature>> features = edge.getFeatures();
-        for (Node iNode : List.of(edge.source, edge.target)) {
-            JPanel nodePanel = iNode == edge.source ? sourcePanel : targetPanel;
+        for (Node node : List.of(edge.source, edge.target)) {
+            JPanel nodePanel = node == edge.source ? sourcePanel : targetPanel;
             EasyGBC layoutHelper = new EasyGBC();
             nodePanel.setBackground(nodePanelBg);
             nodePanel.setOpaque(true);
 
-            NodeBasics nodeBasics = new NodeBasics(iNode, openBrowser);
+            NodeBasics nodeBasics = new NodeBasics(node, openBrowser);
             nodeBasics.setBackground(nodePanelBg);
             nodePanel.add(nodeBasics, layoutHelper.down().anchor("north").expandHoriz());
 
-            NodeFeatures nodeFeatures = new NodeFeatures(iNode, features.get(iNode), openBrowser, true, edge, nodePanelBg);
+            NodeFeatures nodeFeatures = new NodeFeatures(node, features.get(node), openBrowser, true, edge, nodePanelBg);
             nodePanel.add(nodeFeatures, layoutHelper.down().anchor("north").expandHoriz());
             participantSummaries.add(nodeFeatures);
 
@@ -75,28 +75,28 @@ public class EdgeParticipants extends AbstractEdgeElement {
     protected void fillEvidenceEdgeContent(EvidenceEdge edge) {
         createPanel(edge);
         Map<Node, List<Feature>> features = edge.getFeatures();
-        for (Node iNode : List.of(edge.source, edge.target)) {
+        for (Node node : List.of(edge.source, edge.target)) {
 
-            JPanel nodePanel = iNode == edge.source ? sourcePanel : targetPanel;
+            JPanel nodePanel = node == edge.source ? sourcePanel : targetPanel;
             EasyGBC layoutHelper = new EasyGBC();
             nodePanel.setBackground(nodePanelBg);
             nodePanel.setOpaque(true);
 
-            NodeBasics nodeBasics = new NodeBasics(iNode, openBrowser);
+            NodeBasics nodeBasics = new NodeBasics(node, openBrowser);
             nodeBasics.setBackground(nodePanelBg);
             nodePanel.add(nodeBasics, layoutHelper.down().anchor("north").expandHoriz());
 
             nodePanel.add(new ParticipantInfoPanel("Biological role : ",
-                            iNode == edge.source ? edge.sourceBiologicalRole : edge.targetBiologicalRole),
+                            node == edge.source ? edge.sourceBiologicalRole : edge.targetBiologicalRole),
                     layoutHelper.down().anchor("north").expandHoriz()
             );
 
             nodePanel.add(new ParticipantInfoPanel("Experimental role : ",
-                            iNode == edge.source ? edge.sourceExperimentalRole : edge.targetExperimentalRole),
+                            node == edge.source ? edge.sourceExperimentalRole : edge.targetExperimentalRole),
                     layoutHelper.down().anchor("north").expandHoriz()
             );
 
-            NodeFeatures nodeFeatures = new NodeFeatures(iNode, features.get(iNode), openBrowser, false, null, nodePanelBg);
+            NodeFeatures nodeFeatures = new NodeFeatures(node, features.get(node), openBrowser, false, null, nodePanelBg);
             nodePanel.add(nodeFeatures, layoutHelper.down().anchor("north").expandHoriz());
 
             nodePanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());

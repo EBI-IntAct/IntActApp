@@ -16,8 +16,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class EdgeDetails extends AbstractEdgeElement {
     private final static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
-    public EdgeDetails(Edge iEdge, OpenBrowser openBrowser) {
-        super(null, iEdge, openBrowser);
+    public EdgeDetails(Edge edge, OpenBrowser openBrowser) {
+        super(null, edge, openBrowser);
         fillContent();
     }
 

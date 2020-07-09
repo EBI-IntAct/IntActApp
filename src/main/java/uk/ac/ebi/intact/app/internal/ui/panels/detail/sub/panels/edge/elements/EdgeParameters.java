@@ -18,8 +18,8 @@ import javax.swing.*;
 public class EdgeParameters extends AbstractEdgeElement {
     private final JsonNode parametersData;
 
-    public EdgeParameters(Edge iEdge, OpenBrowser openBrowser, JsonNode parametersData) {
-        super("Parameters", iEdge, openBrowser);
+    public EdgeParameters(Edge edge, OpenBrowser openBrowser, JsonNode parametersData) {
+        super("Parameters", edge, openBrowser);
         this.parametersData = parametersData;
         fillContent();
     }

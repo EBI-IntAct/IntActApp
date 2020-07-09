@@ -16,8 +16,8 @@ import static uk.ac.ebi.intact.app.internal.model.styles.UIColors.lightBackgroun
 
 public class EdgeBasics extends AbstractEdgeElement {
 
-    public EdgeBasics(Edge iEdge, OpenBrowser openBrowser) {
-        super(null, iEdge, openBrowser);
+    public EdgeBasics(Edge edge, OpenBrowser openBrowser) {
+        super(null, edge, openBrowser);
         fillContent();
     }
 
@@ -26,7 +26,7 @@ public class EdgeBasics extends AbstractEdgeElement {
 
         VerticalPanel summaryEdgesPanel = new VerticalPanel(lightBackground);
         for (EvidenceEdge evidenceEdge : edge.getSubEdges().values()) {
-            summaryEdgesPanel.add(LinkUtils.createIntactEdgeLink(openBrowser, evidenceEdge));
+            summaryEdgesPanel.add(LinkUtils.createEvidenceEdgeLink(openBrowser, evidenceEdge));
         }
         CollapsablePanel collapsablePanel = new CollapsablePanel("Summarized edges (" + edge.subEdgeSUIDs.size() + ")", summaryEdgesPanel, true);
         collapsablePanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -46,7 +46,7 @@ public class EdgeBasics extends AbstractEdgeElement {
         }
         {
             LinePanel ebiInfo = new LinePanel(lightBackground);
-            ebiInfo.add(LinkUtils.createIntactEdgeLink(openBrowser, edge));
+            ebiInfo.add(LinkUtils.createEvidenceEdgeLink(openBrowser, edge));
             ebiInfo.add(new JLabel(" (MI Score = " + edge.miScore + ")"));
             ebiInfo.add(Box.createHorizontalGlue());
             content.add(ebiInfo);
