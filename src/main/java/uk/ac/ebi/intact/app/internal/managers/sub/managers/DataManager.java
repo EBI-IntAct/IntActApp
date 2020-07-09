@@ -9,6 +9,7 @@ import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.session.CySession;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -18,25 +19,20 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
-import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedListener;
 import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedListener;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.ListField;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.*;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.models.FeatureFields;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.models.IdentifierFields;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NetworkFields;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.*;
 
@@ -184,7 +180,7 @@ public class DataManager implements
         addSubNetwork((CySubNetwork) newNetwork, baseNetwork);
     }
 
-    private void addSubNetwork(CyNetwork newNetwork, CySubNetwork baseNetwork) {
+    private void addSubNetwork(CySubNetwork newCyNetwork, CySubNetwork baseNetwork) {
         if (networkMap.containsKey(baseNetwork)) {
             Network parent = networkMap.get(baseNetwork);
             handleSubNetworkEdges(newCyNetwork, parent);
@@ -208,22 +204,21 @@ public class DataManager implements
         // Create string networks for any networks loaded by string
         networkMap.clear();
         intactNetworkViewMap.clear();
-        Set<CyNetwork> cyNetworks = event.getLoadedSession().getNetworks();
-        List<Network> networks = new ArrayList<>();
+        CySession loadedSession = event.getLoadedSession();
+        Set<CyNetwork> cyNetworks = loadedSession.getNetworks();
         for (CyNetwork cyNetwork : cyNetworks) {
             if (ModelUtils.isIntactNetwork(cyNetwork)) {
                 if (ModelUtils.ifHaveIntactNS(cyNetwork)) {
                     Network network = new Network(manager);
                     addIntactNetwork(network, cyNetwork);
                     network.completeMissingNodeColorsFromTables();
-                    networks.add(network);
                 }
             }
         }
 
-        linkIntactTablesToNetwork(event.getLoadedSession().getTables(), getEdgeTableMapping(networks));
+        linkIntactTablesToNetwork(loadedSession.getTables(), loadedSession);
 
-        for (CyNetworkView view : event.getLoadedSession().getNetworkViews()) {
+        for (CyNetworkView view : loadedSession.getNetworkViews()) {
             if (ModelUtils.isIntactNetwork(view.getModel())) {
                 addNetworkView(view, true);
             }
@@ -238,70 +233,52 @@ public class DataManager implements
         }
     }
 
-    Map<CyNetwork, Map<Long, Long>> getEdgeTableMapping(List<Network> networks) {
-        Map<CyNetwork, Map<Long, Long>> edgeMapping = new HashMap<>();
-        for (Network network : networks) {
-            Map<Long, Long> networkEdgeMapping = new HashMap<>();
-            CyNetwork cyNetwork = network.getCyNetwork();
-            edgeMapping.put(cyNetwork, networkEdgeMapping);
-            for (CyRow edgeRow : cyNetwork.getDefaultEdgeTable().getAllRows()) {
-                Long id = EdgeFields.ID.getValue(edgeRow);
-                if (id == null) continue;
-                Long suid = edgeRow.get(CyEdge.SUID, Long.class);
-                networkEdgeMapping.put(id, suid);
-
-            }
-        }
-        return edgeMapping;
-    }
-
-    void linkSummaryEdgesIdsToSUIDs(CyTableMetadata tableM, Map<CyNetwork, Map<Long, Long>> edgeMapping) {
-        CyTable edgeTable = tableM.getTable();
-        CyColumn summarizedEdgesIdColumn = EdgeFields.SUMMARY_EDGES_ID.getColumn(edgeTable);
-        if (summarizedEdgesIdColumn == null) return;
-
-        Map<Long, Long> networkEdgeMapping = edgeMapping.get(rootNetworkManager.getRootNetwork(tableM.getNetwork()).getSubNetworkList().get(0));
-        if (networkEdgeMapping == null) return;
-
-        for (CyRow row : edgeTable.getAllRows()) {
-            List<Long> ids = EdgeFields.SUMMARY_EDGES_ID.getValue(row);
-            if (ids == null) continue;
-            List<Long> list = ids.stream().filter(Objects::nonNull).map(networkEdgeMapping::get).collect(Collectors.toList());
-            EdgeFields.SUMMARY_EDGES_SUID.setValue(row, list);
-        }
-    }
-
-
-    void linkIntactTablesToNetwork(Collection<CyTableMetadata> tables, Map<CyNetwork, Map<Long, Long>> edgeMapping) {
+    void linkIntactTablesToNetwork(Collection<CyTableMetadata> tables, CySession loadingSession) {
         for (CyTableMetadata tableM : tables) {
-            linkSummaryEdgesIdsToSUIDs(tableM, edgeMapping);
+            linkSummaryEdgesIdsToSUIDs(tableM, loadingSession);
             CyTable table = tableM.getTable();
+
             CyColumn networkUUIDColumn = NetworkFields.UUID.getColumn(table);
             if (networkUUIDColumn == null) continue;
-
             List<String> uuids = networkUUIDColumn.getValues(String.class);
             if (uuids.isEmpty()) continue;
-            for (Network network : networkMap.values()) {
-                CyNetwork cyNetwork = network.getCyNetwork();
-                CyRow netRow = cyNetwork.getRow(cyNetwork);
-                if (NetworkFields.UUID.getValue(netRow).equals(uuids.get(0))) { // If the UUID referenced in defaultValue belong to this network
-                    if (IdentifierFields.ID.getColumn(table) != null) {
-                        network.setIdentifiersTable(table);
-                    } else if (FeatureFields.EDGES_ID.getColumn(table) != null) {
+
+            if (Table.FEATURE.containsAllFields(table)) {
+                updateSUIDList(table, FeatureFields.EDGES_SUID, CyEdge.class, loadingSession);
+                for (Network network : networkMap.values()) {
+                    CyNetwork cyNetwork = network.getCyNetwork();
+                    CyRow netRow = cyNetwork.getRow(cyNetwork);
+                    if (NetworkFields.UUID.getValue(netRow).equals(uuids.get(0))) { // If the UUID referenced in defaultValue belong to this network
                         network.setFeaturesTable(table);
-                        Map<Long, Long> networkEdgeMapping = edgeMapping.get(cyNetwork);
-                        for (CyRow featureRow : table.getAllRows()) {
-                            List<Long> edgeIds = FeatureFields.EDGES_ID.getValue(featureRow);
-                            if (edgeIds == null || edgeIds.isEmpty()) continue;
-                            FeatureFields.EDGES_SUID.setValue(featureRow, edgeIds.stream().map(networkEdgeMapping::get).collect(Collectors.toList()));
-                        }
                     }
-                    break;
                 }
             }
 
+            if (Table.IDENTIFIER.containsAllFields(table)) {
+                for (Network network : networkMap.values()) {
+                    CyNetwork cyNetwork = network.getCyNetwork();
+                    if (NetworkFields.UUID.getValue(cyNetwork.getRow(cyNetwork)).equals(uuids.get(0))) { // If the UUID referenced in defaultValue belong to this network
+                        network.setIdentifiersTable(table);
+                    }
+                }
+            }
         }
     }
+
+    void linkSummaryEdgesIdsToSUIDs(CyTableMetadata tableM, CySession loadingSession) {
+        CyTable edgeTable = tableM.getTable();
+        if (!Table.EDGE.containsAllFields(edgeTable)) return;
+        updateSUIDList(edgeTable, EdgeFields.SUMMARY_EDGES_SUID, CyEdge.class, loadingSession);
+    }
+
+    private void updateSUIDList(CyTable sourceTable, ListField<Long> linkField, Class<? extends CyIdentifiable> targetType, CySession loadingSession) {
+        for (CyRow row : sourceTable.getAllRows()) {
+            List<Long> suids = linkField.getValue(row);
+            if (suids != null && loadingSession.getObject(suids.get(0), targetType) == null) return;
+            linkField.map(row, oldSUID -> loadingSession.getObject(oldSUID, targetType).getSUID());
+        }
+    }
+
 
     //================= Data getters =================//
     public CyNetwork getCurrentCyNetwork() {
