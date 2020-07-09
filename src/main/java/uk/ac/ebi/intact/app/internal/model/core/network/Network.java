@@ -31,10 +31,10 @@ import java.util.stream.Collectors;
 public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, RemovedEdgesListener {
     ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
     final Manager manager;
-    CyNetwork cyNetwork;
     Map<String, List<String>> termToAcs;
     Map<String, List<Interactor>> interactorsToResolve;
     Map<String, Integer> totalInteractors = new HashMap<>();
+    CyNetwork cyNetwork;
     CyTable edgeTable;
     CyTable nodeTable;
     CyTable featuresTable;
@@ -313,8 +313,8 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return new ArrayList<>(evidenceEdges.keySet());
     }
 
-    public List<CyEdge> getSummarizedEdges(CyEdge summaryCyEdge) {
-        return coupleToSummarizedEdges.get(new NodeCouple(summaryCyEdge));
+    public List<CyEdge> getSimilarEvidenceCyEdges(CyEdge cyEdge) {
+        return coupleToSummarizedEdges.get(new NodeCouple(cyEdge));
     }
 
     public CyEdge getSummaryCyEdge(CyEdge edge) {

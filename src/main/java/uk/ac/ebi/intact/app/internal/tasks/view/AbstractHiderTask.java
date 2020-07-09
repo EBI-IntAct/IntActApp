@@ -61,7 +61,7 @@ public abstract class AbstractHiderTask extends AbstractTask {
             CyNetwork cyNetwork = chosenNetwork.getCyNetwork();
             Set<CyEdge> edgesToSelect = chosenNetwork.getSummaryCyEdges().stream()
                     .filter(cyEdge -> cyNetwork.getRow(cyEdge).get(CyNetwork.SELECTED, Boolean.class))
-                    .map(chosenNetwork::getSummarizedEdges)
+                    .map(chosenNetwork::getSimilarEvidenceCyEdges)
                     .flatMap(List::stream)
                     .collect(Collectors.toSet());
 
