@@ -100,6 +100,10 @@ public class Field<T> {
         return table.getColumn(toString());
     }
 
+    public Collection<CyRow> getMatchingRows(CyTable table, T value) {
+        return table.getMatchingRows(toString(), value);
+    }
+
     public void setValue(CyRow row, T value) {
         row.set(toString(), value);
     }
