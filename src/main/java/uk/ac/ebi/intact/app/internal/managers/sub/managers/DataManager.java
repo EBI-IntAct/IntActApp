@@ -69,7 +69,7 @@ public class DataManager implements
         for (CyNetwork cyNetwork : manager.utils.getService(CyNetworkManager.class).getNetworkSet()) {
             if (!isIntactNetwork(cyNetwork)) continue;
             Network network = new Network(manager);
-            addIntactNetwork(network, cyNetwork);
+            addNetwork(network, cyNetwork);
             fireIntactNetworkCreated(network);
             linkNetworkTablesFromTableData(network);
             network.completeMissingNodeColorsFromTables();
@@ -118,7 +118,7 @@ public class DataManager implements
         return cyNetwork;
     }
 
-    public void addIntactNetwork(Network network, CyNetwork cyNetwork) {
+    public void addNetwork(Network network, CyNetwork cyNetwork) {
         networkMap.put(cyNetwork, network);
         network.setNetwork(cyNetwork);
     }
@@ -162,7 +162,6 @@ public class DataManager implements
             tableManager.deleteTable(network.getIdentifiersTable().getSUID());
             // remove as string network
             networkMap.remove(cyNetwork);
-
         }
     }
 
@@ -185,7 +184,7 @@ public class DataManager implements
             Network parent = networkMap.get(baseNetwork);
             handleSubNetworkEdges(newCyNetwork, parent);
             Network newNetwork = new Network(manager);
-            addIntactNetwork(newNetwork, newCyNetwork);
+            addNetwork(newNetwork, newCyNetwork);
             newNetwork.setFeaturesTable(parent.getFeaturesTable());
             newNetwork.setIdentifiersTable(parent.getIdentifiersTable());
             NetworkFields.UUID.setValue(newCyNetwork.getRow(newCyNetwork), NetworkFields.UUID.getValue(baseNetwork.getRow(baseNetwork)));
@@ -210,7 +209,7 @@ public class DataManager implements
             if (ModelUtils.isIntactNetwork(cyNetwork)) {
                 if (ModelUtils.ifHaveIntactNS(cyNetwork)) {
                     Network network = new Network(manager);
-                    addIntactNetwork(network, cyNetwork);
+                    addNetwork(network, cyNetwork);
                     network.completeMissingNodeColorsFromTables();
                 }
             }
