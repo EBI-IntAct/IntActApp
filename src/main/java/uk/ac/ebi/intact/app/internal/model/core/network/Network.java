@@ -314,10 +314,10 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
                     evidenceEdges.remove(removedEdge);
                     List<CyEdge> summarizedEdges = coupleToSummarizedEdges.get(nodeCouple);
                     summarizedEdges.remove(removedEdge);
+                    SummaryEdge summaryEdge = summaryEdges.get(nodeCouple);
                     if (summarizedEdges.isEmpty()) {
-                        SummaryEdge summaryEdge = summaryEdges.get(nodeCouple);
                         if (summaryEdge != null) cyNetwork.removeEdges(Collections.singleton(summaryEdge.cyEdge));
-                    }
+                    } else summaryEdge.updateSummary();
                 } else if (summaryEdges.containsKey(nodeCouple)) {
                     List<CyEdge> summarizedEdges = coupleToSummarizedEdges.get(nodeCouple);
                     summarizedEdges.forEach(evidenceEdges::remove);
@@ -453,7 +453,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     public EvidenceEdge getEvidenceEdge(CyEdge edge) {
         return evidenceEdges.get(edge);
     }
-    
+
 
     public CyEdge getCyEdge(Long suid) {
         return cyNetwork.getEdge(suid);

@@ -28,7 +28,7 @@ public class EdgeBasics extends AbstractEdgeElement {
         for (EvidenceEdge evidenceEdge : edge.getSummarizedEdges()) {
             summaryEdgesPanel.add(LinkUtils.createEvidenceEdgeLink(openBrowser, evidenceEdge));
         }
-        CollapsablePanel collapsablePanel = new CollapsablePanel("Summarized edges (" + edge.subEdgeSUIDs.size() + ")", summaryEdgesPanel, true);
+        CollapsablePanel collapsablePanel = new CollapsablePanel("Summarized edges (" + edge.summarizedEdgeSUIDs.size() + ")", summaryEdgesPanel, true);
         collapsablePanel.setAlignmentX(LEFT_ALIGNMENT);
         content.add(collapsablePanel);
     }

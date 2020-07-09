@@ -147,7 +147,7 @@ public class NodeFeatures extends AbstractNodeElement {
                                             line.add(new SelectEdgeButton(featureEdge));
                                             line.add(new JLabel("Observed on edge with " + otherNode.name + " (" + featureEdge.ac + ")"));
                                         } else { // Summary edge features
-                                            if (summaryEdge.subEdgeSUIDs.contains(featureEdge.cyEdge.getSUID())) {
+                                            if (summaryEdge.summarizedEdgeSUIDs.contains(featureEdge.cyEdge.getSUID())) {
                                                 line.add(LinkUtils.createEvidenceEdgeLink(openBrowser, featureEdge));
                                             }
                                         }

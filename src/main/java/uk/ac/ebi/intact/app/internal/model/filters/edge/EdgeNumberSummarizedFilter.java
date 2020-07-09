@@ -12,6 +12,6 @@ public class EdgeNumberSummarizedFilter extends ContinuousFilter<SummaryEdge> {
 
     @Override
     public double getProperty(SummaryEdge element) {
-        return element.subEdgeSUIDs.size();
+        return element.summarizedEdgeSUIDs.size();
     }
 }
