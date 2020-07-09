@@ -20,7 +20,7 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
         super(view, name, elementType);
         List<T> elements;
         if (elementType == Node.class) {
-            elements = new ArrayList<>((List<T>) network.getINodes());
+            elements = new ArrayList<>((List<T>) network.getNodes());
         } else if (elementType == Edge.class) {
             elements = new ArrayList<>((List<T>) network.getSummaryEdges());
             elements.addAll((List<T>) network.getEvidenceEdges());
