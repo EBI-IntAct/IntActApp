@@ -2,7 +2,7 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.
 
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorPicker;
@@ -25,8 +25,8 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
     private final JButton addNodeColorButton = new JButton(add);
     private final JPanel addNodeColorPanel = new JPanel();
 
-    public NodeColorLegendPanel(Manager manager, Network currentINetwork, NetworkView currentIView) {
-        super("<html>Node Color <em>~ Species</em></html>", manager, currentINetwork, currentIView);
+    public NodeColorLegendPanel(Manager manager, Network currentNetwork, NetworkView currentView) {
+        super("<html>Node Color <em>~ Species</em></html>", manager, currentNetwork, currentView);
         createNodeColorLegend(Taxons.getSpecies());
         addSeparator();
         createNodeColorLegend(List.of(Taxons.CHEMICAL_SYNTHESIS));
@@ -61,8 +61,8 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
         addNodeColorPanel.setLayout(new FlowLayout(FlowLayout.LEFT,4,2));
 
         addNodeColorButton.addActionListener(e -> {
-            userDefinedSpeciesPanel.add(new NodeColorLegendEditor(currentINetwork, addNodeColorPanel), layoutHelper.down().expandHoriz().anchor("west"));
-            if (currentINetwork.getNonDefinedTaxon().isEmpty())
+            userDefinedSpeciesPanel.add(new NodeColorLegendEditor(currentNetwork, addNodeColorPanel), layoutHelper.down().expandHoriz().anchor("west"));
+            if (currentNetwork.getNonDefinedTaxon().isEmpty())
                 addNodeColorPanel.setVisible(false);
             revalidate();
             repaint();
@@ -89,7 +89,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
     @Override
     public void filterCurrentLegend() {
         executor.execute(() -> {
-            Set<Long> networkTaxIds = currentINetwork.getTaxIds();
+            Set<Long> networkTaxIds = currentNetwork.getTaxIds();
 
             for (Long taxId : colorPickers.keySet()) {
                 colorPickers.get(taxId).setVisible(
@@ -97,7 +97,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
                                 (StyleMapper.taxIdToChildrenTaxIds.containsKey(taxId) && CollectionUtils.anyCommonElement(networkTaxIds, StyleMapper.taxIdToChildrenTaxIds.get(taxId)))
                 );
             }
-            addNodeColorPanel.setVisible(!currentINetwork.getNonDefinedTaxon().isEmpty());
+            addNodeColorPanel.setVisible(!currentNetwork.getNonDefinedTaxon().isEmpty());
         });
     }
 }

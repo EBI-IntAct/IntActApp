@@ -7,7 +7,7 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
 import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
@@ -147,7 +147,7 @@ public class NodeFeatures extends AbstractNodeElement {
                                             line.add(new SelectEdgeButton(featureEdge));
                                             line.add(new JLabel("Observed on edge with " + otherNode.name + " (" + featureEdge.ac + ")"));
                                         } else { // Summary edge features
-                                            if (summaryEdge.summarizedEdgeSUIDs.contains(featureEdge.cyEdge.getSUID())) {
+                                            if (summaryEdge.isSummarizing(featureEdge)) {
                                                 line.add(LinkUtils.createEvidenceEdgeLink(openBrowser, featureEdge));
                                             }
                                         }
@@ -191,8 +191,8 @@ public class NodeFeatures extends AbstractNodeElement {
         public void itemStateChanged(ItemEvent e) {
             if (silenceListener) return;
             Manager manager = edge.network.getManager();
-            NetworkView currentIView = manager.data.getCurrentIntactNetworkView();
-            if (currentIView != null && currentIView.getType() == NetworkView.Type.SUMMARY) {
+            NetworkView currentView = manager.data.getCurrentIntactNetworkView();
+            if (currentView != null && currentView.getType() == NetworkView.Type.SUMMARY) {
                 manager.utils.execute(new EvidenceViewTaskFactory(manager, true).createTaskIterator());
             }
 
@@ -217,6 +217,5 @@ public class NodeFeatures extends AbstractNodeElement {
                 edgeToCheckBoxes.remove(edge);
             }
         }
-
     }
 }

@@ -6,7 +6,7 @@ import org.cytoscape.model.events.*;
 import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.NodeCouple;
@@ -210,7 +210,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
             Map<Long, Paint> addedTaxIds = StyleMapper.completeTaxIdColorsFromUnknownTaxIds(getTaxIds());
 
-            for (Style style : manager.style.getIntactStyles().values()) {
+            for (Style style : manager.style.getStyles().values()) {
                 style.updateTaxIdToNodePaintMapping(addedTaxIds);
             }
         });
@@ -229,7 +229,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
             Map<Long, Paint> addedTaxIds = StyleMapper.completeTaxIdColorsFromUnknownTaxIds(getTaxIds());
 
-            for (Style style : manager.style.getIntactStyles().values()) {
+            for (Style style : manager.style.getStyles().values()) {
                 style.updateTaxIdToNodePaintMapping(addedTaxIds);
             }
         });
@@ -243,41 +243,38 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
             CyEdge summaryEdge;
             List<CyEdge> summarizedEdges = coupleToSummarizedEdges.get(couple);
             if (!summarizedEdges.isEmpty()) {
-                boolean newSummaryEdge = false;
                 if (!summaryEdges.containsKey(couple)) {
                     summaryEdge = cyNetwork.addEdge(couple.node1, couple.node2, false);
-                    newSummaryEdge = true;
-                } else {
-                    summaryEdge = summaryEdges.get(couple).cyEdge;
-                }
-                CyRow summaryEdgeRow = table.getRow(summaryEdge.getSUID());
+                    CyRow summaryEdgeRow = table.getRow(summaryEdge.getSUID());
 
-                Set<String> sourceFeatures = new HashSet<>();
-                Set<String> targetFeatures = new HashSet<>();
-                for (CyEdge edge : summarizedEdges) {
-                    CyRow edgeRow = edgeTable.getRow(edge.getSUID());
+                    Set<String> sourceFeatures = new HashSet<>();
+                    Set<String> targetFeatures = new HashSet<>();
+                    for (CyEdge edge : summarizedEdges) {
+                        CyRow edgeRow = edgeTable.getRow(edge.getSUID());
 
-                    List<String> edgeSourceFeatures = EdgeFields.SOURCE_FEATURES.getValue(edgeRow);
-                    List<String> edgeTargetFeatures = EdgeFields.TARGET_FEATURES.getValue(edgeRow);
-                    if (edge.getSource().equals(couple.node1)) {
-                        if (edgeSourceFeatures != null) sourceFeatures.addAll(edgeSourceFeatures);
-                        if (edgeTargetFeatures != null) targetFeatures.addAll(edgeTargetFeatures);
-                    } else {
-                        if (edgeTargetFeatures != null) sourceFeatures.addAll(edgeTargetFeatures);
-                        if (edgeSourceFeatures != null) targetFeatures.addAll(edgeSourceFeatures);
+                        List<String> edgeSourceFeatures = EdgeFields.SOURCE_FEATURES.getValue(edgeRow);
+                        List<String> edgeTargetFeatures = EdgeFields.TARGET_FEATURES.getValue(edgeRow);
+                        if (edge.getSource().equals(couple.node1)) {
+                            if (edgeSourceFeatures != null) sourceFeatures.addAll(edgeSourceFeatures);
+                            if (edgeTargetFeatures != null) targetFeatures.addAll(edgeTargetFeatures);
+                        } else {
+                            if (edgeTargetFeatures != null) sourceFeatures.addAll(edgeTargetFeatures);
+                            if (edgeSourceFeatures != null) targetFeatures.addAll(edgeSourceFeatures);
+                        }
                     }
+
+                    EdgeFields.SOURCE_FEATURES.setValue(summaryEdgeRow, new ArrayList<>(sourceFeatures));
+                    EdgeFields.TARGET_FEATURES.setValue(summaryEdgeRow, new ArrayList<>(targetFeatures));
+                    EdgeFields.NAME.setValue(summaryEdgeRow, TableUtil.getName(cyNetwork, couple.node1) + " (interact with) " + TableUtil.getName(cyNetwork, couple.node2));
+
+                    CyRow firstEdgeRow = cyNetwork.getRow(summarizedEdges.get(0));
+                    EdgeFields.MI_SCORE.setValue(summaryEdgeRow, EdgeFields.MI_SCORE.getValue(firstEdgeRow));
+                    EdgeFields.IS_SUMMARY.setValue(summaryEdgeRow, true);
+                    EdgeFields.SUMMARY_NB_EDGES.setValue(summaryEdgeRow, summarizedEdges.size());
+                    EdgeFields.SUMMARY_EDGES_SUID.setValue(summaryEdgeRow, TableUtil.getFieldValuesOfEdges(edgeTable, EdgeFields.SUID, summarizedEdges, null));
+
+                    summaryEdges.put(couple, (SummaryEdge) Edge.createEdge(this, summaryEdge));
                 }
-                EdgeFields.SOURCE_FEATURES.setValue(summaryEdgeRow, new ArrayList<>(sourceFeatures));
-                EdgeFields.TARGET_FEATURES.setValue(summaryEdgeRow, new ArrayList<>(targetFeatures));
-                EdgeFields.NAME.setValue(summaryEdgeRow, TableUtil.getName(cyNetwork, couple.node1) + " (interact with) " + TableUtil.getName(cyNetwork, couple.node2));
-
-                CyRow firstEdgeRow = cyNetwork.getRow(summarizedEdges.get(0));
-                EdgeFields.MI_SCORE.setValue(summaryEdgeRow, EdgeFields.MI_SCORE.getValue(firstEdgeRow));
-                EdgeFields.IS_SUMMARY.setValue(summaryEdgeRow, true);
-                EdgeFields.SUMMARY_NB_EDGES.setValue(summaryEdgeRow, summarizedEdges.size());
-                EdgeFields.SUMMARY_EDGES_SUID.setValue(summaryEdgeRow, TableUtil.getFieldValuesOfEdges(edgeTable, EdgeFields.SUID, summarizedEdges, null));
-
-                if (newSummaryEdge) summaryEdges.put(couple, (SummaryEdge) Edge.createEdge(this, summaryEdge));
             } else {
                 summaryEdge = summaryEdges.get(couple).cyEdge;
                 summaryEdges.remove(couple);
@@ -292,10 +289,20 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     public void handleEvent(AddedEdgesEvent e) {
         if (e.getSource() == cyNetwork) {
             Collection<CyEdge> addedEdges = e.getPayloadCollection();
+            List<CyEdge> addedEvidenceEdges = new ArrayList<>();
             for (CyEdge addedEdge : addedEdges) {
-                evidenceEdges.put(addedEdge, (EvidenceEdge) Edge.createEdge(this, addedEdge));
+                NodeCouple couple = new NodeCouple(addedEdge);
+                Edge edge = Edge.createEdge(this, addedEdge);
+                if (edge == null) continue;
+                if (edge instanceof EvidenceEdge) {
+                    evidenceEdges.put(addedEdge, (EvidenceEdge) edge);
+                    addedEvidenceEdges.add(addedEdge);
+                    if (summaryEdges.containsKey(couple)) summaryEdges.get(couple).updateSummary();
+                } else if (edge instanceof SummaryEdge) {
+                    summaryEdges.put(couple, (SummaryEdge) edge);
+                }
             }
-            Set<NodeCouple> updatedCouples = NodeCouple.putEdgesToCouples(addedEdges, coupleToSummarizedEdges);
+            Set<NodeCouple> updatedCouples = NodeCouple.putEdgesToCouples(addedEvidenceEdges, coupleToSummarizedEdges);
             updateSummaryEdges(updatedCouples);
         }
     }
@@ -364,8 +371,6 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     }
 
 
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -386,6 +391,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     public String toString() {
         return cyNetwork.getRow(cyNetwork).get(CyNetwork.NAME, String.class);
     }
+
     public List<CyNode> getSelectedCyNodes() {
         List<CyNode> selectedNodes = new ArrayList<>();
         for (CyNode node : cyNetwork.getNodeList()) {

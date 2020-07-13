@@ -2,7 +2,7 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels;
 
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.node.NodeBorderLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.node.NodeColorLegendPanel;
@@ -15,13 +15,13 @@ public class NodeLegendPanel extends AbstractLegendPanel {
     public final NodeShapeLegendPanel nodeShapeLegendPanel;
     public final NodeBorderLegendPanel nodeBorderLegendPanel;
 
-    public NodeLegendPanel(Manager manager, Network currentINetwork, NetworkView currentIView) {
-        super("Nodes", manager, currentINetwork, currentIView);
+    public NodeLegendPanel(Manager manager, Network currentNetwork, NetworkView currentView) {
+        super("Nodes", manager, currentNetwork, currentView);
         content.setBackground(UIColors.lightBackground);
         content.setLayout(new GridBagLayout());
-        nodeColorLegendPanel = new NodeColorLegendPanel(manager, currentINetwork, currentIView);
-        nodeShapeLegendPanel = new NodeShapeLegendPanel(manager, currentINetwork, currentIView);
-        nodeBorderLegendPanel = new NodeBorderLegendPanel(manager, currentINetwork, currentIView);
+        nodeColorLegendPanel = new NodeColorLegendPanel(manager, currentNetwork, currentView);
+        nodeShapeLegendPanel = new NodeShapeLegendPanel(manager, currentNetwork, currentView);
+        nodeBorderLegendPanel = new NodeBorderLegendPanel(manager, currentNetwork, currentView);
 
 
         content.add(nodeColorLegendPanel, layoutHelper.expandHoriz());
@@ -36,19 +36,19 @@ public class NodeLegendPanel extends AbstractLegendPanel {
     }
 
     @Override
-    public void networkChanged(Network newINetwork) {
-        super.networkChanged(newINetwork);
-        nodeColorLegendPanel.networkChanged(newINetwork);
-        nodeShapeLegendPanel.networkChanged(newINetwork);
-        nodeBorderLegendPanel.networkChanged(newINetwork);
+    public void networkChanged(Network newNetwork) {
+        super.networkChanged(newNetwork);
+        nodeColorLegendPanel.networkChanged(newNetwork);
+        nodeShapeLegendPanel.networkChanged(newNetwork);
+        nodeBorderLegendPanel.networkChanged(newNetwork);
     }
 
     @Override
-    public void networkViewChanged(NetworkView newINetworkView) {
-        super.networkViewChanged(newINetworkView);
-        nodeColorLegendPanel.networkViewChanged(newINetworkView);
-        nodeShapeLegendPanel.networkViewChanged(newINetworkView);
-        nodeBorderLegendPanel.networkViewChanged(newINetworkView);
+    public void networkViewChanged(NetworkView newNetworkView) {
+        super.networkViewChanged(newNetworkView);
+        nodeColorLegendPanel.networkViewChanged(newNetworkView);
+        nodeShapeLegendPanel.networkViewChanged(newNetworkView);
+        nodeBorderLegendPanel.networkViewChanged(newNetworkView);
     }
 
     public void viewTypeChanged(NetworkView.Type newType) {

@@ -1,7 +1,7 @@
-package uk.ac.ebi.intact.app.internal.managers.sub.managers;
+package uk.ac.ebi.intact.app.internal.model.managers.sub.managers;
 
 import org.cytoscape.property.CyProperty;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 
 import java.util.*;

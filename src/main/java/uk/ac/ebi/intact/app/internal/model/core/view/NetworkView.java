@@ -6,11 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedEvent;
+import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.model.filters.edge.*;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeSpeciesFilter;
@@ -33,19 +33,15 @@ public class NetworkView {
     private boolean filtersSilenced = false;
     private Type type;
 
-    public NetworkView(Manager manager, CyNetworkView cyView, boolean loadData) {
-        this(manager, cyView, loadData, Type.SUMMARY);
-    }
-
     public NetworkView(Manager manager, CyNetworkView cyView, boolean loadData, Type type) {
         this.manager = manager;
-        this.type = type;
         if (cyView != null) {
             this.cyView = cyView;
             this.network = manager.data.getNetwork(cyView.getModel());
-            (type != Type.SUMMARY ? network.getSummaryCyEdges() : network.getEvidenceCyEdges())
+            this.type = type != null ? type : Type.SUMMARY;
+            (this.type != Type.SUMMARY ? network.getSummaryCyEdges() : network.getEvidenceCyEdges())
                     .forEach(cyEdge -> cyView.getEdgeView(cyEdge)
-                    .setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false));
+                            .setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false));
 
             setupFilters(loadData);
         } else {
@@ -102,7 +98,7 @@ public class NetworkView {
         visibleEdges.forEach(edgeToShow -> cyView.getEdgeView(edgeToShow.cyEdge).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true));
 
         save();
-        manager.data.fireIntactViewChangedEvent(new IntactViewUpdatedEvent(manager, this));
+        manager.utils.fireEvent(new ViewUpdatedEvent(manager, this));
     }
 
     public void silenceFilters(boolean filtersSilenced) {
@@ -129,7 +125,9 @@ public class NetworkView {
         if (jsonText == null || jsonText.isBlank()) return;
         try {
             JsonNode json = new ObjectMapper().readTree(jsonText);
-            type = Type.valueOf(json.get("type").textValue());
+            String type = json.get("type").textValue();
+            this.type = type != null && !type.isEmpty() ? Type.valueOf(type) : Type.SUMMARY;
+
             List<JsonNode> filterDataList = StreamSupport.stream(json.get("filters").spliterator(), false).collect(Collectors.toList());
             for (Filter<?> filter : filters) {
                 for (Iterator<JsonNode> iterator = filterDataList.iterator(); iterator.hasNext(); ) {

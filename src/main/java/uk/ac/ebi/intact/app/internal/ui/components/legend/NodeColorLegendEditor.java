@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.components.legend;
 
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
@@ -17,7 +17,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     private static final Map<String, Color> originalColors = new HashMap<>();
     private static final List<NodeColorLegendEditor> NODE_COLOR_LEGEND_EDITOR_LIST = new ArrayList<>();
 
-    protected Network currentINetwork;
+    protected Network currentNetwork;
     protected JComponent addNewNodeLegendEditorActivator;
     protected long currentTaxId;
     protected Manager manager;
@@ -25,16 +25,16 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
 //    protected JCheckBox includeSubSpecies = new JCheckBox("Include subtaxons");
     protected JButton removeButton = new JButton(remove);
 
-    public NodeColorLegendEditor(Network currentINetwork, JComponent addNewNodeLegendEditorActivator) {
-        this.currentINetwork = currentINetwork;
-        this.manager = currentINetwork.getManager();
+    public NodeColorLegendEditor(Network currentNetwork, JComponent addNewNodeLegendEditorActivator) {
+        this.currentNetwork = currentNetwork;
+        this.manager = currentNetwork.getManager();
         this.addNewNodeLegendEditorActivator = addNewNodeLegendEditorActivator;
         NODE_COLOR_LEGEND_EDITOR_LIST.add(this);
 
         Vector<String> speciesOptions = getSpeciesOptions();
         String firstItem = speciesOptions.firstElement();
         descriptor = firstItem;
-        currentTaxId = currentINetwork.getSpeciesId(descriptor);
+        currentTaxId = currentNetwork.getSpeciesId(descriptor);
         currentColor = (Color) StyleMapper.kingdomColors.get(currentTaxId);
         originalColors.put(firstItem, currentColor);
         updateStyleColors();
@@ -55,7 +55,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     }
 
     private Vector<String> getSpeciesOptions() {
-        return new Vector<>(currentINetwork.getNonDefinedTaxon());
+        return new Vector<>(currentNetwork.getNonDefinedTaxon());
     }
 
     private void setSpeciesField(Vector<String> speciesOptions) {
@@ -82,7 +82,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
                     break;
                 case ItemEvent.SELECTED:
                     descriptor = (String) e.getItem();
-                    currentTaxId = currentINetwork.getSpeciesId(descriptor);
+                    currentTaxId = currentNetwork.getSpeciesId(descriptor);
                     speciesField.setPrototypeDisplayValue(descriptor);
                     originalColors.put(descriptor, (Color) StyleMapper.kingdomColors.get(currentTaxId));
 
@@ -143,8 +143,8 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
         }
     }
 
-    public void networkChanged(Network newINetwork) {
-        currentINetwork = newINetwork;
+    public void networkChanged(Network newNetwork) {
+        currentNetwork = newNetwork;
     }
 
 

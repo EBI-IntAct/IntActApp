@@ -66,7 +66,7 @@ public class EdgeParticipants extends AbstractEdgeElement {
             nodePanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
         }
 
-        int thickness = edge.summarizedEdgeSUIDs.size() + 2;
+        int thickness = edge.getNbSummarizedEdges() + 2;
         thickness = Integer.min(thickness, 25);
         content.add(new EdgeDiagram(SummaryStyle.getColor(edge.miScore), thickness, false));
     }

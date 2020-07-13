@@ -5,7 +5,7 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import uk.ac.ebi.intact.app.internal.tasks.details.ShowDetailPanelTask;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
 import java.util.Properties;

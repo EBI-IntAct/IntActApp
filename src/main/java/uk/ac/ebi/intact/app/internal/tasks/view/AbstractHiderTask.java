@@ -14,7 +14,7 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.SelectEdgesTaskFactory;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 
 import java.util.List;
 import java.util.Set;
@@ -97,7 +97,7 @@ public abstract class AbstractHiderTask extends AbstractTask {
     private static class CurrentView extends NetworkView {
 
         public CurrentView(Manager manager) {
-            super(manager, null, false);
+            super(manager, null, false, Type.SUMMARY);
         }
 
         @Override

@@ -4,7 +4,7 @@ import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 
 public class EvidenceViewTask extends AbstractHiderTask {
     public EvidenceViewTask(Manager manager, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, boolean currentView) {
@@ -19,7 +19,7 @@ public class EvidenceViewTask extends AbstractHiderTask {
     public void run(TaskMonitor taskMonitor) {
         expandEdgesIfNeeded();
         if (chosenView != null && chosenView.getType() != NetworkView.Type.EVIDENCE) {
-            manager.data.intactViewChanged(NetworkView.Type.EVIDENCE, chosenView);
+            manager.data.viewChanged(NetworkView.Type.EVIDENCE, chosenView);
         }
     }
 }

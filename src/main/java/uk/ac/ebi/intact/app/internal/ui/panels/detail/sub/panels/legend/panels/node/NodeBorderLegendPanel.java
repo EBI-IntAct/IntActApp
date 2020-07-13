@@ -2,7 +2,7 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.
 
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.MutationStyle;
 import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.shapes.Ball;
@@ -14,8 +14,8 @@ import java.awt.*;
 
 public class NodeBorderLegendPanel extends AbstractLegendPanel {
 
-    public NodeBorderLegendPanel(Manager manager, Network currentINetwork, NetworkView currentIView) {
-        super("<html>Node Border <em>~ Mutation</em></html>", manager, currentINetwork, currentIView);
+    public NodeBorderLegendPanel(Manager manager, Network currentNetwork, NetworkView currentView) {
+        super("<html>Node Border <em>~ Mutation</em></html>", manager, currentNetwork, currentView);
         JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT,4,2));
         linePanel.setBackground(UIColors.lightBackground);
 

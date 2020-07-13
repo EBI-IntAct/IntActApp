@@ -2,7 +2,7 @@ package uk.ac.ebi.intact.app.internal.tasks.view.factories;
 
 
 import org.cytoscape.work.TaskIterator;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.view.SummaryViewTask;
 
 public class SummaryViewTaskFactory extends AbstractHiderTaskFactory {

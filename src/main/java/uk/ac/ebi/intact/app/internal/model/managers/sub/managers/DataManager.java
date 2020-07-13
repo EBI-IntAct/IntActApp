@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.app.internal.managers.sub.managers;
+package uk.ac.ebi.intact.app.internal.model.managers.sub.managers;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.*;
@@ -6,12 +6,8 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.session.CySession;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -21,38 +17,34 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
+import org.cytoscape.view.vizmap.events.VisualStyleSetListener;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedEvent;
-import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedListener;
-import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedEvent;
-import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedListener;
+import uk.ac.ebi.intact.app.internal.model.events.NetworkCreatedEvent;
+import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
-import uk.ac.ebi.intact.app.internal.model.tables.Table;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.ListField;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.*;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
 import java.util.*;
 
 import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.*;
 
 public class DataManager implements
-        SessionLoadedListener,
         NetworkAddedListener,
         NetworkViewAddedListener,
         NetworkAboutToBeDestroyedListener,
-        NetworkViewAboutToBeDestroyedListener {
+        NetworkViewAboutToBeDestroyedListener,
+        VisualStyleSetListener {
     private final Manager manager;
     final CyRootNetworkManager rootNetworkManager;
     final CyNetworkViewManager networkViewManager;
     final HideTaskFactory hideTaskFactory;
     final UnHideTaskFactory unHideTaskFactory;
-    final List<IntactNetworkCreatedListener> networkCreatedListeners = new ArrayList<>();
-    final List<IntactViewUpdatedListener> viewUpdatedListeners = new ArrayList<>();
     final Map<CyNetwork, Network> networkMap;
     final Map<CyNetworkView, NetworkView> networkViewMap;
 
@@ -64,6 +56,7 @@ public class DataManager implements
         networkViewManager = manager.utils.getService(CyNetworkViewManager.class);
         hideTaskFactory = manager.utils.getService(HideTaskFactory.class);
         unHideTaskFactory = manager.utils.getService(UnHideTaskFactory.class);
+        manager.utils.registerAllServices(this, new Properties());
         // Load Fields
         System.out.println(NodeFields.SPECIES.toString());
         System.out.println(EdgeFields.SUMMARY_NB_EDGES.toString());
@@ -132,16 +125,6 @@ public class DataManager implements
         network.setNetwork(cyNetwork);
     }
 
-    public CyNetworkView createNetworkView(CyNetwork cyNetwork) {
-        CyNetworkView view = manager.utils.getService(CyNetworkViewFactory.class)
-                .createNetworkView(cyNetwork);
-        if (networkMap.containsKey(cyNetwork)) {
-            networkMap.get(cyNetwork).hideExpandedEdgesOnViewCreation(view);
-            manager.style.intactStyles.get(SummaryStyle.type).applyStyle(view);
-        }
-        return view;
-    }
-
     public void addNetwork(CyNetwork cyNetwork) {
         CyNetworkManager networkManager = manager.utils.getService(CyNetworkManager.class);
         if (!networkManager.networkExists(cyNetwork.getSUID())) {
@@ -150,10 +133,18 @@ public class DataManager implements
         manager.utils.getService(CyApplicationManager.class).setCurrentNetwork(cyNetwork);
     }
 
-    public NetworkView addNetworkView(CyNetworkView cyView, boolean loadData) {
-        NetworkView view = new NetworkView(manager, cyView, loadData);
-        networkViewMap.put(cyView, view);
+    public CyNetworkView createNetworkView(CyNetwork cyNetwork) {
+        CyNetworkView view = manager.utils.getService(CyNetworkViewFactory.class)
+                .createNetworkView(cyNetwork);
+        if (networkMap.containsKey(cyNetwork)) {
+            networkMap.get(cyNetwork).hideExpandedEdgesOnViewCreation(view);
+            manager.style.styles.get(SummaryStyle.type).applyStyle(view);
+        }
         return view;
+    }
+
+    public NetworkView addNetworkView(CyNetworkView cyView, boolean loadData) {
+        return addNetworkView(cyView, loadData, NetworkView.Type.SUMMARY);
     }
 
     public NetworkView addNetworkView(CyNetworkView cyView, boolean loadData, NetworkView.Type type) {
@@ -186,14 +177,24 @@ public class DataManager implements
 
     @Override
     public void handleEvent(NetworkAddedEvent e) {
-        CyNetwork newNetwork = e.getNetwork();
-        CyRootNetwork rootNetwork = rootNetworkManager.getRootNetwork(newNetwork);
-        CySubNetwork baseNetwork = rootNetwork.getBaseNetwork();
-        if (baseNetwork.getSUID().equals(newNetwork.getSUID())) return;
-        addSubNetwork((CySubNetwork) newNetwork, baseNetwork);
+        CySubNetwork newNetwork = (CySubNetwork) e.getNetwork();
+        CySubNetwork parentCyNetwork = getParentCyNetwork(newNetwork, manager);
+        if (parentCyNetwork == null) return;
+        addSubNetwork(newNetwork, parentCyNetwork);
     }
 
-    private final Map<CyNetwork, NetworkView.Type> networkViewTypesToSet = new HashMap<>();
+    private static class NetworkViewTypeToSet {
+
+        final NetworkView.Type type;
+        boolean toSet = false;
+
+        private NetworkViewTypeToSet(NetworkView.Type type) {
+            this.type = type;
+        }
+
+    }
+
+    private final Map<CyNetwork, NetworkViewTypeToSet> networkViewTypesToSet = new HashMap<>();
 
     private void addSubNetwork(CySubNetwork subCyNetwork, CySubNetwork parentCyNetwork) {
         if (networkMap.containsKey(parentCyNetwork)) {
@@ -205,7 +206,7 @@ public class DataManager implements
             for (CyNetworkView cyNetworkView : networkViewManager.getNetworkViews(parentCyNetwork)) {
                 NetworkView networkView = networkViewMap.get(cyNetworkView);
                 if (networkView == null) continue;
-                networkViewTypesToSet.put(subCyNetwork, networkView.getType());
+                networkViewTypesToSet.put(subCyNetwork, new NetworkViewTypeToSet(networkView.getType()));
                 break;
             }
 
@@ -222,95 +223,30 @@ public class DataManager implements
         CyNetwork cyNetwork = e.getNetworkView().getModel();
         if (networkMap.containsKey(cyNetwork)) {
             if (networkViewTypesToSet.containsKey(cyNetwork)) {
-                addNetworkView(e.getNetworkView(), false, networkViewTypesToSet.get(cyNetwork));
-            } else addNetworkView(e.getNetworkView(), false);
+                NetworkViewTypeToSet networkViewTypeToSet = networkViewTypesToSet.get(cyNetwork);
+                if (!networkViewTypeToSet.toSet) networkViewTypeToSet.toSet = true;
+                else {
+                    addNetworkView(e.getNetworkView(), false, networkViewTypeToSet.type);
+                    manager.style.styles.get(networkViewTypeToSet.type).applyStyle(e.getNetworkView());
+                    networkViewTypesToSet.remove(cyNetwork);
+                }
+            } else {
+                NetworkView networkView = addNetworkView(e.getNetworkView(), false);
+                manager.style.styles.get(NetworkView.Type.SUMMARY).applyStyle(networkView.cyView);
+            }
         }
     }
+
 
     @Override
-    public void handleEvent(SessionLoadedEvent event) {
-        // Create string networks for any networks loaded by string
-        networkMap.clear();
-        networkViewMap.clear();
-        CySession loadedSession = event.getLoadedSession();
-        Set<CyNetwork> cyNetworks = loadedSession.getNetworks();
-        for (CyNetwork cyNetwork : cyNetworks) {
-            if (ModelUtils.isIntactNetwork(cyNetwork)) {
-                if (ModelUtils.ifHaveIntactNS(cyNetwork)) {
-                    Network network = new Network(manager);
-                    addNetwork(network, cyNetwork);
-                    network.completeMissingNodeColorsFromTables();
-                }
-            }
-        }
-
-        linkIntactTablesToNetwork(loadedSession.getTables(), loadedSession);
-
-        for (CyNetworkView view : loadedSession.getNetworkViews()) {
-            if (ModelUtils.isIntactNetwork(view.getModel())) {
-                addNetworkView(view, true);
-            }
-        }
-
-        NetworkView currentView = getCurrentIntactNetworkView();
-        if (currentView != null) {
-            fireIntactViewChangedEvent(new IntactViewUpdatedEvent(manager, currentView));
-            manager.utils.showResultsPanel();
-        } else {
-            manager.utils.hideResultsPanel();
+    public void handleEvent(VisualStyleSetEvent e) {
+        NetworkView networkView = getNetworkView(e.getNetworkView());
+        if (networkView == null) return;
+        VisualStyle style = manager.style.styles.get(networkView.getType()).getStyle();
+        if (style != e.getVisualStyle()) {
+            manager.style.styles.get(networkView.getType()).applyStyle(networkView.cyView);
         }
     }
-
-    void linkIntactTablesToNetwork(Collection<CyTableMetadata> tables, CySession loadingSession) {
-        for (CyTableMetadata tableM : tables) {
-            linkSummaryEdgesIdsToSUIDs(tableM, loadingSession);
-            CyTable table = tableM.getTable();
-
-            CyColumn networkUUIDColumn = NetworkFields.UUID.getColumn(table);
-            if (networkUUIDColumn == null) continue;
-            List<String> uuids = networkUUIDColumn.getValues(String.class);
-            if (uuids.isEmpty()) continue;
-
-            if (Table.FEATURE.containsAllFields(table)) {
-                updateSUIDList(table, FeatureFields.EDGES_SUID, CyEdge.class, loadingSession);
-                for (Network network : networkMap.values()) {
-                    CyNetwork cyNetwork = network.getCyNetwork();
-                    CyRow netRow = cyNetwork.getRow(cyNetwork);
-                    if (NetworkFields.UUID.getValue(netRow).equals(uuids.get(0))) { // If the UUID referenced in defaultValue belong to this network
-                        network.setFeaturesTable(table);
-                    }
-                }
-            }
-
-            if (Table.IDENTIFIER.containsAllFields(table)) {
-                for (Network network : networkMap.values()) {
-                    CyNetwork cyNetwork = network.getCyNetwork();
-                    if (NetworkFields.UUID.getValue(cyNetwork.getRow(cyNetwork)).equals(uuids.get(0))) { // If the UUID referenced in defaultValue belong to this network
-                        network.setIdentifiersTable(table);
-                    }
-                }
-            }
-        }
-    }
-
-    void linkSummaryEdgesIdsToSUIDs(CyTableMetadata tableM, CySession loadingSession) {
-        CyTable edgeTable = tableM.getTable();
-        if (!Table.EDGE.containsAllFields(edgeTable)) return;
-        updateSUIDList(edgeTable, EdgeFields.SUMMARY_EDGES_SUID, CyEdge.class, loadingSession);
-    }
-
-    private void updateSUIDList(CyTable sourceTable, ListField<Long> linkField, Class<? extends CyIdentifiable> targetType, CySession loadingSession) {
-        for (CyRow row : sourceTable.getAllRows()) {
-            List<Long> suids = linkField.getValue(row);
-            if (!suids.isEmpty() && loadingSession.getObject(suids.get(0), targetType) == null) return;
-            linkField.map(row, oldSUID -> {
-                CyIdentifiable object = loadingSession.getObject(oldSUID, targetType);
-                if (object != null) return object.getSUID();
-                return null;
-            });
-        }
-    }
-
 
     //================= Data getters =================//
     public CyNetwork getCurrentCyNetwork() {
@@ -327,7 +263,7 @@ public class DataManager implements
         return networkMap.get(getCurrentCyNetwork());
     }
 
-    public Network[] getIntactNetworks() {
+    public Network[] getNetworks() {
         return networkMap.values().toArray(Network[]::new);
     }
 
@@ -347,49 +283,13 @@ public class DataManager implements
         return networkViewMap.values().toArray(NetworkView[]::new);
     }
 
-    //================= IntactNetworkCreated =================//
-
     public void fireIntactNetworkCreated(Network network) {
-        for (IntactNetworkCreatedListener listener : networkCreatedListeners) {
-            try {
-                listener.handleEvent(new IntactNetworkCreatedEvent(manager, network));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        manager.utils.fireEvent(new NetworkCreatedEvent(manager, network));
     }
 
-    public void addIntactNetworkCreatedListener(IntactNetworkCreatedListener listener) {
-        networkCreatedListeners.add(listener);
-    }
-
-    public void removeIntactNetworkCreatedListener(IntactNetworkCreatedListener listener) {
-        networkCreatedListeners.remove(listener);
-    }
-
-
-    //================= IntactViewTypeChanged =================//
-    public void intactViewChanged(NetworkView.Type newType, NetworkView view) {
-        manager.style.intactStyles.get(newType).applyStyle(view.cyView);
+    public void viewChanged(NetworkView.Type newType, NetworkView view) {
         view.setType(newType);
-        fireIntactViewChangedEvent(new IntactViewUpdatedEvent(manager, view));
-    }
-
-    public void fireIntactViewChangedEvent(IntactViewUpdatedEvent event) {
-        for (IntactViewUpdatedListener listener : viewUpdatedListeners) {
-            try {
-                listener.handleEvent(event);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void addIntactViewChangedListener(IntactViewUpdatedListener listener) {
-        viewUpdatedListeners.add(listener);
-    }
-
-    public void removeIntactViewChangedListener(IntactViewUpdatedListener listener) {
-        viewUpdatedListeners.remove(listener);
+        manager.style.styles.get(newType).applyStyle(view.cyView);
+        manager.utils.fireEvent(new ViewUpdatedEvent(manager, view));
     }
 }

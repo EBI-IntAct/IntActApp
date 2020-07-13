@@ -10,7 +10,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.work.*;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;

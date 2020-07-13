@@ -41,8 +41,8 @@ public class GroupUtils {
         for (String elementTitle : groupedElements.keySet().stream().sorted().collect(Collectors.toList())) {
             VerticalPanel panel = new VerticalPanel(background);
             List<E> elementsOfGroup = groupedElements.get(elementTitle);
-            panelFillingFunction.apply(panel, elementsOfGroup);
             toFill.add(new CollapsablePanel(String.format("%s (%d)", elementTitle, elementsOfGroup.size()), panel, true));
+            panelFillingFunction.apply(panel, elementsOfGroup);
         }
     }
 

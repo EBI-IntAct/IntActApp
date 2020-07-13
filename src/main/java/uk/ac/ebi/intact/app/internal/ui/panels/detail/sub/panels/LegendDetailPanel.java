@@ -4,7 +4,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.StyleUpdatedListener;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.EdgeLegendPanel;
@@ -68,8 +68,10 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
     }
 
     private void filterCurrentLegends() {
-        nodePanel.filterCurrentLegend();
-        edgePanel.filterCurrentLegend();
+        if (nodePanel != null && edgePanel != null) {
+            nodePanel.filterCurrentLegend();
+            edgePanel.filterCurrentLegend();
+        }
     }
 
     public void viewUpdated(NetworkView.Type newType) {

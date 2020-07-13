@@ -2,7 +2,7 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels;
 
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge.AbstractEdgeLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge.SummaryEdgeLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.edge.ExpandedEdgeLegendPanel;
@@ -14,8 +14,8 @@ public class EdgeLegendPanel extends AbstractLegendPanel {
     private final ExpandedEdgeLegendPanel expandedEdgeLegendPanel;
     private final MutationEdgeLegendPanel mutationEdgeLegendPanel;
 
-    public EdgeLegendPanel(Manager manager, Network currentINetwork, NetworkView currentIView) {
-        super("Edges", manager, currentINetwork, currentIView);
+    public EdgeLegendPanel(Manager manager, Network currentNetwork, NetworkView currentView) {
+        super("Edges", manager, currentNetwork, currentView);
 
         summaryEdgeLegendPanel = new SummaryEdgeLegendPanel();
         expandedEdgeLegendPanel = new ExpandedEdgeLegendPanel();

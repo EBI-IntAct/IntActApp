@@ -60,23 +60,7 @@ public abstract class Edge implements Element {
         }
     }
 
-    public Map<Node, List<Feature>> getFeatures() {
-        Map<Node, List<Feature>> features = new HashMap<>();
-
-        buildFeatures(features, sourceFeatureAcs, source);
-        buildFeatures(features, targetFeatureAcs, target);
-        return features;
-    }
-
-    private void buildFeatures(Map<Node, List<Feature>> features, List<String> featureAcs, Node participant) {
-        features.put(participant, new ArrayList<>());
-        if (participant == null || featureAcs == null) return;
-
-        for (String featureAc : featureAcs) {
-            Feature feature = new Feature(network, network.getFeaturesTable().getRow(featureAc));
-            if (feature.isPresent()) features.get(participant).add(feature);
-        }
-    }
+    public abstract Map<Node, List<Feature>> getFeatures() ;
 
     @Override
     public boolean equals(Object o) {

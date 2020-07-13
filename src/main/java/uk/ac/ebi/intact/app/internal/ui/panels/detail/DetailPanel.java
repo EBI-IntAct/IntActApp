@@ -12,13 +12,13 @@ import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
 import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedEvent;
-import uk.ac.ebi.intact.app.internal.model.events.IntactNetworkCreatedListener;
-import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedEvent;
-import uk.ac.ebi.intact.app.internal.model.events.IntactViewUpdatedListener;
+import uk.ac.ebi.intact.app.internal.model.events.NetworkCreatedEvent;
+import uk.ac.ebi.intact.app.internal.model.events.NetworkCreatedListener;
+import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
+import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedListener;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
@@ -44,8 +44,8 @@ public class DetailPanel extends JPanel
         SetCurrentNetworkListener,
         SetCurrentNetworkViewListener,
         SelectedNodesAndEdgesListener,
-        IntactNetworkCreatedListener,
-        IntactViewUpdatedListener {
+        NetworkCreatedListener,
+        ViewUpdatedListener {
 
     private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/Gradient_over_Transparent/favicon_32x32.ico");
     final Manager manager;
@@ -67,8 +67,9 @@ public class DetailPanel extends JPanel
 
     public DetailPanel(final Manager manager) {
         this.manager = manager;
-        manager.data.addIntactNetworkCreatedListener(this);
-        manager.data.addIntactViewChangedListener(this);
+//        manager.data.addIntactNetworkCreatedListener(this);
+//        manager.data.addIntactViewChangedListener(this);
+        manager.utils.registerAllServices(this, new Properties());
         this.setLayout(new BorderLayout());
 
         summaryViewTaskFactory = new SummaryViewTaskFactory(manager, true);
@@ -119,9 +120,6 @@ public class DetailPanel extends JPanel
         this.add(tabs, BorderLayout.CENTER);
 //        this.add(new VersionPanel(), BorderLayout.SOUTH);
         manager.utils.setDetailPanel(this);
-        manager.utils.registerService(this, SetCurrentNetworkListener.class, new Properties());
-        manager.utils.registerService(this, SetCurrentNetworkViewListener.class, new Properties());
-        manager.utils.registerService(this, SelectedNodesAndEdgesListener.class, new Properties());
         registered = true;
         if (view != null) {
             setupFilters(view);
@@ -184,7 +182,7 @@ public class DetailPanel extends JPanel
     @Override
     public void handleEvent(SelectedNodesAndEdgesEvent event) {
         if (!registered) return;
-        if (Instant.now().minusMillis(500).isAfter(lastSelection)) {
+        if (Instant.now().minusMillis(200).isAfter(lastSelection)) {
 
             if (nodePanel.selectionRunning || edgePanel.selectionRunning) {
                 nodePanel.selectionRunning = false;
@@ -273,21 +271,20 @@ public class DetailPanel extends JPanel
     }
 
     @Override
-    public void handleEvent(IntactNetworkCreatedEvent event) {
+    public void handleEvent(NetworkCreatedEvent event) {
         if (!registered) {
             showCytoPanel();
         }
         if (nodePanel != null) {
-            // Tell tabs
-            Network newINetwork = event.getNewINetwork();
-            nodePanel.networkChanged(newINetwork);
-            edgePanel.networkChanged(newINetwork);
-            legendPanel.networkChanged(newINetwork);
+            Network newNetwork = event.getNewNetwork();
+            nodePanel.networkChanged(newNetwork);
+            edgePanel.networkChanged(newNetwork);
+            legendPanel.networkChanged(newNetwork);
         }
     }
 
     @Override
-    public void handleEvent(IntactViewUpdatedEvent event) {
+    public void handleEvent(ViewUpdatedEvent event) {
         legendPanel.viewUpdated(event.newType);
         nodePanel.viewUpdated();
         edgePanel.viewUpdated();

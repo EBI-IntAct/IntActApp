@@ -25,16 +25,19 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
     public final CollapseAllButton collapseAllButton = new CollapseAllButton(true, subCollapsablePanels);
     private boolean collapsed;
 
-    public CollapsablePanel(String text, boolean collapsed) {
-        this(text, new VerticalPanel(), collapsed);
+    private final String title;
+
+    public CollapsablePanel(String title, boolean collapsed) {
+        this(title, new VerticalPanel(), collapsed);
     }
 
-    public CollapsablePanel(String text, JPanel panel, boolean collapsed) {
+    public CollapsablePanel(String title, JPanel panel, boolean collapsed) {
         super();
         setLayout(new BorderLayout());
         this.collapsed = collapsed;
+        this.title = title;
         content = panel;
-        headerPanel = new HeaderPanel(text, collapsed);
+        headerPanel = new HeaderPanel(this.title, collapsed);
 
         add(headerPanel, BorderLayout.NORTH);
 
@@ -171,12 +174,17 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
         }
     }
 
+    public String getTitle() {
+        return title;
+    }
+
     private class HeaderPanel extends LinePanel implements ActionListener {
+
         JButton expandButton;
         JComponent headerComponent;
         boolean expanded;
-        public final EmptyBorder BORDER = new EmptyBorder(0, 4, 0, 0);
 
+        public final EmptyBorder BORDER = new EmptyBorder(0, 4, 0, 0);
 
         public HeaderPanel(String text, boolean collapsed) {
             this.expanded = !collapsed;

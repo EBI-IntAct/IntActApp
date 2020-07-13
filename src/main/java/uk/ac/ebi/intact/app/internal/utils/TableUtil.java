@@ -11,13 +11,13 @@ import static uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.Sour
 
 public class TableUtil {
     public static <T> List<T> getFieldValuesOfEdges(CyTable table, Field<T> field, List<CyEdge> edges, T defaultValue) {
-        List<T> fieldValues = new ArrayList<>();
+        Set<T> fieldValues = new HashSet<>();
         for (CyEdge edge : edges) {
             T value = field.getValue(table.getRow(edge.getSUID()));
             if (value == null) value = defaultValue;
             fieldValues.add(value);
         }
-        return fieldValues;
+        return new ArrayList<>(fieldValues);
     }
 
 

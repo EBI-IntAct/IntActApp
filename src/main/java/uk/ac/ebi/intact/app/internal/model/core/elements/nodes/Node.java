@@ -13,6 +13,7 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -74,9 +75,10 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
 
     public List<Feature> getFeatures() {
         CyTable featuresTable = network.getFeaturesTable();
+        Set<Long> adjacentEdgesSUID = network.getCyNetwork().getAdjacentEdgeList(cyNode, CyEdge.Type.ANY).stream().map(CyIdentifiable::getSUID).collect(Collectors.toSet());
         return featureAcs.stream()
                 .map(featureAC -> new Feature(network, featuresTable.getRow(featureAC)))
-                .filter(Feature::isPresent)
+                .filter(feature -> feature.isPresentIn(adjacentEdgesSUID))
                 .collect(Collectors.toList());
     }
 

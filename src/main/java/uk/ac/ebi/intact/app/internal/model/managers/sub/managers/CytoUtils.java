@@ -1,9 +1,10 @@
-package uk.ac.ebi.intact.app.internal.managers.sub.managers;
+package uk.ac.ebi.intact.app.internal.model.managers.sub.managers;
 
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.event.CyEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -146,5 +147,9 @@ public class CytoUtils {
 
     public void unregisterService(Object service, Class<?> clazz) {
         registrar.unregisterService(service, clazz);
+    }
+
+    public void fireEvent(CyEvent<?> cyEvent) {
+        cyEventHelper.fireEvent(cyEvent);
     }
 }

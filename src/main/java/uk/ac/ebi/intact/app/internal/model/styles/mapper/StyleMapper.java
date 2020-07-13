@@ -312,7 +312,13 @@ public class StyleMapper {
             while (listenerIterator.hasNext()) {
                 StyleUpdatedListener listener = listenerIterator.next().get();
                 if (listener == null) listenerIterator.remove();
-                else listener.handleStyleUpdatedEvent();
+                else {
+                    try {
+                        listener.handleStyleUpdatedEvent();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         });
     }

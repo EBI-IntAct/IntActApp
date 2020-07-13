@@ -1,11 +1,11 @@
-package uk.ac.ebi.intact.app.internal.managers;
+package uk.ac.ebi.intact.app.internal.model.managers;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionLoadedListener;
+import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.*;
 import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
-import uk.ac.ebi.intact.app.internal.managers.sub.managers.CytoUtils;
-import uk.ac.ebi.intact.app.internal.managers.sub.managers.DataManager;
-import uk.ac.ebi.intact.app.internal.managers.sub.managers.OptionManager;
-import uk.ac.ebi.intact.app.internal.managers.sub.managers.StyleManager;
+
+import java.util.Properties;
 
 public class Manager {
     private static final String INTACT_WEBSERVICES = "https://wwwdev.ebi.ac.uk/intact/ws/";
@@ -28,6 +28,7 @@ public class Manager {
         FeatureClassifier.initMIIdSets();
         data = new DataManager(this);
         data.loadCurrentSession();
+        utils.registerService(new SessionLoader(this), SessionLoadedListener.class, new Properties());
         style = new StyleManager(this);
         style.setupStyles();
         option = new OptionManager(this);

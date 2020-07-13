@@ -5,7 +5,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
@@ -168,7 +168,6 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
         currentView = manager.data.getNetworkView(view);
     }
 
-    //    private Thread thread;
     private Future<?> lastSelection;
 
     public void viewUpdated() {

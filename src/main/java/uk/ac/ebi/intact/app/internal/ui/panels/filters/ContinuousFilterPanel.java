@@ -1,11 +1,11 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.filters;
 
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
-import uk.ac.ebi.intact.app.internal.model.filters.edge.EdgeMIScoreFilter;
-import uk.ac.ebi.intact.app.internal.ui.components.slider.MIScoreSliderUI;
 import uk.ac.ebi.intact.app.internal.model.events.RangeChangeEvent;
 import uk.ac.ebi.intact.app.internal.model.events.RangeChangeListener;
 import uk.ac.ebi.intact.app.internal.model.filters.ContinuousFilter;
+import uk.ac.ebi.intact.app.internal.model.filters.edge.EdgeMIScoreFilter;
+import uk.ac.ebi.intact.app.internal.ui.components.slider.MIScoreSliderUI;
 import uk.ac.ebi.intact.app.internal.ui.components.slider.RangeSlider;
 
 import javax.swing.*;
@@ -57,7 +57,8 @@ public class ContinuousFilterPanel<T extends Element> extends FilterPanel<Contin
     }
 
     @Override
-    public void rangeChanged(RangeChangeEvent event) {
-        if (eventActivated) filter.setCurrentPositions(getValue(slider.getValue()), getValue(slider.getUpperValue()));
+    public void handleRangeChanged(RangeChangeEvent event) {
+        if (eventActivated)
+            filter.setCurrentPositions(getValue(slider.getValue()), getValue(slider.getUpperValue()));
     }
 }

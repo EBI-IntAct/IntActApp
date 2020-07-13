@@ -20,7 +20,7 @@ public class RangeSlider extends JSlider {
 
     protected RangeChangeEvent rangeChangeEvent = new RangeChangeEvent(this);
     protected boolean fireRangeChanged = true;
-    private List<RangeChangeListener> rangeChangeListeners = new ArrayList<>();
+    private final List<RangeChangeListener> rangeChangeListeners = new ArrayList<>();
 
     /**
      * Constructs a RangeSlider with default minimum and maximum values of 0
@@ -129,7 +129,7 @@ public class RangeSlider extends JSlider {
         if (fireRangeChanged) {
             super.fireStateChanged();
             for (RangeChangeListener listener: rangeChangeListeners) {
-                listener.rangeChanged(rangeChangeEvent);
+                listener.handleRangeChanged(rangeChangeEvent);
             }
         }
     }

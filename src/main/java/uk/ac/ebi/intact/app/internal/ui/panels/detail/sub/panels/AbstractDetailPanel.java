@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
@@ -46,5 +46,4 @@ public abstract class AbstractDetailPanel extends JPanel {
         currentView = manager.data.getCurrentIntactNetworkView();
         return currentView != null;
     }
-
 }

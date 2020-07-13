@@ -14,7 +14,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NodeFields;
@@ -25,6 +25,7 @@ import java.util.Map;
 
 public abstract class Style {
     public static final Color defaultNodeColor = new Color(157, 177, 128);
+
     protected VisualStyle style;
     protected Manager manager;
     protected CyEventHelper eventHelper;
@@ -226,5 +227,13 @@ public abstract class Style {
 
     public abstract String getStyleName();
     public abstract NetworkView.Type getStyleViewType();
+    public VisualStyle getStyle() {
+        return style;
+    }
+
+    @Override
+    public String toString() {
+        return getStyleName();
+    }
 }
 

@@ -3,11 +3,11 @@ package uk.ac.ebi.intact.app.internal.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.*;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-import uk.ac.ebi.intact.app.internal.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.Field;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.models.*;
@@ -17,6 +17,9 @@ import java.util.*;
 import static uk.ac.ebi.intact.app.internal.utils.TableUtil.*;
 
 public class ModelUtils {
+
+    public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
+
 
     public static List<CyNode> augmentNetworkFromJSON(Manager manager, Network network, Map<String, CyNode> idToNode, Map<String, String> idToName, List<CyEdge> newEdges, JsonNode json) {
         return loadJSON(manager, network, network.getCyNetwork(), idToNode, idToName, newEdges, json);
@@ -354,17 +357,40 @@ public class ModelUtils {
     public static void handleSubNetworkEdges(CySubNetwork subCyNetwork, Network parentNetwork) {
         CyTable edgeTable = subCyNetwork.getDefaultEdgeTable();
 
-        for (CyRow summaryEdgeRow : EdgeFields.IS_SUMMARY.getMatchingRows(edgeTable, true)) {
-            for (Long summarizedEdgeSUID : EdgeFields.SUMMARY_EDGES_SUID.getValue(summaryEdgeRow)) {
-                if (!edgeTable.rowExists(summarizedEdgeSUID)) {
-                    subCyNetwork.addEdge(parentNetwork.getCyNetwork().getEdge(summarizedEdgeSUID));
+        Map<Boolean, List<CyRow>> isSummaryRows = EdgeFields.IS_SUMMARY.groupRows(edgeTable);
+        if (isSummaryRows.containsKey(true)) {
+            for (CyRow summaryEdgeRow : isSummaryRows.get(true)) {
+                for (Long summarizedEdgeSUID : EdgeFields.SUMMARY_EDGES_SUID.getValue(summaryEdgeRow)) {
+                    if (!edgeTable.rowExists(summarizedEdgeSUID)) {
+                        CyEdge edge = parentNetwork.getCyNetwork().getEdge(summarizedEdgeSUID);
+                        if (edge != null) subCyNetwork.addEdge(edge);
+                    }
                 }
+            }
+        }
+
+        if (isSummaryRows.containsKey(false)) {
+            for (CyRow evidenceEdgeRow : isSummaryRows.get(false)) {
+                subCyNetwork.addEdge(getSummaryCyEdge(parentNetwork, evidenceEdgeRow));
             }
         }
 
     }
 
-    public static CyEdge getSummaryEdge(Network network, CyRow evidenceEdgeRow) {
+    public static CyEdge getSummaryCyEdge(Network network, CyRow evidenceEdgeRow) {
         return network.getSummaryEdge(network.getCyEdge(network.getSUID(evidenceEdgeRow))).cyEdge;
+    }
+
+    public static CySubNetwork getParentCyNetwork(final CySubNetwork net, final Manager manager) {
+        final CyTable hiddenTable = net.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+        final CyRow row = hiddenTable != null ? hiddenTable.getRow(net.getSUID()) : null;
+        final Long suid = row != null ? row.get(PARENT_NETWORK_COLUMN, Long.class) : null;
+
+        if (suid != null) {
+            final CyNetwork parent = manager.utils.getService(CyNetworkManager.class).getNetwork(suid);
+            if (parent instanceof CySubNetwork) return (CySubNetwork) parent;
+        }
+
+        return null;
     }
 }

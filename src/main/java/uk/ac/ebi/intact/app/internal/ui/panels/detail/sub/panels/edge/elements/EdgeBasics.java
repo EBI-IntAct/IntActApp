@@ -28,7 +28,7 @@ public class EdgeBasics extends AbstractEdgeElement {
         for (EvidenceEdge evidenceEdge : edge.getSummarizedEdges()) {
             summaryEdgesPanel.add(LinkUtils.createEvidenceEdgeLink(openBrowser, evidenceEdge));
         }
-        CollapsablePanel collapsablePanel = new CollapsablePanel("Summarized edges (" + edge.summarizedEdgeSUIDs.size() + ")", summaryEdgesPanel, true);
+        CollapsablePanel collapsablePanel = new CollapsablePanel("Summarized edges (" + edge.getNbSummarizedEdges() + ")", summaryEdgesPanel, true);
         collapsablePanel.setAlignmentX(LEFT_ALIGNMENT);
         content.add(collapsablePanel);
     }
@@ -69,7 +69,7 @@ public class EdgeBasics extends AbstractEdgeElement {
         if (edge.expansionType != null && !edge.expansionType.isEmpty()) {
             content.add(new JLabel("Expanded with a " + edge.expansionType));
         }
-        if (edge.pubMedId != null && !edge.pubMedId.isEmpty()) {
+        if (edge.pubMedId != null && !edge.pubMedId.isEmpty() && !edge.pubMedId.contains("unassigned")) {
             LinePanel publication = new LinePanel(lightBackground);
             publication.add(new JLabel("Described in "));
             publication.add(new JLink("European PMC - " + edge.pubMedId, "https://europepmc.org/search?query=" + edge.pubMedId, openBrowser));
