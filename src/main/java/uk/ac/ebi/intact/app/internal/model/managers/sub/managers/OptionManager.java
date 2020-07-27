@@ -23,8 +23,8 @@ public class OptionManager {
     public final Option<Boolean> DEFAULT_INCLUDE_ALL_INTERACTORS = new Option<>("includeUnseenInteractors", "Include extra choices in search when maximum exceeded", Boolean.class, true, List.of(Scope.SEARCH));
     public final Option<Boolean> SHOW_HIGHLIGHTS = new Option<>("showHighlights", "Highlight matching columns", Boolean.class, true, List.of(Scope.SEARCH, Scope.DISAMBIGUATION));
     public final Option<Boolean> ADD_INTERACTING_PARTNERS = new Option<>("addingInteractingPartners", "Add interacting partners of seed interactors to network", Boolean.class, true, List.of(Scope.SEARCH, Scope.DISAMBIGUATION));
-    public final NumericOption<Integer> MAX_SELECTED_NODE_INFO_SHOWN = new NumericOption<>("maxSelectedNodeInfoShown", "Add interacting partners of seed interactors to network", Integer.class, 100, 0, 150, new ArrayList<>());
-    public final NumericOption<Integer> MAX_SELECTED_EDGE_INFO_SHOWN = new NumericOption<>("maxSelectedEdgeInfoShown", "Add interacting partners of seed interactors to network", Integer.class, 100, 0, 150, new ArrayList<>());
+    public final NumericOption<Integer> MAX_SELECTED_NODE_INFO_SHOWN = new NumericOption<>("maxSelectedNodeInfoShown", "Add interacting partners of seed interactors to network", Integer.class, 15, 0, 100, new ArrayList<>());
+    public final NumericOption<Integer> MAX_SELECTED_EDGE_INFO_SHOWN = new NumericOption<>("maxSelectedEdgeInfoShown", "Add interacting partners of seed interactors to network", Integer.class, 15, 0, 100, new ArrayList<>());
 
     public class Option<T> {
         public final String key;

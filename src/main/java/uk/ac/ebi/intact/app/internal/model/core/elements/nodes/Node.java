@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
-import static uk.ac.ebi.intact.app.internal.model.tables.fields.models.NodeFields.*;
+import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields.*;
 
 public class Node extends Interactor implements Comparable<Interactor>, Element {
     public final Network network;
@@ -39,18 +39,18 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
                 NAME.getValue(nodeRow),
                 PREFERRED_ID.getValue(nodeRow),
                 FULL_NAME.getValue(nodeRow),
-                TYPE.getValue(nodeRow),
+                TYPE.VALUE.getValue(nodeRow),
                 SPECIES.getValue(nodeRow),
                 TAX_ID.getValue(nodeRow),
                 -1
         );
         this.network = network;
         this.cyNode = cyNode;
-        this.typeMIId = new OntologyIdentifier(TYPE_MI_ID.getValue(nodeRow), SourceOntology.MI);
+        this.typeMIId = new OntologyIdentifier(nodeRow, TYPE);
         this.nodeRow = nodeRow;
         this.mutated = MUTATED.getValue(nodeRow);
-        String preferredIdDbName = PREFERRED_ID_DB.getValue(nodeRow);
-        OntologyIdentifier preferredIdDbMIId = new OntologyIdentifier(PREFERRED_ID_DB_MI_ID.getValue(nodeRow), SourceOntology.MI);
+        String preferredIdDbName = PREFERRED_ID_DB.VALUE.getValue(nodeRow);
+        OntologyIdentifier preferredIdDbMIId = new OntologyIdentifier(PREFERRED_ID_DB.ID.getValue(nodeRow), SourceOntology.MI);
         this.preferredIdentifier = new Identifier(preferredIdDbName, preferredIdDbMIId, preferredId, "preferred id");
 
         List<String> nodeFeatures = FEATURES.getValue(nodeRow);

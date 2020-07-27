@@ -1,7 +1,8 @@
 package uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology;
 
 import org.cytoscape.model.CyRow;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.Field;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.CVField;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.Field;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
 import java.util.Objects;
@@ -15,19 +16,19 @@ public class CVTerm implements Comparable<CVTerm>{
         this.id = id;
     }
 
-    public CVTerm(CyRow row, Field<String> valueField, Field<String> idField) {
-        this.value = valueField.getValue(row);
-        this.id = new OntologyIdentifier(idField.getValue(row));
-    }
-
-    public CVTerm(CyRow row, Field<String> valueField, Field<String> idField, SourceOntology source) {
-        this.value = valueField.getValue(row);
-        this.id = new OntologyIdentifier(idField.getValue(row), source);
+    public CVTerm(CyRow row, CVField field) {
+        this.value = field.VALUE.getValue(row);
+        this.id = new OntologyIdentifier(row, field);
     }
 
     public CVTerm(CyRow row, Field<String> valueField, Field<String> miIdField, Field<String> modIdField, Field<String> parIdField) {
         this.value = valueField.getValue(row);
         this.id = TableUtil.getOntologyIdentifier(row, miIdField, modIdField, parIdField);
+    }
+
+    public void writeInTable(CyRow row, CVField field) {
+        field.VALUE.setValue(row, value);
+        field.ID.setValue(row, id.id);
     }
 
     @Override

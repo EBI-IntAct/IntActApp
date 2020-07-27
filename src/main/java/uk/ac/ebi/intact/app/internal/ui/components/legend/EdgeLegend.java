@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.app.internal.ui.components.legend;
 
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.definitions.InteractionType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,7 +15,7 @@ public class EdgeLegend extends JComponent {
 
     protected int length = 30;
     protected int thickness = 4;
-    protected Paint paint = StyleMapper.edgeTypeToPaint.get("colocalization");
+    protected Paint paint = StyleMapper.edgeTypeToPaint.get(InteractionType.COLOCOALIZATION.name);
     protected LineType lineType = LineType.SOLID;
 
     private EdgeLegend() {

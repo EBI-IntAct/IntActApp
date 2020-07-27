@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.app.internal.model.tables.fields;
+package uk.ac.ebi.intact.app.internal.model.tables.fields.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyRow;

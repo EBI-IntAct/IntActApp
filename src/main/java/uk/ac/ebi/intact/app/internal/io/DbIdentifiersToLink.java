@@ -2,6 +2,7 @@ package uk.ac.ebi.intact.app.internal.io;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.Identifier;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.CVTerm;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
 
 import java.util.HashMap;
@@ -44,44 +45,50 @@ public class DbIdentifiersToLink {
     private static final Set<OntologyIdentifier> unresolvedUnknownDatabaseMIId = new HashSet<>();
 
     static {
-        for (Database database : Database.values()) {
+        for (Database database: Database.values()) {
             dbNameToDatabase.put(database.name, database);
         }
     }
 
+
     public static String getLink(Identifier identifier) {
-        if (dbNameToDatabase.containsKey(identifier.databaseName)) {
-            return dbNameToDatabase.get(identifier.databaseName).queryFunction.apply(identifier.id);
-        } else if (unknownDatabaseMIIdToSearchURLRegex.containsKey(identifier.databaseIdentifier)) {
-            return unknownDatabaseMIIdToSearchURLRegex.get(identifier.databaseIdentifier).replaceAll("\\$\\{ac}", identifier.id);
-        } else if (unresolvedUnknownDatabaseMIId.contains(identifier.databaseIdentifier)) {
+        if (dbNameToDatabase.containsKey(identifier.database.value)) {
+            return dbNameToDatabase.get(identifier.database.value).queryFunction.apply(identifier.id);
+        } else if (unknownDatabaseMIIdToSearchURLRegex.containsKey(identifier.database.id)) {
+            return unknownDatabaseMIIdToSearchURLRegex.get(identifier.database.id).replaceAll("\\$\\{ac}", identifier.id);
+        } else if (unresolvedUnknownDatabaseMIId.contains(identifier.database.id)) {
             return "";
         } else {
             try {
-                JsonNode root = HttpUtils.getJsonForUrl(identifier.databaseIdentifier.getDetailsURL());
+                JsonNode root = HttpUtils.getJsonForUrl(identifier.database.id.getDetailsURL());
                 if (root != null) {
                     for (JsonNode info : root.get("_embedded").get("terms").get(0).get("obo_xref")) {
                         if (info.get("database").textValue().equals("search-url")) {
                             String searchURLRegex = info.get("description").textValue();
-                            unknownDatabaseMIIdToSearchURLRegex.put(identifier.databaseIdentifier, searchURLRegex);
+                            unknownDatabaseMIIdToSearchURLRegex.put(identifier.database.id, searchURLRegex);
                             return searchURLRegex.replaceAll("\\$\\{ac}", identifier.id);
                         }
                     }
                 }
             } catch (Exception ignored) {
             }
-            unresolvedUnknownDatabaseMIId.add(identifier.databaseIdentifier);
+            unresolvedUnknownDatabaseMIId.add(identifier.database.id);
             return "";
         }
     }
 
 
     public static String getFancyDatabaseName(Identifier identifier) {
-        if (!dbNameToDatabase.containsKey(identifier.databaseName)) {
-            return identifier.databaseName.toUpperCase();
+        if (!dbNameToDatabase.containsKey(identifier.database.value)) {
+            return identifier.database.value.toUpperCase();
         }
-        return dbNameToDatabase.get(identifier.databaseName).fancyName;
+        return dbNameToDatabase.get(identifier.database.value).fancyName;
     }
 
-
+    public static String getFancyDatabaseName(CVTerm database) {
+        if (!dbNameToDatabase.containsKey(database.value)) {
+            return database.value.toUpperCase();
+        }
+        return dbNameToDatabase.get(database.value).fancyName;
+    }
 }

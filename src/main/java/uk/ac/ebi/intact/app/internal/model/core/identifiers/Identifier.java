@@ -1,30 +1,35 @@
 package uk.ac.ebi.intact.app.internal.model.core.identifiers;
 
 import org.cytoscape.model.CyRow;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.CVTerm;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.models.IdentifierFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.CVField;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.Field;
 
 import java.util.Objects;
 
+import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.IdentifierFields.*;
+
 public class Identifier implements Comparable<Identifier> {
-    public final String databaseName;
-    public final OntologyIdentifier databaseIdentifier;
     public final String id;
+    public final CVTerm database;
     public final String qualifier;
 
     public Identifier(String databaseName, OntologyIdentifier databaseIdentifier, String id, String qualifier) {
-        this.databaseName = databaseName;
-        this.databaseIdentifier = databaseIdentifier;
         this.id = id;
+        this.database = new CVTerm(databaseName, databaseIdentifier);
         this.qualifier = qualifier;
     }
 
     public Identifier(CyRow identifierRow) {
-        this.databaseName = IdentifierFields.DB_NAME.getValue(identifierRow);
+        this(identifierRow, ID, DATABASE, QUALIFIER);
+    }
 
-        this.databaseIdentifier = new OntologyIdentifier(IdentifierFields.DB_MI_ID.getValue(identifierRow));
-        this.id = IdentifierFields.ID.getValue(identifierRow);
-        this.qualifier = IdentifierFields.QUALIFIER.getValue(identifierRow);
+    public Identifier(CyRow row, Field<String> idField, CVField databaseField, CVField qualifierField) {
+        this.id = idField.getValue(row);
+        this.database = new CVTerm(row, databaseField);
+        this.qualifier = qualifierField.VALUE.getValue(row);
+//        this.qualifier = new CVTerm(row, qualifierField);
     }
 
     @Override
@@ -42,7 +47,7 @@ public class Identifier implements Comparable<Identifier> {
 
     @Override
     public String toString() {
-        return id + " from " + databaseName;
+        return id + " from " + database.value;
     }
 
     @Override

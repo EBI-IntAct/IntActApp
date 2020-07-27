@@ -2,7 +2,7 @@ package uk.ac.ebi.intact.app.internal.utils;
 
 import org.cytoscape.model.*;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.Field;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.Field;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,8 +36,8 @@ public class TableUtil {
     }
 
     public static class NullAndNonNullEdges {
-        public final List<CyEdge> nonNullEdges = new ArrayList<>();
-        public final List<CyEdge> nullEdges = new ArrayList<>();
+        public final Set<CyEdge> nonNullEdges = new HashSet<>();
+        public final Set<CyEdge> nullEdges = new HashSet<>();
     }
 
     public static void createColumnIfNeeded(CyTable table, Class<?> clazz, String columnName) {

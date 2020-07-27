@@ -18,9 +18,9 @@ public class LimitRow extends Row {
     @Override
     protected void init() {
         selected = table.resolver.manager.option.DEFAULT_INCLUDE_ALL_INTERACTORS.getValue();
-        table.includeAll = selected;
+        table.includeAdditionalInteractors = selected;
         JCheckBox selectionCheckBox = createSelectionCheckBox(false);
-        selectionCheckBox.addActionListener(e -> table.includeAll = selectionCheckBox.isSelected());
+        selectionCheckBox.addActionListener(e -> table.includeAdditionalInteractors = selectionCheckBox.isSelected());
         addCell(selectionCheckBox, TermColumn.SELECT);
         JLabel label = new JLabel("Include additional " + (table.totalInteractors - table.interactors.size()) + " matching interactors");
         label.setBorder(new EmptyBorder(5,5,5,0));
@@ -36,7 +36,7 @@ public class LimitRow extends Row {
     @Override
     public void itemStateChanged(ItemEvent e) {
         super.itemStateChanged(e);
-        if (e.getStateChange() == ItemEvent.SELECTED) table.includeAll = true;
-        else if (e.getStateChange() == ItemEvent.DESELECTED) table.includeAll = false;
+        if (e.getStateChange() == ItemEvent.SELECTED) table.includeAdditionalInteractors = true;
+        else if (e.getStateChange() == ItemEvent.DESELECTED) table.includeAdditionalInteractors = false;
     }
 }

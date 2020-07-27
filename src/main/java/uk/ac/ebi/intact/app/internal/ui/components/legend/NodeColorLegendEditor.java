@@ -27,7 +27,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
 
     public NodeColorLegendEditor(Network currentNetwork, JComponent addNewNodeLegendEditorActivator) {
         this.currentNetwork = currentNetwork;
-        this.manager = currentNetwork.getManager();
+        this.manager = currentNetwork.manager;
         this.addNewNodeLegendEditorActivator = addNewNodeLegendEditorActivator;
         NODE_COLOR_LEGEND_EDITOR_LIST.add(this);
 

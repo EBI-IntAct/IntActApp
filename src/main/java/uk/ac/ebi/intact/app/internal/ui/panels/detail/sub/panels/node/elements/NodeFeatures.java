@@ -190,8 +190,8 @@ public class NodeFeatures extends AbstractNodeElement {
         @Override
         public void itemStateChanged(ItemEvent e) {
             if (silenceListener) return;
-            Manager manager = edge.network.getManager();
-            NetworkView currentView = manager.data.getCurrentIntactNetworkView();
+            Manager manager = edge.network.manager;
+            NetworkView currentView = manager.data.getCurrentNetworkView();
             if (currentView != null && currentView.getType() == NetworkView.Type.SUMMARY) {
                 manager.utils.execute(new EvidenceViewTaskFactory(manager, true).createTaskIterator());
             }

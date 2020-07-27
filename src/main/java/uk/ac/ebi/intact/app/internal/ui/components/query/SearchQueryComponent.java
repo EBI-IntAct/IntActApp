@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.app.internal.ui;
+package uk.ac.ebi.intact.app.internal.ui.components.query;
 
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;

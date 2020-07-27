@@ -33,13 +33,13 @@ public class NodeIdentifiers extends AbstractNodeElement {
             return;
         }
 
-        Map<String, List<Identifier>> dbToIdentifiers = CollectionUtils.groupBy(identifiers, identifier -> identifier.databaseName);
+        Map<String, List<Identifier>> dbToIdentifiers = CollectionUtils.groupBy(identifiers, identifier -> identifier.database.value);
 
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         dbToIdentifiers.values().stream()
-                .sorted(Comparator.comparing(identifiersOfDb -> identifiersOfDb.get(0).databaseName))
+                .sorted(Comparator.comparing(identifiersOfDb -> identifiersOfDb.get(0).database.value))
                 .forEach(identifiersOfDb -> content.add(IdentifierPanelFactory.createPanel(identifiersOfDb, openBrowser)));
     }
 }

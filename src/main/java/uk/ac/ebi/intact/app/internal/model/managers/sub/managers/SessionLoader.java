@@ -10,10 +10,10 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.ListField;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.models.FeatureFields;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.models.NetworkFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.ListField;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.FeatureFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
 import java.util.Collection;
@@ -53,7 +53,7 @@ public class SessionLoader implements SessionLoadedListener {
             }
         }
 
-        NetworkView currentView = manager.data.getCurrentIntactNetworkView();
+        NetworkView currentView = manager.data.getCurrentNetworkView();
         if (currentView != null) {
             manager.utils.fireEvent(new ViewUpdatedEvent(manager, currentView));
             manager.utils.showResultsPanel();

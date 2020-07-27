@@ -29,7 +29,7 @@ public class AugmentNetworkTask extends AbstractTask {
 
     public void run(TaskMonitor monitor) {
         monitor.setTitle("Adding " + intactAcs.size() + " terms to network");
-        Manager manager = network.getManager();
+        Manager manager = network.manager;
 
         Map<String, CyNode> idToNode = new HashMap<>();
         Map<String, String> idToName = new HashMap<>();

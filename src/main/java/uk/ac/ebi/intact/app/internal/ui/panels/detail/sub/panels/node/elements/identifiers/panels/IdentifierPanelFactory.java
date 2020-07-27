@@ -9,7 +9,7 @@ import java.util.List;
 public abstract class IdentifierPanelFactory {
     public static IdentifierPanel createPanel(List<Identifier> identifiers, OpenBrowser openBrowser) {
         identifiers.sort(Comparator.naturalOrder());
-        switch (identifiers.get(0).databaseName) {
+        switch (identifiers.get(0).database.value) {
             case "go":
                 return new GOIdentifierPanel(identifiers, openBrowser);
             case "interpro":

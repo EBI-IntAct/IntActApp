@@ -2,10 +2,11 @@ package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
 import org.cytoscape.work.TaskFactory;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.OptionManager;
-import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
+import uk.ac.ebi.intact.app.internal.tasks.query.TermsResolvingTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ImportNetworkTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.components.filler.HorizontalFiller;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.CenteredLabel;
@@ -40,6 +41,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     final EasyGBC layoutHelper = new EasyGBC();
     final boolean fuzzySearch;
     final boolean selectedByDefault;
+    final TermsResolvingTask task;
 
     Network network;
 
@@ -69,18 +71,20 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     final JPanel tableCornerPanel = new JPanel(new GridBagLayout());
     private JButton selectAllButton;
     private JButton unSelectAllButton;
+    private JButton buildNetworkButton;
     private final Set<Interactor> interactorsToQuery = new HashSet<>();
 
     public ResolveTermsPanel(final Manager manager, Network network) {
-        this(manager, network, true, true);
+        this(manager, network, true, true, null);
     }
 
-    public ResolveTermsPanel(final Manager manager, Network network, boolean selectedByDefault, boolean fuzzySearch) {
+    public ResolveTermsPanel(final Manager manager, Network network, boolean selectedByDefault, boolean fuzzySearch, TermsResolvingTask task) {
         super(new GridBagLayout());
         this.manager = manager;
         this.network = network;
         this.selectedByDefault = selectedByDefault;
         this.fuzzySearch = fuzzySearch;
+        this.task = task;
         init();
     }
 
@@ -196,9 +200,9 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         EasyGBC c = new EasyGBC();
         c.anchor("west");
         displayPanel.setBackground(Color.WHITE);
-        network.getInteractorsToResolve().forEach((term, interactors) -> {
+        task.getInteractorsToResolve().forEach((term, interactors) -> {
             if (fuzzySearch || interactors.size() > 1) {
-                TermTable termTable = new TermTable(this, term, interactors, network.getTotalInteractors().get(term));
+                TermTable termTable = new TermTable(this, term, interactors, task.getTotalInteractors().get(term));
                 termTables.add(termTable);
                 displayPanel.add(termTable, c.down().expandHoriz());
                 displayPanel.add(Box.createVerticalStrut(TERM_SPACE), c.down().expandHoriz());
@@ -254,30 +258,59 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         cancelButton.addActionListener(e -> close());
         controlPanel.add(cancelButton);
 
-        JButton importButton = new JButton("Build Network");
-        importButton.addActionListener(e -> {
-            Map<String, List<Interactor>> missingInteractors = network.completeMissingInteractors(
-                    termTables.stream()
-                            .filter(termTable -> termTable.includeAll)
-                            .map(termTable -> termTable.term)
-                            .collect(toList()),
-                    !fuzzySearch
-            );
-            missingInteractors.values().forEach(interactorsToQuery::addAll);
-            termTables.stream()
-                    .map(TermTable::getSelectedInteractors)
-                    .flatMap(Collection::stream).forEach(interactorsToQuery::add);
+        buildNetworkButton = new JButton("Build Network");
+        buildNetworkButton.addActionListener(e -> buildNetworkFromSelection());
+        controlPanel.add(buildNetworkButton);
+
+        add(controlPanel, layoutHelper.down().expandHoriz());
+    }
+
+    private void buildNetworkFromSelection() {
+        new Thread(() -> {
+            if (addAdditionalInteractors().isCanceled()) return;
+
+            termTables.stream().map(TermTable::getSelectedInteractors).flatMap(Collection::stream).forEach(interactorsToQuery::add);
             if (interactorsToQuery.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No interactors selected. Please select at least one interactor.");
             } else {
-                TaskFactory factory = new ImportNetworkTaskFactory(network, interactorsToQuery.stream().map(interactor -> interactor.ac).collect(toList()), manager.option.ADD_INTERACTING_PARTNERS.getValue(), null);
+                TaskFactory factory = new ImportNetworkTaskFactory(network, interactorsToQuery.stream().map(interactor -> interactor.ac).collect(toList()), manager.option.ADD_INTERACTING_PARTNERS.getValue(), task.getName());
                 manager.utils.execute(factory.createTaskIterator());
                 close();
             }
-        });
-        controlPanel.add(importButton);
+        }).start();
+    }
 
-        add(controlPanel, layoutHelper.down().expandHoriz());
+    private ProgressMonitor addAdditionalInteractors() {
+        List<String> termsToComplete = getTermsToComplete();
+
+        int numberOfInteractorsToCollect = calculateNumberOfInteractorsToCollect(termsToComplete);
+        ProgressMonitor progressMonitor = new ProgressMonitor(buildNetworkButton,
+                String.format("Collecting additional %d interactors", numberOfInteractorsToCollect), null,
+                0, numberOfInteractorsToCollect);
+
+        progressMonitor.setMillisToDecideToPopup(100);
+        progressMonitor.setMillisToPopup(100);
+
+        Map<String, List<Interactor>> missingInteractors = task.completeAdditionalInteractors(
+                termsToComplete, network.manager.option.MAX_INTERACTOR_PER_TERM.getValue(),
+                progressMonitor::setProgress,
+                progressMonitor::isCanceled);
+
+        if (progressMonitor.isCanceled()) return progressMonitor;
+        progressMonitor.close();
+        missingInteractors.values().forEach(interactorsToQuery::addAll);
+        return progressMonitor;
+    }
+
+    private List<String> getTermsToComplete() {
+        return termTables.stream()
+                .filter(termTable -> termTable.includeAdditionalInteractors)
+                .map(termTable -> termTable.term)
+                .collect(toList());
+    }
+
+    private int calculateNumberOfInteractorsToCollect(List<String> termsToComplete) {
+        return termsToComplete.stream().mapToInt(termToComplete -> task.getTotalInteractors().get(termToComplete) - manager.option.MAX_INTERACTOR_PER_TERM.getValue()).sum();
     }
 
 

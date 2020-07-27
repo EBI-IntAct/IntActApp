@@ -20,7 +20,6 @@ import static uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution.TermColum
 
 class TermTable extends JPanel implements ItemListener {
     public static final Color TERM_BG = new Color(161, 135, 184);
-    private final Boolean includeAllInteractorsOption;
     final ResolveTermsPanel resolver;
     final String term;
     final List<Interactor> interactors;
@@ -28,7 +27,7 @@ class TermTable extends JPanel implements ItemListener {
     final int totalInteractors;
     final Map<Interactor, Row> rows = new HashMap<>();
     final EasyGBC layoutHelper = new EasyGBC();
-    boolean includeAll = false;
+    boolean includeAdditionalInteractors = false;
 
     private LimitRow limitRow;
     private IButton selectAll;
@@ -41,7 +40,6 @@ class TermTable extends JPanel implements ItemListener {
         this.interactors = interactors;
         this.totalInteractors = totalInteractors;
         this.isPaged = totalInteractors > interactors.size();
-        includeAllInteractorsOption = resolver.manager.option.DEFAULT_INCLUDE_ALL_INTERACTORS.getValue();
         init();
     }
 
@@ -118,17 +116,6 @@ class TermTable extends JPanel implements ItemListener {
     public void homogenizeWidth() {
         rows.values().forEach(Row::homogenizeWidth);
         if (limitRow != null) limitRow.homogenizeWidth();
-    }
-
-    public void updatePreviews() {
-        rows.values().forEach(Row::updatePreview);
-    }
-
-    public List<Interactor> getDeselectedInteractors() {
-        return rows.values().stream()
-                .filter(row -> !row.selected)
-                .map(row -> row.interactor)
-                .collect(Collectors.toList());
     }
 
     public List<Interactor> getSelectedInteractors() {

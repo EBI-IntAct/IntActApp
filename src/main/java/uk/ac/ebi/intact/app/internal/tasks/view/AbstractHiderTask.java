@@ -74,7 +74,6 @@ public abstract class AbstractHiderTask extends AbstractTask {
                     .map((SummaryEdge edge) -> chosenNetwork.getSimilarEvidenceCyEdges(edge.cyEdge))
                     .flatMap(List::stream)
                     .collect(Collectors.toSet());
-
             insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getSummaryCyEdges()));
             insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getEvidenceCyEdges()));
             insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(cyNetwork, edgesToSelect).createTaskIterator());
@@ -84,9 +83,9 @@ public abstract class AbstractHiderTask extends AbstractTask {
     private void chooseData() {
         if (!currentView) {
             if (chosenView == null) chosenView = view.getSelectedValue();
-            if (chosenView instanceof CurrentView) chosenView = manager.data.getCurrentIntactNetworkView();
+            if (chosenView instanceof CurrentView) chosenView = manager.data.getCurrentNetworkView();
         } else {
-            chosenView = manager.data.getCurrentIntactNetworkView();
+            chosenView = manager.data.getCurrentNetworkView();
         }
         if (chosenView != null) {
             cyView = chosenView.cyView;

@@ -29,7 +29,7 @@ public class NodeDetails extends AbstractNodeElement {
     protected void fillContent() {
         executor.execute(() -> {
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-            JsonNode nodeDetails = HttpUtils.getJSON(INTACT_GRAPH_WS + "network/node/details/" + node.ac, new HashMap<>(), node.network.getManager());
+            JsonNode nodeDetails = HttpUtils.getJSON(INTACT_GRAPH_WS + "network/node/details/" + node.ac, new HashMap<>(), node.network.manager);
             if (nodeDetails != null) {
                 content.add(new NodeAliases(node, openBrowser, nodeDetails.get("aliases")));
                 addNodeCrossReferences(nodeDetails.get("xrefs"));
@@ -43,7 +43,6 @@ public class NodeDetails extends AbstractNodeElement {
         List<Identifier> identifiers = new ArrayList<>();
         for (JsonNode xref : xrefs) {
             JsonNode database = xref.get("database");
-
             String databaseName = database.get("shortName").textValue();
             OntologyIdentifier databaseIdentifier = new OntologyIdentifier(database.get("identifier").textValue());
 

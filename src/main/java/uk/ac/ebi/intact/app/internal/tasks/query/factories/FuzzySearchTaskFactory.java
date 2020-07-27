@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.app.internal.tasks.query.factories;
 import org.cytoscape.application.swing.search.AbstractNetworkSearchTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.OptionManager;
-import uk.ac.ebi.intact.app.internal.ui.SearchQueryComponent;
+import uk.ac.ebi.intact.app.internal.ui.components.query.SearchQueryComponent;
 import uk.ac.ebi.intact.app.internal.ui.panels.options.OptionsPanel;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;

@@ -30,7 +30,7 @@ public class EdgeDetails extends AbstractEdgeElement {
     protected void fillEvidenceEdgeContent(EvidenceEdge edge) {
         executor.execute(() -> {
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-            JsonNode edgeDetails = HttpUtils.getJSON(Manager.INTACT_GRAPH_WS + "network/edge/details/" + edge.id, new HashMap<>(), edge.network.getManager());
+            JsonNode edgeDetails = HttpUtils.getJSON(Manager.INTACT_GRAPH_WS + "network/edge/details/" + edge.id, new HashMap<>(), edge.network.manager);
             if (edgeDetails != null) {
                 content.add(new EdgeAnnotations(edge, openBrowser, edgeDetails.get("annotations")));
                 content.add(new EdgeParameters(edge, openBrowser, edgeDetails.get("parameters")));

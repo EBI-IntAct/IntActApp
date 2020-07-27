@@ -13,7 +13,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 public class HttpUtils {
     private static final HttpClient httpClient = HttpClient.newBuilder()
@@ -60,8 +64,8 @@ public class HttpUtils {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response == null)  {
-                manager.utils.error("No response from "+ url + " with post data = " + data.toString());
+            if (response == null) {
+                manager.utils.error("No response from " + url + " with post data = " + data.toString());
                 return null;
             }
             if (response.statusCode() != 200) {
@@ -74,8 +78,42 @@ public class HttpUtils {
             manager.utils.error("Unexpected error when parsing JSON from server: " + e.getMessage());
             return null;
         }
-
     }
+
+    public static JsonNode postJSON(String url, Map<Object, Object> data, Manager manager, Supplier<Boolean> isCancelled) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .POST(buildFormDataFromMap(data))
+                    .uri(URI.create(url))
+                    .setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .header("accept", "application/json")
+                    .build();
+            Instant begin = Instant.now();
+            CompletableFuture<String> body = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> {
+                        if (response.statusCode() != 200) {
+                            manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + data.toString());
+                        }
+                        return response;
+                    }).thenApply(HttpResponse::body);
+
+            while (!body.isDone()) {
+                if (isCancelled.get()) {
+                    body.cancel(true);
+                    return null;
+                }
+            }
+            System.out.println("Response received in " + Duration.between(begin, Instant.now()).toSeconds() + "s from " + url);
+            return new ObjectMapper().readTree(body.get());
+
+        } catch (Exception e) {
+            // e.printStackTrace();
+            manager.utils.error("Unexpected error while parsing JSON from server: " + e.getMessage());
+            return null;
+        }
+    }
+
 
     public static String getStringArguments(Map<String, String> args) {
         StringBuilder s = null;

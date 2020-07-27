@@ -30,7 +30,7 @@ public abstract class AbstractDetailPanel extends JPanel {
         this.manager = manager;
         this.openBrowser = manager.utils.getService(OpenBrowser.class);
         this.currentNetwork = manager.data.getCurrentNetwork();
-        this.currentView = manager.data.getCurrentIntactNetworkView();
+        this.currentView = manager.data.getCurrentNetworkView();
         setBackground(UIColors.lightBackground);
         IconManager iconManager = manager.utils.getService(IconManager.class);
         iconFont = iconManager.getIconFont(17.0f);
@@ -43,7 +43,7 @@ public abstract class AbstractDetailPanel extends JPanel {
     }
 
     protected boolean checkCurrentView() {
-        currentView = manager.data.getCurrentIntactNetworkView();
+        currentView = manager.data.getCurrentNetworkView();
         return currentView != null;
     }
 }

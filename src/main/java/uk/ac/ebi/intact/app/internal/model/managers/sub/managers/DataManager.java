@@ -28,9 +28,10 @@ import uk.ac.ebi.intact.app.internal.model.events.NetworkCreatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.models.*;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.*;
 
@@ -61,7 +62,6 @@ public class DataManager implements
         System.out.println(NodeFields.SPECIES.toString());
         System.out.println(EdgeFields.SUMMARY_NB_EDGES.toString());
         System.out.println(NetworkFields.FEATURES_TABLE_REF.toString());
-        System.out.println(FeatureFields.TYPE.toString());
         System.out.println(FeatureFields.TYPE.toString());
         System.out.println(IdentifierFields.ID.toString());
     }
@@ -125,7 +125,7 @@ public class DataManager implements
         network.setNetwork(cyNetwork);
     }
 
-    public void addNetwork(CyNetwork cyNetwork) {
+    public void setCurrentNetwork(CyNetwork cyNetwork) {
         CyNetworkManager networkManager = manager.utils.getService(CyNetworkManager.class);
         if (!networkManager.networkExists(cyNetwork.getSUID())) {
             networkManager.addNetwork(cyNetwork);
@@ -181,6 +181,18 @@ public class DataManager implements
         CySubNetwork parentCyNetwork = getParentCyNetwork(newNetwork, manager);
         if (parentCyNetwork == null) return;
         addSubNetwork(newNetwork, parentCyNetwork);
+    }
+
+    public void removeNetwork(Network network) {
+        if (network == null) return;
+        CyNetwork cyNetwork = network.getCyNetwork();
+        if (cyNetwork == null) return;
+        networkMap.remove(cyNetwork);
+        networkViewManager.getNetworkViews(cyNetwork)
+                .forEach(view -> {
+                    networkViewMap.remove(view);
+                    networkViewManager.destroyNetworkView(view);
+                });
     }
 
     private static class NetworkViewTypeToSet {
@@ -275,7 +287,11 @@ public class DataManager implements
         return networkViewMap.get(view);
     }
 
-    public NetworkView getCurrentIntactNetworkView() {
+    public List<NetworkView> getNetworkViews(Network network) {
+        return networkViewManager.getNetworkViews(network.getCyNetwork()).stream().map(networkViewMap::get).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    public NetworkView getCurrentNetworkView() {
         return networkViewMap.get(getCurrentCyView());
     }
 
@@ -292,4 +308,5 @@ public class DataManager implements
         manager.style.styles.get(newType).applyStyle(view.cyView);
         manager.utils.fireEvent(new ViewUpdatedEvent(manager, view));
     }
+
 }

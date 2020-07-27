@@ -20,8 +20,8 @@ public enum TermColumn {
     public final String name;
     public final String highlightName;
     public final Boolean isFixedInRowHeader;
-    public final Boolean filtered;
     public final Function<Interactor, Object> getValue;
+    public final Boolean filtered;
 
     TermColumn(String name, String highlightName, Boolean isFixedInRowHeader, Function<Interactor, Object> getValue, boolean filtered) {
         this.name = name;

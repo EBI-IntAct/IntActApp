@@ -7,12 +7,11 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 
 import java.util.*;
 
-import static uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields.SOURCE_FEATURES;
-import static uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields.TARGET_FEATURES;
+import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields.*;
 
 public abstract class Edge implements Element {
     public final Network network;
@@ -50,11 +49,11 @@ public abstract class Edge implements Element {
         source = network.getNode(cyEdge.getSource());
         target = cyEdge.getTarget() != null ? network.getNode(cyEdge.getTarget()) : null;
 
-        sourceFeatureAcs = SOURCE_FEATURES.getValue(edgeRow);
+        sourceFeatureAcs = FEATURES.SOURCE.getValue(edgeRow);
         if (sourceFeatureAcs != null) {
             sourceFeatureAcs.removeIf(String::isBlank);
         }
-        targetFeatureAcs = TARGET_FEATURES.getValue(edgeRow);
+        targetFeatureAcs = FEATURES.TARGET.getValue(edgeRow);
         if (targetFeatureAcs != null) {
             targetFeatureAcs.removeIf(String::isBlank);
         }

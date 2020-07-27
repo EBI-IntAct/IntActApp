@@ -5,7 +5,7 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.CVTerm;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.models.FeatureFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.FeatureFields;
 
 import java.util.List;
 import java.util.Objects;

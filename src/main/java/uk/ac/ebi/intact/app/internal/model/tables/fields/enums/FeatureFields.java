@@ -1,8 +1,8 @@
-package uk.ac.ebi.intact.app.internal.model.tables.fields.models;
+package uk.ac.ebi.intact.app.internal.model.tables.fields.enums;
 
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.Field;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.ListField;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.Field;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.ListField;
 
 public class FeatureFields {
     public static final Field<String> AC = new Field<>(Table.FEATURE, Field.Namespace.FEATURE, "Accession", "feature_ac", String.class);

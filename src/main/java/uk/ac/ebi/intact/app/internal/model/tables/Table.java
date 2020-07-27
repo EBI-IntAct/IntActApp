@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.Field;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.ListField;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.Field;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.FieldInitializer;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.ListField;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ public enum Table {
     FEATURE,
     IDENTIFIER;
 
+    public final List<FieldInitializer> initializers = new ArrayList<>();
     public final List<Field<?>> fields = new ArrayList<>();
     public final Set<String> keysToIgnore = new HashSet<>();
 
@@ -29,14 +31,14 @@ public enum Table {
 
 
     public void setRowFromJson(CyRow row, JsonNode data) {
-        for (Field<?> field : fields) {
-            if (!(field instanceof ListField)) field.setValueFromJson(row, data);
+        for (FieldInitializer initializer : initializers) {
+            if (!(initializer instanceof ListField)) initializer.setValueFromJson(row, data);
         }
     }
 
     public void initTable(CyTable sharedTable, CyTable localTable) {
-        for (Field<?> field : fields) {
-            field.createColumn(field.shared ? sharedTable : localTable);
+        for (FieldInitializer initializer : initializers) {
+            initializer.createColumn(initializer.isShared() ? sharedTable : localTable);
         }
     }
 

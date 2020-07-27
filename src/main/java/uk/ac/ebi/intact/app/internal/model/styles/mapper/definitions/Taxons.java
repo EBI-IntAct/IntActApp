@@ -12,18 +12,16 @@ public enum Taxons {
     M_MUSCULUS(10090L, "Mus musculus", true, new Color(49, 51, 110)),
     A_THALIANA(3702L, "Arabidopsis thaliana", true, new Color(60, 115, 60)),
     S_CEREVISIAE(4932L, "Saccharomyces cerevisiae", true, new Color(174, 131, 67)),
-    E_COLI(562L, "Escherichia coli", true, new Color(140, 60, 63)),
+    E_COLI(562L, "Escherichia coli", true, new Color(154, 55, 58)),
 
     CHEMICAL_SYNTHESIS(-2L, "Chemical Synthesis", true, new Color(141, 102, 102)),
 
     ANIMALS(33208L, "Other animals", false, new Color(62, 181, 170)),
     MAMMALS(40674L, "Other mammals", false, new Color(86, 136, 192)),
     PLANTS(33090L, "Other plants", false, new Color(80, 162, 79)),
-    EUGLENA(33682L, "Other euglena", false, new Color(127, 184, 14)),
     FUNGI(4751L, "Other fungi", false, new Color(235, 144, 0)),
-    AMOEBOZOA(554915L, "Other amoebas", false, new Color(195, 84, 26)),
-    PLASMODIDAE(1639119L, "Other plasmodidae", false, new Color(195, 84, 26)),
-    BACTERIA(2L, "Other bacteria", false, new Color(178, 53, 57)),
+    EUKARYOTA(2759L, "Other eukaryote", false, new Color(188, 177, 148)),
+    BACTERIA(2L, "Other bacteria", false, new Color(221, 67, 72)),
     ARCHAEA(2157L, "Other archaea", false, new Color(172, 71, 101)),
     VIRUSES(10239L, "Other viruses", false, new Color(132, 100, 190)),
     ARTIFICIAL(81077L, "Other artificial molecules", false, new Color(101, 101, 101));

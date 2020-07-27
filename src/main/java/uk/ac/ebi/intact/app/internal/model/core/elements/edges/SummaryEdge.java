@@ -4,7 +4,7 @@ import org.cytoscape.model.CyEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.models.EdgeFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -71,5 +71,10 @@ public class SummaryEdge extends Edge {
 
     public int getNbSummarizedEdges() {
         return nbSummarizedEdges;
+    }
+
+    @Override
+    public String toString() {
+        return getSummarizedEdges().toString();
     }
 }

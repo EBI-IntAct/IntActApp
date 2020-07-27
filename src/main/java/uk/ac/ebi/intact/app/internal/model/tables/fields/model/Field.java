@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.app.internal.model.tables.fields;
+package uk.ac.ebi.intact.app.internal.model.tables.fields.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyColumn;
@@ -10,7 +10,7 @@ import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
 import java.util.*;
 
-public class Field<T> {
+public class Field<T> implements FieldInitializer {
     public enum Namespace {
         NULL(""),
         INTACT("IntAct"),
@@ -64,17 +64,20 @@ public class Field<T> {
         this.defaultValue = defaultValue;
         fields.add(this);
         table.fields.add(this);
+        table.initializers.add(this);
         if (jsonKey != null) {
             keys.add(jsonKey);
             table.keysToIgnore.add(jsonKey);
         }
     }
 
+    @Override
     public void createColumn(CyTable table) {
         if (defaultValue == null) TableUtil.createColumnIfNeeded(table, type, toString());
         else TableUtil.createColumnIfNeeded(table, type, toString(), defaultValue);
     }
 
+    @Override
     public void setValueFromJson(CyRow row, JsonNode json) {
         if (jsonKey == null) {
             if (defaultValue != null) setValue(row, defaultValue);
@@ -93,8 +96,14 @@ public class Field<T> {
         else if (type == Boolean.class) setValue(row, type.cast(node.booleanValue()));
     }
 
+    @Override
     public boolean isDefinedIn(CyTable table) {
         return table.getColumn(toString()) != null;
+    }
+
+    @Override
+    public boolean isShared() {
+        return shared;
     }
 
     public CyColumn getColumn(CyTable table) {
@@ -105,7 +114,7 @@ public class Field<T> {
         return table.getMatchingRows(toString(), value);
     }
 
-    public Map<T , List<CyRow>> groupRows(CyTable table) {
+    public Map<T, List<CyRow>> groupRows(CyTable table) {
         return CollectionUtils.groupBy(table.getAllRows(), this::getValue);
     }
 

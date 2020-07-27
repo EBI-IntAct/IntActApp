@@ -42,7 +42,7 @@ public class ExpandedEdgeLegendPanel extends AbstractEdgeLegendPanel {
         EasyGBC d = new EasyGBC();
         panel.setBackground(UIColors.lightBackground);
 
-        String[] types = {"colocalization", "association", "physical association", "direct interaction", "phosphorylation", "dephosphorylation"};
+        String[] types = {"colocalization", "association", "physical association", "direct interaction", "enzymatic reaction", "phosphorylation", "dephosphorylation"};
 
         for (String type : types) {
             JPanel linePanel = new LinePanel(UIColors.lightBackground);

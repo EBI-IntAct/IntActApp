@@ -82,7 +82,7 @@ public class DetailPanel extends JPanel
         viewTypes.add(mutationViewType);
 
 
-        NetworkView view = manager.data.getCurrentIntactNetworkView();
+        NetworkView view = manager.data.getCurrentNetworkView();
         summaryViewType.addActionListener(e -> manager.utils.execute(summaryViewTaskFactory.createTaskIterator()));
         evidenceViewType.addActionListener(e -> manager.utils.execute(evidenceViewTaskFactory.createTaskIterator()));
         mutationViewType.addActionListener(e -> manager.utils.execute(mutationViewTaskFactory.createTaskIterator()));

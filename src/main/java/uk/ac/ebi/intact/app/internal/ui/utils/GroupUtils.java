@@ -1,11 +1,9 @@
 package uk.ac.ebi.intact.app.internal.ui.utils;
 
-import org.apache.commons.lang3.StringUtils;
 import org.cytoscape.util.swing.OpenBrowser;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.CVTerm;
-import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
-import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
+import uk.ac.ebi.intact.app.internal.ui.components.panels.GroupingCVPanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
 
 import javax.swing.*;
@@ -63,12 +61,7 @@ public class GroupUtils {
             VerticalPanel panel = new VerticalPanel(background);
             List<E> elementsOfGroup = groupedElements.get(term);
             panelFillingFunction.apply(panel, elementsOfGroup);
-            CollapsablePanel collapsablePanel = new CollapsablePanel("", panel, true);
-            LinePanel header = new LinePanel(background);
-            header.add(new JLink(StringUtils.capitalize(term.value), term.id.getUserAccessURL(), openBrowser));
-            header.add(new JLabel(" (" + elementsOfGroup.size() + ")"));
-            collapsablePanel.setHeader(header);
-            toFill.add(collapsablePanel);
+            toFill.add(new GroupingCVPanel<E>(toFill, term, elementsOfGroup, background, true, openBrowser));
         }
     }
 }

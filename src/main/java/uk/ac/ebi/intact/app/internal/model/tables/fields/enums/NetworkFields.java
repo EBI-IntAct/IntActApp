@@ -1,7 +1,7 @@
-package uk.ac.ebi.intact.app.internal.model.tables.fields.models;
+package uk.ac.ebi.intact.app.internal.model.tables.fields.enums;
 
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.Field;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.Field;
 
 public class NetworkFields {
     public static final Field<Long> FEATURES_TABLE_REF = new Field<>(Table.NETWORK, Field.Namespace.FEATURE, "Features", null, Long.class);
