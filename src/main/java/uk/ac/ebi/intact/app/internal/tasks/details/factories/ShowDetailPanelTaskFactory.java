@@ -1,12 +1,10 @@
 package uk.ac.ebi.intact.app.internal.tasks.details.factories;
 
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
-import uk.ac.ebi.intact.app.internal.tasks.details.ShowDetailPanelTask;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.tasks.details.ShowDetailPanelTask;
 
 import java.util.Properties;
 
@@ -46,10 +44,7 @@ public class ShowDetailPanelTaskFactory extends AbstractTaskFactory {
         // We always want to be able to shut it off
         if (!show) return true;
 
-        CyNetwork net = manager.data.getCurrentCyNetwork();
-        if (net == null) return false;
-
-        return ModelUtils.isIntactNetwork(net);
+        return manager.data.getCurrentNetwork() != null;
     }
 }
 
