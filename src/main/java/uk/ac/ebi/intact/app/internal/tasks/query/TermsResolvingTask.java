@@ -68,7 +68,7 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
     }
 
     private boolean showNoResults() {
-        if (interactorsToResolve == null || interactorsToResolve.isEmpty() || interactorsToResolve.values().stream().allMatch(List::isEmpty)) {
+        if (interactorsToResolve == null || interactorsToResolve.values().stream().allMatch(List::isEmpty)) {
             SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, "Your query returned no results",
                     "No results", JOptionPane.ERROR_MESSAGE));
             return true;
