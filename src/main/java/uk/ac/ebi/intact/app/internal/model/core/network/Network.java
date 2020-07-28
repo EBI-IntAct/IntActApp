@@ -321,9 +321,12 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         }
     }
 
-
     public CyTable getFeaturesTable() {
-        return featuresTable;
+        if (featuresTable != null) return featuresTable;
+        if (cyNetwork == null) return null;
+        Long tableSUID = NetworkFields.FEATURES_TABLE_REF.getValue(cyNetwork.getRow(cyNetwork));
+        if (tableSUID == null) return null;
+        return manager.utils.getService(CyTableManager.class).getTable(tableSUID);
     }
 
     public void setFeaturesTable(CyTable featuresTable) {
@@ -334,7 +337,11 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     }
 
     public CyTable getIdentifiersTable() {
-        return identifiersTable;
+        if (identifiersTable != null) return identifiersTable;
+        if (cyNetwork == null) return null;
+        Long tableSUID = NetworkFields.IDENTIFIERS_TABLE_REF.getValue(cyNetwork.getRow(cyNetwork));
+        if (tableSUID == null) return null;
+        return manager.utils.getService(CyTableManager.class).getTable(tableSUID);
     }
 
     public void setIdentifiersTable(CyTable identifiersTable) {
@@ -441,5 +448,13 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     public Long getSUID(CyRow row) {
         if (row == null) return null;
         return row.get(CyNetwork.SUID, Long.class);
+    }
+
+    public CyRow getCyRow(CyIdentifiable element) {
+        return cyNetwork.getRow(element);
+    }
+
+    public CyRow getCyRow() {
+        return cyNetwork.getRow(cyNetwork);
     }
 }

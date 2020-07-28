@@ -9,6 +9,7 @@ import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class Field<T> implements FieldInitializer {
     public enum Namespace {
@@ -98,8 +99,9 @@ public class Field<T> implements FieldInitializer {
 
     @Override
     public boolean isDefinedIn(CyTable table) {
-        return table.getColumn(toString()) != null;
+        return table != null && table.getColumn(toString()) != null;
     }
+
 
     @Override
     public boolean isShared() {
@@ -122,6 +124,13 @@ public class Field<T> implements FieldInitializer {
         row.set(toString(), value);
     }
 
+    public void setAllValues(CyTable table, T value) {
+        if (!isDefinedIn(table)) return;
+        for (CyRow row : table.getAllRows()) {
+            setValue(row, value);
+        }
+    }
+
     public T getValue(CyRow row) {
         T value = row.get(toString(), type);
         if (value == null && defaultValue != null) {
@@ -129,6 +138,19 @@ public class Field<T> implements FieldInitializer {
             return defaultValue;
         }
         return value;
+    }
+
+    public List<T> getAllValues(CyTable table) {
+        List<T> allValues = new ArrayList<>();
+        if (!isDefinedIn(table)) return allValues;
+        for (CyRow row : table.getAllRows()) {
+            allValues.add(getValue(row));
+        }
+        return allValues;
+    }
+
+    public void forEachCell(CyTable table, Consumer<T> toApply) {
+        getColumn(table).getValues(type).forEach(toApply);
     }
 
     @Override

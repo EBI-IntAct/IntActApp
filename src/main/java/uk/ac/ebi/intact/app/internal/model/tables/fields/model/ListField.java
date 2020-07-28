@@ -9,6 +9,7 @@ import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -36,6 +37,7 @@ public class ListField<E> extends Field<List<E>> {
         TableUtil.createListColumnIfNeeded(table, elementsType, toString());
     }
 
+
     public void addValue(CyRow row, E value) {
         addValues(row, List.of(value));
     }
@@ -58,7 +60,7 @@ public class ListField<E> extends Field<List<E>> {
     @Override
     public List<E> getValue(CyRow row) {
         List<E> values = row.getList(toString(), elementsType);
-        if (values  == null) {
+        if (values == null) {
             setValue(row, new ArrayList<>());
             return getValue(row);
         }
@@ -71,5 +73,17 @@ public class ListField<E> extends Field<List<E>> {
 
     public void filter(CyRow row, Predicate<E> filter) {
         setValue(row, getValue(row).stream().filter(filter).collect(Collectors.toList()));
+    }
+
+    public void clear(CyRow row) {
+        setValue(row, new ArrayList<>());
+    }
+
+    public void forEachElement(CyRow row, Consumer<E> toApply) {
+        getValue(row).forEach(toApply);
+    }
+
+    public void clearAllIn(CyTable table) {
+        if (isDefinedIn(table)) table.getAllRows().forEach(this::clear);
     }
 }

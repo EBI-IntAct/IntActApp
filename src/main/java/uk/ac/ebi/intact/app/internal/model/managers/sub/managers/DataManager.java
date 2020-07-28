@@ -8,6 +8,8 @@ import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -28,9 +30,15 @@ import uk.ac.ebi.intact.app.internal.model.events.NetworkCreatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
+import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.*;
+import uk.ac.ebi.intact.app.internal.tasks.clone.TableClonedEvent;
+import uk.ac.ebi.intact.app.internal.tasks.clone.TableClonedListener;
+import uk.ac.ebi.intact.app.internal.tasks.clone.factories.CloneTableTaskFactory;
+import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.*;
@@ -40,7 +48,9 @@ public class DataManager implements
         NetworkViewAddedListener,
         NetworkAboutToBeDestroyedListener,
         NetworkViewAboutToBeDestroyedListener,
-        VisualStyleSetListener {
+        VisualStyleSetListener,
+        TableClonedListener ,
+        SessionAboutToBeLoadedListener {
     private final Manager manager;
     final CyRootNetworkManager rootNetworkManager;
     final CyNetworkViewManager networkViewManager;
@@ -175,13 +185,68 @@ public class DataManager implements
         networkViewMap.remove(e.getNetworkView());
     }
 
+    private final Map<CyTable, Network> oldTablesToNewNetwork = new HashMap<>();
+    private boolean loadingSession = false;
+
+    public void setLoadingSession(boolean loadingSession) {
+        this.loadingSession = loadingSession;
+    }
+    @Override
+    public void handleEvent(SessionAboutToBeLoadedEvent e) {
+        loadingSession = true;
+    }
+
     @Override
     public void handleEvent(NetworkAddedEvent e) {
-        CySubNetwork newNetwork = (CySubNetwork) e.getNetwork();
+        CyNetwork cyNetwork = e.getNetwork();
+        CySubNetwork newNetwork = (CySubNetwork) cyNetwork;
         CySubNetwork parentCyNetwork = getParentCyNetwork(newNetwork, manager);
-        if (parentCyNetwork == null) return;
-        addSubNetwork(newNetwork, parentCyNetwork);
+        if (parentCyNetwork != null) addSubNetwork(newNetwork, parentCyNetwork);
+        else if (!loadingSession && ModelUtils.isIntactNetwork(cyNetwork) && !networkMap.containsKey(cyNetwork)) { // Cloned network
+            Network network = new Network(manager);
+            addNetwork(network, cyNetwork);
+            CloneTableTaskFactory cloneTable = new CloneTableTaskFactory(manager);
+            NetworkFields.UUID.setValue(cyNetwork.getRow(cyNetwork), UUID.randomUUID().toString());
+
+            CyTable featuresTable = network.getFeaturesTable();
+            oldTablesToNewNetwork.put(featuresTable, network);
+            manager.utils.execute(cloneTable.createTaskIterator(featuresTable));
+
+            CyTable identifiersTable = network.getIdentifiersTable();
+            oldTablesToNewNetwork.put(identifiersTable, network);
+            manager.utils.execute(cloneTable.createTaskIterator(identifiersTable));
+        }
     }
+
+    @Override
+    public void handleEvent(TableClonedEvent e) {
+        CyTable originalTable = e.getOriginalTable();
+        CyTable clonedTable = e.getClonedTable();
+        if (Table.IDENTIFIER.containsAllFields(originalTable)) {
+            Network network = oldTablesToNewNetwork.remove(originalTable);
+            NetworkFields.UUID.setAllValues(clonedTable, NetworkFields.UUID.getValue(network.getCyRow()));
+            network.setIdentifiersTable(clonedTable);
+
+        } else if (Table.FEATURE.containsAllFields(originalTable)) {
+            Network network = oldTablesToNewNetwork.remove(originalTable);
+            FeatureFields.EDGES_SUID.clearAllIn(clonedTable);
+            for (CyRow edgeRow : network.getCyNetwork().getDefaultEdgeTable().getAllRows()) {
+                Long edgeSUID = edgeRow.get(CyIdentifiable.SUID, Long.class);
+                if (!EdgeFields.IS_SUMMARY.getValue(edgeRow)) {
+                    Consumer<String> edgeRefAdder = featureAc -> FeatureFields.EDGES_SUID.addValue(clonedTable.getRow(featureAc), edgeSUID);
+                    EdgeFields.FEATURES.SOURCE.forEachElement(edgeRow, edgeRefAdder);
+                    EdgeFields.FEATURES.TARGET.forEachElement(edgeRow, edgeRefAdder);
+                } else {
+                    List<Long> summarizedEdgesSUID = network.getSimilarEvidenceCyEdges(network.getCyEdge(edgeSUID)).stream()
+                            .map(CyIdentifiable::getSUID).collect(Collectors.toList());
+                    EdgeFields.SUMMARY_EDGES_SUID.setValue(edgeRow, summarizedEdgesSUID);
+                }
+            }
+            NetworkFields.UUID.setAllValues(clonedTable, NetworkFields.UUID.getValue(network.getCyRow()));
+            network.setFeaturesTable(clonedTable);
+        }
+    }
+
 
     public void removeNetwork(Network network) {
         if (network == null) return;
@@ -195,15 +260,17 @@ public class DataManager implements
                 });
     }
 
-    private static class NetworkViewTypeToSet {
 
+
+
+
+    private static class NetworkViewTypeToSet {
         final NetworkView.Type type;
         boolean toSet = false;
 
         private NetworkViewTypeToSet(NetworkView.Type type) {
             this.type = type;
         }
-
     }
 
     private final Map<CyNetwork, NetworkViewTypeToSet> networkViewTypesToSet = new HashMap<>();

@@ -292,6 +292,7 @@ public class ModelUtils {
     public enum Position {
         SOURCE,
         TARGET;
+
     }
 
     private static void buildFeatures(CyTable featuresTable, CyNetwork network, JsonNode participantJson, CyNode participantNode, CyEdge edge, CyRow edgeRow, Position position) {

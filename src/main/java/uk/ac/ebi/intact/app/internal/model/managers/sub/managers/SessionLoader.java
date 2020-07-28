@@ -30,6 +30,7 @@ public class SessionLoader implements SessionLoadedListener {
     @Override
     public void handleEvent(SessionLoadedEvent event) {
         // Create string networks for any networks loaded by string
+        manager.data.setLoadingSession(true);
         manager.data.networkMap.clear();
         manager.data.networkViewMap.clear();
         CySession loadedSession = event.getLoadedSession();
@@ -60,15 +61,14 @@ public class SessionLoader implements SessionLoadedListener {
         } else {
             manager.utils.hideResultsPanel();
         }
+        manager.data.setLoadingSession(false);
     }
 
     void linkIntactTablesToNetwork(Collection<CyTableMetadata> tables, CySession loadingSession) {
         for (CyTableMetadata tableM : tables) {
             CyTable table = tableM.getTable();
 
-            CyColumn networkUUIDColumn = NetworkFields.UUID.getColumn(table);
-            if (networkUUIDColumn == null) continue;
-            List<String> uuids = networkUUIDColumn.getValues(String.class);
+            List<String> uuids = NetworkFields.UUID.getAllValues(table);
             if (uuids.isEmpty()) continue;
 
             if (Table.FEATURE.containsAllFields(table)) {

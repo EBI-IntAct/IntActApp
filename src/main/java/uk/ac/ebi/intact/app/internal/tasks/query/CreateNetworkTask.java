@@ -12,7 +12,6 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -110,10 +109,9 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         TunableSetter setter = manager.utils.getService(TunableSetter.class);
         Map<String, Object> layoutArgs = new HashMap<>();
         layoutArgs.put("defaultNodeMass", 10.0);
-        layoutArgs.put("type", "-Log(value)");
         setter.applyTunables(context, layoutArgs);
         Set<View<CyNode>> nodeViews = new HashSet<>(networkView.getNodeViews());
-        TaskIterator taskIterator = alg.createTaskIterator(networkView, context, nodeViews, EdgeFields.MI_SCORE.toString());
+        TaskIterator taskIterator = alg.createTaskIterator(networkView, context, nodeViews, null);
         insertTasksAfterCurrentTask(taskIterator);
 
         manager.utils.showResultsPanel();

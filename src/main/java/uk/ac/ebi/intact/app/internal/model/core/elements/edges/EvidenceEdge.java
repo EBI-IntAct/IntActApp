@@ -75,8 +75,7 @@ public class EvidenceEdge extends Edge {
         if (participant == null || featureAcs == null) return;
 
         for (String featureAc : featureAcs) {
-            Feature feature = new Feature(network, network.getFeaturesTable().getRow(featureAc));
-            participantFeatures.add(feature);
+            participantFeatures.add(new Feature(network, network.getFeaturesTable().getRow(featureAc)));
         }
     }
 

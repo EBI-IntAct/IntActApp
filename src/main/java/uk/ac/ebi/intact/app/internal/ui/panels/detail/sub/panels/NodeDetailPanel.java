@@ -139,7 +139,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
                     break;
                 }
 
-                nodeToPanel.computeIfAbsent(node, keyNode->{
+                nodeToPanel.computeIfAbsent(node, keyNode -> {
                     NodePanel nodePanel = new NodePanel(keyNode);
                     nodePanel.setAlignmentX(LEFT_ALIGNMENT);
                     nodesPanel.add(nodePanel, layoutHelper.anchor("west").down().expandHoriz());

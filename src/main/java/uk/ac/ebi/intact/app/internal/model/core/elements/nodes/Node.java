@@ -70,11 +70,13 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
 
     public List<Identifier> getIdentifiers() {
         CyTable identifiersTable = network.getIdentifiersTable();
+        if (identifiersTable == null) return new ArrayList<>();
         return identifierAcs.stream().map(identifierAc -> new Identifier(identifiersTable.getRow(identifierAc))).collect(Collectors.toList());
     }
 
     public List<Feature> getFeatures() {
         CyTable featuresTable = network.getFeaturesTable();
+        if (featuresTable == null) return new ArrayList<>();
         Set<Long> adjacentEdgesSUID = network.getCyNetwork().getAdjacentEdgeList(cyNode, CyEdge.Type.ANY).stream().map(CyIdentifiable::getSUID).collect(Collectors.toSet());
         return featureAcs.stream()
                 .map(featureAC -> new Feature(network, featuresTable.getRow(featureAC)))

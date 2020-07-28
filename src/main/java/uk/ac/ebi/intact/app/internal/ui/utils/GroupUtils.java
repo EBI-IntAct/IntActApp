@@ -61,7 +61,7 @@ public class GroupUtils {
             VerticalPanel panel = new VerticalPanel(background);
             List<E> elementsOfGroup = groupedElements.get(term);
             panelFillingFunction.apply(panel, elementsOfGroup);
-            toFill.add(new GroupingCVPanel<E>(toFill, term, elementsOfGroup, background, true, openBrowser));
+            toFill.add(new GroupingCVPanel<E>(panel, term, elementsOfGroup, background, true, openBrowser));
         }
     }
 }
