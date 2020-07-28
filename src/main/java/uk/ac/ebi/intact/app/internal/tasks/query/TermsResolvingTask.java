@@ -68,7 +68,7 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
     }
 
     private boolean showNoResults() {
-        if (interactorsToResolve == null || interactorsToResolve.isEmpty()) {
+        if (interactorsToResolve == null || interactorsToResolve.isEmpty() || interactorsToResolve.values().stream().allMatch(List::isEmpty)) {
             SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, "Your query returned no results",
                     "No results", JOptionPane.ERROR_MESSAGE));
             return true;
@@ -88,7 +88,7 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
 
     public String getName() {
         String joinedTerms = String.join(", ", interactorsToResolve.keySet());
-        if (joinedTerms.length() > 30) joinedTerms = joinedTerms.substring(0,27) + "...";
+        if (joinedTerms.length() > 30) joinedTerms = joinedTerms.substring(0, 27) + "...";
         return "IntAct Network - " + joinedTerms;
     }
 
