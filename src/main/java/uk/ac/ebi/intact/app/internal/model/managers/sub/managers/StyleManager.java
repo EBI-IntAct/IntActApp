@@ -26,7 +26,7 @@ public class StyleManager {
     }
 
     public void setupStyles() {
-        StyleMapper.initializeTaxIdToPaint();
+        StyleMapper.initializeTaxIdToPaint(true);
         StyleMapper.initializeEdgeTypeToPaint();
         StyleMapper.initializeNodeTypeToShape();
         Style summary = new SummaryStyle(manager);
@@ -63,13 +63,13 @@ public class StyleManager {
         }
     }
 
-    public void resetStyles() {
-        StyleMapper.resetMappings();
+    public void resetStyles(boolean async) {
+        StyleMapper.resetMappings(async);
         for (Style style : styles.values()) {
             style.setNodePaintStyle();
         }
         for (Network network : manager.data.networkMap.values()) {
-            network.completeMissingNodeColorsFromTables();
+            network.completeMissingNodeColorsFromTables(async);
         }
     }
 }

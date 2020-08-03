@@ -1,16 +1,18 @@
 package uk.ac.ebi.intact.app.internal.ui.components.legend;
 
-import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
+import uk.ac.ebi.intact.app.internal.ui.components.combo.box.models.SortedComboBoxModel;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.*;
+import java.util.Vector;
 
 public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorPicker.ColorChangedListener {
     private static final ImageIcon remove = IconUtils.createImageIcon("/Buttons/remove.png");
@@ -21,7 +23,6 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     protected String currentTaxId;
     protected Manager manager;
     protected JComboBox<String> speciesField;
-    //    protected JCheckBox includeSubSpecies = new JCheckBox("Include subtaxons");
     protected JButton removeButton = new JButton(remove);
 
     public NodeColorLegendEditor(Network currentNetwork, JComponent addNewNodeLegendEditorActivator) {
@@ -30,24 +31,18 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
         this.addNewNodeLegendEditorActivator = addNewNodeLegendEditorActivator;
         NODE_COLOR_LEGEND_EDITOR_LIST.add(this);
 
-        Vector<String> speciesOptions = getSpeciesOptions();
-        String firstItem = speciesOptions.firstElement();
-        descriptor = firstItem;
+        setSpeciesField(getSpeciesOptions());
+        descriptor = (String) speciesField.getSelectedItem();
         currentTaxId = currentNetwork.getSpeciesId(descriptor);
         currentColor = (Color) StyleMapper.kingdomColors.get(currentTaxId);
         updateStyleColors();
         definedSpecies = true;
         editableBall = new EditableBall(currentColor, 30);
 
-        setSpeciesField(speciesOptions);
-
-//        setIncludeSubSpeciesCheckBox();
-
         setRemoveButton();
 
         add(editableBall);
         add(speciesField);
-//        add(includeSubSpecies);
         add(removeButton);
         addColorChangedListener(this);
     }
@@ -57,12 +52,13 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     }
 
     private void setSpeciesField(Vector<String> speciesOptions) {
-        speciesField = new JComboBox<>(speciesOptions);
+        speciesField = new JComboBox<>(new SortedComboBoxModel<>(speciesOptions));
         for (NodeColorLegendEditor nodeColorLegendEditor : NODE_COLOR_LEGEND_EDITOR_LIST) {
-            if (nodeColorLegendEditor != this) {
+            if (nodeColorLegendEditor != this && nodeColorLegendEditor.speciesField != null) {
                 nodeColorLegendEditor.speciesField.removeItem(speciesField.getSelectedItem());
             }
         }
+
         speciesField.setFont(italicFont);
         speciesField.setBorder(new EmptyBorder(0, 4, 0, 0));
         speciesField.setPrototypeDisplayValue((String) speciesField.getSelectedItem());
@@ -81,6 +77,8 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
                 case ItemEvent.SELECTED:
                     descriptor = (String) e.getItem();
                     currentTaxId = currentNetwork.getSpeciesId(descriptor);
+                    currentColor = (Color) StyleMapper.kingdomColors.get(currentTaxId);
+                    editableBall.setColor(currentColor);
                     speciesField.setPrototypeDisplayValue(descriptor);
 
                     for (NodeColorLegendEditor nodeColorLegendEditor : NODE_COLOR_LEGEND_EDITOR_LIST) {
@@ -88,9 +86,6 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
                             nodeColorLegendEditor.speciesField.removeItem(descriptor);
                         }
                     }
-
-                    // set selected color
-                    updateStyleColors();
                     break;
             }
         });
@@ -99,22 +94,11 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
 
     private void resetFormerLegend() {
         String kingdom = StyleMapper.taxIdToParentTaxId.get(currentTaxId);
-        Color formerColor = (Color) StyleMapper.taxIdToPaint.get(kingdom);
+        Color formerColor = (Color) StyleMapper.kingdomColors.get(kingdom);
         if (formerColor != null)
             manager.style.updateStylesColorScheme(currentTaxId, formerColor, false);
         StyleMapper.taxIdToPaint.remove(currentTaxId);
     }
-
-//    private void setIncludeSubSpeciesCheckBox() {
-//        includeSubSpecies.addActionListener(e -> {
-//            updateStyleColors();
-//            if (!includeSubSpecies.isSelected()) {
-//                for (Long children : OLSMapper.taxIdToChildrenTaxIds.get(currentTaxId)) {
-//                    manager.styleManager.updateStylesColorScheme(children, originalColors.get(descriptor), false);
-//                }
-//            }
-//        });
-//    }
 
     private void setRemoveButton() {
         removeButton.addActionListener(e -> this.destroy(true));
@@ -136,6 +120,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
         container.getParent().getParent().revalidate();
         container.getParent().getParent().repaint();
 
+        NODE_COLOR_LEGEND_EDITOR_LIST.remove(this);
         for (NodeColorLegendEditor nodeColorLegendEditor : NODE_COLOR_LEGEND_EDITOR_LIST) {
             nodeColorLegendEditor.speciesField.addItem(descriptor);
         }
@@ -157,7 +142,6 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     }
 
     public static void clearAll(boolean resetFormerLegend) {
-        NODE_COLOR_LEGEND_EDITOR_LIST.forEach(editor -> editor.destroy(resetFormerLegend));
-
+        new ArrayList<>(NODE_COLOR_LEGEND_EDITOR_LIST).forEach(editor -> editor.destroy(resetFormerLegend));
     }
 }

@@ -16,7 +16,6 @@ import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
 import java.awt.*;
@@ -83,7 +82,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         updateSummaryEdges(coupleToSummarizedEdges.keySet());
 
 
-        completeMissingNodeColorsFromTables();
+        completeMissingNodeColorsFromTables(true);
         manager.utils.registerAllServices(this, new Properties());
     }
 
@@ -116,15 +115,15 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         manager.data.addNetworkView(networkView, false);
     }
 
-    public void completeMissingNodeColorsFromTables() {
-        executor.execute(() -> {
-            for (CyRow row : nodeTable.getAllRows()) {
-                interactorTypes.add(NodeFields.TYPE.VALUE.getValue(row));
-                String taxId = NodeFields.TAX_ID.getValue(row);
-                taxIds.add(taxId);
-                String specieName = NodeFields.SPECIES.getValue(row);
-                speciesNameToId.put(specieName, taxId);
-                speciesIdToName.put(taxId, specieName);
+    public void completeMissingNodeColorsFromTables(boolean async) {
+        Runnable kingdomUpdater = () -> {
+            if (taxIds.isEmpty() && !nodes.isEmpty()) {
+                for (Node node: nodes.values()) {
+                    interactorTypes.add(node.type.value);
+                    taxIds.add(node.taxId);
+                    speciesNameToId.put(node.species, node.taxId);
+                    speciesIdToName.put(node.taxId, node.species);
+                }
             }
 
             Map<String, Paint> addedTaxIds = StyleMapper.completeTaxIdColorsFromUnknownTaxIds(getTaxIds());
@@ -132,7 +131,9 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
             for (Style style : manager.style.getStyles().values()) {
                 style.updateTaxIdToNodePaintMapping(addedTaxIds);
             }
-        });
+        };
+        if (async) executor.execute(kingdomUpdater);
+        else kingdomUpdater.run();
     }
 
     public void completeMissingNodeColorsFromInteractors(Map<String, List<Interactor>> interactorsToResolve) {

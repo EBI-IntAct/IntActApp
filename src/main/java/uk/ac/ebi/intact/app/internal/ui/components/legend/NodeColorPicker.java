@@ -1,6 +1,5 @@
 package uk.ac.ebi.intact.app.internal.ui.components.legend;
 
-import org.cytoscape.util.swing.CyColorChooser;
 import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.shapes.Ball;
 
@@ -21,7 +20,7 @@ public class NodeColorPicker extends JPanel implements MouseListener {
     protected EditableBall editableBall;
     protected boolean definedSpecies;
 
-    private List<ColorChangedListener> listeners = new ArrayList<>();
+    private final List<ColorChangedListener> listeners = new ArrayList<>();
     protected Font italicFont = new Font(getFont().getName(), Font.ITALIC, getFont().getSize());
 
     public NodeColorPicker() {
@@ -86,15 +85,14 @@ public class NodeColorPicker extends JPanel implements MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-
-        currentColor = CyColorChooser.showDialog(self, "Choose " + descriptor + " colors", currentColor);
-        if (currentColor != null) {
+        Color selectedColor = JColorChooser.showDialog(self, "Choose " + descriptor + " colors", currentColor);
+        if (selectedColor != null) {
+            currentColor = selectedColor;
             editableBall.setColor(currentColor);
             for (ColorChangedListener listener : listeners) {
                 listener.colorChanged(new ColorChangedEvent(this, ActionEvent.ACTION_PERFORMED, currentColor));
             }
         }
-
     }
 
     @Override
