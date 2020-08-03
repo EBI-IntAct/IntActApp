@@ -84,7 +84,7 @@ public class DataManager implements
             addNetwork(network, cyNetwork);
             linkNetworkTablesFromTableData(network);
             fireIntactNetworkCreated(network);
-            network.completeMissingNodeColorsFromTables();
+            network.completeMissingNodeColorsFromTables(true);
             for (CyNetworkView view : networkViewManager.getNetworkViews(cyNetwork)) {
                 addNetworkView(view, true);
             }

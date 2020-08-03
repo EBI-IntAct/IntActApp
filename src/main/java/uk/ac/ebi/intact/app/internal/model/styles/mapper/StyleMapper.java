@@ -88,8 +88,8 @@ public class StyleMapper {
         Arrays.stream(InteractorType.values()).filter(type -> !type.MI_ID.isBlank()).forEach(type -> typesToIds.put(type.name, type.MI_ID));
     }
 
-    public static void initializeTaxIdToPaint() {
-        executor.execute(() -> {
+    public static void initializeTaxIdToPaint(boolean async) {
+        Runnable initTaxIdToPaint = () -> {
             if (!taxIdsWorking) {
                 taxIdsWorking = true;
 
@@ -107,7 +107,9 @@ public class StyleMapper {
                 fireStyleUpdated();
                 taxIdsReady = true;
             }
-        });
+        };
+        if (async) executor.execute(initTaxIdToPaint);
+        else initTaxIdToPaint.run();
     }
 
     public static void addDescendantsColors(String parentSpecie, Color paint) {
@@ -147,12 +149,12 @@ public class StyleMapper {
         }
     }
 
-    public static void resetMappings() {
+    public static void resetMappings(boolean async) {
         taxIdToPaint = new Hashtable<>(originalTaxIdToPaint);
         kingdomColors = new Hashtable<>(originalKingdomColors);
         taxIdsReady = false;
         taxIdsWorking = false;
-        initializeTaxIdToPaint();
+        initializeTaxIdToPaint(async);
     }
 
     public synchronized static Map<String, Paint> completeTaxIdColorsFromUnknownTaxIds(Set<String> taxIdsToCheckAndAdd) {

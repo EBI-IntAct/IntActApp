@@ -41,7 +41,7 @@ public class SessionLoader implements SessionLoadedListener {
                     updateSUIDList(cyNetwork.getDefaultEdgeTable(), EdgeFields.SUMMARY_EDGES_SUID, CyEdge.class, loadedSession);
                     Network network = new Network(manager);
                     manager.data.addNetwork(network, cyNetwork);
-                    network.completeMissingNodeColorsFromTables();
+                    network.completeMissingNodeColorsFromTables(true);
                 }
             }
         }

@@ -7,6 +7,7 @@ import uk.ac.ebi.intact.app.internal.model.events.StyleUpdatedListener;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
+import uk.ac.ebi.intact.app.internal.ui.components.spinner.LoadingSpinner;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.EdgeLegendPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.NodeLegendPanel;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
@@ -18,9 +19,10 @@ import java.awt.*;
 public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdatedListener {
     private final NodeLegendPanel nodePanel;
     private final EdgeLegendPanel edgePanel;
+    private final LoadingSpinner loadingSpinner = new LoadingSpinner();
 
     public LegendDetailPanel(final Manager manager) {
-        super(manager,0,"legend");
+        super(manager, 0, "legend");
         JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBackground(UIColors.lightBackground);
         JScrollPane scrollPane = new JScrollPane(mainPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -32,7 +34,8 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
         edgePanel = new EdgeLegendPanel(manager, currentNetwork, currentView);
 
         EasyGBC layoutHelper = new EasyGBC();
-        mainPanel.add(createResetStyleButton(), layoutHelper.anchor("north"));
+        mainPanel.add(createResetStyleButton(), layoutHelper.anchor("northwest").noExpand());
+        mainPanel.add(loadingSpinner, layoutHelper.down().noExpand());
         mainPanel.add(nodePanel, layoutHelper.down().anchor("west").expandHoriz());
         mainPanel.add(edgePanel, layoutHelper.down().anchor("west").expandHoriz());
         mainPanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
@@ -45,12 +48,19 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
 
     private JButton createResetStyleButton() {
         JButton resetStylesButton = new JButton("Reset styles");
-        resetStylesButton.addActionListener(e -> {
-            manager.style.resetStyles();
+
+        resetStylesButton.addActionListener(e -> new Thread(() -> {
+            resetStylesButton.setEnabled(false);
+            loadingSpinner.start();
+
+            NodeColorLegendEditor.clearAll(false);
+            manager.style.resetStyles(false);
             StyleMapper.originalKingdomColors.forEach((taxId, paint) -> nodePanel.nodeColorLegendPanel.colorPickers.get(taxId).setCurrentColor((Color) paint));
             StyleMapper.originalTaxIdToPaint.forEach((taxId, paint) -> nodePanel.nodeColorLegendPanel.colorPickers.get(taxId).setCurrentColor((Color) paint));
-            NodeColorLegendEditor.clearAll(false);
-        });
+
+            loadingSpinner.stop();
+            resetStylesButton.setEnabled(true);
+        }).start());
         return resetStylesButton;
     }
 
