@@ -57,6 +57,7 @@ public class StyleMapper {
     public static Hashtable<Long, Paint> originalKingdomColors = new Hashtable<>(kingdomColors);
 
     public static Hashtable<Long, List<Long>> taxIdToChildrenTaxIds = new Hashtable<>();
+    public static Hashtable<Long, Long> taxIdToParentTaxId = new Hashtable<>();
 
     public static final Hashtable<String, Paint> edgeTypeToPaint = Arrays.stream(InteractionType.values())
             .collect(Collectors.toMap(
@@ -197,6 +198,7 @@ public class StyleMapper {
                 Paint paint = originalKingdomColors.get(supTaxId);
                 kingdomColors.put(taxId, paint);
                 taxIdToChildrenTaxIds.get(supTaxId).add(taxId);
+                taxIdToParentTaxId.put(taxId, supTaxId);
                 addedTaxIds.put(taxId, paint);
                 break;
             }
@@ -214,8 +216,10 @@ public class StyleMapper {
                 addDescendantsColors(parentTaxId, newColor);
 
             for (Long subTaxId : taxIdToChildrenTaxIds.get(parentTaxId)) {
-                taxIdToPaint.put(subTaxId, newColor);
-                updatedTaxIds.put(subTaxId, newColor);
+                if (!taxIdToPaint.containsKey(subTaxId)) {
+                    taxIdToPaint.put(subTaxId, newColor);
+                    updatedTaxIds.put(subTaxId, newColor);
+                }
             }
         }
         return updatedTaxIds;

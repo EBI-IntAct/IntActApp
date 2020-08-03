@@ -14,7 +14,6 @@ import java.util.*;
 
 public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorPicker.ColorChangedListener {
     private static final ImageIcon remove = IconUtils.createImageIcon("/Buttons/remove.png");
-    private static final Map<String, Color> originalColors = new HashMap<>();
     private static final List<NodeColorLegendEditor> NODE_COLOR_LEGEND_EDITOR_LIST = new ArrayList<>();
 
     protected Network currentNetwork;
@@ -22,7 +21,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     protected long currentTaxId;
     protected Manager manager;
     protected JComboBox<String> speciesField;
-//    protected JCheckBox includeSubSpecies = new JCheckBox("Include subtaxons");
+    //    protected JCheckBox includeSubSpecies = new JCheckBox("Include subtaxons");
     protected JButton removeButton = new JButton(remove);
 
     public NodeColorLegendEditor(Network currentNetwork, JComponent addNewNodeLegendEditorActivator) {
@@ -36,7 +35,6 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
         descriptor = firstItem;
         currentTaxId = currentNetwork.getSpeciesId(descriptor);
         currentColor = (Color) StyleMapper.kingdomColors.get(currentTaxId);
-        originalColors.put(firstItem, currentColor);
         updateStyleColors();
         definedSpecies = true;
         editableBall = new EditableBall(currentColor, 30);
@@ -84,7 +82,6 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
                     descriptor = (String) e.getItem();
                     currentTaxId = currentNetwork.getSpeciesId(descriptor);
                     speciesField.setPrototypeDisplayValue(descriptor);
-                    originalColors.put(descriptor, (Color) StyleMapper.kingdomColors.get(currentTaxId));
 
                     for (NodeColorLegendEditor nodeColorLegendEditor : NODE_COLOR_LEGEND_EDITOR_LIST) {
                         if (nodeColorLegendEditor != this) {
@@ -101,7 +98,8 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     }
 
     private void resetFormerLegend() {
-        Color formerColor = originalColors.remove(descriptor);
+        Long kingdom = StyleMapper.taxIdToParentTaxId.get(currentTaxId);
+        Color formerColor = (Color) StyleMapper.taxIdToPaint.get(kingdom);
         if (formerColor != null)
             manager.style.updateStylesColorScheme(currentTaxId, formerColor, false);
         StyleMapper.taxIdToPaint.remove(currentTaxId);
@@ -119,7 +117,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
 //    }
 
     private void setRemoveButton() {
-        removeButton.addActionListener(e -> this.destroy());
+        removeButton.addActionListener(e -> this.destroy(true));
         removeButton.setBorder(new EmptyBorder(0, 0, 0, 0));
         removeButton.setSize(30, 30);
     }
