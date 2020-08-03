@@ -11,7 +11,7 @@ public enum TermColumn {
     SPECIES("Species", "", false, (interactor) -> interactor.species, true),
     TYPE("Type", "", false, (interactor) -> interactor.typeName, true),
     NAME("Name", "interactor_name", false, (interactor) -> interactor.name, false),
-    DESCRIPTION("Description", "interactor_description", false, (interactor) -> interactor.fullName, false),
+    DESCRIPTION("Description", "interactor_description", false, (interactor) -> interactor.description, false),
     NB_INTERACTIONS("# Interactions", "", false, (interactor) -> interactor.interactionCount, false),
     ID("ID", "interactor_identifiers", false, (interactor) -> interactor.preferredId, false),
     MATCHING_COLUMNS("Matching columns", "", false, (interactor) -> interactor.matchingColumns, false),

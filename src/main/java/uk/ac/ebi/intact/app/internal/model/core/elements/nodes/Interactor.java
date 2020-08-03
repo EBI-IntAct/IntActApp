@@ -9,7 +9,7 @@ public class Interactor {
     public final String ac;
     public final String name;
     public final String preferredId;
-    public final String fullName;
+    public final String description;
     public final String typeName;
     public final String species;
     public final Map<String, List<String>> matchingColumns = new HashMap<>();
@@ -17,11 +17,11 @@ public class Interactor {
     public final Integer interactionCount;
 
 
-    public Interactor(String ac, String name, String preferredId, String fullName, String typeName, String species, String taxId, Integer interactionCount) {
+    public Interactor(String ac, String name, String preferredId, String description, String typeName, String species, String taxId, Integer interactionCount) {
         this.ac = ac;
         this.name = name;
         this.preferredId = preferredId;
-        this.fullName = fullName;
+        this.description = description;
         this.typeName = typeName;
         this.species = species;
         this.taxId = taxId;
@@ -83,7 +83,7 @@ public class Interactor {
                 "ac='" + ac + '\'' +
                 ", name='" + name + '\'' +
                 ", preferredId='" + preferredId + '\'' +
-                ", description='" + fullName + '\'' +
+                ", description='" + description + '\'' +
                 ", type='" + typeName + '\'' +
                 ", species='" + species + '\'' +
                 ", taxId=" + taxId +

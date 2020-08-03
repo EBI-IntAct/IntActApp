@@ -52,7 +52,7 @@ class Row extends JPanel implements ItemListener {
         addCell(createSpecies(), SPECIES);
         addCell(new CenteredLabel(interactor.typeName), TYPE);
         addCell(new CenteredLabel(interactor.name), NAME);
-        addCell(new CenteredLabel(interactor.fullName), DESCRIPTION);
+        addCell(new CenteredLabel(interactor.description), DESCRIPTION);
         addCell(new CenteredLabel(interactor.interactionCount.toString()), NB_INTERACTIONS);
         addCell(new CenteredLabel(interactor.preferredId), ID);
         addCell(createMatchingColumns(), MATCHING_COLUMNS);

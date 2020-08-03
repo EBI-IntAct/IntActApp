@@ -23,7 +23,7 @@ public class NodeBasics extends AbstractNodeElement {
     @Override
     protected void fillContent() {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-        content.add(new JLabel(node.fullName));
+        if (node.description != null) content.add(new JLabel(node.description));
         content.add(new JLink(DbIdentifiersToLink.getFancyDatabaseName(node.preferredIdentifier) + " · " + node.preferredIdentifier.id, DbIdentifiersToLink.getLink(node.preferredIdentifier), openBrowser));
         graphDescription = new LinePanel(getBackground());
         graphDescription.add(new JLink(StringUtils.capitalize(node.typeName), node.type.id.getUserAccessURL(), openBrowser));
