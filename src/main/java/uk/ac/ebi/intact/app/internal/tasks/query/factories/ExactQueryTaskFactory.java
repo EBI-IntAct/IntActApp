@@ -43,7 +43,7 @@ public class ExactQueryTaskFactory extends AbstractNetworkSearchTaskFactory {
 
     public TaskIterator createTaskIterator() {
         String terms = queryComponent.getQueryText();
-        return new TaskIterator(new TermsResolvingTask(new Network(manager), terms, "Term disambiguation", true));
+        return new TaskIterator(new TermsResolvingTask(new Network(manager), terms, "Term disambiguation of Exact Query", true));
     }
 
     public JComponent getQueryComponent() {

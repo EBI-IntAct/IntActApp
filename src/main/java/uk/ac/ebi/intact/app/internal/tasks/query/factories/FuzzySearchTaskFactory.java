@@ -43,7 +43,7 @@ public class FuzzySearchTaskFactory extends AbstractNetworkSearchTaskFactory {
 
     public TaskIterator createTaskIterator() {
         String terms = queryComponent.getQueryText();
-        return new TaskIterator(new TermsResolvingTask(new Network(manager), terms, "Query preview", false));
+        return new TaskIterator(new TermsResolvingTask(new Network(manager), terms, "Seed interactors of Fuzzy Search", false));
     }
 
 
