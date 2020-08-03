@@ -56,7 +56,6 @@ class Row extends JPanel implements ItemListener {
         addCell(new CenteredLabel(interactor.interactionCount.toString()), NB_INTERACTIONS);
         addCell(new CenteredLabel(interactor.preferredId), ID);
         addCell(createMatchingColumns(), MATCHING_COLUMNS);
-        addCell(new CenteredLabel(interactor.ac), AC);
         highlightMatchingColumns(table.resolver.manager.option.SHOW_HIGHLIGHTS.getValue());
         ComponentUtils.resizeHeight(cells.get(SELECT), getPreferredSize().height, ComponentUtils.SizeType.PREF);
     }

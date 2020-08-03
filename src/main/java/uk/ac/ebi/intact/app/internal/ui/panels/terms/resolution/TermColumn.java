@@ -14,8 +14,7 @@ public enum TermColumn {
     DESCRIPTION("Description", "interactor_description", false, (interactor) -> interactor.description, false),
     NB_INTERACTIONS("# Interactions", "", false, (interactor) -> interactor.interactionCount, false),
     ID("ID", "interactor_identifiers", false, (interactor) -> interactor.preferredId, false),
-    MATCHING_COLUMNS("Matching columns", "", false, (interactor) -> interactor.matchingColumns, false),
-    AC("IntAct Ac", "interactor_ac", false, (interactor) -> interactor.ac, false);
+    MATCHING_COLUMNS("Matching columns", "", false, (interactor) -> interactor.matchingColumns, false);
 
     public final String name;
     public final String highlightName;
