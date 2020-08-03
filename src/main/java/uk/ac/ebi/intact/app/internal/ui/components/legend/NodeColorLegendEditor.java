@@ -18,7 +18,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
 
     protected Network currentNetwork;
     protected JComponent addNewNodeLegendEditorActivator;
-    protected long currentTaxId;
+    protected String currentTaxId;
     protected Manager manager;
     protected JComboBox<String> speciesField;
     //    protected JCheckBox includeSubSpecies = new JCheckBox("Include subtaxons");
@@ -98,7 +98,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     }
 
     private void resetFormerLegend() {
-        Long kingdom = StyleMapper.taxIdToParentTaxId.get(currentTaxId);
+        String kingdom = StyleMapper.taxIdToParentTaxId.get(currentTaxId);
         Color formerColor = (Color) StyleMapper.taxIdToPaint.get(kingdom);
         if (formerColor != null)
             manager.style.updateStylesColorScheme(currentTaxId, formerColor, false);

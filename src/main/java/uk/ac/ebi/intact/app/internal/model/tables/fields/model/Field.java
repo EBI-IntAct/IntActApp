@@ -88,7 +88,7 @@ public class Field<T> implements FieldInitializer {
         if (node == null)
             throw new IllegalArgumentException(String.format("Given json does not have required field \"%s\"", jsonKey));
 
-        if (type == String.class) setValue(row, type.cast(node.textValue()));
+        if (type == String.class) setValue(row, type.cast(node.asText()));
         else if (type == Short.class) setValue(row, type.cast(node.shortValue()));
         else if (type == Integer.class) setValue(row, type.cast(node.intValue()));
         else if (type == Long.class) setValue(row, type.cast(node.longValue()));

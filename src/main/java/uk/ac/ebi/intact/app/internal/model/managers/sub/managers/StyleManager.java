@@ -56,8 +56,8 @@ public class StyleManager {
         }
     }
 
-    public void updateStylesColorScheme(Long parentTaxId, Color newColor, boolean addDescendants) {
-        Map<Long, Paint> colorScheme = StyleMapper.updateChildrenColors(parentTaxId, newColor, addDescendants);
+    public void updateStylesColorScheme(String parentTaxId, Color newColor, boolean addDescendants) {
+        Map<String, Paint> colorScheme = StyleMapper.updateChildrenColors(parentTaxId, newColor, addDescendants);
         for (Style style : styles.values()) {
             style.updateTaxIdToNodePaintMapping(colorScheme);
         }

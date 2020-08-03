@@ -36,7 +36,7 @@ public abstract class Style {
 
     private boolean newStyle;
     protected DiscreteMapping<String, NodeShape> nodeTypeToShape;
-    protected DiscreteMapping<Long, Paint> taxIdToNodeColor;
+    protected DiscreteMapping<String, Paint> taxIdToNodeColor;
 
     private boolean fancy;
     private static PassthroughMapping<String, String> fastLabelsMapping;
@@ -113,7 +113,7 @@ public abstract class Style {
     }
 
     public void setNodePaintStyle() {
-        taxIdToNodeColor = (DiscreteMapping<Long, Paint>) discreteFactory.createVisualMappingFunction(NodeFields.TAX_ID.toString(), Long.class, BasicVisualLexicon.NODE_FILL_COLOR);
+        taxIdToNodeColor = (DiscreteMapping<String, Paint>) discreteFactory.createVisualMappingFunction(NodeFields.TAX_ID.toString(), String.class, BasicVisualLexicon.NODE_FILL_COLOR);
         taxIdToNodeColor.putAll(StyleMapper.taxIdToPaint);
         style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, defaultNodeColor);
         style.addVisualMappingFunction(taxIdToNodeColor);
@@ -181,7 +181,7 @@ public abstract class Style {
         style.setDefaultValue(BasicVisualLexicon.NODE_LABEL_COLOR, Color.BLACK);
     }
 
-    private void addMissingNodePaint(DiscreteMapping<Long, Paint> taxIdToPaint) {
+    private void addMissingNodePaint(DiscreteMapping<String, Paint> taxIdToPaint) {
         new Thread(() -> {
             while (StyleMapper.speciesNotReady()) {
                 TimeUtils.sleep(100);
@@ -190,7 +190,7 @@ public abstract class Style {
         }).start();
     }
 
-    public void updateTaxIdToNodePaintMapping(Map<Long, Paint> toPut) {
+    public void updateTaxIdToNodePaintMapping(Map<String, Paint> toPut) {
         if (taxIdToNodeColor != null) {
             taxIdToNodeColor.putAll(toPut);
         }

@@ -21,8 +21,9 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static uk.ac.ebi.intact.app.internal.model.styles.mapper.definitions.Taxons.ARTIFICIAL;
 
 public class StyleMapper {
@@ -35,32 +36,32 @@ public class StyleMapper {
     private static final List<WeakReference<StyleUpdatedListener>> styleUpdatedListeners = new ArrayList<>();
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
 
-    public static Hashtable<Long, Paint> taxIdToPaint = Arrays.stream(Taxons.values())
+    public static Hashtable<String, Paint> taxIdToPaint = Arrays.stream(Taxons.values())
             .filter(taxons -> taxons.isSpecies)
-            .collect(Collectors.toMap(
+            .collect(toMap(
                     taxon -> taxon.taxId,
                     taxon -> taxon.defaultColor,
                     (u, v) -> u,
                     Hashtable::new)
             );
 
-    public static Hashtable<Long, Paint> kingdomColors = Arrays.stream(Taxons.values())
+    public static Hashtable<String, Paint> kingdomColors = Arrays.stream(Taxons.values())
             .filter(taxons -> !taxons.isSpecies)
-            .collect(Collectors.toMap(
+            .collect(toMap(
                     taxon -> taxon.taxId,
                     taxon -> taxon.defaultColor,
                     (u, v) -> u,
                     Hashtable::new)
             );
 
-    public static Hashtable<Long, Paint> originalTaxIdToPaint = new Hashtable<>(taxIdToPaint);
-    public static Hashtable<Long, Paint> originalKingdomColors = new Hashtable<>(kingdomColors);
+    public static Hashtable<String, Paint> originalTaxIdToPaint = new Hashtable<>(taxIdToPaint);
+    public static Hashtable<String, Paint> originalKingdomColors = new Hashtable<>(kingdomColors);
 
-    public static Hashtable<Long, List<Long>> taxIdToChildrenTaxIds = new Hashtable<>();
-    public static Hashtable<Long, Long> taxIdToParentTaxId = new Hashtable<>();
+    public static Hashtable<String, List<String>> taxIdToChildrenTaxIds = new Hashtable<>();
+    public static Hashtable<String, String> taxIdToParentTaxId = new Hashtable<>();
 
     public static final Hashtable<String, Paint> edgeTypeToPaint = Arrays.stream(InteractionType.values())
-            .collect(Collectors.toMap(
+            .collect(toMap(
                     type -> type.name,
                     type -> type.defaultColor,
                     (u, v) -> u,
@@ -68,7 +69,7 @@ public class StyleMapper {
             );
 
     public static final Hashtable<String, NodeShape> nodeTypeToShape = Arrays.stream(InteractorType.values())
-            .collect(Collectors.toMap(
+            .collect(toMap(
                     type -> type.name,
                     type -> type.shape,
                     (u, v) -> u,
@@ -92,13 +93,13 @@ public class StyleMapper {
             if (!taxIdsWorking) {
                 taxIdsWorking = true;
 
-                for (Long kingdomId : kingdomColors.keySet()) {
+                for (String kingdomId : kingdomColors.keySet()) {
                     taxIdToChildrenTaxIds.put(kingdomId, new ArrayList<>());
                 }
-                taxIdToChildrenTaxIds.get(ARTIFICIAL.taxId).add(-1L);
-                taxIdToPaint.put(-1L, kingdomColors.get(ARTIFICIAL.taxId));
+                taxIdToChildrenTaxIds.get(ARTIFICIAL.taxId).add("-1");
+                taxIdToPaint.put("-1", kingdomColors.get(ARTIFICIAL.taxId));
 
-                for (Long parentSpecie : new ArrayList<>(taxIdToPaint.keySet())) {
+                for (String parentSpecie : new ArrayList<>(taxIdToPaint.keySet())) {
                     Paint paint = taxIdToPaint.get(parentSpecie);
                     addDescendantsColors(parentSpecie, (Color) paint);
                 }
@@ -109,7 +110,7 @@ public class StyleMapper {
         });
     }
 
-    public static void addDescendantsColors(Long parentSpecie, Color paint) {
+    public static void addDescendantsColors(String parentSpecie, Color paint) {
         taxIdToChildrenTaxIds.put(parentSpecie, new ArrayList<>());
 
         String jsonQuery = "https://www.ebi.ac.uk/ols/api/ontologies/ncbitaxon/terms/" +
@@ -125,8 +126,8 @@ public class StyleMapper {
                         JsonNode termChildren = json.get("_embedded").get("terms");
 
                         for (final JsonNode objNode : termChildren) {
-                            String obo_id = objNode.get("obo_id").textValue();
-                            Long id = Long.parseLong(obo_id.substring(obo_id.indexOf(":") + 1));
+                            String obo_id = objNode.get("obo_id").asText();
+                            String id = obo_id.substring(obo_id.indexOf(":") + 1);
                             taxIdToPaint.put(id, paint);
                             taxIdToChildrenTaxIds.get(parentSpecie).add(id);
                         }
@@ -154,8 +155,8 @@ public class StyleMapper {
         initializeTaxIdToPaint();
     }
 
-    public synchronized static Map<Long, Paint> completeTaxIdColorsFromUnknownTaxIds(Set<Long> taxIdsToCheckAndAdd) {
-        Map<Long, Paint> addedTaxIds = new Hashtable<>();
+    public synchronized static Map<String, Paint> completeTaxIdColorsFromUnknownTaxIds(Set<String> taxIdsToCheckAndAdd) {
+        Map<String, Paint> addedTaxIds = new Hashtable<>();
 
         while (!taxIdsReady)
             TimeUtils.sleep(500);
@@ -188,12 +189,12 @@ public class StyleMapper {
         return addedTaxIds;
     }
 
-    private static void addTaxon(Map<Long, Paint> addedTaxIds, JsonNode taxons) {
-        Long taxId = taxons.get("TaxId").longValue();
+    private static void addTaxon(Map<String, Paint> addedTaxIds, JsonNode taxons) {
+        String taxId = taxons.get("TaxId").asText();
         ArrayNode lineage = (ArrayNode) taxons.get("LineageEx").get("Taxon");
 
         for (int i = lineage.size() - 1; i >= 0; i--) {
-            Long supTaxId = lineage.get(i).get("TaxId").longValue();
+            String supTaxId = lineage.get(i).get("TaxId").asText();
             if (originalKingdomColors.containsKey(supTaxId)) {
                 Paint paint = originalKingdomColors.get(supTaxId);
                 kingdomColors.put(taxId, paint);
@@ -205,8 +206,8 @@ public class StyleMapper {
         }
     }
 
-    public static Map<Long, Paint> updateChildrenColors(Long parentTaxId, Color newColor, boolean addDescendants) {
-        Map<Long, Paint> updatedTaxIds = new Hashtable<>();
+    public static Map<String, Paint> updateChildrenColors(String parentTaxId, Color newColor, boolean addDescendants) {
+        Map<String, Paint> updatedTaxIds = new Hashtable<>();
 
         taxIdToPaint.put(parentTaxId, newColor);
         updatedTaxIds.put(parentTaxId, newColor);
@@ -215,7 +216,7 @@ public class StyleMapper {
             if (!taxIdToChildrenTaxIds.containsKey(parentTaxId))
                 addDescendantsColors(parentTaxId, newColor);
 
-            for (Long subTaxId : taxIdToChildrenTaxIds.get(parentTaxId)) {
+            for (String subTaxId : taxIdToChildrenTaxIds.get(parentTaxId)) {
                 if (!taxIdToPaint.containsKey(subTaxId)) {
                     taxIdToPaint.put(subTaxId, newColor);
                     updatedTaxIds.put(subTaxId, newColor);
@@ -245,7 +246,7 @@ public class StyleMapper {
                 Map<String, Paint> originalColors = new Hashtable<>(edgeTypeToPaint);
 
                 Arrays.stream(InteractionType.values())
-                        .filter(type-> type.queryChildren)
+                        .filter(type -> type.queryChildren)
                         .forEach(type -> setChildrenValues(edgeTypeToPaint, type.name, type.defaultColor, edgeTypeToParent));
 
                 edgeTypeToPaint.putAll(originalColors);
@@ -294,8 +295,8 @@ public class StyleMapper {
         }
     }
 
-    private static String concatenateTaxIds(Set<Long> taxIds) {
-        return taxIds.stream().filter(taxId -> taxId > 0).collect(Collectors.toList()).toString().replaceAll("[\\[\\]]", "").replaceAll(" ", "%20");
+    private static String concatenateTaxIds(Set<String> taxIds) {
+        return taxIds.stream().filter(taxId -> !taxId.startsWith("-")).collect(toList()).toString().replaceAll("[\\[\\]]", "").replaceAll(" ", "%20");
     }
 
     public static boolean speciesNotReady() {

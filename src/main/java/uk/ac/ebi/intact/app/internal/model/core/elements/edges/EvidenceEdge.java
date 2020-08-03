@@ -25,7 +25,7 @@ public class EvidenceEdge extends Edge {
     public final CVTerm interactionDetectionMethod;
     public final CVTerm participantDetectionMethod;
     public final String hostOrganism;
-    public final long hostOrganismTaxId;
+    public final String hostOrganismTaxId;
     public final String expansionType;
     public final String pubMedId;
     public final CVTerm sourceBiologicalRole;

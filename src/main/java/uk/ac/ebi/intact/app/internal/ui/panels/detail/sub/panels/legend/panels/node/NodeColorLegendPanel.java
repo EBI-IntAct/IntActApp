@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.*;
 
 public class NodeColorLegendPanel extends AbstractLegendPanel {
-    public final Map<Long, NodeColorPicker> colorPickers = new HashMap<>();
+    public final Map<String, NodeColorPicker> colorPickers = new HashMap<>();
     private static final ImageIcon add = IconUtils.createImageIcon("/Buttons/add.png");
     private final JButton addNodeColorButton = new JButton(add);
     private final JPanel addNodeColorPanel = new JPanel();
@@ -43,7 +43,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
         panel.setBackground(UIColors.lightBackground);
 
         taxons.forEach((taxon) -> {
-            Map<Long, Paint> reference = (taxon.isSpecies) ? StyleMapper.taxIdToPaint : StyleMapper.kingdomColors;
+            Map<String, Paint> reference = (taxon.isSpecies) ? StyleMapper.taxIdToPaint : StyleMapper.kingdomColors;
             NodeColorPicker nodeColorPicker = new NodeColorPicker(taxon.descriptor, (Color) reference.get(taxon.taxId), taxon.isSpecies);
             nodeColorPicker.addColorChangedListener(e -> {
                 manager.style.updateStylesColorScheme(taxon.taxId, e.newColor, true);
@@ -89,9 +89,9 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
     @Override
     public void filterCurrentLegend() {
         executor.execute(() -> {
-            Set<Long> networkTaxIds = currentNetwork.getTaxIds();
+            Set<String> networkTaxIds = currentNetwork.getTaxIds();
 
-            for (Long taxId : colorPickers.keySet()) {
+            for (String taxId : colorPickers.keySet()) {
                 colorPickers.get(taxId).setVisible(
                         networkTaxIds.contains(taxId) ||
                                 (StyleMapper.taxIdToChildrenTaxIds.containsKey(taxId) && CollectionUtils.anyCommonElement(networkTaxIds, StyleMapper.taxIdToChildrenTaxIds.get(taxId)))

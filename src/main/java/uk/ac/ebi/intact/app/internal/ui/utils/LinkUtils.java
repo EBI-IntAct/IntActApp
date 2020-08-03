@@ -6,7 +6,7 @@ import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.CVTerm;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 
 public class LinkUtils {
-    public static JLink createSpecieLink(OpenBrowser openBrowser, long taxId) {
+    public static JLink createSpecieLink(OpenBrowser openBrowser, String taxId) {
         return new JLink(
                 "- TaxId: " + taxId,
                 "https://www.uniprot.org/taxonomy/" + taxId,

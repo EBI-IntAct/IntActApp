@@ -44,10 +44,10 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     private final Map<NodeCouple, SummaryEdge> summaryEdges = new HashMap<>();
     private final Map<CyEdge, EvidenceEdge> evidenceEdges = new HashMap<>();
 
-    private final Set<Long> taxIds = new HashSet<>();
+    private final Set<String> taxIds = new HashSet<>();
     private final Set<String> interactorTypes = new HashSet<>();
-    private final Map<String, Long> speciesNameToId = new HashMap<>();
-    private final Map<Long, String> speciesIdToName = new HashMap<>();
+    private final Map<String, String> speciesNameToId = new HashMap<>();
+    private final Map<String, String> speciesIdToName = new HashMap<>();
 
 
     public Network(Manager manager) {
@@ -91,19 +91,19 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return interactorTypes;
     }
 
-    public Set<Long> getTaxIds() {
+    public Set<String> getTaxIds() {
         return new HashSet<>(taxIds);
     }
 
-    public Long getSpeciesId(String speciesName) {
+    public String getSpeciesId(String speciesName) {
         return speciesNameToId.getOrDefault(speciesName, null);
     }
 
     public Set<String> getNonDefinedTaxon() {
-        Set<Long> availableTaxIds = new HashSet<>(taxIds);
+        Set<String> availableTaxIds = new HashSet<>(taxIds);
         availableTaxIds.removeAll(StyleMapper.taxIdToPaint.keySet());
         Set<String> nonDefinedTaxon = new HashSet<>();
-        for (Long availableTaxId : availableTaxIds) {
+        for (String availableTaxId : availableTaxIds) {
             nonDefinedTaxon.add(speciesIdToName.get(availableTaxId));
         }
         return nonDefinedTaxon;
@@ -120,14 +120,14 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         executor.execute(() -> {
             for (CyRow row : nodeTable.getAllRows()) {
                 interactorTypes.add(NodeFields.TYPE.VALUE.getValue(row));
-                Long taxId = NodeFields.TAX_ID.getValue(row);
+                String taxId = NodeFields.TAX_ID.getValue(row);
                 taxIds.add(taxId);
                 String specieName = NodeFields.SPECIES.getValue(row);
                 speciesNameToId.put(specieName, taxId);
                 speciesIdToName.put(taxId, specieName);
             }
 
-            Map<Long, Paint> addedTaxIds = StyleMapper.completeTaxIdColorsFromUnknownTaxIds(getTaxIds());
+            Map<String, Paint> addedTaxIds = StyleMapper.completeTaxIdColorsFromUnknownTaxIds(getTaxIds());
 
             for (Style style : manager.style.getStyles().values()) {
                 style.updateTaxIdToNodePaintMapping(addedTaxIds);
@@ -139,14 +139,14 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         executor.execute(() -> {
             interactorsToResolve.values().stream().flatMap(List::stream).forEach(interactor -> {
                 interactorTypes.add(interactor.typeName);
-                Long taxId = interactor.taxId;
+                String taxId = interactor.taxId;
                 taxIds.add(taxId);
                 String specieName = interactor.species;
                 speciesNameToId.put(specieName, taxId);
                 speciesIdToName.put(taxId, specieName);
             });
 
-            Map<Long, Paint> addedTaxIds = StyleMapper.completeTaxIdColorsFromUnknownTaxIds(getTaxIds());
+            Map<String, Paint> addedTaxIds = StyleMapper.completeTaxIdColorsFromUnknownTaxIds(getTaxIds());
 
             for (Style style : manager.style.getStyles().values()) {
                 style.updateTaxIdToNodePaintMapping(addedTaxIds);

@@ -13,11 +13,11 @@ public class Interactor {
     public final String typeName;
     public final String species;
     public final Map<String, List<String>> matchingColumns = new HashMap<>();
-    public final Long taxId;
+    public final String taxId;
     public final Integer interactionCount;
 
 
-    public Interactor(String ac, String name, String preferredId, String fullName, String typeName, String species, Long taxId, Integer interactionCount) {
+    public Interactor(String ac, String name, String preferredId, String fullName, String typeName, String species, String taxId, Integer interactionCount) {
         this.ac = ac;
         this.name = name;
         this.preferredId = preferredId;
@@ -46,7 +46,7 @@ public class Interactor {
                         entity.get("interactorDescription").textValue(),
                         entity.get("interactorType").textValue(),
                         entity.get("interactorSpecies").textValue(),
-                        entity.get("interactorTaxId").longValue(),
+                        entity.get("interactorTaxId").asText(),
                         entity.get("interactionCount").intValue()
                 );
                 for (JsonNode highlight : highlighted.get("highlights")) {

@@ -17,7 +17,7 @@ public class EdgeFields {
     public static final Field<Double> MI_SCORE = new Field<>(Table.EDGE, Field.Namespace.INTACT, "MI Score", "mi_score", Double.class);
     public static final Field<String> EXPANSION_TYPE = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Expansion type", "expansion_type", String.class);
     public static final Field<String> HOST_ORGANISM = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Host organism", "host_organism", String.class);
-    public static final Field<Long> HOST_ORGANISM_ID = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Host organism taxon id", "host_organism_tax_id", Long.class);
+    public static final Field<String> HOST_ORGANISM_ID = new Field<>(Table.EDGE, Field.Namespace.INTACT, "Host organism taxon id", "host_organism_tax_id", String.class);
     public static final Field<String> PUBMED_ID = new Field<>(Table.EDGE, Field.Namespace.INTACT, "PubMed Id", "pubmed_id", String.class);
     public static final CVField INTERACTION_DETECTION_METHOD = new CVField(Table.EDGE, Field.Namespace.INTACT, "Interaction detection method", "interaction_detection_method");
     public static final CVField PARTICIPANT_DETECTION_METHOD = new CVField(Table.EDGE, Field.Namespace.INTACT, "Participant detection method", "participant_detection_method");

@@ -14,7 +14,7 @@ public class NodeFields {
     public static final CVField PREFERRED_ID_DB = new CVField(Table.NODE, Field.Namespace.INTACT, "Preferred Id Database", "preferred_id_database_name", "preferred_id_database_mi_identifier", SourceOntology.MI);
     public static final CVField TYPE = new CVField(Table.NODE, Field.Namespace.INTACT, "Type", "type");
     public static final Field<String> SPECIES = new Field<>(Table.NODE, Field.Namespace.INTACT, "Species", "species", String.class);
-    public static final Field<Long> TAX_ID = new Field<>(Table.NODE, Field.Namespace.INTACT, "Taxon Id", "taxId", Long.class);
+    public static final Field<String> TAX_ID = new Field<>(Table.NODE, Field.Namespace.INTACT, "Taxon Id", "taxId", String.class);
     public static final Field<String> FULL_NAME = new Field<>(Table.NODE, Field.Namespace.INTACT, "Description", "full_name", String.class);
     public static final Field<Boolean> MUTATED = new Field<>(Table.NODE, Field.Namespace.INTACT, "Mutation", null, Boolean.class,false, Boolean.FALSE);
     public static final ListField<String> FEATURES = new ListField<>(Table.NODE, Field.Namespace.FEATURE, "Features", String.class);
