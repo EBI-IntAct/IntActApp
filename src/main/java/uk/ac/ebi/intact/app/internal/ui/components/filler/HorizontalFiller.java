@@ -55,13 +55,8 @@ public class HorizontalFiller extends JComponent {
 
         int newHeight = getHeight() - insets.top - insets.right;
         BufferedImage resized = resizeImage(logo, Math.round(widthHeightRatio * newHeight), newHeight);
-//        final TexturePaint texture = new TexturePaint(resized, new Rectangle(resized.getWidth(), resized.getHeight()));
-//        g2.setPaint(texture);
-//        g2.fillRect(0, 0, getWidth(), getHeight());
         g2.drawImage(resized, AffineTransform.getTranslateInstance(getWidth() - resized.getWidth() - insets.right - 5, insets.top), null);
 
-//        g2.setPaint(new GradientPaint(0f, 0f, new Color(255,255,255,0), getWidth(), 0f, END_COLOR));
-//        g2.fillRect(0, 0, getWidth(), getHeight());
         super.paintComponent(g);
     }
 

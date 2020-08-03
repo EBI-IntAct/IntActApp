@@ -32,7 +32,7 @@ public class InteractorDiagram extends JPanel implements StyleUpdatedListener {
             label.setStroke(5);
             this.add(label);
         }
-        shape = StyleUtils.nodeTypeToShape(interactor.type, Style.defaultNodeColor, 50);
+        shape = StyleUtils.nodeTypeToShape(interactor.typeName, Style.defaultNodeColor, 50);
         shapePanel.add(shape, BorderLayout.CENTER);
         StyleMapper.addStyleUpdatedListener(this);
         updateStyle();

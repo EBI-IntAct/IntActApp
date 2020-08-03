@@ -29,7 +29,6 @@ public class Identifier implements Comparable<Identifier> {
         this.id = idField.getValue(row);
         this.database = new CVTerm(row, databaseField);
         this.qualifier = qualifierField.VALUE.getValue(row);
-//        this.qualifier = new CVTerm(row, qualifierField);
     }
 
     @Override

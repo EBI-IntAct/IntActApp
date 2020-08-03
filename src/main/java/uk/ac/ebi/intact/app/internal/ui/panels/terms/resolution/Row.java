@@ -50,7 +50,7 @@ class Row extends JPanel implements ItemListener {
         addCell(createSelectionCheckBox(true), SELECT);
         addCell(createPreview(), PREVIEW);
         addCell(createSpecies(), SPECIES);
-        addCell(new CenteredLabel(interactor.type), TYPE);
+        addCell(new CenteredLabel(interactor.typeName), TYPE);
         addCell(new CenteredLabel(interactor.name), NAME);
         addCell(new CenteredLabel(interactor.fullName), DESCRIPTION);
         addCell(new CenteredLabel(interactor.interactionCount.toString()), NB_INTERACTIONS);

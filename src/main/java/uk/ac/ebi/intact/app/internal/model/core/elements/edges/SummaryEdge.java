@@ -14,7 +14,6 @@ public class SummaryEdge extends Edge {
 
     SummaryEdge(Network network, CyEdge edge) {
         super(network, edge);
-        summary = true;
         updateSummary();
     }
 

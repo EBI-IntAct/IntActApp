@@ -6,6 +6,7 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
 import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.Identifier;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.CVTerm;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.SourceOntology;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
@@ -22,7 +23,7 @@ import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields
 public class Node extends Interactor implements Comparable<Interactor>, Element {
     public final Network network;
     public final CyNode cyNode;
-    public final OntologyIdentifier typeMIId;
+    public final CVTerm type;
     public final Identifier preferredIdentifier;
     public final List<String> featureAcs = new ArrayList<>();
     public final List<String> identifierAcs = new ArrayList<>();
@@ -46,7 +47,7 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
         );
         this.network = network;
         this.cyNode = cyNode;
-        this.typeMIId = new OntologyIdentifier(nodeRow, TYPE);
+        this.type =  new CVTerm(nodeRow, TYPE);
         this.nodeRow = nodeRow;
         this.mutated = MUTATED.getValue(nodeRow);
         String preferredIdDbName = PREFERRED_ID_DB.VALUE.getValue(nodeRow);

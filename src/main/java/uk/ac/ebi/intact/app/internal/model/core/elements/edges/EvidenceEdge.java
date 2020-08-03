@@ -19,19 +19,19 @@ import java.util.Map;
 import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields.*;
 
 public class EvidenceEdge extends Edge {
+    public final long id;
     public final String ac;
     public final CVTerm type;
     public final CVTerm interactionDetectionMethod;
     public final CVTerm participantDetectionMethod;
     public final String hostOrganism;
+    public final long hostOrganismTaxId;
     public final String expansionType;
     public final String pubMedId;
     public final CVTerm sourceBiologicalRole;
     public final CVTerm sourceExperimentalRole;
     public final CVTerm targetBiologicalRole;
     public final CVTerm targetExperimentalRole;
-    public final long hostOrganismTaxId;
-    public final long id;
 
     EvidenceEdge(Network network, CyEdge edge) {
         super(network, edge);
@@ -51,7 +51,6 @@ public class EvidenceEdge extends Edge {
         targetExperimentalRole = new CVTerm(edgeRow, EXPERIMENTAL_ROLE.TARGET);
 
         pubMedId = PUBMED_ID.getValue(edgeRow);
-        summary = false;
     }
 
     @Override

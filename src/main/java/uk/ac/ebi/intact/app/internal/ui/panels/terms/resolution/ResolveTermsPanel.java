@@ -96,6 +96,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             add(new CenteredLabel("There is ambiguity among the terms you gave.", 15, UIColors.deepPurple), layoutHelper.down().expandHoriz());
             add(new CenteredLabel("Please select the interactors that you meant to query as seeds to build network.", 14, UIColors.deepPurple), layoutHelper.down().expandHoriz());
         }
+        setMinimumSize(new Dimension(440, 330));
         createColumnHeader();
         createRowHeader();
         initScrollPanel();
@@ -103,7 +104,6 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         createFilters();
         createOptionPanel();
         createControlButtons();
-        add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
     }
 
     private void createRowHeader() {
@@ -188,12 +188,12 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             scrollPane.setRowHeader(viewport);
         }
 
-        displayPanel.setMinimumSize(new Dimension(900, HEIGHT));
-        displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
-        scrollPane.setMinimumSize(new Dimension(900, HEIGHT));
-        scrollPane.setPreferredSize(new Dimension(900, HEIGHT));
-        scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
-        add(scrollPane, layoutHelper.down().expandHoriz());
+//        displayPanel.setMinimumSize(new Dimension(900, HEIGHT));
+//        displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
+//        scrollPane.setMinimumSize(new Dimension(900, HEIGHT));
+//        scrollPane.setPreferredSize(new Dimension(900, HEIGHT));
+//        scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
+        add(scrollPane, layoutHelper.down().expandBoth());
     }
 
     private void fillDisplayPanel() {
@@ -238,7 +238,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             boolean showHighlightsValue = !manager.option.SHOW_HIGHLIGHTS.getValue();
             termTables.forEach(table -> table.rows.values().forEach(row -> row.highlightMatchingColumns(showHighlightsValue)));
         });
-        add(new CollapsablePanel("Options", optionsPanel, false), layoutHelper.down().expandHoriz());
+        add(new CollapsablePanel("Options", optionsPanel, true), layoutHelper.down().expandHoriz());
     }
 
     private void createControlButtons() {
@@ -263,6 +263,11 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         controlPanel.add(buildNetworkButton);
 
         add(controlPanel, layoutHelper.down().expandHoriz());
+    }
+
+    public void setupDefaultButton() {
+        JRootPane rootPane = SwingUtilities.getRootPane(this);
+        rootPane.setDefaultButton(buildNetworkButton);
     }
 
     private void buildNetworkFromSelection() {

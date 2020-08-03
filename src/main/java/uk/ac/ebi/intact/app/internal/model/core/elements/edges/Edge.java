@@ -17,7 +17,6 @@ public abstract class Edge implements Element {
     public final Network network;
     public final CyEdge cyEdge;
     public final String name;
-    public boolean summary;
     public final CyRow edgeRow;
     public final Node source;
     public final Node target;

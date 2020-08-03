@@ -24,6 +24,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
     private static final ImageIcon add = IconUtils.createImageIcon("/Buttons/add.png");
     private final JButton addNodeColorButton = new JButton(add);
     private final JPanel addNodeColorPanel = new JPanel();
+    private final JPanel userDefinedSpeciesPanel = new JPanel(new GridBagLayout());
 
     public NodeColorLegendPanel(Manager manager, Network currentNetwork, NetworkView currentView) {
         super("<html>Node Color <em>~ Species</em></html>", manager, currentNetwork, currentView);
@@ -55,7 +56,6 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
     }
 
     private void createUserDefinedNodeColors() {
-        JPanel userDefinedSpeciesPanel = new JPanel(new GridBagLayout());
         content.add(userDefinedSpeciesPanel, layoutHelper.down().expandHoriz());
         addNodeColorPanel.setBackground(UIColors.lightBackground);
         addNodeColorPanel.setLayout(new FlowLayout(FlowLayout.LEFT,4,2));

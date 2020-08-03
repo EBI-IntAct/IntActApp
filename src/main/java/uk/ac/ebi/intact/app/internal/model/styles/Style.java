@@ -92,7 +92,7 @@ public abstract class Style {
     }
 
     protected void setNodeShapeStyle() {
-        nodeTypeToShape = (DiscreteMapping<String, NodeShape>) discreteFactory.createVisualMappingFunction(NodeFields.TYPE.toString(), String.class, BasicVisualLexicon.NODE_SHAPE);
+        nodeTypeToShape = (DiscreteMapping<String, NodeShape>) discreteFactory.createVisualMappingFunction(NodeFields.TYPE.VALUE.toString(), String.class, BasicVisualLexicon.NODE_SHAPE);
         nodeTypeToShape.putAll(StyleMapper.nodeTypeToShape);
 
         style.addVisualMappingFunction(nodeTypeToShape);

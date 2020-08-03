@@ -26,7 +26,7 @@ public class NodeBasics extends AbstractNodeElement {
         content.add(new JLabel(node.fullName));
         content.add(new JLink(DbIdentifiersToLink.getFancyDatabaseName(node.preferredIdentifier) + " · " + node.preferredIdentifier.id, DbIdentifiersToLink.getLink(node.preferredIdentifier), openBrowser));
         graphDescription = new LinePanel(getBackground());
-        graphDescription.add(new JLink(StringUtils.capitalize(node.type), node.typeMIId.getUserAccessURL(), openBrowser));
+        graphDescription.add(new JLink(StringUtils.capitalize(node.typeName), node.type.id.getUserAccessURL(), openBrowser));
         graphDescription.add(new JLabel(" of " + node.species));
         graphDescription.add(Box.createHorizontalStrut(4));
         graphDescription.add(LinkUtils.createSpecieLink(openBrowser, node.taxId));

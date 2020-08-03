@@ -80,7 +80,7 @@ public class NoGUIQueryTask extends AbstractTask {
 
         if (types != null && !types.isBlank()) {
             Set<String> allowedTypes = Set.of(types.split("\\s*,\\s*"));
-            interactorStream = interactorStream.filter(interactor -> allowedTypes.contains(interactor.type));
+            interactorStream = interactorStream.filter(interactor -> allowedTypes.contains(interactor.typeName));
         }
 
         if (taxons != null && !taxons.isEmpty()) {

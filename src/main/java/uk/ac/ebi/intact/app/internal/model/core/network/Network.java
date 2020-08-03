@@ -138,7 +138,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     public void completeMissingNodeColorsFromInteractors(Map<String, List<Interactor>> interactorsToResolve) {
         executor.execute(() -> {
             interactorsToResolve.values().stream().flatMap(List::stream).forEach(interactor -> {
-                interactorTypes.add(interactor.type);
+                interactorTypes.add(interactor.typeName);
                 Long taxId = interactor.taxId;
                 taxIds.add(taxId);
                 String specieName = interactor.species;

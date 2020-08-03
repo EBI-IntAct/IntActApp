@@ -49,6 +49,7 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
             manager.style.resetStyles();
             StyleMapper.originalKingdomColors.forEach((taxId, paint) -> nodePanel.nodeColorLegendPanel.colorPickers.get(taxId).setCurrentColor((Color) paint));
             StyleMapper.originalTaxIdToPaint.forEach((taxId, paint) -> nodePanel.nodeColorLegendPanel.colorPickers.get(taxId).setCurrentColor((Color) paint));
+            NodeColorLegendEditor.clearAll(false);
         });
         return resetStylesButton;
     }

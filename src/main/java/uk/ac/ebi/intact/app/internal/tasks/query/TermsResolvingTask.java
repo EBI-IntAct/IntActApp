@@ -58,6 +58,7 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
                     d.setContentPane(panel);
                     d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     d.pack();
+                    panel.setupDefaultButton();
                     d.setVisible(true);
                 });
             }

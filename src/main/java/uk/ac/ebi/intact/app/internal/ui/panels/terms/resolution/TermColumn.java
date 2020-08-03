@@ -9,7 +9,7 @@ public enum TermColumn {
     SELECT("Select", "", true, null, false),
     PREVIEW("Preview", "", false, null, false),
     SPECIES("Species", "", false, (interactor) -> interactor.species, true),
-    TYPE("Type", "", false, (interactor) -> interactor.type, true),
+    TYPE("Type", "", false, (interactor) -> interactor.typeName, true),
     NAME("Name", "interactor_name", false, (interactor) -> interactor.name, false),
     DESCRIPTION("Description", "interactor_description", false, (interactor) -> interactor.fullName, false),
     NB_INTERACTIONS("# Interactions", "", false, (interactor) -> interactor.interactionCount, false),
