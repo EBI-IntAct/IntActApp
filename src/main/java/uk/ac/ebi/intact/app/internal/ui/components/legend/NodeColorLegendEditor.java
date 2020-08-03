@@ -128,8 +128,8 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
         manager.style.updateStylesColorScheme(currentTaxId, currentColor, false);
     }
 
-    public void destroy() {
-        resetFormerLegend();
+    public void destroy(boolean resetFormerLegend) {
+        if (resetFormerLegend) resetFormerLegend();
 
         addNewNodeLegendEditorActivator.setVisible(true);
 
@@ -156,5 +156,10 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
 
     public static List<NodeColorLegendEditor> getNodeColorLegendEditorList() {
         return new ArrayList<>(NODE_COLOR_LEGEND_EDITOR_LIST);
+    }
+
+    public static void clearAll(boolean resetFormerLegend) {
+        NODE_COLOR_LEGEND_EDITOR_LIST.forEach(editor -> editor.destroy(resetFormerLegend));
+
     }
 }
