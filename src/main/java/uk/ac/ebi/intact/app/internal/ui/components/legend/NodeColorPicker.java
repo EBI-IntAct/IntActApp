@@ -6,15 +6,14 @@ import uk.ac.ebi.intact.app.internal.ui.components.legend.shapes.Ball;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 
 
-public class NodeColorPicker extends JPanel implements MouseListener {
-    protected final NodeColorPicker self;
+public class NodeColorPicker extends JPanel {
     protected String descriptor;
     protected Color currentColor;
     protected EditableBall editableBall;
@@ -24,9 +23,7 @@ public class NodeColorPicker extends JPanel implements MouseListener {
     protected Font italicFont = new Font(getFont().getName(), Font.ITALIC, getFont().getSize());
 
     public NodeColorPicker() {
-        self = this;
         setBackground(UIColors.lightBackground);
-        addMouseListener(this);
         setLayout(new FlowLayout(FlowLayout.LEFT, 4, 2));
     }
 
@@ -77,39 +74,29 @@ public class NodeColorPicker extends JPanel implements MouseListener {
     }
 
     protected class EditableBall extends Ball {
+        public MouseAdapter mouseListener = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Color selectedColor = JColorChooser.showDialog(NodeColorPicker.this, "Choose " + descriptor + " colors", currentColor);
+                if (selectedColor != null) {
+                    currentColor = selectedColor;
+                    editableBall.setColor(currentColor);
+                    for (ColorChangedListener listener : listeners) {
+                        listener.colorChanged(new ColorChangedEvent(NodeColorPicker.this, ActionEvent.ACTION_PERFORMED, currentColor));
+                    }
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+        };
+
         public EditableBall(Color color, int diameter) {
             super(color, diameter);
-            addMouseListener(self);
+            addMouseListener(mouseListener);
+            setToolTipText("Change color");
         }
     }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        Color selectedColor = JColorChooser.showDialog(self, "Choose " + descriptor + " colors", currentColor);
-        if (selectedColor != null) {
-            currentColor = selectedColor;
-            editableBall.setColor(currentColor);
-            for (ColorChangedListener listener : listeners) {
-                listener.colorChanged(new ColorChangedEvent(this, ActionEvent.ACTION_PERFORMED, currentColor));
-            }
-        }
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        setCursor(new Cursor(Cursor.HAND_CURSOR));
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-    }
-
 }
