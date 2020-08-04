@@ -16,6 +16,7 @@ import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
+import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
 import java.awt.*;
@@ -100,10 +101,12 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
     public Set<String> getNonDefinedTaxon() {
         Set<String> availableTaxIds = new HashSet<>(taxIds);
-        availableTaxIds.removeAll(StyleMapper.taxIdToPaint.keySet());
+        availableTaxIds.removeAll(StyleMapper.speciesColors.keySet());
         Set<String> nonDefinedTaxon = new HashSet<>();
+        Set<String> userDefinedTaxIds = NodeColorLegendEditor.getDefinedTaxIds();
         for (String availableTaxId : availableTaxIds) {
-            nonDefinedTaxon.add(speciesIdToName.get(availableTaxId));
+            if (!userDefinedTaxIds.contains(availableTaxId))
+                nonDefinedTaxon.add(speciesIdToName.get(availableTaxId));
         }
         return nonDefinedTaxon;
     }
@@ -117,8 +120,8 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
     public void completeMissingNodeColorsFromTables(boolean async) {
         Runnable kingdomUpdater = () -> {
-            if (taxIds.isEmpty() && !nodes.isEmpty()) {
-                for (Node node: nodes.values()) {
+            if (speciesIdToName.isEmpty() && !nodes.isEmpty()) {
+                for (Node node : nodes.values()) {
                     interactorTypes.add(node.type.value);
                     taxIds.add(node.taxId);
                     speciesNameToId.put(node.species, node.taxId);

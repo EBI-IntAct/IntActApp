@@ -114,7 +114,7 @@ public abstract class Style {
 
     public void setNodePaintStyle() {
         taxIdToNodeColor = (DiscreteMapping<String, Paint>) discreteFactory.createVisualMappingFunction(NodeFields.TAX_ID.toString(), String.class, BasicVisualLexicon.NODE_FILL_COLOR);
-        taxIdToNodeColor.putAll(StyleMapper.taxIdToPaint);
+        taxIdToNodeColor.putAll(StyleMapper.speciesColors);
         style.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, defaultNodeColor);
         style.addVisualMappingFunction(taxIdToNodeColor);
         addMissingNodePaint(taxIdToNodeColor);
@@ -186,7 +186,7 @@ public abstract class Style {
             while (StyleMapper.speciesNotReady()) {
                 TimeUtils.sleep(100);
             }
-            taxIdToPaint.putAll(StyleMapper.taxIdToPaint);
+            taxIdToPaint.putAll(StyleMapper.speciesColors);
         }).start();
     }
 

@@ -26,7 +26,7 @@ public class StyleManager {
     }
 
     public void setupStyles() {
-        StyleMapper.initializeTaxIdToPaint(true);
+        StyleMapper.initializeSpeciesAndKingdomColors(true);
         StyleMapper.initializeEdgeTypeToPaint();
         StyleMapper.initializeNodeTypeToShape();
         Style summary = new SummaryStyle(manager);
@@ -56,8 +56,8 @@ public class StyleManager {
         }
     }
 
-    public void updateStylesColorScheme(String parentTaxId, Color newColor, boolean addDescendants) {
-        Map<String, Paint> colorScheme = StyleMapper.updateChildrenColors(parentTaxId, newColor, addDescendants);
+    public void updateStylesColorScheme(String parentTaxId, Color newColor, boolean addDescendants, boolean isKingdom) {
+        Map<String, Paint> colorScheme = StyleMapper.updateChildrenColors(parentTaxId, newColor, addDescendants, isKingdom);
         for (Style style : styles.values()) {
             style.updateTaxIdToNodePaintMapping(colorScheme);
         }

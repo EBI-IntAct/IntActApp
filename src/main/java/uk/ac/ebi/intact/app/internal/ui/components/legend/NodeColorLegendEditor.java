@@ -12,7 +12,9 @@ import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorPicker.ColorChangedListener {
     private static final ImageIcon remove = IconUtils.createImageIcon("/Buttons/remove.png");
@@ -96,8 +98,8 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
         String kingdom = StyleMapper.taxIdToParentTaxId.get(currentTaxId);
         Color formerColor = (Color) StyleMapper.kingdomColors.get(kingdom);
         if (formerColor != null)
-            manager.style.updateStylesColorScheme(currentTaxId, formerColor, false);
-        StyleMapper.taxIdToPaint.remove(currentTaxId);
+            manager.style.updateStylesColorScheme(currentTaxId, formerColor, false, true);
+        StyleMapper.speciesColors.remove(currentTaxId);
     }
 
     private void setRemoveButton() {
@@ -107,7 +109,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     }
 
     private void updateStyleColors() {
-        manager.style.updateStylesColorScheme(currentTaxId, currentColor, false);
+        manager.style.updateStylesColorScheme(currentTaxId, currentColor, false, true);
     }
 
     public void destroy(boolean resetFormerLegend) {
@@ -143,5 +145,14 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
 
     public static void clearAll(boolean resetFormerLegend) {
         new ArrayList<>(NODE_COLOR_LEGEND_EDITOR_LIST).forEach(editor -> editor.destroy(resetFormerLegend));
+    }
+
+    public String getSelectedTaxId() {
+        if (currentNetwork == null || speciesField == null) return null;
+        return currentNetwork.getSpeciesId((String) speciesField.getSelectedItem());
+    }
+
+    public static Set<String> getDefinedTaxIds() {
+        return NODE_COLOR_LEGEND_EDITOR_LIST.stream().map(NodeColorLegendEditor::getSelectedTaxId).collect(Collectors.toSet());
     }
 }

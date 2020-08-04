@@ -12,6 +12,7 @@ import uk.ac.ebi.intact.app.internal.model.events.StyleUpdatedListener;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.definitions.InteractionType;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.definitions.InteractorType;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.definitions.Taxons;
+import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 
 import java.awt.*;
@@ -36,7 +37,7 @@ public class StyleMapper {
     private static final List<WeakReference<StyleUpdatedListener>> styleUpdatedListeners = new ArrayList<>();
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
 
-    public static Hashtable<String, Paint> taxIdToPaint = Arrays.stream(Taxons.values())
+    public static Hashtable<String, Paint> speciesColors = Arrays.stream(Taxons.values())
             .filter(taxons -> taxons.isSpecies)
             .collect(toMap(
                     taxon -> taxon.taxId,
@@ -54,7 +55,7 @@ public class StyleMapper {
                     Hashtable::new)
             );
 
-    public static Hashtable<String, Paint> originalTaxIdToPaint = new Hashtable<>(taxIdToPaint);
+    public static Hashtable<String, Paint> originalSpeciesColors = new Hashtable<>(speciesColors);
     public static Hashtable<String, Paint> originalKingdomColors = new Hashtable<>(kingdomColors);
 
     public static Hashtable<String, List<String>> taxIdToChildrenTaxIds = new Hashtable<>();
@@ -88,8 +89,8 @@ public class StyleMapper {
         Arrays.stream(InteractorType.values()).filter(type -> !type.MI_ID.isBlank()).forEach(type -> typesToIds.put(type.name, type.MI_ID));
     }
 
-    public static void initializeTaxIdToPaint(boolean async) {
-        Runnable initTaxIdToPaint = () -> {
+    public static void initializeSpeciesAndKingdomColors(boolean async) {
+        Runnable initColors = () -> {
             if (!taxIdsWorking) {
                 taxIdsWorking = true;
 
@@ -97,10 +98,10 @@ public class StyleMapper {
                     taxIdToChildrenTaxIds.put(kingdomId, new ArrayList<>());
                 }
                 taxIdToChildrenTaxIds.get(ARTIFICIAL.taxId).add("-1");
-                taxIdToPaint.put("-1", kingdomColors.get(ARTIFICIAL.taxId));
+                speciesColors.put("-1", kingdomColors.get(ARTIFICIAL.taxId));
 
-                for (String parentSpecie : new ArrayList<>(taxIdToPaint.keySet())) {
-                    Paint paint = taxIdToPaint.get(parentSpecie);
+                for (String parentSpecie : new ArrayList<>(speciesColors.keySet())) {
+                    Paint paint = speciesColors.get(parentSpecie);
                     addDescendantsColors(parentSpecie, (Color) paint);
                 }
 
@@ -108,8 +109,8 @@ public class StyleMapper {
                 taxIdsReady = true;
             }
         };
-        if (async) executor.execute(initTaxIdToPaint);
-        else initTaxIdToPaint.run();
+        if (async) executor.execute(initColors);
+        else initColors.run();
     }
 
     public static void addDescendantsColors(String parentSpecie, Color paint) {
@@ -130,7 +131,7 @@ public class StyleMapper {
                         for (final JsonNode objNode : termChildren) {
                             String obo_id = objNode.get("obo_id").asText();
                             String id = obo_id.substring(obo_id.indexOf(":") + 1);
-                            taxIdToPaint.put(id, paint);
+                            speciesColors.put(id, paint);
                             taxIdToChildrenTaxIds.get(parentSpecie).add(id);
                         }
                     }
@@ -150,11 +151,11 @@ public class StyleMapper {
     }
 
     public static void resetMappings(boolean async) {
-        taxIdToPaint = new Hashtable<>(originalTaxIdToPaint);
+        speciesColors = new Hashtable<>(originalSpeciesColors);
         kingdomColors = new Hashtable<>(originalKingdomColors);
         taxIdsReady = false;
         taxIdsWorking = false;
-        initializeTaxIdToPaint(async);
+        initializeSpeciesAndKingdomColors(async);
     }
 
     public synchronized static Map<String, Paint> completeTaxIdColorsFromUnknownTaxIds(Set<String> taxIdsToCheckAndAdd) {
@@ -166,7 +167,7 @@ public class StyleMapper {
         if (taxIdsToCheckAndAdd == null)
             return addedTaxIds;
 
-        taxIdsToCheckAndAdd.removeAll(taxIdToPaint.keySet());
+        taxIdsToCheckAndAdd.removeAll(speciesColors.keySet());
 
         if (taxIdsToCheckAndAdd.size() == 0)
             return addedTaxIds;
@@ -208,19 +209,22 @@ public class StyleMapper {
         }
     }
 
-    public static Map<String, Paint> updateChildrenColors(String parentTaxId, Color newColor, boolean addDescendants) {
+    public static Map<String, Paint> updateChildrenColors(String parentTaxId, Color newColor, boolean addDescendants, boolean isKingdom) {
         Map<String, Paint> updatedTaxIds = new Hashtable<>();
 
-        taxIdToPaint.put(parentTaxId, newColor);
+        var workingColors = isKingdom ? kingdomColors : speciesColors;
+        workingColors.put(parentTaxId, newColor);
         updatedTaxIds.put(parentTaxId, newColor);
 
         if (addDescendants) {
-            if (!taxIdToChildrenTaxIds.containsKey(parentTaxId))
+            if (!isKingdom && !taxIdToChildrenTaxIds.containsKey(parentTaxId))
                 addDescendantsColors(parentTaxId, newColor);
 
+            Set<String> userDefinedTaxId = NodeColorLegendEditor.getDefinedTaxIds();
+
             for (String subTaxId : taxIdToChildrenTaxIds.get(parentTaxId)) {
-                if (!taxIdToPaint.containsKey(subTaxId)) {
-                    taxIdToPaint.put(subTaxId, newColor);
+                if (!userDefinedTaxId.contains(subTaxId)) {
+                    workingColors.put(subTaxId, newColor);
                     updatedTaxIds.put(subTaxId, newColor);
                 }
             }

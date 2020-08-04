@@ -43,10 +43,10 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
         panel.setBackground(UIColors.lightBackground);
 
         taxons.forEach((taxon) -> {
-            Map<String, Paint> reference = (taxon.isSpecies) ? StyleMapper.taxIdToPaint : StyleMapper.kingdomColors;
+            Map<String, Paint> reference = (taxon.isSpecies) ? StyleMapper.speciesColors : StyleMapper.kingdomColors;
             NodeColorPicker nodeColorPicker = new NodeColorPicker(taxon.descriptor, (Color) reference.get(taxon.taxId), taxon.isSpecies);
             nodeColorPicker.addColorChangedListener(e -> {
-                manager.style.updateStylesColorScheme(taxon.taxId, e.newColor, true);
+                manager.style.updateStylesColorScheme(taxon.taxId, e.newColor, true, !taxon.isSpecies);
                 reference.put(taxon.taxId, e.newColor);
             });
             colorPickers.put(taxon.taxId, nodeColorPicker);

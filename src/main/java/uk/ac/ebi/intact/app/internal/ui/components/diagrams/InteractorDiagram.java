@@ -41,7 +41,7 @@ public class InteractorDiagram extends JPanel implements StyleUpdatedListener {
 
     public void updateStyle() {
         shapePanel.setOpaque(false);
-        Color color = (Color) StyleMapper.taxIdToPaint.get(interactor.taxId);
+        Color color = (Color) StyleMapper.speciesColors.get(interactor.taxId);
         if (color == null) color = (Color) StyleMapper.kingdomColors.get(interactor.taxId);
         if (color != null) shape.setColor(color);
         repaint();
