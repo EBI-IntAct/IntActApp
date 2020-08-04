@@ -118,15 +118,18 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         manager.data.addNetworkView(networkView, false);
     }
 
+    private int colorsCompleted = 0;
+
     public void completeMissingNodeColorsFromTables(boolean async) {
         Runnable kingdomUpdater = () -> {
-            if (speciesIdToName.isEmpty() && !nodes.isEmpty()) {
+            if (colorsCompleted < 2) {
                 for (Node node : nodes.values()) {
                     interactorTypes.add(node.type.value);
                     taxIds.add(node.taxId);
                     speciesNameToId.put(node.species, node.taxId);
                     speciesIdToName.put(node.taxId, node.species);
                 }
+                colorsCompleted++;
             }
 
             Map<String, Paint> addedTaxIds = StyleMapper.completeTaxIdColorsFromUnknownTaxIds(getTaxIds());

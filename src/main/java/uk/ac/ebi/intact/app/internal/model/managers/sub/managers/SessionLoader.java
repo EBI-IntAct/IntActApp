@@ -1,23 +1,25 @@
 package uk.ac.ebi.intact.app.internal.model.managers.sub.managers;
 
 import org.cytoscape.model.*;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
-import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.model.ListField;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.FeatureFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.ListField;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 public class SessionLoader implements SessionLoadedListener {
@@ -46,6 +48,10 @@ public class SessionLoader implements SessionLoadedListener {
             }
         }
 
+        loadedSession.getProperties().stream()
+                .filter(cyProperty -> cyProperty.getName().equals("intactApp"))
+                .findFirst().ifPresent(cyProperty -> manager.style.settings.loadSettings((CyProperty<Properties>) cyProperty));
+
         linkIntactTablesToNetwork(loadedSession.getTables(), loadedSession);
 
         for (CyNetworkView view : loadedSession.getNetworkViews()) {
@@ -57,11 +63,17 @@ public class SessionLoader implements SessionLoadedListener {
         NetworkView currentView = manager.data.getCurrentNetworkView();
         if (currentView != null) {
             manager.utils.fireEvent(new ViewUpdatedEvent(manager, currentView));
+            setCurrentViewToCorrectStyle(currentView);
             manager.utils.showResultsPanel();
         } else {
             manager.utils.hideResultsPanel();
         }
+
         manager.data.setLoadingSession(false);
+    }
+
+    public void setCurrentViewToCorrectStyle(NetworkView currentView) {
+        manager.style.getStyle(currentView.getType()).applyStyle(currentView.cyView);
     }
 
     void linkIntactTablesToNetwork(Collection<CyTableMetadata> tables, CySession loadingSession) {

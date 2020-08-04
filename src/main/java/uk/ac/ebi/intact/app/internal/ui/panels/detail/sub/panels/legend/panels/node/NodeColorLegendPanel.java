@@ -3,13 +3,16 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.color.settings.ColorSetting;
+import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.color.settings.events.ColorSettingLoadedEvent;
+import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.color.settings.events.ColorSettingLoadedListener;
 import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
+import uk.ac.ebi.intact.app.internal.model.styles.mapper.definitions.Taxons;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorPicker;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.AbstractLegendPanel;
 import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
-import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
-import uk.ac.ebi.intact.app.internal.model.styles.mapper.definitions.Taxons;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 
@@ -18,8 +21,9 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.function.Consumer;
 
-public class NodeColorLegendPanel extends AbstractLegendPanel {
+public class NodeColorLegendPanel extends AbstractLegendPanel implements ColorSettingLoadedListener {
     public final Map<String, NodeColorPicker> colorPickers = new HashMap<>();
     private static final ImageIcon add = IconUtils.createImageIcon("/Buttons/add.png");
     private final JButton addNodeColorButton = new JButton(add);
@@ -28,6 +32,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
 
     public NodeColorLegendPanel(Manager manager, Network currentNetwork, NetworkView currentView) {
         super("<html>Node Color <em>~ Species</em></html>", manager, currentNetwork, currentView);
+        manager.utils.registerAllServices(this, new Properties());
         createNodeColorLegend(Taxons.getSpecies());
         addSeparator();
         createNodeColorLegend(List.of(Taxons.CHEMICAL_SYNTHESIS));
@@ -44,7 +49,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
 
         taxons.forEach((taxon) -> {
             Map<String, Paint> reference = (taxon.isSpecies) ? StyleMapper.speciesColors : StyleMapper.kingdomColors;
-            NodeColorPicker nodeColorPicker = new NodeColorPicker(taxon.descriptor, (Color) reference.get(taxon.taxId), taxon.isSpecies);
+            NodeColorPicker nodeColorPicker = new NodeColorPicker(manager, taxon.taxId, taxon.descriptor, (Color) reference.get(taxon.taxId), taxon.isSpecies);
             nodeColorPicker.addColorChangedListener(e -> {
                 manager.style.updateStylesColorScheme(taxon.taxId, e.newColor, true, !taxon.isSpecies);
                 reference.put(taxon.taxId, e.newColor);
@@ -58,7 +63,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
     private void createUserDefinedNodeColors() {
         content.add(userDefinedSpeciesPanel, layoutHelper.down().expandHoriz());
         addNodeColorPanel.setBackground(UIColors.lightBackground);
-        addNodeColorPanel.setLayout(new FlowLayout(FlowLayout.LEFT,4,2));
+        addNodeColorPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 4, 2));
 
         addNodeColorButton.addActionListener(e -> {
             userDefinedSpeciesPanel.add(new NodeColorLegendEditor(currentNetwork, addNodeColorPanel), layoutHelper.down().expandHoriz().anchor("west"));
@@ -99,5 +104,20 @@ public class NodeColorLegendPanel extends AbstractLegendPanel {
             }
             addNodeColorPanel.setVisible(!currentNetwork.getNonDefinedTaxon().isEmpty());
         });
+    }
+
+    @Override
+    public void handleEvent(ColorSettingLoadedEvent e) {
+        Consumer<ColorSetting> colorSettingConsumer = setting -> {
+            if (colorPickers.containsKey(setting.getTaxId()))
+                colorPickers.get(setting.getTaxId()).setCurrentColor(setting.getColor());
+        };
+        e.getSource().getSpeciesSettings().forEach(colorSettingConsumer);
+        e.getSource().getKingdomSettings().forEach(colorSettingConsumer);
+        NodeColorLegendEditor.clearAll(false);
+        e.getSource().getUserSettings().forEach(setting -> userDefinedSpeciesPanel.add(new NodeColorLegendEditor(manager, setting, addNodeColorPanel), layoutHelper.down().expandHoriz().anchor("west")));
+
+        if (currentNetwork.getNonDefinedTaxon().isEmpty())
+            addNodeColorPanel.setVisible(false);
     }
 }

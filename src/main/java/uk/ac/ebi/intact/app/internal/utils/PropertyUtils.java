@@ -54,18 +54,23 @@ public class PropertyUtils {
     public static CyProperty<Properties> getPropertyService(Manager manager, CyProperty.SavePolicy policy) {
         String name = "intactApp";
         if (policy == CyProperty.SavePolicy.SESSION_FILE) {
-            CyProperty<Properties> service = manager.utils.getService(CyProperty.class, "(cyPropertyName=" + name + ")");
-            // Do we already have a session with our properties
-            if (service.getSavePolicy().equals(CyProperty.SavePolicy.SESSION_FILE))
+            CyProperty<Properties> service;
+            try {
+                service = manager.utils.getService(CyProperty.class, "(cyPropertyName=" + name + ")");
+                // Do we already have a session with our properties
+                if (service.getSavePolicy().equals(CyProperty.SavePolicy.SESSION_FILE))
+                    return service;
+            } catch (RuntimeException e) {
+                // Either we have a null session or our properties aren't in this session
+                service = new SimpleCyProperty<>(name, new Properties(), Properties.class, CyProperty.SavePolicy.SESSION_FILE);
+                Properties serviceProps = new Properties();
+                serviceProps.setProperty("cyPropertyName", name);
+                manager.utils.registerAllServices(service, serviceProps);
                 return service;
+            }
 
-            // Either we have a null session or our properties aren't in this session
-            Properties props = new Properties();
-            service = new SimpleCyProperty<>(name, props, Properties.class, CyProperty.SavePolicy.SESSION_FILE);
-            Properties serviceProps = new Properties();
-            serviceProps.setProperty("cyPropertyName", service.getName());
-            manager.utils.registerAllServices(service, serviceProps);
-            return service;
+
+
         } else if (policy == CyProperty.SavePolicy.CONFIG_DIR || policy == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR) {
             CyProperty<Properties> service = new ConfigPropsReader(policy, name);
             Properties serviceProps = new Properties();

@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.components.legend;
 
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.shapes.Ball;
 
@@ -14,21 +15,26 @@ import java.util.List;
 
 
 public class NodeColorPicker extends JPanel {
+    protected String taxId;
     protected String descriptor;
     protected Color currentColor;
     protected EditableBall editableBall;
     protected boolean definedSpecies;
+    protected final Manager manager;
 
     private final List<ColorChangedListener> listeners = new ArrayList<>();
     protected Font italicFont = new Font(getFont().getName(), Font.ITALIC, getFont().getSize());
 
-    public NodeColorPicker() {
+    public NodeColorPicker(Manager manager) {
+        this.manager = manager;
         setBackground(UIColors.lightBackground);
         setLayout(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        addColorChangedListener(manager.style.settings);
     }
 
-    public NodeColorPicker(String descriptor, Color currentColor, boolean definedSpecies) {
-        this();
+    public NodeColorPicker(Manager manager, String taxId, String descriptor, Color currentColor, boolean definedSpecies) {
+        this(manager);
+        this.taxId = taxId;
         this.descriptor = descriptor;
         this.currentColor = currentColor;
         this.definedSpecies = definedSpecies;
@@ -56,16 +62,27 @@ public class NodeColorPicker extends JPanel {
 
     }
 
+    public boolean isDefinedSpecies() {
+        return definedSpecies;
+    }
+
     public void addColorChangedListener(ColorChangedListener listener) {
         listeners.add(listener);
     }
 
     public static class ColorChangedEvent extends AWTEvent {
         public final Color newColor;
+        public final NodeColorPicker source;
 
-        public ColorChangedEvent(Object source, int id, Color newColor) {
+        public ColorChangedEvent(NodeColorPicker source, int id, Color newColor) {
             super(source, id);
+            this.source = source;
             this.newColor = newColor;
+        }
+
+        @Override
+        public NodeColorPicker getSource() {
+            return source;
         }
     }
 
@@ -98,5 +115,13 @@ public class NodeColorPicker extends JPanel {
             addMouseListener(mouseListener);
             setToolTipText("Change color");
         }
+    }
+
+    public String getTaxId() {
+        return taxId;
+    }
+
+    public String getDescriptor() {
+        return descriptor;
     }
 }

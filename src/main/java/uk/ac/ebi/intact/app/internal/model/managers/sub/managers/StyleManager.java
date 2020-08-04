@@ -2,13 +2,14 @@ package uk.ac.ebi.intact.app.internal.model.managers.sub.managers;
 
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
+import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.color.settings.ColorSettingManager;
 import uk.ac.ebi.intact.app.internal.model.styles.ExpandedStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.MutationStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.Style;
+import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 
 import java.awt.*;
@@ -19,14 +20,17 @@ public class StyleManager {
     private final Manager manager;
     final Map<NetworkView.Type, Style> styles = new HashMap<>();
     final VisualMappingManager vmm;
+    public final ColorSettingManager settings;
 
     public StyleManager(Manager manager) {
         this.manager = manager;
         vmm = manager.utils.getService(VisualMappingManager.class);
+        settings = new ColorSettingManager(manager);
     }
 
     public void setupStyles() {
         StyleMapper.initializeSpeciesAndKingdomColors(true);
+
         StyleMapper.initializeEdgeTypeToPaint();
         StyleMapper.initializeNodeTypeToShape();
         Style summary = new SummaryStyle(manager);
@@ -44,10 +48,14 @@ public class StyleManager {
 
     public Style getStyle(NetworkView view) {
         VisualStyle visualStyle = vmm.getVisualStyle(view.cyView);
-        for (Style style: styles.values()) {
+        for (Style style : styles.values()) {
             if (style.getStyle() == visualStyle) return style;
         }
         return null;
+    }
+
+    public Style getStyle(NetworkView.Type type) {
+        return styles.get(type);
     }
 
     public void toggleFancyStyles() {
@@ -64,6 +72,7 @@ public class StyleManager {
     }
 
     public void resetStyles(boolean async) {
+        settings.resetSettings();
         StyleMapper.resetMappings(async);
         for (Style style : styles.values()) {
             style.setNodePaintStyle();
@@ -72,4 +81,5 @@ public class StyleManager {
             network.completeMissingNodeColorsFromTables(async);
         }
     }
+
 }

@@ -2,6 +2,7 @@ package uk.ac.ebi.intact.app.internal.ui.components.legend;
 
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.color.settings.ColorSetting;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.ui.components.combo.box.models.SortedComboBoxModel;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
@@ -19,18 +20,41 @@ import java.util.stream.Collectors;
 public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorPicker.ColorChangedListener {
     private static final ImageIcon remove = IconUtils.createImageIcon("/Buttons/remove.png");
     private static final List<NodeColorLegendEditor> NODE_COLOR_LEGEND_EDITOR_LIST = new ArrayList<>();
+    private final ColorSetting setting;
 
     protected Network currentNetwork;
     protected JComponent addNewNodeLegendEditorActivator;
     protected String currentTaxId;
-    protected Manager manager;
     protected JComboBox<String> speciesField;
     protected JButton removeButton = new JButton(remove);
 
-    public NodeColorLegendEditor(Network currentNetwork, JComponent addNewNodeLegendEditorActivator) {
-        this.currentNetwork = currentNetwork;
-        this.manager = currentNetwork.manager;
+    public NodeColorLegendEditor(Manager manager, ColorSetting setting, JComponent addNewNodeLegendEditorActivator) {
+        super(manager);
         this.addNewNodeLegendEditorActivator = addNewNodeLegendEditorActivator;
+        this.setting = setting;
+        NODE_COLOR_LEGEND_EDITOR_LIST.add(this);
+
+        setSpeciesField(getSpeciesOptions());
+        descriptor = setting.getTaxonName();
+        currentTaxId = setting.getTaxId();
+        currentColor = setting.getColor();
+        updateStyleColors();
+        definedSpecies = true;
+        editableBall = new EditableBall(currentColor, 30);
+
+        setRemoveButton();
+
+        add(editableBall);
+        add(speciesField);
+        add(removeButton);
+        addColorChangedListener(this);
+    }
+
+    public NodeColorLegendEditor(Network currentNetwork, JComponent addNewNodeLegendEditorActivator) {
+        super(currentNetwork.manager);
+        this.currentNetwork = currentNetwork;
+        this.addNewNodeLegendEditorActivator = addNewNodeLegendEditorActivator;
+        this.setting = null;
         NODE_COLOR_LEGEND_EDITOR_LIST.add(this);
 
         setSpeciesField(getSpeciesOptions());
@@ -49,8 +73,16 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
         addColorChangedListener(this);
     }
 
+    private boolean checkCurrentNetwork() {
+        if (currentNetwork != null) return true;
+        currentNetwork = manager.data.getCurrentNetwork();
+        return currentNetwork != null;
+    }
+
     private Vector<String> getSpeciesOptions() {
-        return new Vector<>(currentNetwork.getNonDefinedTaxon());
+        if (setting != null) return new Vector<>(List.of(setting.getTaxonName()));
+        else if (checkCurrentNetwork()) return new Vector<>(currentNetwork.getNonDefinedTaxon());
+        return new Vector<>();
     }
 
     private void setSpeciesField(Vector<String> speciesOptions) {
@@ -100,6 +132,8 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
         if (formerColor != null)
             manager.style.updateStylesColorScheme(currentTaxId, formerColor, false, true);
         StyleMapper.speciesColors.remove(currentTaxId);
+        manager.style.settings.removeUserColorSetting(currentTaxId);
+
     }
 
     private void setRemoveButton() {
@@ -148,8 +182,24 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     }
 
     public String getSelectedTaxId() {
-        if (currentNetwork == null || speciesField == null) return null;
-        return currentNetwork.getSpeciesId((String) speciesField.getSelectedItem());
+        if (checkCurrentNetwork()) return currentNetwork.getSpeciesId(getSelectedTaxon());
+        else if (setting != null) return setting.getTaxId();
+        return null;
+    }
+
+    @Override
+    public String getTaxId() {
+        return getSelectedTaxId();
+    }
+
+    public String getSelectedTaxon() {
+        if (speciesField == null) return null;
+        return (String) speciesField.getSelectedItem();
+    }
+
+    @Override
+    public String getDescriptor() {
+        return getSelectedTaxon();
     }
 
     public static Set<String> getDefinedTaxIds() {
