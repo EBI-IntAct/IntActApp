@@ -15,7 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class FuzzySearchTaskFactory extends AbstractNetworkSearchTaskFactory {
-    private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/ICON_PNG/Cropped_Gradient790.png");
+    private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/ICON_PNG/RoundN.png");
     static String INTACT_ID = "uk.ac.ebi.intact.search";
     static URL INTACT_URL;
     static String INTACT_NAME = "IntAct Fuzzy Search";
