@@ -1,38 +1,40 @@
 package uk.ac.ebi.intact.app.internal.ui.components.legend;
 
-import org.cytoscape.util.swing.CyColorChooser;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.shapes.Ball;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.LegendDetailPanel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 
 
-public class NodeColorPicker extends JPanel implements MouseListener {
-    protected final NodeColorPicker self;
+public class NodeColorPicker extends JPanel {
+    protected String taxId;
     protected String descriptor;
     protected Color currentColor;
     protected EditableBall editableBall;
     protected boolean definedSpecies;
+    protected final Manager manager;
 
-    private List<ColorChangedListener> listeners = new ArrayList<>();
+    private final List<ColorChangedListener> listeners = new ArrayList<>();
     protected Font italicFont = new Font(getFont().getName(), Font.ITALIC, getFont().getSize());
 
-    public NodeColorPicker() {
-        self = this;
-        setBackground(LegendDetailPanel.backgroundColor);
-        addMouseListener(this);
+    public NodeColorPicker(Manager manager) {
+        this.manager = manager;
+        setBackground(UIColors.lightBackground);
         setLayout(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        addColorChangedListener(manager.style.settings);
     }
 
-    public NodeColorPicker(String descriptor, Color currentColor, boolean definedSpecies) {
-        this();
+    public NodeColorPicker(Manager manager, String taxId, String descriptor, Color currentColor, boolean definedSpecies) {
+        this(manager);
+        this.taxId = taxId;
         this.descriptor = descriptor;
         this.currentColor = currentColor;
         this.definedSpecies = definedSpecies;
@@ -46,12 +48,12 @@ public class NodeColorPicker extends JPanel implements MouseListener {
 
     private void init() {
         editableBall = new EditableBall(currentColor, 30);
-        editableBall.setBackground(LegendDetailPanel.backgroundColor);
+        editableBall.setBackground(UIColors.lightBackground);
         add(editableBall, BorderLayout.WEST);
 
         JLabel label = new JLabel(descriptor, SwingConstants.LEFT);
         label.setVerticalAlignment(SwingConstants.CENTER);
-        label.setBackground(LegendDetailPanel.backgroundColor);
+        label.setBackground(UIColors.lightBackground);
         label.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
         if (definedSpecies) {
             label.setFont(italicFont);
@@ -60,16 +62,27 @@ public class NodeColorPicker extends JPanel implements MouseListener {
 
     }
 
+    public boolean isDefinedSpecies() {
+        return definedSpecies;
+    }
+
     public void addColorChangedListener(ColorChangedListener listener) {
         listeners.add(listener);
     }
 
     public static class ColorChangedEvent extends AWTEvent {
         public final Color newColor;
+        public final NodeColorPicker source;
 
-        public ColorChangedEvent(Object source, int id, Color newColor) {
+        public ColorChangedEvent(NodeColorPicker source, int id, Color newColor) {
             super(source, id);
+            this.source = source;
             this.newColor = newColor;
+        }
+
+        @Override
+        public NodeColorPicker getSource() {
+            return source;
         }
     }
 
@@ -78,40 +91,37 @@ public class NodeColorPicker extends JPanel implements MouseListener {
     }
 
     protected class EditableBall extends Ball {
+        public MouseAdapter mouseListener = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Color selectedColor = JColorChooser.showDialog(NodeColorPicker.this, "Choose " + descriptor + " colors", currentColor);
+                if (selectedColor != null) {
+                    currentColor = selectedColor;
+                    editableBall.setColor(currentColor);
+                    for (ColorChangedListener listener : listeners) {
+                        listener.colorChanged(new ColorChangedEvent(NodeColorPicker.this, ActionEvent.ACTION_PERFORMED, currentColor));
+                    }
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+        };
+
         public EditableBall(Color color, int diameter) {
             super(color, diameter);
-            addMouseListener(self);
+            addMouseListener(mouseListener);
+            setToolTipText("Change color");
         }
     }
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
-
-        currentColor = CyColorChooser.showDialog(self, "Choose " + descriptor + " colors", currentColor);
-        if (currentColor != null) {
-            editableBall.setColor(currentColor);
-            for (ColorChangedListener listener : listeners) {
-                listener.colorChanged(new ColorChangedEvent(this, ActionEvent.ACTION_PERFORMED, currentColor));
-            }
-        }
-
+    public String getTaxId() {
+        return taxId;
     }
 
-    @Override
-    public void mousePressed(MouseEvent e) {
+    public String getDescriptor() {
+        return descriptor;
     }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        setCursor(new Cursor(Cursor.HAND_CURSOR));
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-    }
-
 }

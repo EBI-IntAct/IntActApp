@@ -2,44 +2,48 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
 import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
-import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
-import uk.ac.ebi.intact.app.internal.tasks.view.factories.ExpandViewTaskFactory;
-import uk.ac.ebi.intact.app.internal.ui.utils.LinkUtils;
-import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
+import uk.ac.ebi.intact.app.internal.ui.utils.LinkUtils;
+import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel.backgroundColor;
+import static uk.ac.ebi.intact.app.internal.model.styles.UIColors.lightBackground;
 import static uk.ac.ebi.intact.app.internal.ui.utils.GroupUtils.groupElementsInPanel;
 
 public class NodeFeatures extends AbstractNodeElement {
     private final static ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(15);
     private final List<Feature> features;
     private final boolean showFeatureEdge;
-    private final CollapsedEdge summaryEdge;
+    private final SummaryEdge summaryEdge;
+    private Map<FeatureClassifier.FeatureClass, List<Feature>> classification;
 
-    public NodeFeatures(Node iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, CollapsedEdge summaryEdge) {
-        this(iNode, features, openBrowser, showFeatureEdge, summaryEdge, backgroundColor);
+    public NodeFeatures(Node node, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, SummaryEdge summaryEdge) {
+        this(node, features, openBrowser, showFeatureEdge, summaryEdge, lightBackground);
     }
 
-    public NodeFeatures(Node iNode, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, CollapsedEdge summaryEdge, Color background) {
-        super("Features summary", iNode, openBrowser);
+    public NodeFeatures(Node node, List<Feature> features, OpenBrowser openBrowser, boolean showFeatureEdge, SummaryEdge summaryEdge, Color background) {
+        super("Features summary", node, openBrowser);
         this.features = features;
         this.showFeatureEdge = showFeatureEdge;
         this.summaryEdge = summaryEdge;
@@ -50,15 +54,15 @@ public class NodeFeatures extends AbstractNodeElement {
     @Override
     protected void fillContent() {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-        content.setBackground(backgroundColor);
+        content.setBackground(lightBackground);
         executor.execute(this::fillReportedFeatures);
     }
 
     private void fillReportedFeatures() {
-        Map<FeatureClassifier.FeatureClass, List<Feature>> classification = FeatureClassifier.classify(features);
+        classification = FeatureClassifier.classify(features);
         boolean empty = true;
         for (FeatureClassifier.FeatureClass featureClass : FeatureClassifier.root) {
-            CollapsablePanel featurePanel = recursivelyBuildFeatures(classification, featureClass);
+            CollapsablePanel featurePanel = recursivelyBuildFeatures(featureClass);
             if (featurePanel != null) {
                 empty = false;
                 content.add(featurePanel);
@@ -70,12 +74,12 @@ public class NodeFeatures extends AbstractNodeElement {
 
     }
 
-    private CollapsablePanel recursivelyBuildFeatures(Map<FeatureClassifier.FeatureClass, List<Feature>> classification, FeatureClassifier.FeatureClass featureClass) {
+    private CollapsablePanel recursivelyBuildFeatures(FeatureClassifier.FeatureClass featureClass) {
         if (featureClass instanceof FeatureClassifier.InnerFeatureClass) {
             FeatureClassifier.InnerFeatureClass innerFeatureClass = (FeatureClassifier.InnerFeatureClass) featureClass;
             List<CollapsablePanel> subFeaturePanels = new ArrayList<>();
             for (FeatureClassifier.FeatureClass subFeatureClass : innerFeatureClass.subClasses) {
-                CollapsablePanel subFeaturePanel = recursivelyBuildFeatures(classification, subFeatureClass);
+                CollapsablePanel subFeaturePanel = recursivelyBuildFeatures(subFeatureClass);
                 if (subFeaturePanel != null) {
                     subFeaturePanels.add(subFeaturePanel);
                 }
@@ -88,7 +92,9 @@ public class NodeFeatures extends AbstractNodeElement {
                 for (CollapsablePanel subFeaturePanel : subFeaturePanels) {
                     featureListPanel.add(subFeaturePanel);
                 }
-                return new CollapsablePanel(innerFeatureClass.name, featureListPanel, false);
+                CollapsablePanel collapsablePanel = new CollapsablePanel("", featureListPanel, false);
+                collapsablePanel.setHeader(getFeaturePanelTitle(featureClass));
+                return collapsablePanel;
             }
             return null;
         } else if (classification.containsKey(featureClass)) {
@@ -96,33 +102,53 @@ public class NodeFeatures extends AbstractNodeElement {
         } else {
             return null;
         }
+    }
 
+    private LinePanel getFeaturePanelTitle(FeatureClassifier.FeatureClass featureClass) {
+        LinePanel title = new LinePanel(getBackground());
+        if (featureClass.identifier != null) {
+            title.add(new JLink(featureClass.name, featureClass.identifier.getUserAccessURL(), openBrowser));
+        } else {
+            title.add(new JLabel(featureClass.name));
+        }
+        title.add(new JLabel(String.format(" (%d)", getFeatureCount(featureClass))));
+        return title;
+    }
+
+    private int getFeatureCount(FeatureClassifier.FeatureClass featureClass) {
+        if (featureClass instanceof FeatureClassifier.InnerFeatureClass) {
+            FeatureClassifier.InnerFeatureClass innerFeatureClass = (FeatureClassifier.InnerFeatureClass) featureClass;
+            return innerFeatureClass.subClasses.stream().mapToInt(this::getFeatureCount).sum() + getFeatureCount(innerFeatureClass.nonDefinedLeaf);
+        } else {
+            if (classification.containsKey(featureClass)) return classification.get(featureClass).size();
+            return 0;
+        }
     }
 
     private CollapsablePanel createFeatureList(FeatureClassifier.FeatureClass featureClass, List<Feature> features) {
         VerticalPanel featureListPanel = new VerticalPanel(getBackground());
         if (showFeatureEdge) {
-            groupElementsInPanel(featureListPanel, getBackground(), features, feature -> feature.type,
+            groupElementsInPanel(featureListPanel, getBackground(), features, feature -> feature.type, openBrowser,
                     (featureTypePanel, featuresOfType) -> groupElementsInPanel(featureTypePanel, getBackground(), featuresOfType, feature -> feature.name,
                             (featureNamePanel, featuresOfName) -> {
                                 for (Feature feature : featuresOfName) {
                                     List<EvidenceEdge> featureEdges = feature.getEdges();
-                                    for (EvidenceEdge edge : featureEdges) {
+                                    for (EvidenceEdge featureEdge : featureEdges) {
                                         LinePanel line = new LinePanel(getBackground());
-                                        if (summaryEdge == null) {
+                                        if (summaryEdge == null) { // Node features
                                             Node otherNode;
-                                            if (iNode.equals(edge.source)) {
-                                                otherNode = edge.target;
-                                            } else if (iNode.equals(edge.target)) {
-                                                otherNode = edge.source;
+                                            if (node.equals(featureEdge.source)) {
+                                                otherNode = featureEdge.target;
+                                            } else if (node.equals(featureEdge.target)) {
+                                                otherNode = featureEdge.source;
                                             } else {
                                                 continue;
                                             }
-                                            line.add(new SelectEdgeButton(edge));
-                                            line.add(new JLabel("Observed on edge with " + otherNode.name + " (" + edge.ac + ")"));
-                                        } else {
-                                            if (summaryEdge.subEdgeSUIDs.contains(edge.edge.getSUID())) {
-                                                line.add(LinkUtils.createIntactEdgeLink(openBrowser, edge));
+                                            line.add(new SelectEdgeButton(featureEdge));
+                                            line.add(new JLabel("Observed on edge with " + otherNode.name + " (" + featureEdge.ac + ")"));
+                                        } else { // Summary edge features
+                                            if (summaryEdge.isSummarizing(featureEdge)) {
+                                                line.add(LinkUtils.createEvidenceEdgeLink(openBrowser, featureEdge));
                                             }
                                         }
                                         featureNamePanel.add(line);
@@ -131,7 +157,7 @@ public class NodeFeatures extends AbstractNodeElement {
                             }
                     )
             );
-        } else {
+        } else { // Evidence edge features
             for (Feature feature : features) {
                 LinePanel line = new LinePanel(getBackground());
                 line.add(new JLabel(feature.type + " (" + feature.name + ")"));
@@ -140,7 +166,9 @@ public class NodeFeatures extends AbstractNodeElement {
             }
         }
 
-        return new CollapsablePanel(featureClass.name, featureListPanel, true);
+        CollapsablePanel collapsablePanel = new CollapsablePanel("", featureListPanel, true);
+        collapsablePanel.setHeader(getFeaturePanelTitle(featureClass));
+        return collapsablePanel;
     }
 
     public static Map<EvidenceEdge, List<SelectEdgeButton>> edgeToCheckBoxes = new HashMap<>();
@@ -162,14 +190,14 @@ public class NodeFeatures extends AbstractNodeElement {
         @Override
         public void itemStateChanged(ItemEvent e) {
             if (silenceListener) return;
-            Manager manager = edge.network.getManager();
-            NetworkView currentIView = manager.data.getCurrentIntactNetworkView();
-            if (currentIView != null && currentIView.getType() == NetworkView.Type.COLLAPSED) {
-                manager.utils.execute(new ExpandViewTaskFactory(manager, true).createTaskIterator());
+            Manager manager = edge.network.manager;
+            NetworkView currentView = manager.data.getCurrentNetworkView();
+            if (currentView != null && currentView.getType() == NetworkView.Type.SUMMARY) {
+                manager.utils.execute(new EvidenceViewTaskFactory(manager, true).createTaskIterator());
             }
 
             boolean selected = e.getStateChange() == ItemEvent.SELECTED;
-            edge.network.getCyNetwork().getRow(edge.edge).set(CyNetwork.SELECTED, selected);
+            edge.network.getCyNetwork().getRow(edge.cyEdge).set(CyNetwork.SELECTED, selected);
 
             for (SelectEdgeButton checkBox : edgeToCheckBoxes.get(edge)) {
                 checkBox.silenceListener = true;
@@ -189,6 +217,5 @@ public class NodeFeatures extends AbstractNodeElement {
                 edgeToCheckBoxes.remove(edge);
             }
         }
-
     }
 }

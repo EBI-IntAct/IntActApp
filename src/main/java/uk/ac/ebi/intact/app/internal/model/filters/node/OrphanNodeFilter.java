@@ -6,6 +6,7 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,7 +17,7 @@ public class OrphanNodeFilter extends Filter<Node> {
 
     @Override
     public void filterView() {
-        Set<CyEdge> visibleEdges = view.visibleEdges.stream().map(edge -> edge.edge).collect(Collectors.toSet());
-        view.visibleNodes.removeIf(node -> !CollectionUtils.anyCommonElement(network.getCyNetwork().getAdjacentEdgeList(node.node, CyEdge.Type.ANY), visibleEdges));
+        Set<CyEdge> visibleEdges = view.visibleEdges.stream().filter(Objects::nonNull).map(edge -> edge.cyEdge).collect(Collectors.toSet());
+        view.visibleNodes.removeIf(node -> !CollectionUtils.anyCommonElement(network.getCyNetwork().getAdjacentEdgeList(node.cyNode, CyEdge.Type.ANY), visibleEdges));
     }
 }

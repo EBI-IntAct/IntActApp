@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.app.internal.model.filters;
 import com.fasterxml.jackson.databind.JsonNode;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
@@ -20,18 +20,18 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
         super(view, name, elementType);
         List<T> elements;
         if (elementType == Node.class) {
-            elements = new ArrayList<>((List<T>) network.getINodes());
+            elements = new ArrayList<>((List<T>) network.getNodes());
         } else if (elementType == Edge.class) {
-            elements = new ArrayList<>((List<T>) network.getCollapsedIEdges());
-            elements.addAll((List<T>) network.getEvidenceIEdges());
-        } else if (elementType == CollapsedEdge.class) {
-            elements = new ArrayList<>((List<T>) network.getCollapsedIEdges());
+            elements = new ArrayList<>((List<T>) network.getSummaryEdges());
+            elements.addAll((List<T>) network.getEvidenceEdges());
+        } else if (elementType == SummaryEdge.class) {
+            elements = new ArrayList<>((List<T>) network.getSummaryEdges());
         } else if (elementType == EvidenceEdge.class) {
-            elements = new ArrayList<>((List<T>) network.getEvidenceIEdges());
+            elements = new ArrayList<>((List<T>) network.getEvidenceEdges());
         } else return;
 
         for (T element : elements) {
-            propertiesVisibility.put(getProperty(element), true);
+            if (element != null) propertiesVisibility.put(getProperty(element), true);
         }
     }
 
@@ -57,8 +57,8 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
             if (Node.class.isAssignableFrom(elementType)) {
                 view.visibleNodes.removeIf(node -> !propertiesVisibility.get(getProperty(elementType.cast(node))));
             } else if (Edge.class.isAssignableFrom(elementType)) {
-                if (elementType == CollapsedEdge.class && view.getType() != NetworkView.Type.COLLAPSED) return;
-                if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.COLLAPSED) return;
+                if (elementType == SummaryEdge.class && view.getType() != NetworkView.Type.SUMMARY) return;
+                if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.SUMMARY) return;
                 view.visibleEdges.removeIf(edge -> !propertiesVisibility.get(getProperty(elementType.cast(edge))));
             }
         }

@@ -15,20 +15,21 @@ public class NodeBasics extends AbstractNodeElement {
 
     private LinePanel graphDescription;
 
-    public NodeBasics(Node iNode, OpenBrowser openBrowser) {
-        super(null, iNode, openBrowser);
+    public NodeBasics(Node node, OpenBrowser openBrowser) {
+        super(null, node, openBrowser);
         fillContent();
     }
 
     @Override
     protected void fillContent() {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-        content.add(new JLabel(iNode.fullName));
-        content.add(new JLink(DbIdentifiersToLink.getFancyDatabaseName(iNode.preferredIdentifier) + " · " + iNode.preferredIdentifier.id, DbIdentifiersToLink.getLink(iNode.preferredIdentifier), openBrowser));
+        if (node.description != null) content.add(new JLabel(node.description));
+        content.add(new JLink(DbIdentifiersToLink.getFancyDatabaseName(node.preferredIdentifier) + " · " + node.preferredIdentifier.id, DbIdentifiersToLink.getLink(node.preferredIdentifier), openBrowser));
         graphDescription = new LinePanel(getBackground());
-        graphDescription.add(new JLabel(StringUtils.capitalize(iNode.type) + " of " + iNode.species));
+        graphDescription.add(new JLink(StringUtils.capitalize(node.typeName), node.type.id.getUserAccessURL(), openBrowser));
+        graphDescription.add(new JLabel(" of " + node.species));
         graphDescription.add(Box.createHorizontalStrut(4));
-        graphDescription.add(LinkUtils.createSpecieLink(openBrowser, iNode.taxId));
+        graphDescription.add(LinkUtils.createSpecieLink(openBrowser, node.taxId));
         graphDescription.add(Box.createHorizontalGlue());
         content.add(graphDescription);
     }

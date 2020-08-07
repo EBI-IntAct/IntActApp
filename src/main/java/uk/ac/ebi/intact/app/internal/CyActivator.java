@@ -3,31 +3,26 @@ package uk.ac.ebi.intact.app.internal;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
-import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
-import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIQueryTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.AddTermsTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.query.factories.FuzzySearchTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ExactQueryTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.query.factories.FuzzySearchTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.settings.SettingsTask;
 import uk.ac.ebi.intact.app.internal.tasks.version.factories.VersionTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.view.factories.CollapseViewTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.view.factories.ExpandViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.MutationViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
 import java.util.Properties;
@@ -65,34 +60,25 @@ public class CyActivator extends AbstractCyActivator {
         String version = v.toString(); // The full version
 
         {
-            // Register our network added listener and session loaded listener
-            registerService(bc, manager.data, SessionLoadedListener.class, new Properties());
-            registerService(bc, manager.data, NetworkAddedListener.class, new Properties());
-            registerService(bc, manager.data, NetworkViewAddedListener.class, new Properties());
-            registerService(bc, manager.data, NetworkAboutToBeDestroyedListener.class, new Properties());
-            registerService(bc, manager.data, NetworkViewAboutToBeDestroyedListener.class, new Properties());
-        }
-
-        {
-            CollapseViewTaskFactory collapseViewTaskFactory = new CollapseViewTaskFactory(manager, false);
+            SummaryViewTaskFactory summaryViewTaskFactory = new SummaryViewTaskFactory(manager, false);
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
-            properties.setProperty(COMMAND, "collapse");
+            properties.setProperty(COMMAND, "summary");
 
             properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
-            properties.setProperty(TITLE, "Collapse");
+            properties.setProperty(TITLE, "Summary");
             properties.setProperty(MENU_GRAVITY, "1.0");
             properties.setProperty(IN_MENU_BAR, "true");
-            registerService(bc, collapseViewTaskFactory, TaskFactory.class, properties);
+            registerService(bc, summaryViewTaskFactory, TaskFactory.class, properties);
         }
         {
-            ExpandViewTaskFactory expendTaskFactory = new ExpandViewTaskFactory(manager, false);
+            EvidenceViewTaskFactory expendTaskFactory = new EvidenceViewTaskFactory(manager, false);
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
-            properties.setProperty(COMMAND, "expand");
+            properties.setProperty(COMMAND, "evidence");
 
             properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
-            properties.setProperty(TITLE, "Expand");
+            properties.setProperty(TITLE, "Evidence");
             properties.setProperty(MENU_GRAVITY, "2.0");
             properties.setProperty(IN_MENU_BAR, "true");
             registerService(bc, expendTaskFactory, TaskFactory.class, properties);

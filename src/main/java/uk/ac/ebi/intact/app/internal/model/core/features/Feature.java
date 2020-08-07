@@ -1,43 +1,47 @@
 package uk.ac.ebi.intact.app.internal.model.core.features;
 
 import org.cytoscape.model.CyRow;
-import uk.ac.ebi.intact.app.internal.utils.TableUtil;
-import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
-import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.CVTerm;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.FeatureFields;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.*;
 
 public class Feature {
     public final Network network;
+    public final CyRow featureRow;
     public final String ac;
-    public final String type;
-    public final OntologyIdentifier typeIdentifier;
+    public final CVTerm type;
     public final String name;
-    public final List<Long> edgeIDs = new ArrayList<>();
-    public final List<Long> edgeSUIDs = new ArrayList<>();
 
     public Feature(Network network, CyRow featureRow) {
         this.network = network;
-        this.ac = featureRow.get(FEATURE_AC, String.class);
-        this.name = featureRow.get(FEATURE_NAME, String.class);
-        this.type = featureRow.get(FEATURE_TYPE, String.class);
-        this.typeIdentifier = TableUtil.getOntologyIdentifier(featureRow, FEATURE_TYPE_MI_ID, FEATURE_TYPE_MOD_ID, FEATURE_TYPE_PAR_ID);
-        edgeIDs.addAll(featureRow.getList(FEATURE_EDGE_IDS, Long.class));
-        edgeSUIDs.addAll(featureRow.getList(FEATURE_EDGE_SUIDS, Long.class));
+        this.featureRow = featureRow;
+        this.ac = FeatureFields.AC.getValue(featureRow);
+        this.name = FeatureFields.NAME.getValue(featureRow);
+        this.type = new CVTerm(featureRow, FeatureFields.TYPE, FeatureFields.TYPE_MI_ID, FeatureFields.TYPE_MOD_ID, FeatureFields.TYPE_PAR_ID);
     }
 
     public List<EvidenceEdge> getEdges() {
-        return edgeSUIDs.stream()
-                .map(suid -> (EvidenceEdge) Edge.createIntactEdge(network, network.getCyNetwork().getEdge(suid)))
+        return FeatureFields.EDGES_SUID.getValue(featureRow).stream()
+                .map(suid -> (EvidenceEdge) Edge.createEdge(network, network.getCyNetwork().getEdge(suid)))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    public boolean isPresent() {
+        return FeatureFields.EDGES_SUID.getValue(featureRow).stream()
+                .anyMatch(edgeSUID -> network.getCyNetwork().getEdge(edgeSUID) != null);
+    }
+
+    public boolean isPresentIn(Set<Long> edgesSUID) {
+        return FeatureFields.EDGES_SUID.getValue(featureRow).stream()
+                .anyMatch(edgesSUID::contains);
     }
 
     @Override

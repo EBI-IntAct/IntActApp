@@ -37,12 +37,16 @@ public class GOIdentifierPanel extends IdentifierPanel {
             }
         }
         List<Term> terms = identifiers.stream()
-                .map(identifier -> geneOntologyTerms.get(identifier.id))
+                .map(identifier -> {
+                    Term term = geneOntologyTerms.get(identifier.id);
+                    if (term != null) term.qualifier = identifier.qualifier;
+                    return term;
+                })
                 .collect(Collectors.toList());
 
         GroupUtils.groupElementsInPanel(content, terms, term -> term.aspect, (toFill, aspectTerms) -> {
             for (Term term : aspectTerms) {
-                JLink termLink = new JLink(String.format("%s - %s", term.id, term.name), "https://www.ebi.ac.uk/QuickGO/term/" + URLEncoder.encode(term.id, StandardCharsets.UTF_8), openBrowser);
+                JLink termLink = new JLink(String.format("%s - %s", term.id, term.name), "https://www.ebi.ac.uk/QuickGO/term/" + URLEncoder.encode(term.id, StandardCharsets.UTF_8), openBrowser, term.qualifier != null && term.qualifier.equals("identity"));
                 termLink.setToolTipText(term.definition);
                 toFill.add(termLink);
             }
@@ -57,6 +61,7 @@ public class GOIdentifierPanel extends IdentifierPanel {
         final String name;
         final String definition;
         final String aspect;
+        String qualifier;
 
         public Term(JsonNode goNode) {
             id = goNode.get("id").textValue();

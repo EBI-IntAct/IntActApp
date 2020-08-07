@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.components.panels;
 
-import uk.ac.ebi.intact.app.internal.ui.components.CollapseAllButton;
+import uk.ac.ebi.intact.app.internal.ui.components.buttons.CollapseAllButton;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 
 import javax.swing.*;
@@ -25,16 +25,19 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
     public final CollapseAllButton collapseAllButton = new CollapseAllButton(true, subCollapsablePanels);
     private boolean collapsed;
 
-    public CollapsablePanel(String text, boolean collapsed) {
-        this(text, new VerticalPanel(), collapsed);
+    private final String title;
+
+    public CollapsablePanel(String title, boolean collapsed) {
+        this(title, new VerticalPanel(), collapsed);
     }
 
-    public CollapsablePanel(String text, JPanel panel, boolean collapsed) {
+    public CollapsablePanel(String title, JPanel panel, boolean collapsed) {
         super();
         setLayout(new BorderLayout());
         this.collapsed = collapsed;
+        this.title = title;
         content = panel;
-        headerPanel = new HeaderPanel(text, collapsed);
+        headerPanel = new HeaderPanel(this.title, collapsed);
 
         add(headerPanel, BorderLayout.NORTH);
 
@@ -171,10 +174,17 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
         }
     }
 
+    public String getTitle() {
+        return title;
+    }
+
     private class HeaderPanel extends LinePanel implements ActionListener {
+
         JButton expandButton;
         JComponent headerComponent;
         boolean expanded;
+
+        public final EmptyBorder BORDER = new EmptyBorder(0, 4, 0, 0);
 
         public HeaderPanel(String text, boolean collapsed) {
             this.expanded = !collapsed;
@@ -192,9 +202,9 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
             expandButton.setPreferredSize(new Dimension(20, 20));
             this.add(expandButton);
             headerComponent = new JLabel(text);
-            headerComponent.setBorder(new EmptyBorder(0, 4, 0, 0));
+            headerComponent.setBorder(BORDER);
             this.add(headerComponent);
-            collapseAllButton.setBorder(new EmptyBorder(0, 4, 0, 0));
+            collapseAllButton.setBorder(BORDER);
             collapseAllButton.setVisible(false);
             collapseAllButton.setEnabled(!collapsed);
             this.add(collapseAllButton);
@@ -203,6 +213,7 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
         }
 
         public void setHeaderComponent(JComponent component) {
+            component.setBorder(BORDER);
             this.remove(1);
             this.add(component, 1);
         }
@@ -213,6 +224,12 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
 
         public void setButton(Icon buttonState) {
             expandButton.setIcon(buttonState);
+        }
+
+        @Override
+        public void setBackground(Color bg) {
+            super.setBackground(bg);
+            if (headerComponent != null) headerComponent.setBackground(bg);
         }
     }
 }

@@ -1,7 +1,7 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
-import uk.ac.ebi.intact.app.internal.ui.components.IButton;
+import uk.ac.ebi.intact.app.internal.ui.components.buttons.IButton;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.FloatingPanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
@@ -20,7 +20,6 @@ import static uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution.TermColum
 
 class TermTable extends JPanel implements ItemListener {
     public static final Color TERM_BG = new Color(161, 135, 184);
-    private final Boolean includeAllInteractorsOption;
     final ResolveTermsPanel resolver;
     final String term;
     final List<Interactor> interactors;
@@ -28,8 +27,9 @@ class TermTable extends JPanel implements ItemListener {
     final int totalInteractors;
     final Map<Interactor, Row> rows = new HashMap<>();
     final EasyGBC layoutHelper = new EasyGBC();
-    boolean includeAll = false;
+    boolean includeAdditionalInteractors = false;
 
+    private LimitRow limitRow;
     private IButton selectAll;
     private IButton unselectAll;
     private JPanel termControlPanel;
@@ -40,7 +40,6 @@ class TermTable extends JPanel implements ItemListener {
         this.interactors = interactors;
         this.totalInteractors = totalInteractors;
         this.isPaged = totalInteractors > interactors.size();
-        includeAllInteractorsOption = resolver.manager.option.DEFAULT_INCLUDE_ALL_INTERACTORS.getValue();
         init();
     }
 
@@ -59,7 +58,8 @@ class TermTable extends JPanel implements ItemListener {
             }
             if (isPaged) {
                 resolver.rowHeaderHelper.down();
-                add(new LimitRow(this), layoutHelper.down().expandBoth());
+                limitRow = new LimitRow(this);
+                add(limitRow, layoutHelper.down().expandBoth());
             }
         }
     }
@@ -115,17 +115,7 @@ class TermTable extends JPanel implements ItemListener {
 
     public void homogenizeWidth() {
         rows.values().forEach(Row::homogenizeWidth);
-    }
-
-    public void updatePreviews() {
-        rows.values().forEach(Row::updatePreview);
-    }
-
-    public List<Interactor> getDeselectedInteractors() {
-        return rows.values().stream()
-                .filter(row -> !row.selected)
-                .map(row -> row.interactor)
-                .collect(Collectors.toList());
+        if (limitRow != null) limitRow.homogenizeWidth();
     }
 
     public List<Interactor> getSelectedInteractors() {

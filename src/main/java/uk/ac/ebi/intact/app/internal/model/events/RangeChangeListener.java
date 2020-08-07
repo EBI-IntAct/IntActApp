@@ -1,7 +1,7 @@
 package uk.ac.ebi.intact.app.internal.model.events;
 
-import java.util.EventListener;
+import org.cytoscape.event.CyListener;
 
-public interface RangeChangeListener extends EventListener {
-    void rangeChanged(RangeChangeEvent event);
+public interface RangeChangeListener extends CyListener {
+    void handleRangeChanged(RangeChangeEvent event);
 }

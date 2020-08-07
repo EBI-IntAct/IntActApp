@@ -9,20 +9,20 @@ public class Interactor {
     public final String ac;
     public final String name;
     public final String preferredId;
-    public final String fullName;
-    public final String type;
+    public final String description;
+    public final String typeName;
     public final String species;
     public final Map<String, List<String>> matchingColumns = new HashMap<>();
-    public final Long taxId;
+    public final String taxId;
     public final Integer interactionCount;
 
 
-    public Interactor(String ac, String name, String preferredId, String fullName, String type, String species, Long taxId, Integer interactionCount) {
+    public Interactor(String ac, String name, String preferredId, String description, String typeName, String species, String taxId, Integer interactionCount) {
         this.ac = ac;
         this.name = name;
         this.preferredId = preferredId;
-        this.fullName = fullName;
-        this.type = type;
+        this.description = description;
+        this.typeName = typeName;
         this.species = species;
         this.taxId = taxId;
         this.interactionCount = interactionCount;
@@ -46,7 +46,7 @@ public class Interactor {
                         entity.get("interactorDescription").textValue(),
                         entity.get("interactorType").textValue(),
                         entity.get("interactorSpecies").textValue(),
-                        entity.get("interactorTaxId").longValue(),
+                        entity.get("interactorTaxId").asText(),
                         entity.get("interactionCount").intValue()
                 );
                 for (JsonNode highlight : highlighted.get("highlights")) {
@@ -83,8 +83,8 @@ public class Interactor {
                 "ac='" + ac + '\'' +
                 ", name='" + name + '\'' +
                 ", preferredId='" + preferredId + '\'' +
-                ", description='" + fullName + '\'' +
-                ", type='" + type + '\'' +
+                ", description='" + description + '\'' +
+                ", type='" + typeName + '\'' +
                 ", species='" + species + '\'' +
                 ", taxId=" + taxId +
                 ", interactionCount=" + interactionCount +

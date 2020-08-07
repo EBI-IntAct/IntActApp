@@ -11,6 +11,6 @@ public class NodeTypeFilter extends DiscreteFilter<Node> {
 
     @Override
     public String getPropertyValue(Node node) {
-        return node.type;
+        return node.typeName;
     }
 }

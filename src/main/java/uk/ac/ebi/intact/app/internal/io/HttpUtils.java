@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import org.cytoscape.io.util.StreamUtil;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 
 import java.io.*;
 import java.net.*;
@@ -13,7 +13,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 public class HttpUtils {
     private static final HttpClient httpClient = HttpClient.newBuilder()
@@ -24,7 +28,7 @@ public class HttpUtils {
         URL trueURL;
         try {
             if (queryMap.size() > 0) {
-                String args = HttpUtils.getStringArguments(queryMap);
+                String args = getStringArguments(queryMap);
                 manager.utils.info("URL: " + url + "?" + args);
                 trueURL = new URL(url + "?" + args);
             } else {
@@ -41,6 +45,7 @@ public class HttpUtils {
         try {
             InputStream entityStream = trueURL.openStream();
             jsonObject = new ObjectMapper().readTree(entityStream);
+            entityStream.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -59,6 +64,13 @@ public class HttpUtils {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response == null) {
+                manager.utils.error("No response from " + url + " with post data = " + data.toString());
+                return null;
+            }
+            if (response.statusCode() != 200) {
+                manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + data.toString());
+            }
             return new ObjectMapper().readTree(response.body());
 
         } catch (Exception e) {
@@ -66,7 +78,40 @@ public class HttpUtils {
             manager.utils.error("Unexpected error when parsing JSON from server: " + e.getMessage());
             return null;
         }
+    }
 
+    public static JsonNode postJSON(String url, Map<Object, Object> data, Manager manager, Supplier<Boolean> isCancelled) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .POST(buildFormDataFromMap(data))
+                    .uri(URI.create(url))
+                    .setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .header("accept", "application/json")
+                    .build();
+            Instant begin = Instant.now();
+            CompletableFuture<String> body = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> {
+                        if (response.statusCode() != 200) {
+                            manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + data.toString());
+                        }
+                        return response;
+                    }).thenApply(HttpResponse::body);
+
+            while (!body.isDone()) {
+                if (isCancelled.get()) {
+                    body.cancel(true);
+                    return null;
+                }
+            }
+            System.out.println("Response received in " + Duration.between(begin, Instant.now()).toSeconds() + "s from " + url);
+            return new ObjectMapper().readTree(body.get());
+
+        } catch (Exception e) {
+            // e.printStackTrace();
+            manager.utils.error("Unexpected error while parsing JSON from server: " + e.getMessage());
+            return null;
+        }
     }
 
 

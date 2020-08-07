@@ -3,96 +3,83 @@ package uk.ac.ebi.intact.app.internal.model.core.elements.edges;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
-import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
-import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 
 import java.util.*;
 
-import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.SOURCE_FEATURES;
-import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.TARGET_FEATURES;
+import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields.*;
 
 public abstract class Edge implements Element {
     public final Network network;
-    public final CyEdge edge;
+    public final CyEdge cyEdge;
     public final String name;
-    public final double miScore;
-    public boolean collapsed;
     public final CyRow edgeRow;
     public final Node source;
     public final Node target;
+    public final double miScore;
     public final List<String> sourceFeatureAcs;
     public final List<String> targetFeatureAcs;
 
 
-    public static Edge createIntactEdge(Network network, CyEdge edge) {
+    public static Edge createEdge(Network network, CyEdge edge) {
         if (network == null || edge == null) return null;
         CyRow edgeRow = network.getCyNetwork().getRow(edge);
         if (edgeRow == null) return null;
-        Boolean isCollapsed = edgeRow.get(ModelUtils.C_IS_COLLAPSED, Boolean.class);
-        if (isCollapsed == null) return null;
-        if (isCollapsed) {
-            return new CollapsedEdge(network, edge);
+        Boolean isSummary = EdgeFields.IS_SUMMARY.getValue(edgeRow);
+        if (isSummary) {
+            return new SummaryEdge(network, edge);
         } else {
             return new EvidenceEdge(network, edge);
         }
     }
 
 
-    Edge(Network network, CyEdge edge) {
+    Edge(Network network, CyEdge cyEdge) {
         this.network = network;
-        this.edge = edge;
-        edgeRow = network.getCyNetwork().getRow(edge);
+        this.cyEdge = cyEdge;
+        edgeRow = network.getCyNetwork().getRow(cyEdge);
 
         name = edgeRow.get(CyNetwork.NAME, String.class);
-        miScore = edgeRow.get(ModelUtils.MI_SCORE, Double.class);
-        source = new Node(network, edge.getSource());
-        target = edge.getTarget() != null ? new Node(network, edge.getTarget()) : null;
+        miScore = EdgeFields.MI_SCORE.getValue(edgeRow);
+        source = network.getNode(cyEdge.getSource());
+        target = cyEdge.getTarget() != null ? network.getNode(cyEdge.getTarget()) : null;
 
-        sourceFeatureAcs = edgeRow.getList(SOURCE_FEATURES, String.class);
+        sourceFeatureAcs = FEATURES.SOURCE.getValue(edgeRow);
         if (sourceFeatureAcs != null) {
             sourceFeatureAcs.removeIf(String::isBlank);
         }
-        targetFeatureAcs = edgeRow.getList(TARGET_FEATURES, String.class);
+        targetFeatureAcs = FEATURES.TARGET.getValue(edgeRow);
         if (targetFeatureAcs != null) {
             targetFeatureAcs.removeIf(String::isBlank);
         }
     }
 
-    public Map<Node, List<Feature>> getFeatures() {
-        Map<Node, List<Feature>> features = new HashMap<>();
-
-        buildFeatures(features, sourceFeatureAcs, source);
-        buildFeatures(features, targetFeatureAcs, target);
-        return features;
-    }
-
-    private void buildFeatures(Map<Node, List<Feature>> features, List<String> featureAcs, Node participant) {
-        features.put(participant, new ArrayList<>());
-        if (participant == null || featureAcs == null) return;
-
-        for (String featureAc : featureAcs) {
-            features.get(participant).add(new Feature(network, network.getFeaturesTable().getRow(featureAc)));
-        }
-    }
+    public abstract Map<Node, List<Feature>> getFeatures() ;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Edge that = (Edge) o;
-        return edge.equals(that.edge);
+        return cyEdge.equals(that.cyEdge);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(edge);
+        return Objects.hash(cyEdge);
     }
 
     @Override
     public String toString() {
-        return edge.toString();
+        return cyEdge.toString();
+    }
+
+    @Override
+    public boolean isSelected() {
+        return edgeRow.get(CyNetwork.SELECTED, Boolean.class);
     }
 }

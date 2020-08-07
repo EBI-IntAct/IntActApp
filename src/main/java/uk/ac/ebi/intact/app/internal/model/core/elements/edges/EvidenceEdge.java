@@ -1,35 +1,120 @@
 package uk.ac.ebi.intact.app.internal.model.core.elements.edges;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.CVTerm;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.FeatureFields;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields.*;
 
 public class EvidenceEdge extends Edge {
-    public final String type;
+    public final long id;
     public final String ac;
-    public final String detectionMethod;
+    public final CVTerm type;
+    public final CVTerm interactionDetectionMethod;
+    public final CVTerm participantDetectionMethod;
     public final String hostOrganism;
+    public final String hostOrganismTaxId;
     public final String expansionType;
     public final String pubMedId;
-    public final String sourceBiologicalRole;
-    public final String targetBiologicalRole;
-    public final long hostOrganismTaxId;
-    public final long id;
+    public final CVTerm sourceBiologicalRole;
+    public final CVTerm sourceExperimentalRole;
+    public final CVTerm targetBiologicalRole;
+    public final CVTerm targetExperimentalRole;
 
     EvidenceEdge(Network network, CyEdge edge) {
         super(network, edge);
-        collapsed = false;
-        type = edgeRow.get(CyEdge.INTERACTION, String.class);
-        id = edgeRow.get(ModelUtils.INTACT_ID, Long.class);
-        ac = edgeRow.get(ModelUtils.INTACT_AC, String.class);
-        detectionMethod = edgeRow.get(ModelUtils.DETECTION_METHOD, String.class);
-        hostOrganism = edgeRow.get(ModelUtils.HOST_ORGANISM, String.class);
-        hostOrganismTaxId = edgeRow.get(ModelUtils.HOST_ORGANISM_ID, Long.class);
-        expansionType = edgeRow.get(ModelUtils.EXPANSION_TYPE, String.class);
-        sourceBiologicalRole = edgeRow.get(ModelUtils.SOURCE_BIOLOGICAL_ROLE, String.class);
-        targetBiologicalRole = edgeRow.get(ModelUtils.TARGET_BIOLOGICAL_ROLE, String.class);
-        pubMedId = edgeRow.get(ModelUtils.PUBMED_ID, String.class);
+        ac = AC.getValue(edgeRow);
+        type = new CVTerm(edgeRow, TYPE);
+        id = ID.getValue(edgeRow);
+        interactionDetectionMethod = new CVTerm(edgeRow, INTERACTION_DETECTION_METHOD);
+        participantDetectionMethod = new CVTerm(edgeRow, PARTICIPANT_DETECTION_METHOD);
+        hostOrganism = HOST_ORGANISM.getValue(edgeRow);
+        hostOrganismTaxId = HOST_ORGANISM_ID.getValue(edgeRow);
+        expansionType = EXPANSION_TYPE.getValue(edgeRow);
+
+        sourceBiologicalRole = new CVTerm(edgeRow, BIOLOGICAL_ROLE.SOURCE);
+        sourceExperimentalRole = new CVTerm(edgeRow, EXPERIMENTAL_ROLE.SOURCE);
+
+        targetBiologicalRole = new CVTerm(edgeRow, BIOLOGICAL_ROLE.TARGET);
+        targetExperimentalRole = new CVTerm(edgeRow, EXPERIMENTAL_ROLE.TARGET);
+
+        pubMedId = PUBMED_ID.getValue(edgeRow);
     }
 
+    @Override
+    public Map<Node, List<Feature>> getFeatures() {
+        Map<Node, List<Feature>> features = new HashMap<>();
 
+        buildFeatures(features, sourceFeatureAcs, source);
+        buildFeatures(features, targetFeatureAcs, target);
+        return features;
+    }
+
+    public boolean isAffectedByMutation() {
+        return getFeatures().values().stream()
+                .flatMap(List::stream)
+                .anyMatch(feature -> FeatureClassifier.mutation.contains(feature.type.id));
+    }
+
+    protected void buildFeatures(Map<Node, List<Feature>> features, List<String> featureAcs, Node participant) {
+        ArrayList<Feature> participantFeatures = new ArrayList<>();
+        features.put(participant, participantFeatures);
+        if (participant == null || featureAcs == null) return;
+
+        for (String featureAc : featureAcs) {
+            participantFeatures.add(new Feature(network, network.getFeaturesTable().getRow(featureAc)));
+        }
+    }
+
+    public EvidenceEdge cloneInto(Network network) {
+        CyNetwork cyNetwork = network.getCyNetwork();
+        CyEdge edge = cyNetwork.addEdge(source.cyNode, target.cyNode, false);
+        CyRow row = cyNetwork.getRow(edge);
+        AC.setValue(row, ac);
+        ID.setValue(row, id);
+        NAME.setValue(row, name);
+        MI_SCORE.setValue(row, miScore);
+        type.writeInTable(row, TYPE);
+        interactionDetectionMethod.writeInTable(row, INTERACTION_DETECTION_METHOD);
+        participantDetectionMethod.writeInTable(row, PARTICIPANT_DETECTION_METHOD);
+
+        HOST_ORGANISM.setValue(row, hostOrganism);
+        HOST_ORGANISM_ID.setValue(row, hostOrganismTaxId);
+        EXPANSION_TYPE.setValue(row, expansionType);
+
+        sourceBiologicalRole.writeInTable(row, BIOLOGICAL_ROLE.SOURCE);
+        sourceExperimentalRole.writeInTable(row, EXPERIMENTAL_ROLE.SOURCE);
+        FEATURES.SOURCE.setValue(row, sourceFeatureAcs);
+
+        targetBiologicalRole.writeInTable(row, BIOLOGICAL_ROLE.TARGET);
+        targetExperimentalRole.writeInTable(row, EXPERIMENTAL_ROLE.TARGET);
+        FEATURES.TARGET.setValue(row, targetFeatureAcs);
+
+        CyTable featuresTable = network.getFeaturesTable();
+        sourceFeatureAcs.forEach(pk -> FeatureFields.EDGES_SUID.getValue(featuresTable.getRow(pk)).add(edge.getSUID()));
+        targetFeatureAcs.forEach(pk -> FeatureFields.EDGES_SUID.getValue(featuresTable.getRow(pk)).add(edge.getSUID()));
+        AFFECTED_BY_MUTATION.setValue(row, isAffectedByMutation());
+
+        PUBMED_ID.setValue(row, pubMedId);
+        return (EvidenceEdge) Edge.createEdge(network, edge);
+    }
+
+    @Override
+    public String toString() {
+        return "EvidenceEdge{" +
+                "ac='" + ac + '\'' +
+                '}';
+    }
 }

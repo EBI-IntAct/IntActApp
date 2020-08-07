@@ -5,7 +5,7 @@ import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.query.AddTermsTask;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
@@ -17,8 +17,8 @@ public class AddTermsTaskFactory extends AbstractNetworkTaskFactory
         this.manager = manager;
     }
 
-    public boolean isReady(CyNetwork network) {
-        return ModelUtils.isIntactNetwork(network);
+    public boolean isReady(CyNetwork cyNetwork) {
+        return manager.data.getNetwork(cyNetwork) != null;
     }
 
     public TaskIterator createTaskIterator(CyNetwork network) {

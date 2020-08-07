@@ -13,20 +13,28 @@ public class JLink extends JTextField {
     private final OpenBrowser openBrowser;
     private URI uri;
     private boolean visited = false;
+    private final boolean bold;
     private static final Color baseColor = new Color(134, 56, 148);
     private static final Color visitedColor = new Color(39, 25, 91);
     private static final Color hoverColor = new Color(129, 20, 56);
 
     private static final Font DEFAULT_FONT;
+    private static final Font BOLD_FONT;
 
     static {
         Font font = UIManager.getFont("Label.font");
         DEFAULT_FONT = (font != null) ? font : new Font("SansSerif", Font.PLAIN, 11);
+        BOLD_FONT = DEFAULT_FONT.deriveFont(Font.BOLD);
     }
 
     public JLink(String text, String uri, final OpenBrowser openBrowser) {
+        this(text, uri, openBrowser, false);
+    }
+
+    public JLink(String text, String uri, final OpenBrowser openBrowser, boolean bold) {
         super();
         this.openBrowser = openBrowser;
+        this.bold = bold;
         setup(text, URI.create(uri));
     }
 
@@ -40,7 +48,7 @@ public class JLink extends JTextField {
         setBorder(null);
         setForeground(baseColor);
 
-        setFont(DEFAULT_FONT);
+        setFont(bold ? BOLD_FONT : DEFAULT_FONT);
 
         addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {

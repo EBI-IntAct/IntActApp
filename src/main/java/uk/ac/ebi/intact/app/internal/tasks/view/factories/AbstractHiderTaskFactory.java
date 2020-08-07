@@ -3,7 +3,7 @@ package uk.ac.ebi.intact.app.internal.tasks.view.factories;
 import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 
 public abstract class AbstractHiderTaskFactory extends AbstractTaskFactory {
     final protected Manager manager;

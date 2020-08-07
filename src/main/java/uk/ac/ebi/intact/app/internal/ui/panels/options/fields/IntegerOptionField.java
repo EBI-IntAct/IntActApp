@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.options.fields;
 
-import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
+import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.OptionManager;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
@@ -32,8 +32,6 @@ public class IntegerOptionField extends OptionField<OptionManager.NumericOption<
 
         slider.setMinimum(option.min);
         slider.setMaximum(option.max);
-        slider.setForeground(new Color(34, 83, 157));
-        slider.setBackground(new Color(34, 83, 157));
         int range = option.max - option.min;
         slider.setMajorTickSpacing(range);
         slider.setMinorTickSpacing(range / 8);

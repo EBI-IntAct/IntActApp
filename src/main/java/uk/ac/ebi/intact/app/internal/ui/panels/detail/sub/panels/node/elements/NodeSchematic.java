@@ -15,8 +15,8 @@ public class NodeSchematic extends AbstractNodeElement {
     private NodeDiagram nodeDiagram;
     private final List<Feature> features;
 
-    public NodeSchematic(Node iNode, List<Feature> features, OpenBrowser openBrowser) {
-        super(null, iNode, openBrowser);
+    public NodeSchematic(Node node, List<Feature> features, OpenBrowser openBrowser) {
+        super(null, node, openBrowser);
         this.features = features;
         fillContent();
     }
@@ -24,7 +24,7 @@ public class NodeSchematic extends AbstractNodeElement {
     @Override
     protected void fillContent() {
         content.setLayout(new GridBagLayout());
-        nodeDiagram = new NodeDiagram(iNode, features);
+        nodeDiagram = new NodeDiagram(node, features);
         EasyGBC c = new EasyGBC();
         content.add(nodeDiagram, c.anchor("west").noExpand());
         content.add(Box.createHorizontalGlue(), c.right().anchor("west").expandHoriz());

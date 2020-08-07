@@ -65,8 +65,8 @@ Once satisfied by the interactors you have selected as seeds, and the options se
 #### 1. IntAct views
 IntAct network edges represent evidence of interactions between two molecular interactors.  
 IntAct App provide 3 different ways to visualize those edges:
-- Collapsed : All evidence edges between 2 interactors are collapsed into a single edge colored by its MI Score
-- Expanded : All evidence edges are visible, and their color matches the type of interaction found.
+- Summary : All evidence edges between 2 interactors are summarized into a single edge colored by its MI Score
+- Evidence : All evidence edges are visible, and their color matches the type of interaction found.
 - Mutation : Same as expanded except that it highlights evidences which involves a mutation.
 
 You can switch between those 3 views with   
@@ -98,3 +98,50 @@ ln -s ${INTACT_APP_ROOT}/target/intactApp-1.0.0.jar ~/CytoscapeConfiguration/3/a
 Manual install: See [JAR install](#jar-install)
 
         
+### Data handling process
+We differentiate 2 kinds of data received by webservices: 
+
+- Table data
+- Detail  
+
+We receive the first one directly after the query, and is stored inside the tables.  
+All features of IntAct app must rely on table data because detail data is not persistent and not considered by Cytoscape (Styles, filters, etc.).  
+Detail data is here just to provide advanced topics to user without impacting too much query performances (Cross references, etc.).   
+
+Here is the standard way of handling table data:
+
+#### 1. Table fields/column declaration
+
+In model.tables.fields.models package, you'll find table models which allow you to declare new fields.  
+Each field correspond to a column in the related table. Therefore, you should put new fields in the corresponding class.  
+Creating a field :
+
+- Allow easy access to these fields from anywhere in the code with getValue and setValue methods
+- Automatically add the column in the related table 
+- Automatically fill this the column data if you provide a jsonKey.
+
+> WARNING on the automatic filling: it only works if the data coming from webservice is in first level of corresponding JsonNode
+>
+> - NodeFields ==> `nodes[i]`
+> - EdgeFields ==> `edges[i]`
+>
+> For instance, participant data which are under `edges[i].source` and `edges[i].target` in Json should be set in the tables
+> manually in the corresponding ModelUtils method, here `ModelUtils.fillParticipantData()`.  
+> In the same way, data that needs manual adjustments from raw Json (eg. Edge name) or that aren't in Json (eg. Network, Features and Identifiers UUID)
+> should also be handled in their corresponding ModelUtils methods (eg. `ModelUtils.createEdge()` and `ModelUtils.initLowerTables()`)
+
+#### 2. Core data 
+
+After having declared your field, you should provide access to it inside model.core package.   
+Classes inside this package transform raw table data into cohesive data object, easier to manipulate.  
+As such, they provide utility methods to grant access to their data like collection of features for both nodes and edges.  
+If you add a column which is a MI or a PAR identifier of some other field, we advise you to add it as an OntologyIdentifier inside these core classes.  
+OntologyIdentifier allow easy access to:
+
+- User info url : provide to users definition of controlled vocabulary terms
+- Details url : url to OLS API to provide CV term details such as their description, synonyms, etc.
+- Descendant url : url to OLS API to get all children CV terms of the current one. (Used in styling)
+
+#### 3. UI
+
+To represent the newly added data, 

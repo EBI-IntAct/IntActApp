@@ -5,17 +5,20 @@ import java.awt.*;
 
 public class LinePanel extends JPanel {
     public LinePanel() {
-        setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        setAlignmentX(LEFT_ALIGNMENT);
+        this(0,null);
     }
 
     public LinePanel(int gap) {
-        setLayout(new FlowLayout(FlowLayout.LEFT, gap, 0));
-        setAlignmentX(LEFT_ALIGNMENT);
+        this(gap, null);
     }
 
     public LinePanel(Color backgroundColor) {
-        this();
-        setBackground(backgroundColor);
+        this(0, backgroundColor);
+    }
+
+    public LinePanel(int gap, Color backgroundColor) {
+        setLayout(new FlowLayout(FlowLayout.LEFT, gap, 0));
+        setAlignmentX(LEFT_ALIGNMENT);
+        if (backgroundColor!= null) setBackground(backgroundColor);
     }
 }

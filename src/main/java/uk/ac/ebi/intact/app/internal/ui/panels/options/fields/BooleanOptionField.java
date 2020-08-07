@@ -1,7 +1,7 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.options.fields;
 
-import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
-import uk.ac.ebi.intact.app.internal.ui.components.ToggleSwitch;
+import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.OptionManager;
+import uk.ac.ebi.intact.app.internal.ui.components.buttons.ToggleSwitch;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;

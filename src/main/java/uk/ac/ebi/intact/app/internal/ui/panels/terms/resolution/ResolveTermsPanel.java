@@ -2,13 +2,16 @@ package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
 import org.cytoscape.work.TaskFactory;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.OptionManager;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
+import uk.ac.ebi.intact.app.internal.tasks.query.TermsResolvingTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ImportNetworkTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.components.filler.HorizontalFiller;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.CenteredLabel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
+import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.options.OptionsPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.ComponentUtils;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
@@ -35,11 +38,11 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     public static final int HEIGHT = 400;
     public static final int TERM_SPACE = 8;
     private static final ImageIcon filterIcon = IconUtils.createImageIcon("/IntAct/DIGITAL/filter.png");
-    public static final Color HEADER_CELLS_COLOR = new Color(104, 41, 124);
     final Manager manager;
     final EasyGBC layoutHelper = new EasyGBC();
-    final boolean includeNonAmbiguousTerms;
+    final boolean fuzzySearch;
     final boolean selectedByDefault;
+    final TermsResolvingTask task;
 
     Network network;
 
@@ -69,29 +72,55 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     final JPanel tableCornerPanel = new JPanel(new GridBagLayout());
     private JButton selectAllButton;
     private JButton unSelectAllButton;
+    private JButton buildNetworkButton;
     private final Set<Interactor> interactorsToQuery = new HashSet<>();
+    private JPanel descriptionPanel;
+    private OptionsPanel optionsPanel;
+    private JPanel controlPanel;
 
     public ResolveTermsPanel(final Manager manager, Network network) {
-        this(manager, network, true, true);
+        this(manager, network, true, true, null);
     }
 
-    public ResolveTermsPanel(final Manager manager, Network network, boolean selectedByDefault, boolean includeNonAmbiguousTerms) {
+    public ResolveTermsPanel(final Manager manager, Network network, boolean selectedByDefault, boolean fuzzySearch, TermsResolvingTask task) {
         super(new GridBagLayout());
         this.manager = manager;
         this.network = network;
         this.selectedByDefault = selectedByDefault;
-        this.includeNonAmbiguousTerms = includeNonAmbiguousTerms;
+        this.fuzzySearch = fuzzySearch;
+        this.task = task;
         init();
+        setPreferredSize(calculatePreferredSize());
+    }
+
+    private Dimension calculatePreferredSize() {
+        int width = getPreferredWidth(displayPanel) + getPreferredWidth(rowHeaderPanel);
+        int height = Integer.min(getPreferredHeight(displayPanel), 900);
+        for (JComponent component : List.of(descriptionPanel, columnHeaderPanel, optionsPanel, controlPanel)) {
+            height += getPreferredHeight(component);
+        }
+        return new Dimension(width, height);
+    }
+
+    private int getPreferredHeight(JComponent component) {
+        return component.getPreferredSize().height;
+    }
+
+    private int getPreferredWidth(JComponent component) {
+        return component.getPreferredSize().width;
     }
 
     private void init() {
-        if (includeNonAmbiguousTerms) {
-            add(new CenteredLabel("The terms you have given matches all these interactors.", 15, HEADER_CELLS_COLOR), layoutHelper.expandHoriz());
-            add(new CenteredLabel("Select interactors you want to use as seeds to build the cyNetwork around", 14, HEADER_CELLS_COLOR), layoutHelper.down().expandHoriz());
+        descriptionPanel = new VerticalPanel();
+        if (fuzzySearch) {
+            descriptionPanel.add(new CenteredLabel("The terms you have given matches all these interactors.", 15, UIColors.deepPurple), layoutHelper.expandHoriz());
+            descriptionPanel.add(new CenteredLabel("Select interactors you want to use as seeds to build network.", 14, UIColors.deepPurple), layoutHelper.down().expandHoriz());
         } else {
-            add(new CenteredLabel("There is ambiguity among the terms you gave.", 15, HEADER_CELLS_COLOR), layoutHelper.down().expandHoriz());
-            add(new CenteredLabel("Please select the interactors that you meant to query as seeds to build the cyNetwork around.", 14, HEADER_CELLS_COLOR), layoutHelper.down().expandHoriz());
+            descriptionPanel.add(new CenteredLabel("There is ambiguity among the terms you gave.", 15, UIColors.deepPurple), layoutHelper.down().expandHoriz());
+            descriptionPanel.add(new CenteredLabel("Please select the interactors that you meant to query as seeds to build network.", 14, UIColors.deepPurple), layoutHelper.down().expandHoriz());
         }
+        add(descriptionPanel, layoutHelper.expandHoriz());
+        setMinimumSize(new Dimension(440, 330));
         createColumnHeader();
         createRowHeader();
         initScrollPanel();
@@ -99,14 +128,6 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         createFilters();
         createOptionPanel();
         createControlButtons();
-        add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
-    }
-
-    private void createRowHeader() {
-        rowHeaderContainerPanel.setBackground(Color.WHITE);
-        EasyGBC c = new EasyGBC();
-        rowHeaderContainerPanel.add(rowHeaderPanel, c.expandHoriz().anchor("northwest"));
-        rowHeaderContainerPanel.add(Box.createVerticalGlue(), c.expandBoth());
     }
 
     private void createColumnHeader() {
@@ -115,6 +136,13 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         columnHeaderHelper.anchor("west");
         Arrays.stream(TermColumn.values()).forEach(this::addHeaderCell);
         layoutHelper.down();
+    }
+
+    private void createRowHeader() {
+        rowHeaderContainerPanel.setBackground(Color.WHITE);
+        EasyGBC c = new EasyGBC();
+        rowHeaderContainerPanel.add(rowHeaderPanel, c.expandHoriz().anchor("northwest"));
+        rowHeaderContainerPanel.add(Box.createVerticalGlue(), c.expandBoth());
     }
 
     private void addHeaderCell(TermColumn column) {
@@ -148,24 +176,57 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             });
         }
 
-        int width = label.getPreferredSize().width;
+        int width = content.getPreferredSize().width;
         if (maxWidthsOfColumns.get(column) < width) {
             maxWidthsOfColumns.put(column, width);
         }
 
-        cell.setBackground(HEADER_CELLS_COLOR);
+        cell.setBackground(UIColors.deepPurple);
         resizeHeight(cell, 30, SizeType.ALL);
         columns.put(column, cell);
     }
 
 
+    private void initScrollPanel() {
+        JScrollPane scrollPane = new JScrollPane(displayPanel, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setAutoscrolls(true);
+
+        scrollPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, tableCornerPanel);
+
+        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+        verticalScrollBar.setUnitIncrement(2);
+        verticalScrollBar.setBlockIncrement(5);
+
+        HorizontalFiller corner = new HorizontalFiller();
+        corner.setBorder(BorderFactory.createMatteBorder(2, 1, 0, 1, Color.WHITE));
+        scrollPane.setCorner(JScrollPane.LOWER_LEFT_CORNER, corner);
+
+        {
+            JViewport viewport = new JViewport();
+            viewport.setView(columnHeaderPanel);
+            scrollPane.setColumnHeader(viewport);
+        }
+        {
+            JViewport viewport = new JViewport();
+            viewport.setView(rowHeaderContainerPanel);
+            scrollPane.setRowHeader(viewport);
+        }
+
+//        displayPanel.setMinimumSize(new Dimension(900, HEIGHT));
+//        displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
+//        scrollPane.setMinimumSize(new Dimension(900, HEIGHT));
+//        scrollPane.setPreferredSize(new Dimension(900, HEIGHT));
+//        scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
+        add(scrollPane, layoutHelper.down().expandBoth());
+    }
+
     private void fillDisplayPanel() {
         EasyGBC c = new EasyGBC();
         c.anchor("west");
         displayPanel.setBackground(Color.WHITE);
-        network.getInteractorsToResolve().forEach((term, interactors) -> {
-            if (includeNonAmbiguousTerms || interactors.size() > 1) {
-                TermTable termTable = new TermTable(this, term, interactors, network.getTotalInteractors().get(term));
+        task.getInteractorsToResolve().forEach((term, interactors) -> {
+            if (fuzzySearch || interactors.size() > 1) {
+                TermTable termTable = new TermTable(this, term, interactors, task.getTotalInteractors().get(term));
                 termTables.add(termTable);
                 displayPanel.add(termTable, c.down().expandHoriz());
                 displayPanel.add(Box.createVerticalStrut(TERM_SPACE), c.down().expandHoriz());
@@ -195,33 +256,90 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         termTables.forEach(TermTable::homogenizeWidth);
     }
 
-    private void initScrollPanel() {
-        JScrollPane scrollPane = new JScrollPane(displayPanel, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setAutoscrolls(true);
+    private void createOptionPanel() {
+        optionsPanel = new OptionsPanel(manager, OptionManager.Scope.DISAMBIGUATION);
+        optionsPanel.addListener(manager.option.SHOW_HIGHLIGHTS, () -> {
+            boolean showHighlightsValue = !manager.option.SHOW_HIGHLIGHTS.getValue();
+            termTables.forEach(table -> table.rows.values().forEach(row -> row.highlightMatchingColumns(showHighlightsValue)));
+        });
+        add(new CollapsablePanel("Options", optionsPanel, true), layoutHelper.down().expandHoriz());
+    }
 
-        scrollPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, tableCornerPanel);
+    private void createControlButtons() {
+        controlPanel = new JPanel(new GridLayout(1, 4));
 
-        HorizontalFiller corner = new HorizontalFiller();
-        corner.setBorder(BorderFactory.createMatteBorder(2, 1, 0, 1, Color.WHITE));
-        scrollPane.setCorner(JScrollPane.LOWER_LEFT_CORNER, corner);
+        selectAllButton = new JButton("Select all");
+        selectAllButton.addActionListener(e -> termTables.forEach(table -> table.selectRows(true)));
+        selectAllButton.setEnabled(!selectedByDefault);
+        controlPanel.add(selectAllButton);
 
-        {
-            JViewport viewport = new JViewport();
-            viewport.setView(columnHeaderPanel);
-            scrollPane.setColumnHeader(viewport);
-        }
-        {
-            JViewport viewport = new JViewport();
-            viewport.setView(rowHeaderContainerPanel);
-            scrollPane.setRowHeader(viewport);
-        }
+        unSelectAllButton = new JButton("Unselect all");
+        unSelectAllButton.addActionListener(e -> termTables.forEach(table -> table.selectRows(false)));
+        unSelectAllButton.setEnabled(selectedByDefault);
+        controlPanel.add(unSelectAllButton);
 
-        displayPanel.setMinimumSize(new Dimension(900, HEIGHT));
-        displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
-        scrollPane.setMinimumSize(new Dimension(900, HEIGHT));
-        scrollPane.setPreferredSize(new Dimension(900, HEIGHT));
-        scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
-        add(scrollPane, layoutHelper.down().expandHoriz());
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> close());
+        controlPanel.add(cancelButton);
+
+        buildNetworkButton = new JButton("Build Network");
+        buildNetworkButton.addActionListener(e -> buildNetworkFromSelection());
+        controlPanel.add(buildNetworkButton);
+
+        add(controlPanel, layoutHelper.down().expandHoriz());
+    }
+
+    public void setupDefaultButton() {
+        JRootPane rootPane = SwingUtilities.getRootPane(this);
+        rootPane.setDefaultButton(buildNetworkButton);
+    }
+
+    private void buildNetworkFromSelection() {
+        new Thread(() -> {
+            if (addAdditionalInteractors().isCanceled()) return;
+
+            termTables.stream().map(TermTable::getSelectedInteractors).flatMap(Collection::stream).forEach(interactorsToQuery::add);
+            if (interactorsToQuery.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No interactors selected. Please select at least one interactor.");
+            } else {
+                TaskFactory factory = new ImportNetworkTaskFactory(network, interactorsToQuery.stream().map(interactor -> interactor.ac).collect(toList()), manager.option.ADD_INTERACTING_PARTNERS.getValue(), task.getName());
+                manager.utils.execute(factory.createTaskIterator());
+                close();
+            }
+        }).start();
+    }
+
+    private ProgressMonitor addAdditionalInteractors() {
+        List<String> termsToComplete = getTermsToComplete();
+
+        int numberOfInteractorsToCollect = calculateNumberOfInteractorsToCollect(termsToComplete);
+        ProgressMonitor progressMonitor = new ProgressMonitor(buildNetworkButton,
+                String.format("Collecting additional %d interactors", numberOfInteractorsToCollect), null,
+                0, numberOfInteractorsToCollect);
+
+        progressMonitor.setMillisToDecideToPopup(100);
+        progressMonitor.setMillisToPopup(100);
+
+        Map<String, List<Interactor>> missingInteractors = task.completeAdditionalInteractors(
+                termsToComplete, network.manager.option.MAX_INTERACTOR_PER_TERM.getValue(),
+                progressMonitor::setProgress,
+                progressMonitor::isCanceled);
+
+        if (progressMonitor.isCanceled()) return progressMonitor;
+        progressMonitor.close();
+        missingInteractors.values().forEach(interactorsToQuery::addAll);
+        return progressMonitor;
+    }
+
+    private List<String> getTermsToComplete() {
+        return termTables.stream()
+                .filter(termTable -> termTable.includeAdditionalInteractors)
+                .map(termTable -> termTable.term)
+                .collect(toList());
+    }
+
+    private int calculateNumberOfInteractorsToCollect(List<String> termsToComplete) {
+        return termsToComplete.stream().mapToInt(termToComplete -> task.getTotalInteractors().get(termToComplete) - manager.option.MAX_INTERACTOR_PER_TERM.getValue()).sum();
     }
 
 
@@ -262,14 +380,6 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         }
     }
 
-    private void createOptionPanel() {
-        OptionsPanel optionsPanel = new OptionsPanel(manager, OptionManager.Scope.DISAMBIGUATION);
-        optionsPanel.addListener(manager.option.SHOW_HIGHLIGHTS, () -> {
-            boolean showHighlightsValue = !manager.option.SHOW_HIGHLIGHTS.getValue();
-            termTables.forEach(table -> table.rows.values().forEach(row -> row.highlightMatchingColumns(showHighlightsValue)));
-        });
-        add(new CollapsablePanel("Options", optionsPanel, false), layoutHelper.down().expandHoriz());
-    }
 
     private void filterInteractors() {
         for (TermTable table : termTables) {
@@ -286,49 +396,6 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             }
         }
         return true;
-    }
-
-    private void createControlButtons() {
-        JPanel controlPanel = new JPanel(new GridLayout(1, 4));
-
-        selectAllButton = new JButton("Select all");
-        selectAllButton.addActionListener(e -> termTables.forEach(table -> table.selectRows(true)));
-        selectAllButton.setEnabled(!selectedByDefault);
-        controlPanel.add(selectAllButton);
-
-        unSelectAllButton = new JButton("Unselect all");
-        unSelectAllButton.addActionListener(e -> termTables.forEach(table -> table.selectRows(false)));
-        unSelectAllButton.setEnabled(selectedByDefault);
-        controlPanel.add(unSelectAllButton);
-
-        JButton cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(e -> close());
-        controlPanel.add(cancelButton);
-
-        JButton importButton = new JButton("Build Network");
-        importButton.addActionListener(e -> {
-            Map<String, List<Interactor>> missingInteractors = network.completeMissingInteractors(
-                    termTables.stream()
-                            .filter(termTable -> termTable.includeAll)
-                            .map(termTable -> termTable.term)
-                            .collect(toList()),
-                    includeNonAmbiguousTerms
-            );
-            missingInteractors.values().forEach(interactorsToQuery::addAll);
-            termTables.stream()
-                    .map(TermTable::getSelectedInteractors)
-                    .flatMap(Collection::stream).forEach(interactorsToQuery::add);
-            if (interactorsToQuery.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No interactors selected. Please select at least one interactor.");
-            } else {
-                TaskFactory factory = new ImportNetworkTaskFactory(network, interactorsToQuery.stream().map(interactor -> interactor.ac).collect(toList()), manager.option.ADD_INTERACTING_PARTNERS.getValue(), null);
-                manager.utils.execute(factory.createTaskIterator());
-                close();
-            }
-        });
-        controlPanel.add(importButton);
-
-        add(controlPanel, layoutHelper.down().expandHoriz());
     }
 
     private void close() {

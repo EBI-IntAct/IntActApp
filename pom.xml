@@ -3,7 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <bundle.symbolicName>intactApp</bundle.symbolicName>
+        <bundle.name>IntAct App</bundle.name>
+        <bundle.symbolicName>intact.app</bundle.symbolicName>
         <bundle.namespace>uk.ac.ebi.intact.app.internal</bundle.namespace>
         <cytoscape.api.version>3.8.0</cytoscape.api.version>
         <osgi.api.version>4.2.0</osgi.api.version>
@@ -12,9 +13,8 @@
     <groupId>uk.ac.ebi.intact</groupId>
     <artifactId>intactApp</artifactId>
     <packaging>bundle</packaging>
-    <name>${bundle.symbolicName}</name>
-
-    <version>1.0.0</version>
+    <name>${bundle.name}</name>
+    <version>0.9.0.SNAPSHOT</version>
 
     <scm>
         <connection>scm:git:https://github.com/EliotRagueneau/IntactApp.git</connection>
@@ -32,31 +32,6 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>external.atlassian.jgitflow</groupId>
-                <artifactId>jgitflow-maven-plugin</artifactId>
-                <version>1.0-m5.1</version>
-                <configuration>
-                    <flowInitContext>
-                        <masterBranchName>master</masterBranchName>
-                        <developBranchName>develop</developBranchName>
-                        <featureBranchPrefix>feature-</featureBranchPrefix>
-                        <releaseBranchPrefix>release-</releaseBranchPrefix>
-                        <hotfixBranchPrefix>hotfix-</hotfixBranchPrefix>
-                        <versionTagPrefix>${project.artifactId}-</versionTagPrefix>
-                    </flowInitContext>
-                    <username>${git.user}</username>
-                    <password>${git.password}</password>
-                    <!-- see goals wiki page for configuration options -->
-                    <allowUntracked>true</allowUntracked>
-                    <noDeploy>true</noDeploy>
-                    <pullMaster>true</pullMaster>
-                    <pullDevelop>true</pullDevelop>
-                    <pushReleases>true</pushReleases>
-                    <pushHotfixes>true</pushHotfixes>
-                    <pushFeatures>true</pushFeatures>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <version>4.2.1</version>
@@ -64,18 +39,19 @@
                 <configuration>
                     <unpackBundle>false</unpackBundle>
                     <instructions>
+                        <Bundle-Name>${bundle.name}</Bundle-Name>
                         <Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Export-Package>
                             !${bundle.namespace}.*
                         </Export-Package>
-                        <Private-Package>${bundle.namespace}.*,org.jcolorbrewer.*</Private-Package>
+                        <Private-Package>${bundle.namespace}.*</Private-Package>
                         <Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
                         <Import-Package>*;resolution:=optional</Import-Package>
                         <Embed-Dependency>*;scope=!provided|!test</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Cytoscape-App-Dependencies>
-                            enhancedGraphics;1.5.0
+                            enhancedGraphics;1.5.4
                         </Cytoscape-App-Dependencies>
                     </instructions>
                 </configuration>

@@ -25,6 +25,8 @@ public class StyleUtils {
             return new Hexagon(size, size, color);
         } else if (nodeShape == NodeShapeVisualProperty.OCTAGON) {
             return new Octagon(size, size, color);
+        } else if (nodeShape == NodeShapeVisualProperty.PARALLELOGRAM) {
+            return new Parallelogram(size, size, color);
         } else {
             return new Ball(color, size);
         }

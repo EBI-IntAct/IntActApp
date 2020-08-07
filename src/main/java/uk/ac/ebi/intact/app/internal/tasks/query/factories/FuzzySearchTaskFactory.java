@@ -2,11 +2,11 @@ package uk.ac.ebi.intact.app.internal.tasks.query.factories;
 
 import org.cytoscape.application.swing.search.AbstractNetworkSearchTaskFactory;
 import org.cytoscape.work.TaskIterator;
-import uk.ac.ebi.intact.app.internal.model.core.managers.sub.managers.OptionManager;
-import uk.ac.ebi.intact.app.internal.ui.SearchQueryComponent;
+import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.OptionManager;
+import uk.ac.ebi.intact.app.internal.ui.components.query.SearchQueryComponent;
 import uk.ac.ebi.intact.app.internal.ui.panels.options.OptionsPanel;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.query.TermsResolvingTask;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 
@@ -15,7 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class FuzzySearchTaskFactory extends AbstractNetworkSearchTaskFactory {
-    private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/ICON_PNG/Cropped_Gradient790.png");
+    private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/ICON_PNG/RoundN.png");
     static String INTACT_ID = "uk.ac.ebi.intact.search";
     static URL INTACT_URL;
     static String INTACT_NAME = "IntAct Fuzzy Search";
@@ -43,7 +43,7 @@ public class FuzzySearchTaskFactory extends AbstractNetworkSearchTaskFactory {
 
     public TaskIterator createTaskIterator() {
         String terms = queryComponent.getQueryText();
-        return new TaskIterator(new TermsResolvingTask(new Network(manager), terms, "Query preview", false));
+        return new TaskIterator(new TermsResolvingTask(new Network(manager), terms, "Fuzzy Search Preview", false));
     }
 
 

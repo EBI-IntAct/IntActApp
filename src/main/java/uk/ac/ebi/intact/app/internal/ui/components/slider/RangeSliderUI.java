@@ -151,25 +151,12 @@ class RangeSliderUI extends BasicSliderUI {
     @Override
     public void paint(Graphics g, JComponent c) {
         super.paint(g, c);
-
-        Rectangle clipRect = g.getClipBounds();
         if (upperThumbSelected) {
-            // Paint lower thumb first, then upper thumb.
-            if (clipRect.intersects(thumbRect)) {
-                paintLowerThumb(g);
-            }
-            if (clipRect.intersects(upperThumbRect)) {
-                paintUpperThumb(g);
-            }
-
+            paintLowerThumb(g);
+            paintUpperThumb(g);
         } else {
-            // Paint upper thumb first, then lower thumb.
-            if (clipRect.intersects(upperThumbRect)) {
-                paintUpperThumb(g);
-            }
-            if (clipRect.intersects(thumbRect)) {
-                paintLowerThumb(g);
-            }
+            paintUpperThumb(g);
+            paintLowerThumb(g);
         }
     }
 

@@ -2,17 +2,21 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.elements;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
-import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
-import uk.ac.ebi.intact.app.internal.ui.components.diagrams.NodeDiagram;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeBasics;
-import uk.ac.ebi.intact.app.internal.model.styles.CollapsedIntactStyle;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.CVTerm;
+import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
+import uk.ac.ebi.intact.app.internal.ui.components.diagrams.NodeDiagram;
+import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
+import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
+import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeBasics;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeFeatures;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
+import uk.ac.ebi.intact.app.internal.ui.utils.LinkUtils;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 
 import javax.swing.*;
@@ -36,68 +40,88 @@ public class EdgeParticipants extends AbstractEdgeElement {
     private NodeDiagram targetDiagram;
 
 
-    public EdgeParticipants(Edge iEdge, OpenBrowser openBrowser) {
-        super(null, iEdge, openBrowser);
+    public EdgeParticipants(Edge edge, OpenBrowser openBrowser) {
+        super(null, edge, openBrowser);
         executor.execute(this::fillContent);
     }
 
     @Override
-    protected void fillCollapsedEdgeContent(CollapsedEdge edge) {
+    protected void fillSummaryEdgeContent(SummaryEdge edge) {
         createPanel(edge);
         Map<Node, List<Feature>> features = edge.getFeatures();
-        for (Node iNode : List.of(edge.source, edge.target)) {
-            JPanel nodePanel = iNode == edge.source ? sourcePanel : targetPanel;
+        for (Node node : List.of(edge.source, edge.target)) {
+            JPanel nodePanel = node == edge.source ? sourcePanel : targetPanel;
             EasyGBC layoutHelper = new EasyGBC();
             nodePanel.setBackground(nodePanelBg);
             nodePanel.setOpaque(true);
 
-            NodeBasics nodeBasics = new NodeBasics(iNode, openBrowser);
+            NodeBasics nodeBasics = new NodeBasics(node, openBrowser);
             nodeBasics.setBackground(nodePanelBg);
             nodePanel.add(nodeBasics, layoutHelper.down().anchor("north").expandHoriz());
 
-            NodeFeatures nodeFeatures = new NodeFeatures(iNode, features.get(iNode), openBrowser, true, edge, nodePanelBg);
+            NodeFeatures nodeFeatures = new NodeFeatures(node, features.get(node), openBrowser, true, edge, nodePanelBg);
             nodePanel.add(nodeFeatures, layoutHelper.down().anchor("north").expandHoriz());
             participantSummaries.add(nodeFeatures);
 
             nodePanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
         }
 
-        int thickness = edge.subEdgeSUIDs.size() + 2;
+        int thickness = edge.getNbSummarizedEdges() + 2;
         thickness = Integer.min(thickness, 25);
-        content.add(new EdgeDiagram(CollapsedIntactStyle.getColor(edge.miScore), thickness, false));
+        content.add(new EdgeDiagram(SummaryStyle.getColor(edge.miScore), thickness, false));
     }
 
     @Override
     protected void fillEvidenceEdgeContent(EvidenceEdge edge) {
         createPanel(edge);
         Map<Node, List<Feature>> features = edge.getFeatures();
-        for (Node iNode : List.of(edge.source, edge.target)) {
-            JPanel nodePanel = iNode == edge.source ? sourcePanel : targetPanel;
+        for (Node node : List.of(edge.source, edge.target)) {
+
+            JPanel nodePanel = node == edge.source ? sourcePanel : targetPanel;
             EasyGBC layoutHelper = new EasyGBC();
             nodePanel.setBackground(nodePanelBg);
             nodePanel.setOpaque(true);
 
-            NodeBasics nodeBasics = new NodeBasics(iNode, openBrowser);
+            NodeBasics nodeBasics = new NodeBasics(node, openBrowser);
             nodeBasics.setBackground(nodePanelBg);
             nodePanel.add(nodeBasics, layoutHelper.down().anchor("north").expandHoriz());
 
-            String biologicalRole = StringUtils.capitalize(iNode == edge.source ? edge.sourceBiologicalRole : edge.targetBiologicalRole);
-            JLabel biologicalRoleLabel = new JLabel("Biological role : " + biologicalRole);
-            biologicalRoleLabel.setBackground(nodePanelBg);
-            biologicalRoleLabel.setOpaque(true);
-            biologicalRoleLabel.setAlignmentY(Component.TOP_ALIGNMENT);
-            nodePanel.add(biologicalRoleLabel, layoutHelper.down().anchor("north").expandHoriz());
+            nodePanel.add(new ParticipantInfoPanel("Biological role : ",
+                            node == edge.source ? edge.sourceBiologicalRole : edge.targetBiologicalRole),
+                    layoutHelper.down().anchor("north").expandHoriz()
+            );
 
-            NodeFeatures nodeFeatures = new NodeFeatures(iNode, features.get(iNode), openBrowser, false, null, nodePanelBg);
+            nodePanel.add(new ParticipantInfoPanel("Experimental role : ",
+                            node == edge.source ? edge.sourceExperimentalRole : edge.targetExperimentalRole),
+                    layoutHelper.down().anchor("north").expandHoriz()
+            );
+
+            NodeFeatures nodeFeatures = new NodeFeatures(node, features.get(node), openBrowser, false, null, nodePanelBg);
             nodePanel.add(nodeFeatures, layoutHelper.down().anchor("north").expandHoriz());
 
             nodePanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
         }
 
-        content.add(new EdgeDiagram(StyleMapper.edgeTypeToPaint.get(edge.type), 4, edge.expansionType != null && !edge.expansionType.isBlank()));
+        content.add(new EdgeDiagram(StyleMapper.edgeTypeToPaint.get(edge.type.value), 4, edge.expansionType != null && !edge.expansionType.isBlank()));
     }
 
-    private static final Map<Node, NodeDiagramInfo> nodeDiagramInfos = new HashMap<>();
+    private class ParticipantInfoPanel extends LinePanel {
+        public ParticipantInfoPanel(String infoType, CVTerm term) {
+            super(nodePanelBg);
+            setOpaque(true);
+            setAlignmentY(Component.TOP_ALIGNMENT);
+            JLabel typeLabel = new JLabel(StringUtils.capitalize(infoType));
+            typeLabel.setBackground(nodePanelBg);
+            typeLabel.setOpaque(true);
+            add(typeLabel);
+            JLink valueLink = LinkUtils.createCVTermLink(openBrowser, term);
+            valueLink.setBackground(nodePanelBg);
+            valueLink.setOpaque(true);
+            add(valueLink);
+        }
+    }
+
+    public static final Map<Node, NodeDiagramInfo> nodeDiagramInfos = new Hashtable<>();
 
     private static class NodeDiagramInfo {
         int width;
@@ -121,6 +145,8 @@ public class EdgeParticipants extends AbstractEdgeElement {
                     Dimension preferredSize = nodeDiagram.getPreferredSize();
                     preferredSize.width = maxWidth;
                     nodeDiagram.setPreferredSize(preferredSize);
+                    nodeDiagram.revalidate();
+                    nodeDiagram.repaint();
                 }
             }
         }
@@ -181,8 +207,12 @@ public class EdgeParticipants extends AbstractEdgeElement {
         for (NodeFeatures participantSummary : participantSummaries) {
             participantSummary.deleteEdgeSelectionCheckboxes();
         }
-        for (NodeDiagram nodeDiagram : List.of(sourceDiagram, targetDiagram)) {
+        List<NodeDiagram> nodeDiagrams = new ArrayList<>();
+        if (sourceDiagram != null) nodeDiagrams.add(sourceDiagram);
+        if (targetDiagram != null) nodeDiagrams.add(targetDiagram);
+        for (NodeDiagram nodeDiagram : nodeDiagrams) {
             NodeDiagramInfo nodeDiagramInfo = nodeDiagramInfos.get(nodeDiagram.node);
+            if (nodeDiagramInfo == null) continue;
             nodeDiagramInfo.nodeDiagrams.remove(nodeDiagram);
             if (nodeDiagramInfo.nodeDiagrams.isEmpty()) {
                 nodeDiagramInfos.remove(nodeDiagram.node);

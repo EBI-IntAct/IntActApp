@@ -1,18 +1,10 @@
 package uk.ac.ebi.intact.app.internal.model.events;
 
+import org.cytoscape.event.AbstractCyEvent;
 import uk.ac.ebi.intact.app.internal.ui.components.slider.RangeSlider;
 
-import java.util.EventObject;
-
-public class RangeChangeEvent extends EventObject {
-    private final RangeSlider rangeSlider;
-
+public class RangeChangeEvent extends AbstractCyEvent<RangeSlider> {
     public RangeChangeEvent(RangeSlider source) {
-        super(source);
-        rangeSlider = source;
-    }
-
-    public RangeSlider getRangeSlider() {
-        return rangeSlider;
+        super(source, RangeChangeListener.class);
     }
 }

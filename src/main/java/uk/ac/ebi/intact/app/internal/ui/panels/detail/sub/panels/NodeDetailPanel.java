@@ -4,39 +4,46 @@ import com.google.common.collect.Comparators;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
-import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.filters.Filter;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeBasics;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeDetails;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeFeatures;
+import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeSchematic;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.identifiers.NodeIdentifiers;
 import uk.ac.ebi.intact.app.internal.ui.panels.filters.FilterPanel;
-import uk.ac.ebi.intact.app.internal.model.filters.Filter;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements.NodeSchematic;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class NodeDetailPanel extends AbstractDetailPanel {
     private JPanel nodesPanel = null;
     private CollapsablePanel selectedNodes;
-    private static final int MAXIMUM_SELECTED_NODE_SHOWN = 100;
     private final EasyGBC layoutHelper = new EasyGBC();
     public volatile boolean selectionRunning;
-    private final Map<String, NodePanel> nodeIdToNodePanel = new HashMap<>();
+    private final ConcurrentHashMap<Node, NodePanel> nodeToPanel = new ConcurrentHashMap<>();
     private final JPanel filtersPanel = new JPanel(new GridBagLayout());
     private final EasyGBC filterHelper = new EasyGBC();
+    private final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+
     private final Map<Class<? extends Filter>, FilterPanel> filterPanels = new HashMap<>();
+    private int maxSelectedNodeInfoShown;
 
     public NodeDetailPanel(final Manager manager) {
-        super(manager, MAXIMUM_SELECTED_NODE_SHOWN, "nodes");
+        super(manager, manager.option.MAX_SELECTED_NODE_INFO_SHOWN.getValue(), "nodes");
+        maxSelectedNodeInfoShown = manager.option.MAX_SELECTED_NODE_INFO_SHOWN.getValue();
         init();
         revalidate();
         repaint();
@@ -51,10 +58,10 @@ public class NodeDetailPanel extends AbstractDetailPanel {
         JPanel mainPanel = new JPanel();
         {
             mainPanel.setLayout(new GridBagLayout());
-            mainPanel.setBackground(backgroundColor);
+            mainPanel.setBackground(UIColors.lightBackground);
             EasyGBC d = new EasyGBC();
             CollapsablePanel filters = new CollapsablePanel("Filters", filtersPanel, true);
-            filters.setBackground(backgroundColor);
+            filters.setBackground(UIColors.lightBackground);
             mainPanel.add(filters, d.down().anchor("north").expandHoriz());
             mainPanel.add(createNodesPanel(), d.down().anchor("north").expandHoriz());
             mainPanel.add(Box.createVerticalGlue(), d.down().expandVert());
@@ -89,10 +96,10 @@ public class NodeDetailPanel extends AbstractDetailPanel {
 
     private JPanel createNodesPanel() {
         nodesPanel = new JPanel();
-        nodesPanel.setBackground(backgroundColor);
+        nodesPanel.setBackground(UIColors.lightBackground);
         nodesPanel.setLayout(new GridBagLayout());
 
-        selectedNodes(CyTableUtil.getNodesInState(currentINetwork.getCyNetwork(), CyNetwork.SELECTED, true));
+        selectedNodes(CyTableUtil.getNodesInState(currentNetwork.getCyNetwork(), CyNetwork.SELECTED, true));
 
         nodesPanel.setAlignmentX(LEFT_ALIGNMENT);
         selectedNodes = new CollapsablePanel("Selected nodes info", nodesPanel, false);
@@ -101,45 +108,58 @@ public class NodeDetailPanel extends AbstractDetailPanel {
 
 
     public void networkChanged(Network newNetwork) {
-        this.currentINetwork = newNetwork;
-        selectedNodes(newNetwork.getSelectedNodes());
+        this.currentNetwork = newNetwork;
+        selectedNodes(newNetwork.getSelectedCyNodes());
+    }
+
+    private Future<?> lastSelection;
+
+    public void viewUpdated() {
+        if (lastSelection != null) lastSelection.cancel(true);
+        lastSelection = executor.submit(() -> {
+            hideDisabledFilters();
+            selectedNodes(currentNetwork.getSelectedCyNodes());
+        });
     }
 
 
-    public void selectedNodes(Collection<CyNode> nodes) {
+    public void selectedNodes(Collection<CyNode> cyNodes) {
         if (checkCurrentNetwork() && checkCurrentView()) {
             selectionRunning = true;
 
-            List<Node> iNodes = nodes.stream()
-                    .map(node -> new Node(currentINetwork, node))
-                    .collect(Comparators.least(MAXIMUM_SELECTED_NODE_SHOWN, Node::compareTo));
+            maxSelectedNodeInfoShown = manager.option.MAX_SELECTED_NODE_INFO_SHOWN.getValue();
+            List<Node> nodes = cyNodes.stream()
+                    .map(currentNetwork::getNode)
+                    .filter(Objects::nonNull)
+                    .filter(node -> currentView.visibleNodes.contains(node))
+                    .collect(Comparators.least(maxSelectedNodeInfoShown, Node::compareTo));
 
-            List<String> nodesIds = iNodes.stream().map(iNode -> iNode.preferredId).collect(Collectors.toList());
-
-            for (Node node : iNodes) {
+            for (Node node : nodes) {
                 if (!selectionRunning) {
                     break;
                 }
 
-                if (!nodeIdToNodePanel.containsKey(node.preferredId)) {
-                    NodePanel newPanel = new NodePanel(node);
-                    newPanel.setAlignmentX(LEFT_ALIGNMENT);
-                    nodesPanel.add(newPanel, layoutHelper.anchor("west").down().expandHoriz());
-                    nodeIdToNodePanel.put(node.preferredId, newPanel);
-                }
+                nodeToPanel.computeIfAbsent(node, keyNode -> {
+                    NodePanel nodePanel = new NodePanel(keyNode);
+                    nodePanel.setAlignmentX(LEFT_ALIGNMENT);
+                    nodesPanel.add(nodePanel, layoutHelper.anchor("west").down().expandHoriz());
+                    return nodePanel;
+                });
+
             }
-            if (nodes.size() < MAXIMUM_SELECTED_NODE_SHOWN) {
+            if (nodes.size() < maxSelectedNodeInfoShown) {
                 nodesPanel.remove(limitExceededPanel);
             } else {
+                limitExceededPanel.setLimit(maxSelectedNodeInfoShown);
                 nodesPanel.add(limitExceededPanel, layoutHelper.anchor("west").down().expandHoriz());
             }
-            HashSet<String> unselectedNodes = new HashSet<>(nodeIdToNodePanel.keySet());
-            unselectedNodes.removeAll(nodesIds);
-            for (String unselectedNodeId : unselectedNodes) {
-                NodePanel nodePanel = nodeIdToNodePanel.get(unselectedNodeId);
+            HashSet<Node> unselectedNodes = new HashSet<>(nodeToPanel.keySet());
+            unselectedNodes.removeAll(nodes);
+            for (Node unselectedNode : unselectedNodes) {
+                NodePanel nodePanel = nodeToPanel.get(unselectedNode);
                 nodePanel.delete();
                 nodesPanel.remove(nodePanel);
-                nodeIdToNodePanel.remove(unselectedNodeId);
+                nodeToPanel.remove(unselectedNode);
             }
 
             selectionRunning = false;
@@ -160,7 +180,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
             this.node = node;
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
             content.setAlignmentX(LEFT_ALIGNMENT);
-            setBackground(backgroundColor);
+            setBackground(UIColors.lightBackground);
             List<Feature> features = node.getFeatures();
             setHeader(new NodeSchematic(node, features, openBrowser));
             content.add(new NodeBasics(node, openBrowser));

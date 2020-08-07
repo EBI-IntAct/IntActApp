@@ -2,6 +2,7 @@ package uk.ac.ebi.intact.app.internal.tasks.view;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -19,7 +20,8 @@ public class SelectEdgesTask extends AbstractTask {
     @Override
     public void run(TaskMonitor taskMonitor) {
         for (CyEdge edge : edgesToSelect) {
-            cyNetwork.getRow(edge).set(CyNetwork.SELECTED, true);
+            CyRow row = cyNetwork.getRow(edge);
+            if (row != null) row.set(CyNetwork.SELECTED, true);
         }
     }
 }

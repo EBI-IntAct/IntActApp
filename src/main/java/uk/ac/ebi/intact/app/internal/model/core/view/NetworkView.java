@@ -3,20 +3,23 @@ package uk.ac.ebi.intact.app.internal.model.core.view;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
-import uk.ac.ebi.intact.app.internal.model.events.IntactViewChangedEvent;
+import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.model.filters.edge.*;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeSpeciesFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
-import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,22 +30,27 @@ public class NetworkView {
     public final transient Manager manager;
     public final transient Network network;
     public final transient CyNetworkView cyView;
-    private Type type = Type.COLLAPSED;
     public final transient Set<Node> visibleNodes = new HashSet<>();
     public final transient Set<Edge> visibleEdges = new HashSet<>();
     private final List<Filter<?>> filters = new ArrayList<>();
     private boolean filtersSilenced = false;
+    private Type type;
 
-    public NetworkView(Manager manager, CyNetworkView cyView, boolean loadData) {
+    public NetworkView(Manager manager, CyNetworkView cyView, boolean loadData, Type type) {
         this.manager = manager;
         if (cyView != null) {
             this.cyView = cyView;
             this.network = manager.data.getNetwork(cyView.getModel());
+            this.type = type != null ? type : Type.SUMMARY;
             setupFilters(loadData);
         } else {
             this.cyView = null;
             this.network = null;
         }
+    }
+
+    public void accordStyleToType() {
+        manager.style.getStyle(type).applyStyle(cyView);
     }
 
     public List<Filter<?>> getFilters() {
@@ -54,58 +62,29 @@ public class NetworkView {
         filters.add(new NodeSpeciesFilter(this));
 
         filters.add(new EdgeMIScoreFilter(this));
-        filters.add(new EdgeDetectionMethodFilter(this));
+        filters.add(new EdgeInteractionDetectionMethodFilter(this));
+        filters.add(new EdgeParticipantDetectionMethodFilter(this));
         filters.add(new EdgeHostOrganismFilter(this));
         filters.add(new EdgeExpansionTypeFilter(this));
         filters.add(new EdgeTypeFilter(this));
         filters.add(new EdgeMutationFilter(this));
 
         filters.add(new OrphanNodeFilter(this)); // Must be after edge filters
+        filters.add(new OrphanEdgeFilter(this));
 
         if (loadData) load();
-
-        manager.data.fireIntactViewChangedEvent(new IntactViewChangedEvent(manager, this));
+        totalFilter();
     }
 
-    public void save() {
-        if (thread != null && thread.isAlive()) thread.interrupt();
-        thread = new Thread(() -> {
-            try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                CyNetwork cyNetwork = this.network.getCyNetwork();
-                cyNetwork.getRow(cyNetwork).set(ModelUtils.NET_VIEW_STATE, objectMapper.writeValueAsString(this));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+    public void totalFilter() {
+        (this.type != Type.SUMMARY ? network.getSummaryCyEdges() : network.getEvidenceCyEdges()).forEach(cyEdge -> {
+            if (cyEdge == null) return;
+            View<CyEdge> edgeView = cyView.getEdgeView(cyEdge);
+            if (edgeView == null) return;
+            edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
+
         });
-        thread.start();
-    }
-
-    public void load() {
-        CyNetwork cyNetwork = this.network.getCyNetwork();
-        String jsonText = cyNetwork.getRow(cyNetwork).get(ModelUtils.NET_VIEW_STATE, String.class);
-        if (jsonText == null || jsonText.isBlank()) return;
-        try {
-            JsonNode json = new ObjectMapper().readTree(jsonText);
-            type = Type.valueOf(json.get("type").textValue());
-            List<JsonNode> filterDataList = StreamSupport.stream(json.get("filters").spliterator(), false).collect(Collectors.toList());
-            for (Filter<?> filter: filters) {
-                for (Iterator<JsonNode> iterator = filterDataList.iterator(); iterator.hasNext(); ) {
-                    JsonNode filterJson = iterator.next();
-                    if (filter.load(filterJson)) {
-                        iterator.remove();
-                        break;
-                    }
-                }
-            }
-            filter();
-        } catch (JsonProcessingException | IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void silenceFilters(boolean filtersSilenced) {
-        this.filtersSilenced = filtersSilenced;
+        filter();
     }
 
     public void filter() {
@@ -113,8 +92,8 @@ public class NetworkView {
         visibleNodes.clear();
         visibleEdges.clear();
 
-        List<Node> nodesToFilter = network.getINodes();
-        List<? extends Edge> edgesToFilter = (getType() == Type.COLLAPSED) ? network.getCollapsedIEdges() : network.getEvidenceIEdges();
+        List<Node> nodesToFilter = network.getNodes();
+        List<? extends Edge> edgesToFilter = (getType() == Type.SUMMARY) ? network.getSummaryEdges() : network.getEvidenceEdges();
 
         visibleNodes.addAll(nodesToFilter);
         visibleEdges.addAll(edgesToFilter);
@@ -124,14 +103,70 @@ public class NetworkView {
         }
 
         nodesToFilter.removeAll(visibleNodes);
-        nodesToFilter.forEach(nodeToHide -> cyView.getNodeView(nodeToHide.node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false));
-        visibleNodes.forEach(nodeToHide -> cyView.getNodeView(nodeToHide.node).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true));
+        nodesToFilter.forEach(nodeToHide -> {
+            View<CyNode> nodeView = cyView.getNodeView(nodeToHide.cyNode);
+            if (nodeView != null) nodeView.setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
+        });
+        visibleNodes.forEach(nodeToShow -> {
+            View<CyNode> nodeView = cyView.getNodeView(nodeToShow.cyNode);
+            if (nodeView != null) nodeView.setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
+        });
 
         edgesToFilter.removeAll(visibleEdges);
-        edgesToFilter.forEach(edgeToHide -> cyView.getEdgeView(edgeToHide.edge).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false));
-        visibleEdges.forEach(edgeToHide -> cyView.getEdgeView(edgeToHide.edge).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true));
+        edgesToFilter.forEach(edgeToHide -> {
+            View<CyEdge> edgeView = cyView.getEdgeView(edgeToHide.cyEdge);
+            if (edgeView != null) edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
+        });
+
+        visibleEdges.forEach(edgeToShow -> {
+            View<CyEdge> edgeView = cyView.getEdgeView(edgeToShow.cyEdge);
+            if (edgeView != null) edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true);
+        });
 
         save();
+        manager.utils.fireEvent(new ViewUpdatedEvent(manager, this));
+    }
+
+    public void silenceFilters(boolean filtersSilenced) {
+        this.filtersSilenced = filtersSilenced;
+    }
+
+    public void save() {
+        if (thread != null && thread.isAlive()) thread.interrupt();
+        thread = new Thread(() -> {
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                CyNetwork cyNetwork = this.network.getCyNetwork();
+                NetworkFields.VIEW_STATE.setValue(cyNetwork.getRow(cyNetwork), objectMapper.writeValueAsString(this));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        });
+        thread.start();
+    }
+
+    public void load() {
+        CyNetwork cyNetwork = this.network.getCyNetwork();
+        String jsonText = NetworkFields.VIEW_STATE.getValue(cyNetwork.getRow(cyNetwork));
+        if (jsonText == null || jsonText.isBlank()) return;
+        try {
+            JsonNode json = new ObjectMapper().readTree(jsonText);
+            String type = json.get("type").textValue();
+            this.type = type != null && !type.isEmpty() ? Type.valueOf(type) : Type.SUMMARY;
+
+            List<JsonNode> filterDataList = StreamSupport.stream(json.get("filters").spliterator(), false).collect(Collectors.toList());
+            for (Filter<?> filter : filters) {
+                for (Iterator<JsonNode> iterator = filterDataList.iterator(); iterator.hasNext(); ) {
+                    JsonNode filterJson = iterator.next();
+                    if (filter.load(filterJson)) {
+                        iterator.remove();
+                        break;
+                    }
+                }
+            }
+        } catch (JsonProcessingException | IllegalArgumentException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -151,8 +186,8 @@ public class NetworkView {
     }
 
     public enum Type {
-        COLLAPSED("COLLAPSED"),
-        EXPANDED("EXPANDED"),
+        SUMMARY("SUMMARY"),
+        EVIDENCE("EVIDENCE"),
         MUTATION("MUTATION");
 
         private final String name;
@@ -165,6 +200,5 @@ public class NetworkView {
         public String toString() {
             return name;
         }
-
     }
 }

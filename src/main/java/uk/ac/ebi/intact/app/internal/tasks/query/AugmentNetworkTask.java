@@ -10,7 +10,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.*;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
-import uk.ac.ebi.intact.app.internal.model.core.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
@@ -29,12 +29,12 @@ public class AugmentNetworkTask extends AbstractTask {
 
     public void run(TaskMonitor monitor) {
         monitor.setTitle("Adding " + intactAcs.size() + " terms to network");
-        Manager manager = network.getManager();
+        Manager manager = network.manager;
 
         Map<String, CyNode> idToNode = new HashMap<>();
         Map<String, String> idToName = new HashMap<>();
-        network.getINodes().forEach(node -> {
-            idToNode.put(node.ac, node.node);
+        network.getNodes().forEach(node -> {
+            idToNode.put(node.ac, node.cyNode);
             idToName.put(node.ac, node.name);
         });
 

@@ -12,6 +12,6 @@ public class EdgeTypeFilter extends DiscreteFilter<EvidenceEdge> {
 
     @Override
     public String getPropertyValue(EvidenceEdge element) {
-        return element.type;
+        return element.type.value;
     }
 }

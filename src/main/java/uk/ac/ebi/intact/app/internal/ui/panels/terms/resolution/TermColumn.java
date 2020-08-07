@@ -9,19 +9,18 @@ public enum TermColumn {
     SELECT("Select", "", true, null, false),
     PREVIEW("Preview", "", false, null, false),
     SPECIES("Species", "", false, (interactor) -> interactor.species, true),
-    TYPE("Type", "", false, (interactor) -> interactor.type, true),
+    TYPE("Type", "", false, (interactor) -> interactor.typeName, true),
     NAME("Name", "interactor_name", false, (interactor) -> interactor.name, false),
-    DESCRIPTION("Description", "interactor_description", false, (interactor) -> interactor.fullName, false),
+    DESCRIPTION("Description", "interactor_description", false, (interactor) -> interactor.description, false),
     NB_INTERACTIONS("# Interactions", "", false, (interactor) -> interactor.interactionCount, false),
     ID("ID", "interactor_identifiers", false, (interactor) -> interactor.preferredId, false),
-    MATCHING_COLUMNS("Matching columns", "", false, (interactor) -> interactor.matchingColumns, false),
-    AC("IntAct Ac", "interactor_ac", false, (interactor) -> interactor.ac, false);
+    MATCHING_COLUMNS("Matching columns", "", false, (interactor) -> interactor.matchingColumns, false);
 
     public final String name;
     public final String highlightName;
     public final Boolean isFixedInRowHeader;
-    public final Boolean filtered;
     public final Function<Interactor, Object> getValue;
+    public final Boolean filtered;
 
     TermColumn(String name, String highlightName, Boolean isFixedInRowHeader, Function<Interactor, Object> getValue, boolean filtered) {
         this.name = name;

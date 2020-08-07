@@ -1,5 +1,8 @@
 package uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology;
 
+import org.cytoscape.model.CyRow;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.CVField;
+
 import java.util.Objects;
 
 import static uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.SourceOntology.*;
@@ -22,6 +25,11 @@ public class OntologyIdentifier {
     public OntologyIdentifier(String id, SourceOntology sourceOntology) {
         this.sourceOntology = sourceOntology;
         this.id = id;
+    }
+
+    public OntologyIdentifier(CyRow row, CVField field) {
+        this.sourceOntology = field.ontology;
+        this.id = field.ID.getValue(row);
     }
 
     @Override

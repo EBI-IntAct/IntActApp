@@ -57,6 +57,7 @@ public abstract class AbstractNodeShape extends JComponent {
         this.borderThickness = borderThickness;
         this.width = originalWidth - borderThickness;
         this.height = originalHeight - borderThickness;
+        repaint();
     }
 
     public Color getBorderColor() {
@@ -65,6 +66,7 @@ public abstract class AbstractNodeShape extends JComponent {
 
     public void setBorderColor(Color borderColor) {
         this.borderColor = borderColor;
+        repaint();
     }
 
     public Color getColor() {
@@ -73,5 +75,6 @@ public abstract class AbstractNodeShape extends JComponent {
 
     public void setColor(Color color) {
         this.color = color;
+        repaint();
     }
 }

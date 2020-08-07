@@ -3,13 +3,13 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.elements;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.cytoscape.util.swing.OpenBrowser;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.CollapsedEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
-import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.AbstractDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.GroupUtils;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIdentifier;
 
@@ -18,14 +18,14 @@ import javax.swing.*;
 public class EdgeParameters extends AbstractEdgeElement {
     private final JsonNode parametersData;
 
-    public EdgeParameters(Edge iEdge, OpenBrowser openBrowser, JsonNode parametersData) {
-        super("Parameters", iEdge, openBrowser);
+    public EdgeParameters(Edge edge, OpenBrowser openBrowser, JsonNode parametersData) {
+        super("Parameters", edge, openBrowser);
         this.parametersData = parametersData;
         fillContent();
     }
 
     @Override
-    protected void fillCollapsedEdgeContent(CollapsedEdge edge) {
+    protected void fillSummaryEdgeContent(SummaryEdge edge) {
     }
 
     @Override
@@ -36,7 +36,7 @@ public class EdgeParameters extends AbstractEdgeElement {
                     annotationData -> StringUtils.capitalize(annotationData.get("type").get("shortName").textValue()),
                     (toFill, annotationsDataOfTopic) -> {
                         for (JsonNode annotationDataOfTopic : annotationsDataOfTopic) {
-                            LinePanel parameter = new LinePanel(AbstractDetailPanel.backgroundColor);
+                            LinePanel parameter = new LinePanel(UIColors.lightBackground);
                             parameter.add(fancyValue(annotationDataOfTopic.get("value").textValue()));
                             parameter.add(Box.createHorizontalStrut(4));
 
