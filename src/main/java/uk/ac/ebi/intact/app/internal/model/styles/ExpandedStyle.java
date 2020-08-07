@@ -15,7 +15,7 @@ import java.awt.*;
 
 public class ExpandedStyle extends Style {
 
-    public static final String TITLE = "Intact - Evidence";
+    public static final String TITLE = "IntAct - Evidence";
     public final static NetworkView.Type type = NetworkView.Type.EVIDENCE;
 
 

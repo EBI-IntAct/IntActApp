@@ -21,10 +21,7 @@ public class PropertyUtils {
     }
 
     public static String getStringProperty(CyProperty<Properties> properties, String propertyKey) {
-        Properties p = properties.getProperties();
-        if (p.getProperty(propertyKey) != null)
-            return p.getProperty(propertyKey);
-        return null;
+        return properties.getProperties().getProperty(propertyKey);
     }
 
     public static Double getDoubleProperty(CyProperty<Properties> properties, String propertyKey) {
@@ -47,12 +44,16 @@ public class PropertyUtils {
 
     public static class ConfigPropsReader extends AbstractConfigDirPropsReader {
         ConfigPropsReader(SavePolicy policy, String name) {
-            super(name, "intactApp.props", policy);
+            super(name, name + ".props", policy);
         }
     }
 
     public static CyProperty<Properties> getPropertyService(Manager manager, CyProperty.SavePolicy policy) {
-        String name = "intactApp";
+        return getPropertyService(manager, policy, "intactApp");
+    }
+
+
+    public static CyProperty<Properties> getPropertyService(Manager manager, CyProperty.SavePolicy policy, String name) {
         if (policy == CyProperty.SavePolicy.SESSION_FILE) {
             CyProperty<Properties> service;
             try {
@@ -68,7 +69,6 @@ public class PropertyUtils {
                 manager.utils.registerAllServices(service, serviceProps);
                 return service;
             }
-
 
 
         } else if (policy == CyProperty.SavePolicy.CONFIG_DIR || policy == CyProperty.SavePolicy.SESSION_FILE_AND_CONFIG_DIR) {

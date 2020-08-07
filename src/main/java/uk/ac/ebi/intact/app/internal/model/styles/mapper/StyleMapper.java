@@ -34,7 +34,7 @@ public class StyleMapper {
     private static boolean nodeTypesWorking = false;
     private static boolean edgeTypesReady = false;
     private static boolean edgeTypesWorking = false;
-    private static final List<WeakReference<StyleUpdatedListener>> styleUpdatedListeners = new ArrayList<>();
+    private static final Vector<WeakReference<StyleUpdatedListener>> styleUpdatedListeners = new Vector<>();
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
 
     public static Hashtable<String, Paint> speciesColors = Arrays.stream(Taxons.values())
@@ -158,7 +158,7 @@ public class StyleMapper {
         initializeSpeciesAndKingdomColors(async);
     }
 
-    public synchronized static Map<String, Paint> completeTaxIdColorsFromUnknownTaxIds(Set<String> taxIdsToCheckAndAdd) {
+    public synchronized static Map<String, Paint> harvestKingdomsOf(Set<String> taxIdsToCheckAndAdd, boolean setColor) {
         Map<String, Paint> addedTaxIds = new Hashtable<>();
 
         while (!taxIdsReady)
@@ -168,6 +168,7 @@ public class StyleMapper {
             return addedTaxIds;
 
         taxIdsToCheckAndAdd.removeAll(speciesColors.keySet());
+        taxIdsToCheckAndAdd.removeAll(kingdomColors.keySet());
 
         if (taxIdsToCheckAndAdd.size() == 0)
             return addedTaxIds;
@@ -178,10 +179,10 @@ public class StyleMapper {
             JsonNode taxons = new ObjectMapper().readTree(jObject.toString()).get("TaxaSet").get("Taxon");
             if (taxons.isArray()) {
                 for (JsonNode taxon : taxons) {
-                    addTaxon(addedTaxIds, taxon);
+                    addTaxon(addedTaxIds, taxon, setColor);
                 }
             } else {
-                addTaxon(addedTaxIds, taxons);
+                addTaxon(addedTaxIds, taxons, setColor);
             }
 
 
@@ -192,21 +193,30 @@ public class StyleMapper {
         return addedTaxIds;
     }
 
-    private static void addTaxon(Map<String, Paint> addedTaxIds, JsonNode taxons) {
+    private static void addTaxon(Map<String, Paint> addedTaxIds, JsonNode taxons, boolean setColor) {
         String taxId = taxons.get("TaxId").asText();
         ArrayNode lineage = (ArrayNode) taxons.get("LineageEx").get("Taxon");
 
         for (int i = lineage.size() - 1; i >= 0; i--) {
             String supTaxId = lineage.get(i).get("TaxId").asText();
             if (originalKingdomColors.containsKey(supTaxId)) {
-                Paint paint = originalKingdomColors.get(supTaxId);
-                kingdomColors.put(taxId, paint);
                 taxIdToChildrenTaxIds.get(supTaxId).add(taxId);
                 taxIdToParentTaxId.put(taxId, supTaxId);
-                addedTaxIds.put(taxId, paint);
+                if (setColor) {
+                    Paint paint = kingdomColors.get(supTaxId);
+                    kingdomColors.put(taxId, paint);
+                    addedTaxIds.put(taxId, paint);
+                }
                 break;
             }
         }
+    }
+
+    public static Paint getKingdomColor(String taxId) {
+        String kingdomId = taxIdToParentTaxId.get(taxId);
+        if (kingdomId != null) return kingdomColors.get(kingdomId);
+        Set<String> taxIdSet = new HashSet<>();
+        return harvestKingdomsOf(taxIdSet, true).get(taxId);
     }
 
     public static Map<String, Paint> updateChildrenColors(String parentTaxId, Color newColor, boolean addDescendants, boolean isKingdom) {
@@ -229,6 +239,7 @@ public class StyleMapper {
                 }
             }
         }
+        fireStyleUpdated();
         return updatedTaxIds;
     }
 
@@ -319,7 +330,7 @@ public class StyleMapper {
 
     public static void fireStyleUpdated() {
         executor.execute(() -> {
-            Iterator<WeakReference<StyleUpdatedListener>> listenerIterator = styleUpdatedListeners.iterator();
+            ListIterator<WeakReference<StyleUpdatedListener>> listenerIterator = styleUpdatedListeners.listIterator();
             while (listenerIterator.hasNext()) {
                 StyleUpdatedListener listener = listenerIterator.next().get();
                 if (listener == null) listenerIterator.remove();

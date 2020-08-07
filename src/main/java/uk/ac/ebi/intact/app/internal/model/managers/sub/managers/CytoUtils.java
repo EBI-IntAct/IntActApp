@@ -26,7 +26,6 @@ public class CytoUtils {
     final TaskManager<?, ?> dialogTaskManager;
     final SynchronousTaskManager<?> synchronousTaskManager;
     final CommandExecutorTaskFactory commandExecutorTaskFactory;
-    final AvailableCommands availableCommands;
     ShowDetailPanelTaskFactory detailPanelTaskFactory;
     DetailPanel detailPanel;
 
@@ -36,7 +35,7 @@ public class CytoUtils {
         // Get our task managers
         this.dialogTaskManager = registrar.getService(TaskManager.class);
         this.synchronousTaskManager = registrar.getService(SynchronousTaskManager.class);
-        availableCommands = registrar.getService(AvailableCommands.class);
+
         this.commandExecutorTaskFactory = registrar.getService(CommandExecutorTaskFactory.class);
         this.cyEventHelper = registrar.getService(CyEventHelper.class);
     }
@@ -118,7 +117,7 @@ public class CytoUtils {
     }
 
     public boolean haveEnhancedGraphics() {
-        return availableCommands.getNamespaces().contains("enhancedGraphics");
+        return getService(AvailableCommands.class).getNamespaces().contains("enhancedGraphics");
     }
 
     public ShowDetailPanelTaskFactory getShowDetailPanelTaskFactory() {

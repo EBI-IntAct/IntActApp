@@ -49,6 +49,10 @@ public class NetworkView {
         }
     }
 
+    public void accordStyleToType() {
+        manager.style.getStyle(type).applyStyle(cyView);
+    }
+
     public List<Filter<?>> getFilters() {
         return new ArrayList<>(filters);
     }

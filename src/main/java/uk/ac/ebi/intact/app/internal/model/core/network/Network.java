@@ -83,7 +83,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         updateSummaryEdges(coupleToSummarizedEdges.keySet());
 
 
-        completeMissingNodeColorsFromTables(true);
+        completeMissingNodeColorsFromTables(true, null);
         manager.utils.registerAllServices(this, new Properties());
     }
 
@@ -97,6 +97,10 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
     public String getSpeciesId(String speciesName) {
         return speciesNameToId.getOrDefault(speciesName, null);
+    }
+
+    public boolean speciesExist(String speciesName) {
+        return speciesNameToId.containsKey(speciesName);
     }
 
     public Set<String> getNonDefinedTaxon() {
@@ -118,25 +122,21 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         manager.data.addNetworkView(networkView, false);
     }
 
-    private int colorsCompleted = 0;
-
-    public void completeMissingNodeColorsFromTables(boolean async) {
+    public void completeMissingNodeColorsFromTables(boolean async, Runnable callback) {
         Runnable kingdomUpdater = () -> {
-            if (colorsCompleted < 2) {
-                for (Node node : nodes.values()) {
-                    interactorTypes.add(node.type.value);
-                    taxIds.add(node.taxId);
-                    speciesNameToId.put(node.species, node.taxId);
-                    speciesIdToName.put(node.taxId, node.species);
-                }
-                colorsCompleted++;
+            for (Node node : nodes.values()) {
+                interactorTypes.add(node.type.value);
+                taxIds.add(node.taxId);
+                speciesNameToId.put(node.species, node.taxId);
+                speciesIdToName.put(node.taxId, node.species);
             }
 
-            Map<String, Paint> addedTaxIds = StyleMapper.completeTaxIdColorsFromUnknownTaxIds(getTaxIds());
+            Map<String, Paint> addedTaxIds = StyleMapper.harvestKingdomsOf(getTaxIds(), true);
 
             for (Style style : manager.style.getStyles().values()) {
                 style.updateTaxIdToNodePaintMapping(addedTaxIds);
             }
+            if (callback != null) callback.run();
         };
         if (async) executor.execute(kingdomUpdater);
         else kingdomUpdater.run();
@@ -144,17 +144,9 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
     public void completeMissingNodeColorsFromInteractors(Map<String, List<Interactor>> interactorsToResolve) {
         executor.execute(() -> {
-            interactorsToResolve.values().stream().flatMap(List::stream).forEach(interactor -> {
-                interactorTypes.add(interactor.typeName);
-                String taxId = interactor.taxId;
-                taxIds.add(taxId);
-                String specieName = interactor.species;
-                speciesNameToId.put(specieName, taxId);
-                speciesIdToName.put(taxId, specieName);
-            });
-
-            Map<String, Paint> addedTaxIds = StyleMapper.completeTaxIdColorsFromUnknownTaxIds(getTaxIds());
-
+            Set<String> interactorTaxIds = new HashSet<>();
+            interactorsToResolve.values().stream().flatMap(List::stream).forEach(interactor -> interactorTaxIds.add(interactor.taxId));
+            Map<String, Paint> addedTaxIds = StyleMapper.harvestKingdomsOf(interactorTaxIds, true);
             for (Style style : manager.style.getStyles().values()) {
                 style.updateTaxIdToNodePaintMapping(addedTaxIds);
             }

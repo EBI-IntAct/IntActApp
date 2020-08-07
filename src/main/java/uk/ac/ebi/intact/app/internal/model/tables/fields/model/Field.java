@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
@@ -44,31 +43,30 @@ public class Field<T> implements FieldInitializer {
 
     public final T defaultValue;
 
-    public Field(Table table, Namespace namespace, String name, String jsonKey, Class<T> type) {
-        this(table, namespace, name, jsonKey, type, true, null);
+    public Field( List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, String jsonKey, Class<T> type) {
+        this(fields, initializers, namespace, name, jsonKey, type, true, null);
     }
 
-    public Field(Table table, Namespace namespace, String name, String jsonKey, Class<T> type, boolean shared) {
-        this(table, namespace, name, jsonKey, type, shared, null);
+    public Field(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, String jsonKey, Class<T> type, boolean shared) {
+        this(fields, initializers, namespace, name, jsonKey, type, shared, null);
     }
 
-    public Field(Table table, Namespace namespace, String name, String jsonKey, Class<T> type, T defaultValue) {
-        this(table, namespace, name, jsonKey, type, true, defaultValue);
+    public Field(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, String jsonKey, Class<T> type, T defaultValue) {
+        this(fields, initializers, namespace, name, jsonKey, type, true, defaultValue);
     }
 
-    public Field(Table table, Namespace namespace, String name, String jsonKey, Class<T> type, boolean shared, T defaultValue) {
+    public Field(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, String jsonKey, Class<T> type, boolean shared, T defaultValue) {
         this.namespace = namespace;
         this.name = name;
         this.jsonKey = jsonKey;
         this.type = type;
         this.shared = shared;
         this.defaultValue = defaultValue;
+        Field.fields.add(this);
         fields.add(this);
-        table.fields.add(this);
-        table.initializers.add(this);
+        initializers.add(this);
         if (jsonKey != null) {
             keys.add(jsonKey);
-            table.keysToIgnore.add(jsonKey);
         }
     }
 

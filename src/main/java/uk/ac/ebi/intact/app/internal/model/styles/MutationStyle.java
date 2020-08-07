@@ -12,7 +12,7 @@ import java.awt.*;
 
 public class MutationStyle extends ExpandedStyle {
 
-    public static final String TITLE = "Intact - Mutation";
+    public static final String TITLE = "IntAct - Mutation";
     public final static NetworkView.Type type = NetworkView.Type.MUTATION;
     public static final Color mutatedColor = new Color(255, 0, 161);
     public static final Color wildColor = new Color(126, 131, 137);

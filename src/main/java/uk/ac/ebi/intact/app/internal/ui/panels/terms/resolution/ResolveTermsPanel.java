@@ -11,6 +11,7 @@ import uk.ac.ebi.intact.app.internal.tasks.query.factories.ImportNetworkTaskFact
 import uk.ac.ebi.intact.app.internal.ui.components.filler.HorizontalFiller;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.CenteredLabel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
+import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.options.OptionsPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.ComponentUtils;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
@@ -73,6 +74,9 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     private JButton unSelectAllButton;
     private JButton buildNetworkButton;
     private final Set<Interactor> interactorsToQuery = new HashSet<>();
+    private JPanel descriptionPanel;
+    private OptionsPanel optionsPanel;
+    private JPanel controlPanel;
 
     public ResolveTermsPanel(final Manager manager, Network network) {
         this(manager, network, true, true, null);
@@ -86,16 +90,36 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         this.fuzzySearch = fuzzySearch;
         this.task = task;
         init();
+        setPreferredSize(calculatePreferredSize());
+    }
+
+    private Dimension calculatePreferredSize() {
+        int width = getPreferredWidth(displayPanel) + getPreferredWidth(rowHeaderPanel);
+        int height = Integer.min(getPreferredHeight(displayPanel), 900);
+        for (JComponent component : List.of(descriptionPanel, columnHeaderPanel, optionsPanel, controlPanel)) {
+            height += getPreferredHeight(component);
+        }
+        return new Dimension(width, height);
+    }
+
+    private int getPreferredHeight(JComponent component) {
+        return component.getPreferredSize().height;
+    }
+
+    private int getPreferredWidth(JComponent component) {
+        return component.getPreferredSize().width;
     }
 
     private void init() {
+        descriptionPanel = new VerticalPanel();
         if (fuzzySearch) {
-            add(new CenteredLabel("The terms you have given matches all these interactors.", 15, UIColors.deepPurple), layoutHelper.expandHoriz());
-            add(new CenteredLabel("Select interactors you want to use as seeds to build network.", 14, UIColors.deepPurple), layoutHelper.down().expandHoriz());
+            descriptionPanel.add(new CenteredLabel("The terms you have given matches all these interactors.", 15, UIColors.deepPurple), layoutHelper.expandHoriz());
+            descriptionPanel.add(new CenteredLabel("Select interactors you want to use as seeds to build network.", 14, UIColors.deepPurple), layoutHelper.down().expandHoriz());
         } else {
-            add(new CenteredLabel("There is ambiguity among the terms you gave.", 15, UIColors.deepPurple), layoutHelper.down().expandHoriz());
-            add(new CenteredLabel("Please select the interactors that you meant to query as seeds to build network.", 14, UIColors.deepPurple), layoutHelper.down().expandHoriz());
+            descriptionPanel.add(new CenteredLabel("There is ambiguity among the terms you gave.", 15, UIColors.deepPurple), layoutHelper.down().expandHoriz());
+            descriptionPanel.add(new CenteredLabel("Please select the interactors that you meant to query as seeds to build network.", 14, UIColors.deepPurple), layoutHelper.down().expandHoriz());
         }
+        add(descriptionPanel, layoutHelper.expandHoriz());
         setMinimumSize(new Dimension(440, 330));
         createColumnHeader();
         createRowHeader();
@@ -106,19 +130,19 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         createControlButtons();
     }
 
-    private void createRowHeader() {
-        rowHeaderContainerPanel.setBackground(Color.WHITE);
-        EasyGBC c = new EasyGBC();
-        rowHeaderContainerPanel.add(rowHeaderPanel, c.expandHoriz().anchor("northwest"));
-        rowHeaderContainerPanel.add(Box.createVerticalGlue(), c.expandBoth());
-    }
-
     private void createColumnHeader() {
         columnHeaderPanel.setBackground(Color.WHITE);
         rowHeaderPanel.setBackground(Color.WHITE);
         columnHeaderHelper.anchor("west");
         Arrays.stream(TermColumn.values()).forEach(this::addHeaderCell);
         layoutHelper.down();
+    }
+
+    private void createRowHeader() {
+        rowHeaderContainerPanel.setBackground(Color.WHITE);
+        EasyGBC c = new EasyGBC();
+        rowHeaderContainerPanel.add(rowHeaderPanel, c.expandHoriz().anchor("northwest"));
+        rowHeaderContainerPanel.add(Box.createVerticalGlue(), c.expandBoth());
     }
 
     private void addHeaderCell(TermColumn column) {
@@ -233,7 +257,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     }
 
     private void createOptionPanel() {
-        OptionsPanel optionsPanel = new OptionsPanel(manager, OptionManager.Scope.DISAMBIGUATION);
+        optionsPanel = new OptionsPanel(manager, OptionManager.Scope.DISAMBIGUATION);
         optionsPanel.addListener(manager.option.SHOW_HIGHLIGHTS, () -> {
             boolean showHighlightsValue = !manager.option.SHOW_HIGHLIGHTS.getValue();
             termTables.forEach(table -> table.rows.values().forEach(row -> row.highlightMatchingColumns(showHighlightsValue)));
@@ -242,7 +266,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     }
 
     private void createControlButtons() {
-        JPanel controlPanel = new JPanel(new GridLayout(1, 4));
+        controlPanel = new JPanel(new GridLayout(1, 4));
 
         selectAllButton = new JButton("Select all");
         selectAllButton.addActionListener(e -> termTables.forEach(table -> table.selectRows(true)));

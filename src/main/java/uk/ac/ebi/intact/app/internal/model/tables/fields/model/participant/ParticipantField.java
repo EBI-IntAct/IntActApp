@@ -3,33 +3,34 @@ package uk.ac.ebi.intact.app.internal.model.tables.fields.model.participant;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.model.Field;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.model.FieldInitializer;
+
+import java.util.List;
 
 public class ParticipantField<T> implements FieldInitializer {
     public final Field<T> SOURCE;
     public final Field<T> TARGET;
 
-    public ParticipantField(Table table, String name, String jsonKey, Class<T> type) {
-        this(table, name, jsonKey, type, true, null);
+    public ParticipantField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, Class<T> type) {
+        this(fields, initializers, name, jsonKey, type, true, null);
     }
 
-    public ParticipantField(Table table, String name, String jsonKey, Class<T> type, boolean shared) {
-        this(table, name, jsonKey, type, shared, null);
+    public ParticipantField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, Class<T> type, boolean shared) {
+        this(fields, initializers, name, jsonKey, type, shared, null);
     }
 
 
-    public ParticipantField(Table table, String name, String jsonKey, Class<T> type, T defaultValue) {
-        this(table, name, jsonKey, type, true, defaultValue);
+    public ParticipantField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, Class<T> type, T defaultValue) {
+        this(fields, initializers, name, jsonKey, type, true, defaultValue);
     }
 
-    public ParticipantField(Table table, String name, String jsonKey, Class<T> type, boolean shared, T defaultValue) {
-        SOURCE = new Field<>(table, Field.Namespace.SOURCE, "Source " + name, jsonKey, type, shared, defaultValue);
-        TARGET = new Field<>(table, Field.Namespace.TARGET, "Target " + name, jsonKey, type, shared, defaultValue);
-        table.initializers.remove(SOURCE);
-        table.initializers.remove(TARGET);
-        table.initializers.add(this);
+    public ParticipantField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, Class<T> type, boolean shared, T defaultValue) {
+        SOURCE = new Field<>(fields, initializers, Field.Namespace.SOURCE, "Source " + name, jsonKey, type, shared, defaultValue);
+        TARGET = new Field<>(fields, initializers, Field.Namespace.TARGET, "Target " + name, jsonKey, type, shared, defaultValue);
+        initializers.remove(SOURCE);
+        initializers.remove(TARGET);
+        initializers.add(this);
     }
 
     @Override

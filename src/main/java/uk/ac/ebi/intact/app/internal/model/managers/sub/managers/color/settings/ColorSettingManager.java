@@ -3,7 +3,10 @@ package uk.ac.ebi.intact.app.internal.model.managers.sub.managers.color.settings
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.cytoscape.property.CyProperty;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.CyTableMetadata;
+import org.cytoscape.session.CySession;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.color.settings.events.ColorSettingLoadedEvent;
 import uk.ac.ebi.intact.app.internal.model.styles.Style;
@@ -12,29 +15,37 @@ import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorPicker;
 
 import java.awt.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
-import static uk.ac.ebi.intact.app.internal.utils.PropertyUtils.*;
+import static uk.ac.ebi.intact.app.internal.model.tables.Table.STYLE_SETTINGS;
+import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.StyleSettingsFields.JSON_VALUE;
 
 public class ColorSettingManager implements NodeColorPicker.ColorChangedListener {
     private final Manager manager;
-    private CyProperty<Properties> propertyService;
     private final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
+    private CyTable table;
+    public final static String TITLE = "IntAct - Custom Styles";
     private final ObjectMapper objectMapper = new ObjectMapper();
-
     private static final String SPECIES_KEY = "speciesColors";
     private final Set<ColorSetting> speciesSettings = new HashSet<>();
     private static final String KINGDOM_KEY = "kingdomColors";
     private final Set<ColorSetting> kingdomSettings = new HashSet<>();
     private static final String USER_KEY = "userColors";
     private final Set<ColorSetting> userSettings = new HashSet<>();
+    private CyTableManager tableManager;
 
     public ColorSettingManager(Manager manager) {
         this.manager = manager;
-        propertyService = getPropertyService(manager, CyProperty.SavePolicy.SESSION_FILE);
-//        loadSettings();
+        tableManager = manager.utils.getService(CyTableManager.class);
+        table = STYLE_SETTINGS.build(manager, TITLE);
+        tableManager.addTable(table);
+        resetSettings();
     }
 
     @Override
@@ -42,14 +53,18 @@ public class ColorSettingManager implements NodeColorPicker.ColorChangedListener
         NodeColorPicker source = e.getSource();
         if (source instanceof NodeColorLegendEditor) {
             var editor = (NodeColorLegendEditor) source;
-            userSettings.add(new ColorSetting(editor.getSelectedTaxId(), editor.getSelectedTaxon(), e.newColor));
+            ColorSetting setting = new ColorSetting(editor.getSelectedTaxId(), editor.getSelectedTaxon(), e.newColor);
+            userSettings.remove(setting);
+            userSettings.add(setting);
             saveSettings(USER_KEY, userSettings);
         } else {
             ColorSetting setting = new ColorSetting(source.getTaxId(), source.getDescriptor(), e.newColor);
             if (source.isDefinedSpecies()) {
+                speciesSettings.remove(setting);
                 speciesSettings.add(setting);
                 saveSettings(SPECIES_KEY, speciesSettings);
             } else {
+                kingdomSettings.remove(setting);
                 kingdomSettings.add(setting);
                 saveSettings(KINGDOM_KEY, kingdomSettings);
             }
@@ -71,10 +86,7 @@ public class ColorSettingManager implements NodeColorPicker.ColorChangedListener
     }
 
     private void saveSettings(String key, Set<ColorSetting> settings) {
-        executor.execute(() -> {
-            String value = buildSave(settings);
-            setStringProperty(propertyService, key, value);
-        });
+        executor.execute(() -> JSON_VALUE.setValue(table.getRow(key), buildSave(settings)));
     }
 
     private String buildSave(Set<ColorSetting> settings) {
@@ -86,12 +98,9 @@ public class ColorSettingManager implements NodeColorPicker.ColorChangedListener
         return "";
     }
 
-    public void loadSettings(CyProperty<Properties> intactProperties) {
-        this.propertyService = intactProperties;
-        loadSettings();
-    }
-
-    public void loadSettings() {
+    public void loadSessionSettings(CySession session) {
+        tableManager.deleteTable(table.getSUID());
+        table = STYLE_SETTINGS.getOrBuild(manager, TITLE, session.getTables().stream().map(CyTableMetadata::getTable).collect(Collectors.toList()));
         speciesSettings.addAll(loadSettings(SPECIES_KEY));
         kingdomSettings.addAll(loadSettings(KINGDOM_KEY));
         userSettings.addAll(loadSettings(USER_KEY));
@@ -101,6 +110,7 @@ public class ColorSettingManager implements NodeColorPicker.ColorChangedListener
 
     public void applySettingsToStyle() {
         Map<String, Paint> colorScheme = new HashMap<>();
+        StyleMapper.harvestKingdomsOf(userSettings.stream().map(ColorSetting::getTaxId).collect(Collectors.toSet()), false);
         speciesSettings.forEach(colorSetting -> colorScheme.putAll(StyleMapper.updateChildrenColors(colorSetting.taxId, colorSetting.color, true, false)));
         kingdomSettings.forEach(colorSetting -> colorScheme.putAll(StyleMapper.updateChildrenColors(colorSetting.taxId, colorSetting.color, true, true)));
         userSettings.forEach(colorSetting -> colorScheme.putAll(StyleMapper.updateChildrenColors(colorSetting.taxId, colorSetting.color, false, true)));
@@ -111,7 +121,7 @@ public class ColorSettingManager implements NodeColorPicker.ColorChangedListener
 
     private Set<ColorSetting> loadSettings(String key) {
         try {
-            String json = getStringProperty(propertyService, key);
+            String json = JSON_VALUE.getValue(table.getRow(key));
             if (json != null) return objectMapper.readValue(json, new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {

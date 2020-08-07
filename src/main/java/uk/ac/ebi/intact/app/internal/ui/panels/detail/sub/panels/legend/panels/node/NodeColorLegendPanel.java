@@ -39,6 +39,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel implements ColorSe
         createUserDefinedNodeColors();
         addSeparator();
         createNodeColorLegend(Taxons.getKingdoms());
+        handleEvent(new ColorSettingLoadedEvent(manager.style.settings));
     }
 
 
@@ -50,10 +51,7 @@ public class NodeColorLegendPanel extends AbstractLegendPanel implements ColorSe
         taxons.forEach((taxon) -> {
             Map<String, Paint> reference = (taxon.isSpecies) ? StyleMapper.speciesColors : StyleMapper.kingdomColors;
             NodeColorPicker nodeColorPicker = new NodeColorPicker(manager, taxon.taxId, taxon.descriptor, (Color) reference.get(taxon.taxId), taxon.isSpecies);
-            nodeColorPicker.addColorChangedListener(e -> {
-                manager.style.updateStylesColorScheme(taxon.taxId, e.newColor, true, !taxon.isSpecies);
-                reference.put(taxon.taxId, e.newColor);
-            });
+            nodeColorPicker.addColorChangedListener(e -> manager.style.updateStylesColorScheme(taxon.taxId, e.newColor, true, !taxon.isSpecies));
             colorPickers.put(taxon.taxId, nodeColorPicker);
             panel.add(nodeColorPicker, layoutHelper.down().anchor("west").expandHoriz());
         });

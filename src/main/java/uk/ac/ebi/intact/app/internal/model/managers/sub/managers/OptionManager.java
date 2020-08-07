@@ -11,15 +11,18 @@ import static uk.ac.ebi.intact.app.internal.utils.PropertyUtils.*;
 public class OptionManager {
     public final Manager manager;
     public final CyProperty<Properties> propertyService;
+    private final Properties propertyServiceProperties = new Properties();
+    public static final String DIR_PROPERTIES = "intactApp";
     public final List<Option<?>> options = new ArrayList<>();
     public final Map<Scope, List<Option<?>>> scopeOptions = new HashMap<>();
 
     public OptionManager(Manager manager) {
         this.manager = manager;
-        this.propertyService = getPropertyService(manager, CyProperty.SavePolicy.CONFIG_DIR);
+        this.propertyService = getPropertyService(manager, CyProperty.SavePolicy.CONFIG_DIR, DIR_PROPERTIES);
+        propertyServiceProperties.setProperty("cyPropertyName", DIR_PROPERTIES);
     }
 
-    public final NumericOption<Integer> MAX_INTERACTOR_PER_TERM = new NumericOption<>("maxInteractorPerTerm", "Maximum number of disambiguation choices shown", Integer.class, 500, 1, 1000, List.of(Scope.SEARCH));
+    public final NumericOption<Integer> MAX_INTERACTOR_PER_TERM = new NumericOption<>("maxInteractorPerTerm", "Maximum number of disambiguation choices shown", Integer.class, 25, 1, 1000, List.of(Scope.SEARCH));
     public final Option<Boolean> DEFAULT_INCLUDE_ALL_INTERACTORS = new Option<>("includeUnseenInteractors", "Include extra choices in search when maximum exceeded", Boolean.class, true, List.of(Scope.SEARCH));
     public final Option<Boolean> SHOW_HIGHLIGHTS = new Option<>("showHighlights", "Highlight matching columns", Boolean.class, true, List.of(Scope.SEARCH, Scope.DISAMBIGUATION));
     public final Option<Boolean> ADD_INTERACTING_PARTNERS = new Option<>("addingInteractingPartners", "Add interacting partners of seed interactors to network", Boolean.class, true, List.of(Scope.SEARCH, Scope.DISAMBIGUATION));
@@ -63,6 +66,7 @@ public class OptionManager {
 
         public void setValue(T value) {
             setStringProperty(propertyService, key, value.toString());
+            manager.utils.registerAllServices(propertyService, propertyServiceProperties);
         }
 
         @Override

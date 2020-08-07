@@ -54,7 +54,7 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
             loadingSpinner.start();
 
             NodeColorLegendEditor.clearAll(false);
-            manager.style.resetStyles(false);
+            manager.style.resetStyles(false, null);
             StyleMapper.originalKingdomColors.forEach((taxId, paint) -> nodePanel.nodeColorLegendPanel.colorPickers.get(taxId).setCurrentColor((Color) paint));
             StyleMapper.originalSpeciesColors.forEach((taxId, paint) -> nodePanel.nodeColorLegendPanel.colorPickers.get(taxId).setCurrentColor((Color) paint));
 
@@ -62,6 +62,15 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
             resetStylesButton.setEnabled(true);
         }).start());
         return resetStylesButton;
+    }
+
+    public void networkChanged(Network newNetwork) {
+        currentNetwork = newNetwork;
+        nodePanel.networkChanged(newNetwork);
+        edgePanel.networkChanged(newNetwork);
+        for (NodeColorLegendEditor nodeColorLegendEditor : NodeColorLegendEditor.getNodeColorLegendEditorList()) {
+            nodeColorLegendEditor.networkChanged(newNetwork);
+        }
     }
 
     public void networkViewChanged(CyNetworkView view) {
@@ -88,15 +97,6 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
     public void viewUpdated(NetworkView.Type newType) {
         nodePanel.viewTypeChanged(newType);
         edgePanel.viewTypeChanged(newType);
-    }
-
-    public void networkChanged(Network newNetwork) {
-        currentNetwork = newNetwork;
-        nodePanel.networkChanged(newNetwork);
-        edgePanel.networkChanged(newNetwork);
-        for (NodeColorLegendEditor nodeColorLegendEditor : NodeColorLegendEditor.getNodeColorLegendEditorList()) {
-            nodeColorLegendEditor.networkChanged(newNetwork);
-        }
     }
 
     @Override

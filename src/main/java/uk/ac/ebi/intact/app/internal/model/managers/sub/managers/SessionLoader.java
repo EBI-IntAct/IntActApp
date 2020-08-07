@@ -1,11 +1,11 @@
 package uk.ac.ebi.intact.app.internal.model.managers.sub.managers;
 
 import org.cytoscape.model.*;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.vizmap.VisualStyle;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
@@ -19,7 +19,6 @@ import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 public class SessionLoader implements SessionLoadedListener {
@@ -36,6 +35,10 @@ public class SessionLoader implements SessionLoadedListener {
         manager.data.networkMap.clear();
         manager.data.networkViewMap.clear();
         CySession loadedSession = event.getLoadedSession();
+        manager.style.hardResetStyles();
+        manager.style.resetStyles(true, () -> manager.style.settings.loadSessionSettings(loadedSession));
+        manager.style.setStylesFancy(true);
+
         Set<CyNetwork> cyNetworks = loadedSession.getNetworks();
         for (CyNetwork cyNetwork : cyNetworks) {
             if (ModelUtils.isIntactNetwork(cyNetwork)) {
@@ -43,27 +46,28 @@ public class SessionLoader implements SessionLoadedListener {
                     updateSUIDList(cyNetwork.getDefaultEdgeTable(), EdgeFields.SUMMARY_EDGES_SUID, CyEdge.class, loadedSession);
                     Network network = new Network(manager);
                     manager.data.addNetwork(network, cyNetwork);
-                    network.completeMissingNodeColorsFromTables(true);
+                    network.completeMissingNodeColorsFromTables(true, () -> manager.data.networkViewMap.values().forEach(NetworkView::accordStyleToType));
                 }
             }
         }
 
-        loadedSession.getProperties().stream()
-                .filter(cyProperty -> cyProperty.getName().equals("intactApp"))
-                .findFirst().ifPresent(cyProperty -> manager.style.settings.loadSettings((CyProperty<Properties>) cyProperty));
-
         linkIntactTablesToNetwork(loadedSession.getTables(), loadedSession);
-
         for (CyNetworkView view : loadedSession.getNetworkViews()) {
-            if (ModelUtils.isIntactNetwork(view.getModel())) {
+            if (manager.data.getNetwork(view.getModel()) != null) {
                 manager.data.addNetworkView(view, true);
             }
+        }
+
+
+
+        for (VisualStyle visualStyle : loadedSession.getVisualStyles()) {
+            if (visualStyle.getTitle().contains("IntAct"))
+                manager.style.vmm.removeVisualStyle(visualStyle);
         }
 
         NetworkView currentView = manager.data.getCurrentNetworkView();
         if (currentView != null) {
             manager.utils.fireEvent(new ViewUpdatedEvent(manager, currentView));
-            setCurrentViewToCorrectStyle(currentView);
             manager.utils.showResultsPanel();
         } else {
             manager.utils.hideResultsPanel();
@@ -72,9 +76,6 @@ public class SessionLoader implements SessionLoadedListener {
         manager.data.setLoadingSession(false);
     }
 
-    public void setCurrentViewToCorrectStyle(NetworkView currentView) {
-        manager.style.getStyle(currentView.getType()).applyStyle(currentView.cyView);
-    }
 
     void linkIntactTablesToNetwork(Collection<CyTableMetadata> tables, CySession loadingSession) {
         for (CyTableMetadata tableM : tables) {

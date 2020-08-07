@@ -17,8 +17,8 @@ public class AddTermsTaskFactory extends AbstractNetworkTaskFactory
         this.manager = manager;
     }
 
-    public boolean isReady(CyNetwork network) {
-        return ModelUtils.isIntactNetwork(network);
+    public boolean isReady(CyNetwork cyNetwork) {
+        return manager.data.getNetwork(cyNetwork) != null;
     }
 
     public TaskIterator createTaskIterator(CyNetwork network) {

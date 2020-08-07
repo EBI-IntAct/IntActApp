@@ -15,6 +15,7 @@ import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 public class StyleManager {
     private final Manager manager;
@@ -26,13 +27,14 @@ public class StyleManager {
         this.manager = manager;
         vmm = manager.utils.getService(VisualMappingManager.class);
         settings = new ColorSettingManager(manager);
+        manager.utils.registerAllServices(this, new Properties());
     }
 
     public void setupStyles() {
         StyleMapper.initializeSpeciesAndKingdomColors(true);
-
         StyleMapper.initializeEdgeTypeToPaint();
         StyleMapper.initializeNodeTypeToShape();
+
         Style summary = new SummaryStyle(manager);
         Style expanded = new ExpandedStyle(manager);
         Style mutation = new MutationStyle(manager);
@@ -64,6 +66,12 @@ public class StyleManager {
         }
     }
 
+    public void setStylesFancy(boolean fancy) {
+        for (Style style : styles.values()) {
+            style.setFancy(fancy);
+        }
+    }
+
     public void updateStylesColorScheme(String parentTaxId, Color newColor, boolean addDescendants, boolean isKingdom) {
         Map<String, Paint> colorScheme = StyleMapper.updateChildrenColors(parentTaxId, newColor, addDescendants, isKingdom);
         for (Style style : styles.values()) {
@@ -71,15 +79,22 @@ public class StyleManager {
         }
     }
 
-    public void resetStyles(boolean async) {
+    public void resetStyles(boolean async, Runnable callback) {
         settings.resetSettings();
         StyleMapper.resetMappings(async);
         for (Style style : styles.values()) {
             style.setNodePaintStyle();
         }
         for (Network network : manager.data.networkMap.values()) {
-            network.completeMissingNodeColorsFromTables(async);
+            network.completeMissingNodeColorsFromTables(async, null);
         }
+        StyleMapper.fireStyleUpdated();
+        if (callback != null) callback.run();
     }
 
+    void hardResetStyles() {
+        styles.values().forEach(style -> vmm.removeVisualStyle(style.getStyle()));
+        styles.clear();
+        setupStyles();
+    }
 }

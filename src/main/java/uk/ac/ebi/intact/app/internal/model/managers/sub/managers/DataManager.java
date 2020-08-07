@@ -8,6 +8,7 @@ import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.task.hide.HideTaskFactory;
@@ -77,6 +78,7 @@ public class DataManager implements
     }
 
     public void loadCurrentSession() {
+        manager.utils.getService(CySessionManager.class).getCurrentSession().getProperties();
         CyNetworkViewManager networkViewManager = manager.utils.getService(CyNetworkViewManager.class);
         for (CyNetwork cyNetwork : manager.utils.getService(CyNetworkManager.class).getNetworkSet()) {
             if (!isIntactNetwork(cyNetwork)) continue;
@@ -84,7 +86,7 @@ public class DataManager implements
             addNetwork(network, cyNetwork);
             linkNetworkTablesFromTableData(network);
             fireIntactNetworkCreated(network);
-            network.completeMissingNodeColorsFromTables(true);
+            network.completeMissingNodeColorsFromTables(true, null);
             for (CyNetworkView view : networkViewManager.getNetworkViews(cyNetwork)) {
                 addNetworkView(view, true);
             }
@@ -146,6 +148,7 @@ public class DataManager implements
     public CyNetworkView createNetworkView(CyNetwork cyNetwork) {
         CyNetworkView view = manager.utils.getService(CyNetworkViewFactory.class)
                 .createNetworkView(cyNetwork);
+        manager.style.setStylesFancy(true);
         if (networkMap.containsKey(cyNetwork)) {
             networkMap.get(cyNetwork).hideExpandedEdgesOnViewCreation(view);
             manager.style.styles.get(SummaryStyle.type).applyStyle(view);

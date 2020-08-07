@@ -27,6 +27,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     protected String currentTaxId;
     protected JComboBox<String> speciesField;
     protected JButton removeButton = new JButton(remove);
+    private SortedComboBoxModel<String> speciesModel;
 
     public NodeColorLegendEditor(Manager manager, ColorSetting setting, JComponent addNewNodeLegendEditorActivator) {
         super(manager);
@@ -34,8 +35,8 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
         this.setting = setting;
         NODE_COLOR_LEGEND_EDITOR_LIST.add(this);
 
-        setSpeciesField(getSpeciesOptions());
         descriptor = setting.getTaxonName();
+        setSpeciesField(getSpeciesOptions(), descriptor);
         currentTaxId = setting.getTaxId();
         currentColor = setting.getColor();
         updateStyleColors();
@@ -57,7 +58,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
         this.setting = null;
         NODE_COLOR_LEGEND_EDITOR_LIST.add(this);
 
-        setSpeciesField(getSpeciesOptions());
+        setSpeciesField(getSpeciesOptions(), null);
         descriptor = (String) speciesField.getSelectedItem();
         currentTaxId = currentNetwork.getSpeciesId(descriptor);
         currentColor = (Color) StyleMapper.kingdomColors.get(currentTaxId);
@@ -80,13 +81,16 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     }
 
     private Vector<String> getSpeciesOptions() {
-        if (setting != null) return new Vector<>(List.of(setting.getTaxonName()));
-        else if (checkCurrentNetwork()) return new Vector<>(currentNetwork.getNonDefinedTaxon());
-        return new Vector<>();
+        Vector<String> options = new Vector<>();
+        if (checkCurrentNetwork()) options.addAll(currentNetwork.getNonDefinedTaxon());
+        if (setting != null) options.add(setting.getTaxonName());
+        return options;
     }
 
-    private void setSpeciesField(Vector<String> speciesOptions) {
-        speciesField = new JComboBox<>(new SortedComboBoxModel<>(speciesOptions));
+    private void setSpeciesField(Vector<String> speciesOptions, String selectedOption) {
+        speciesModel = new SortedComboBoxModel<>(speciesOptions);
+        if (selectedOption != null) speciesModel.setSelectedItem(selectedOption);
+        speciesField = new JComboBox<>(speciesModel);
         for (NodeColorLegendEditor nodeColorLegendEditor : NODE_COLOR_LEGEND_EDITOR_LIST) {
             if (nodeColorLegendEditor != this && nodeColorLegendEditor.speciesField != null) {
                 nodeColorLegendEditor.speciesField.removeItem(speciesField.getSelectedItem());
@@ -127,8 +131,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     }
 
     private void resetFormerLegend() {
-        String kingdom = StyleMapper.taxIdToParentTaxId.get(currentTaxId);
-        Color formerColor = (Color) StyleMapper.kingdomColors.get(kingdom);
+        Color formerColor = (Color) StyleMapper.getKingdomColor(currentTaxId);
         if (formerColor != null)
             manager.style.updateStylesColorScheme(currentTaxId, formerColor, false, true);
         StyleMapper.speciesColors.remove(currentTaxId);
@@ -164,6 +167,8 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
 
     public void networkChanged(Network newNetwork) {
         currentNetwork = newNetwork;
+        speciesModel.removeIf(speciesName -> !speciesName.equals(getSelectedTaxon()) && !currentNetwork.speciesExist(speciesName));
+        getSpeciesOptions().forEach(speciesModel::addElement);
     }
 
 

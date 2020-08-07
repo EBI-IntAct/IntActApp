@@ -3,7 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <bundle.symbolicName>intactApp</bundle.symbolicName>
+        <bundle.name>IntAct App</bundle.name>
+        <bundle.symbolicName>intact.app</bundle.symbolicName>
         <bundle.namespace>uk.ac.ebi.intact.app.internal</bundle.namespace>
         <cytoscape.api.version>3.8.0</cytoscape.api.version>
         <osgi.api.version>4.2.0</osgi.api.version>
@@ -12,9 +13,8 @@
     <groupId>uk.ac.ebi.intact</groupId>
     <artifactId>intactApp</artifactId>
     <packaging>bundle</packaging>
-    <name>${bundle.symbolicName}</name>
-
-    <version>0.9</version>
+    <name>${bundle.name}</name>
+    <version>0.9.0.SNAPSHOT</version>
 
     <scm>
         <connection>scm:git:https://github.com/EliotRagueneau/IntactApp.git</connection>
@@ -39,6 +39,7 @@
                 <configuration>
                     <unpackBundle>false</unpackBundle>
                     <instructions>
+                        <Bundle-Name>${bundle.name}</Bundle-Name>
                         <Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Export-Package>
@@ -50,7 +51,7 @@
                         <Embed-Dependency>*;scope=!provided|!test</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Cytoscape-App-Dependencies>
-                            enhancedGraphics;1.5.0
+                            enhancedGraphics;1.5.4
                         </Cytoscape-App-Dependencies>
                     </instructions>
                 </configuration>

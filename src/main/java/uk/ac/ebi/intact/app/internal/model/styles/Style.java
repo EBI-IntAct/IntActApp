@@ -14,8 +14,8 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
-import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
@@ -53,9 +53,12 @@ public abstract class Style {
         continuousFactory = manager.utils.getService(VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
         discreteFactory = manager.utils.getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
         passthroughFactory = manager.utils.getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
-        createStyle();
-        if (newStyle)
+        if (newStyle) {
+            createStyle();
             registerStyle();
+        } else {
+            loadStyle();
+        }
     }
 
     private VisualStyle getOrCreateStyle() {
@@ -85,6 +88,13 @@ public abstract class Style {
         setEdgeSourceShape();
         setEdgeTargetShape();
         setEdgeArrowColor();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void loadStyle() {
+        setNodeLabel();
+        nodeTypeToShape = (DiscreteMapping<String, NodeShape>) style.getVisualMappingFunction(BasicVisualLexicon.NODE_SHAPE);
+        taxIdToNodeColor = (DiscreteMapping<String, Paint>) style.getVisualMappingFunction(BasicVisualLexicon.NODE_FILL_COLOR);
     }
 
     protected void setNetworkBackground() {
@@ -132,33 +142,22 @@ public abstract class Style {
         if (fastLabelsMapping == null) {
             VisualLexicon lex = manager.utils.getService(RenderingEngineManager.class).getDefaultVisualLexicon();
             fastLabelsMapping = (PassthroughMapping<String, String>) passthroughFactory.createVisualMappingFunction(NodeFields.NAME.toString(), String.class, BasicVisualLexicon.NODE_LABEL);
-            if (manager.utils.haveEnhancedGraphics()) {
+            fancyLabelsProperty = lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_3");
+            fancyLabelsMapping = (PassthroughMapping) passthroughFactory.createVisualMappingFunction(NodeFields.ELABEL_STYLE.toString(), String.class, fancyLabelsProperty);
 
-                fancyLabelsProperty = lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_3");
-                fancyLabelsMapping = (PassthroughMapping) passthroughFactory.createVisualMappingFunction(NodeFields.ELABEL_STYLE.toString(), String.class, fancyLabelsProperty);
-                style.addVisualMappingFunction(fancyLabelsMapping);
-
-                fancyLabelsPositionProperty = lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_POSITION_3");
-                fancyLabelsPositionValue = fancyLabelsPositionProperty.parseSerializableString("C,C,c,0.00,-4.00");
-                style.setDefaultValue(fancyLabelsPositionProperty, fancyLabelsPositionValue);
-                style.removeVisualMappingFunction(BasicVisualLexicon.NODE_LABEL);
-
-                fancy = true;
-            } else {
-                style.addVisualMappingFunction(fastLabelsMapping);
-                fancy = false;
-            }
-        } else {
-            if (manager.utils.haveEnhancedGraphics()) {
-                style.addVisualMappingFunction(fancyLabelsMapping);
-                style.setDefaultValue(fancyLabelsPositionProperty, fancyLabelsPositionValue);
-                style.removeVisualMappingFunction(BasicVisualLexicon.NODE_LABEL);
-                fancy = true;
-            } else {
-                style.addVisualMappingFunction(fastLabelsMapping);
-                fancy = false;
-            }
+            fancyLabelsPositionProperty = lex.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_POSITION_3");
+            fancyLabelsPositionValue = fancyLabelsPositionProperty.parseSerializableString("C,C,c,0.00,-4.00");
         }
+        if (manager.utils.haveEnhancedGraphics()) {
+            style.addVisualMappingFunction(fancyLabelsMapping);
+            style.setDefaultValue(fancyLabelsPositionProperty, fancyLabelsPositionValue);
+            style.removeVisualMappingFunction(BasicVisualLexicon.NODE_LABEL);
+            fancy = true;
+        } else {
+            style.addVisualMappingFunction(fastLabelsMapping);
+            fancy = false;
+        }
+
     }
 
     public void toggleFancy() {
@@ -174,6 +173,12 @@ public abstract class Style {
             style.removeVisualMappingFunction(fancyLabelsPositionProperty);
             style.addVisualMappingFunction(fastLabelsMapping);
             fancy = false;
+        }
+    }
+
+    public void setFancy(boolean fancy) {
+        if (this.fancy != fancy) {
+            toggleFancy();
         }
     }
 
@@ -226,7 +231,9 @@ public abstract class Style {
     }
 
     public abstract String getStyleName();
+
     public abstract NetworkView.Type getStyleViewType();
+
     public VisualStyle getStyle() {
         return style;
     }

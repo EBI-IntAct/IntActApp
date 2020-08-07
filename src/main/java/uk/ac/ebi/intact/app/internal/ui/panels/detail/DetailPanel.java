@@ -67,8 +67,6 @@ public class DetailPanel extends JPanel
 
     public DetailPanel(final Manager manager) {
         this.manager = manager;
-//        manager.data.addIntactNetworkCreatedListener(this);
-//        manager.data.addIntactViewChangedListener(this);
         manager.utils.registerAllServices(this, new Properties());
         this.setLayout(new BorderLayout());
 
@@ -118,7 +116,6 @@ public class DetailPanel extends JPanel
         tabs.add("Edges", edgePanel);
 
         this.add(tabs, BorderLayout.CENTER);
-//        this.add(new VersionPanel(), BorderLayout.SOUTH);
         manager.utils.setDetailPanel(this);
         registered = true;
         if (view != null) {

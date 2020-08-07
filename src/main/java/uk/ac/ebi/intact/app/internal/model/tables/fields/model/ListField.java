@@ -3,7 +3,6 @@ package uk.ac.ebi.intact.app.internal.model.tables.fields.model;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
 import java.util.ArrayList;
@@ -17,12 +16,12 @@ import java.util.stream.Collectors;
 public class ListField<E> extends Field<List<E>> {
     public final Class<E> elementsType;
 
-    public ListField(Table table, Namespace namespace, String name, Class<E> elementsType) {
-        this(table, namespace, name, elementsType, true);
+    public ListField(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, Class<E> elementsType) {
+        this(fields, initializers, namespace, name, elementsType, true);
     }
 
-    public ListField(Table table, Namespace namespace, String name, Class<E> elementsType, boolean shared) {
-        super(table, namespace, name, null, null, shared);
+    public ListField(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, Class<E> elementsType, boolean shared) {
+        super(fields, initializers, namespace, name, null, null, shared);
         this.elementsType = elementsType;
     }
 

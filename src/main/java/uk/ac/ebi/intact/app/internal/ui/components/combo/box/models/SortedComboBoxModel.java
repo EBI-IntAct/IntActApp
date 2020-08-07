@@ -3,7 +3,10 @@ package uk.ac.ebi.intact.app.internal.ui.components.combo.box.models;
 import org.apache.commons.lang3.NotImplementedException;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.Vector;
+import java.util.function.Predicate;
 
 public class SortedComboBoxModel<E extends Comparable<E>> extends AbstractListModel<E> implements MutableComboBoxModel<E> {
 
@@ -77,4 +80,10 @@ public class SortedComboBoxModel<E extends Comparable<E>> extends AbstractListMo
             e.printStackTrace();
         }
     }
+
+    public void removeIf(Predicate<E> test) {
+        elements.removeIf(test);
+        elementsVector = new Vector<>(elements);
+    }
+
 }

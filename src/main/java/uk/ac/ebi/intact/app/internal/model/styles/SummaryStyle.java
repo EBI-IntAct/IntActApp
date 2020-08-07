@@ -11,7 +11,7 @@ import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import java.awt.*;
 
 public class SummaryStyle extends Style {
-    public final static String TITLE = "Intact - Summary";
+    public final static String TITLE = "IntAct - Summary";
     public final static NetworkView.Type type = NetworkView.Type.SUMMARY;
     public static final int edgeWidthValue1 = 1;
     public static final int edgeWidthValue2 = 25;

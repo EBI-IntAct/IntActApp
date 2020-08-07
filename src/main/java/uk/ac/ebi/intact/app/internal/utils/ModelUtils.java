@@ -134,9 +134,9 @@ public class ModelUtils {
     }
 
     private static void initTables(Network network, CyNetwork cyNetwork, CyTable networkTable, CyTable nodeTable, CyTable edgeTable, CyTable featuresTable, CyTable xRefsTable) {
-        Table.NETWORK.initTable(networkTable, cyNetwork.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
-        Table.NODE.initTable(nodeTable, cyNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
-        Table.EDGE.initTable(edgeTable, cyNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS));
+        Table.NETWORK.initTableColumns(networkTable, cyNetwork.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
+        Table.NODE.initTableColumns(nodeTable, cyNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
+        Table.EDGE.initTableColumns(edgeTable, cyNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS));
         initLowerTables(network, cyNetwork, networkTable, featuresTable, xRefsTable);
     }
 
@@ -153,13 +153,13 @@ public class ModelUtils {
     private static void initFeaturesTable(Network network, String networkUUID, CyTable featuresTable) {
         featuresTable.createColumn(NetworkFields.UUID.toString(), String.class, true, networkUUID);
         network.setFeaturesTable(featuresTable);
-        Table.FEATURE.initTable(featuresTable, featuresTable);
+        Table.FEATURE.initTableColumns(featuresTable, featuresTable);
     }
 
     private static void initIdentifierTable(Network network, String networkUUID, CyTable identifiersTable) {
         identifiersTable.createColumn(NetworkFields.UUID.toString(), String.class, true, networkUUID);
         network.setIdentifiersTable(identifiersTable);
-        Table.IDENTIFIER.initTable(identifiersTable, identifiersTable);
+        Table.IDENTIFIER.initTableColumns(identifiersTable, identifiersTable);
     }
 
     public static void createUnknownColumnsFromIntactJSON(JsonNode elements, CyTable table) {
