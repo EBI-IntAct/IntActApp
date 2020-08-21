@@ -1,6 +1,8 @@
 package uk.ac.ebi.intact.app.internal.model.core.elements.nodes;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.*;
+import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
@@ -11,13 +13,11 @@ import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIde
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.SourceOntology;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
+import static uk.ac.ebi.intact.app.internal.model.managers.Manager.INTACT_GRAPH_WS;
 import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields.*;
 
 public class Node extends Interactor implements Comparable<Interactor>, Element {
@@ -29,6 +29,7 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
     public final List<String> identifierAcs = new ArrayList<>();
     public final CyRow nodeRow;
     public boolean mutated;
+    private JsonNode detailsJSON;
 
     public Node(final Network network, final CyNode cyNode) {
         this(network, cyNode, network.getCyNetwork().getRow(cyNode));
@@ -39,7 +40,7 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
                 AC.getValue(nodeRow),
                 NAME.getValue(nodeRow),
                 PREFERRED_ID.getValue(nodeRow),
-                FULL_NAME.getValue(nodeRow),
+                DESCRIPTION.getValue(nodeRow),
                 TYPE.VALUE.getValue(nodeRow),
                 SPECIES.getValue(nodeRow),
                 TAX_ID.getValue(nodeRow),
@@ -83,6 +84,33 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
                 .map(featureAC -> new Feature(network, featuresTable.getRow(featureAC)))
                 .filter(feature -> feature.isPresentIn(adjacentEdgesSUID))
                 .collect(Collectors.toList());
+    }
+
+    private JsonNode getDetailsJSON() {
+        if (detailsJSON != null && !detailsJSON.isNull()) return detailsJSON;
+        detailsJSON = HttpUtils.getJSON(INTACT_GRAPH_WS + "network/node/details/" + ac, new HashMap<>(), network.manager);
+        return detailsJSON;
+    }
+
+    public List<Identifier> getCrossReferences() {
+        List<Identifier> crossReferences = new ArrayList<>();
+        JsonNode xrefs = getDetailsJSON().get("xrefs");
+        if (xrefs == null) return crossReferences;
+        for (JsonNode xref : xrefs) {
+            JsonNode database = xref.get("database");
+            String databaseName = database.get("shortName").textValue();
+            OntologyIdentifier databaseIdentifier = new OntologyIdentifier(database.get("identifier").textValue());
+
+            String identifier = xref.get("identifier").textValue();
+            String qualifier = xref.get("qualifier").textValue();
+
+            crossReferences.add(new Identifier(databaseName, databaseIdentifier, identifier, qualifier));
+        }
+        return crossReferences;
+    }
+
+    public JsonNode getAliasesJson() {
+        return getDetailsJSON().get("aliases");
     }
 
     @Override

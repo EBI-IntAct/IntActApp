@@ -13,7 +13,7 @@ public class FeatureClassifier {
     private static final ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
 
     public static List<FeatureClass> root;
-    public static InnerFeatureClass biologic;
+    public static InnerFeatureClass biological;
     public static InnerFeatureClass experimental;
     public static InnerFeatureClass mutation;
     public static FeatureClass binding;
@@ -21,7 +21,7 @@ public class FeatureClassifier {
     public static FeatureClass tag;
 
     public static void initMIIdSets() {
-        biologic = new InnerFeatureClass("Biological features", "MI:0252", "Post Transcription Modification");
+        biological = new InnerFeatureClass("Biological features", "MI:0252", "Post Transcription Modification");
         experimental = new InnerFeatureClass("Experimental features", "MI:0505", "Other experimental features");
 
         mutation = new InnerFeatureClass("Mutations", "MI:0118", "Mutation with undefined effect");
@@ -35,9 +35,9 @@ public class FeatureClassifier {
         mutation.subClasses.add(new FeatureClass("Mutation increasing interaction", "MI:0382"));
         mutation.subClasses.add(new FeatureClass("Mutation with complex effect", "MI:2333"));
         mutation.subClasses.add(new FeatureClass("Mutation with no effect", "MI:2226"));
-        biologic.subClasses.addAll(List.of(binding, mutation, variant));
+        biological.subClasses.addAll(List.of(binding, mutation, variant));
         experimental.subClasses.add(tag);
-        root = List.of(biologic, experimental);
+        root = List.of(biological, experimental);
     }
 
     public static Map<FeatureClass, List<Feature>> classify(Collection<Feature> features) {

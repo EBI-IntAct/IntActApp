@@ -134,9 +134,9 @@ public class ModelUtils {
     }
 
     private static void initTables(Network network, CyNetwork cyNetwork, CyTable networkTable, CyTable nodeTable, CyTable edgeTable, CyTable featuresTable, CyTable xRefsTable) {
-        Table.NETWORK.initTableColumns(networkTable, cyNetwork.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
-        Table.NODE.initTableColumns(nodeTable, cyNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
-        Table.EDGE.initTableColumns(edgeTable, cyNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS));
+        Table.NETWORK.initColumns(networkTable, cyNetwork.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
+        Table.NODE.initColumns(nodeTable, cyNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
+        Table.EDGE.initColumns(edgeTable, cyNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS));
         initLowerTables(network, cyNetwork, networkTable, featuresTable, xRefsTable);
     }
 
@@ -153,13 +153,13 @@ public class ModelUtils {
     private static void initFeaturesTable(Network network, String networkUUID, CyTable featuresTable) {
         featuresTable.createColumn(NetworkFields.UUID.toString(), String.class, true, networkUUID);
         network.setFeaturesTable(featuresTable);
-        Table.FEATURE.initTableColumns(featuresTable, featuresTable);
+        Table.FEATURE.initColumns(featuresTable, featuresTable);
     }
 
     private static void initIdentifierTable(Network network, String networkUUID, CyTable identifiersTable) {
         identifiersTable.createColumn(NetworkFields.UUID.toString(), String.class, true, networkUUID);
         network.setIdentifiersTable(identifiersTable);
-        Table.IDENTIFIER.initTableColumns(identifiersTable, identifiersTable);
+        Table.IDENTIFIER.initColumns(identifiersTable, identifiersTable);
     }
 
     public static void createUnknownColumnsFromIntactJSON(JsonNode elements, CyTable table) {
@@ -354,7 +354,7 @@ public class ModelUtils {
         Map<Boolean, List<CyRow>> isSummaryRows = EdgeFields.IS_SUMMARY.groupRows(edgeTable);
         if (isSummaryRows.containsKey(true)) {
             for (CyRow summaryEdgeRow : isSummaryRows.get(true)) {
-                for (Long summarizedEdgeSUID : EdgeFields.SUMMARY_EDGES_SUID.getValue(summaryEdgeRow)) {
+                for (Long summarizedEdgeSUID : EdgeFields.SUMMARIZED_EDGES_SUID.getValue(summaryEdgeRow)) {
                     if (!edgeTable.rowExists(summarizedEdgeSUID)) {
                         CyEdge edge = parentNetwork.getCyNetwork().getEdge(summarizedEdgeSUID);
                         if (edge != null) subCyNetwork.addEdge(edge);

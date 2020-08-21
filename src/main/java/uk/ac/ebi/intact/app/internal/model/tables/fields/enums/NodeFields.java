@@ -22,7 +22,7 @@ public class NodeFields {
     public static final CVField TYPE = new CVField(fields, initializers, Field.Namespace.INTACT, "Type", "type");
     public static final Field<String> SPECIES = new Field<>(fields, initializers, Field.Namespace.INTACT, "Species", "species", String.class);
     public static final Field<String> TAX_ID = new Field<>(fields, initializers, Field.Namespace.INTACT, "Taxon Id", "taxId", String.class);
-    public static final Field<String> FULL_NAME = new Field<>(fields, initializers, Field.Namespace.INTACT, "Description", "full_name", String.class);
+    public static final Field<String> DESCRIPTION = new Field<>(fields, initializers, Field.Namespace.INTACT, "Description", "full_name", String.class);
     public static final Field<Boolean> MUTATED = new Field<>(fields, initializers, Field.Namespace.INTACT, "Mutation", null, Boolean.class, false, Boolean.FALSE);
     public static final ListField<String> FEATURES = new ListField<>(fields, initializers, Field.Namespace.FEATURE, "Features", String.class);
     public static final ListField<String> IDENTIFIERS = new ListField<>(fields, initializers, Field.Namespace.IDENTIFIER, "Identifiers", String.class);

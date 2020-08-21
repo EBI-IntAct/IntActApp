@@ -51,11 +51,11 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     final Map<TermColumn, Integer> maxWidthsOfColumns = Arrays.stream(TermColumn.values())
             .collect(toMap(termColumn -> termColumn, termColumn -> 0));
 
-    private final Map<TermColumn, Set<Object>> visibleColumnValues = Arrays.stream(TermColumn.values())
+    private final Map<TermColumn, Set<Object>> filterValues = Arrays.stream(TermColumn.values())
             .filter(column -> column.filtered)
             .collect(toMap(column -> column, column -> new HashSet<>()));
 
-    final Map<TermColumn, FilterMenu> columnFilterMenus = Arrays.stream(TermColumn.values())
+    final Map<TermColumn, FilterMenu> filterMenus = Arrays.stream(TermColumn.values())
             .filter(column -> column.filtered)
             .collect(toMap(column -> column, FilterMenu::new));
 
@@ -165,12 +165,12 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         if (container != tableCornerPanel) helper.expandHoriz();
         container.add(cell, helper);
 
-        if (columnFilterMenus.containsKey(column)) {
+        if (filterMenus.containsKey(column)) {
             cell.setCursor(new Cursor(Cursor.HAND_CURSOR));
             cell.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    FilterMenu menu = columnFilterMenus.get(column);
+                    FilterMenu menu = filterMenus.get(column);
                     menu.show(e.getComponent(), e.getX(), e.getY());
                 }
             });
@@ -356,13 +356,13 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
 
     private void createFilters() {
         for (TermTable table : termTables) {
-            for (Interactor interactor : table.interactors) {
-                visibleColumnValues.forEach((column, visibleValues) -> {
+            for (Interactor interactor : table.rows.keySet()) {
+                filterValues.forEach((column, visibleValues) -> {
                     Object value = column.getValue.apply(interactor);
                     if (!visibleValues.contains(value)) {
                         visibleValues.add(value);
                         JCheckBox checkBox = new JCheckBox(value != null ? value.toString() : "", true);
-                        columnFilterMenus.get(column).add(checkBox);
+                        filterMenus.get(column).add(checkBox);
                         checkBox.addItemListener(e -> {
                             switch (e.getStateChange()) {
                                 case ItemEvent.SELECTED:
@@ -388,7 +388,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     }
 
     private boolean isToKeep(Interactor interactor) {
-        for (Map.Entry<TermColumn, Set<Object>> entry : visibleColumnValues.entrySet()) {
+        for (Map.Entry<TermColumn, Set<Object>> entry : filterValues.entrySet()) {
             Object value = entry.getKey().getValue.apply(interactor);
             Set<Object> visibleValues = entry.getValue();
             if (!visibleValues.contains(value)) {

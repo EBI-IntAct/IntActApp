@@ -21,7 +21,8 @@ public class EdgeParameters extends AbstractEdgeElement {
     public EdgeParameters(Edge edge, OpenBrowser openBrowser, JsonNode parametersData) {
         super("Parameters", edge, openBrowser);
         this.parametersData = parametersData;
-        fillContent();
+        if (parametersData == null) setVisible(false);
+        else fillContent();
     }
 
     @Override

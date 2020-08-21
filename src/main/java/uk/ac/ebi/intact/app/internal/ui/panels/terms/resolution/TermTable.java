@@ -11,18 +11,19 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.requireNonNull;
 import static uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution.TermColumn.TERM;
 
 class TermTable extends JPanel implements ItemListener {
     public static final Color TERM_BG = new Color(161, 135, 184);
-    final ResolveTermsPanel resolver;
+    final WeakReference<ResolveTermsPanel> resolver;
     final String term;
-    final List<Interactor> interactors;
     final boolean isPaged;
     final int totalInteractors;
     final Map<Interactor, Row> rows = new HashMap<>();
@@ -35,49 +36,48 @@ class TermTable extends JPanel implements ItemListener {
     private JPanel termControlPanel;
 
     public TermTable(ResolveTermsPanel resolver, String term, List<Interactor> interactors, int totalInteractors) {
-        this.resolver = resolver;
+        this.resolver = new WeakReference<>(resolver);
         this.term = term;
-        this.interactors = interactors;
         this.totalInteractors = totalInteractors;
         this.isPaged = totalInteractors > interactors.size();
-        init();
+        init(interactors);
     }
 
-    private void init() {
+    private void init(List<Interactor> interactors) {
         setLayout(new GridBagLayout());
         setBackground(Color.WHITE);
-        addTermTitle();
-        if (interactors == null || interactors.isEmpty()) {
+        addTermTitle(interactors.size());
+        if (interactors.isEmpty()) {
             add(new JLabel("Not found"), layoutHelper.right().expandHoriz());
         } else {
             for (Interactor interactor : interactors) {
                 Row row = new Row(interactor, this);
-                resolver.rowHeaderHelper.down();
+                getResolver().rowHeaderHelper.down();
                 add(row, layoutHelper.down().expandBoth());
                 rows.put(interactor, row);
             }
             if (isPaged) {
-                resolver.rowHeaderHelper.down();
+                getResolver().rowHeaderHelper.down();
                 limitRow = new LimitRow(this);
                 add(limitRow, layoutHelper.down().expandBoth());
             }
         }
     }
 
-    private void addTermTitle() {
-        resolver.rowHeaderHelper.expandBoth();
-        resolver.rowHeaderHelper.gridheight = interactors.size() + (isPaged ? 2 : 1);
-        resolver.rowHeaderHelper.gridx = 0;
+    private void addTermTitle(int nbInteractors) {
+        getResolver().rowHeaderHelper.expandBoth();
+        getResolver().rowHeaderHelper.gridheight = nbInteractors + (isPaged ? 2 : 1);
+        getResolver().rowHeaderHelper.gridx = 0;
         termControlPanel = createTermControlPanel();
         FloatingPanel floatingPanel = new FloatingPanel(termControlPanel);
-        resolver.rowHeaderPanel.add(floatingPanel, resolver.rowHeaderHelper);
+        getResolver().rowHeaderPanel.add(floatingPanel, getResolver().rowHeaderHelper);
         int width = floatingPanel.getPreferredSize().width + 4;
-        if (resolver.maxWidthsOfColumns.get(TERM) < width) {
-            resolver.maxWidthsOfColumns.put(TERM, width);
+        if (getResolver().maxWidthsOfColumns.get(TERM) < width) {
+            getResolver().maxWidthsOfColumns.put(TERM, width);
         }
         floatingPanel.setBackground(TERM_BG);
         floatingPanel.setBorder(new EmptyBorder(1, 1, 1, 1));
-        resolver.rowHeaderHelper.gridheight = 1;
+        getResolver().rowHeaderHelper.gridheight = 1;
     }
 
     private JPanel createTermControlPanel() {
@@ -91,14 +91,14 @@ class TermTable extends JPanel implements ItemListener {
         termControlPanel.add(label);
 
         selectAll = new IButton("<div style=\"text-align: center;\">Select all<br>previewed<br>interactors</div>");
-        selectAll.setEnabled(!resolver.selectedByDefault);
+        selectAll.setEnabled(!getResolver().selectedByDefault);
         selectAll.addActionListener(e -> selectRows(true));
         selectAll.setAlignmentX(CENTER_ALIGNMENT);
         selectAll.setDisabledColor(Color.WHITE);
         termControlPanel.add(selectAll);
 
         unselectAll = new IButton("<div style=\"text-align: center;\">Unselect all<br>previewed<br>interactors</div>");
-        unselectAll.setEnabled(resolver.selectedByDefault);
+        unselectAll.setEnabled(getResolver().selectedByDefault);
         unselectAll.addActionListener(e -> selectRows(false));
         unselectAll.setAlignmentX(CENTER_ALIGNMENT);
         unselectAll.setDisabledColor(Color.WHITE);
@@ -152,5 +152,9 @@ class TermTable extends JPanel implements ItemListener {
         Dimension preferredSize = super.getPreferredSize();
         preferredSize.height = Math.max(preferredSize.height, termControlPanel.getPreferredSize().height + 2 * ResolveTermsPanel.TERM_SPACE - 2);
         return preferredSize;
+    }
+    
+    public ResolveTermsPanel getResolver() {
+        return requireNonNull(resolver.get());
     }
 }

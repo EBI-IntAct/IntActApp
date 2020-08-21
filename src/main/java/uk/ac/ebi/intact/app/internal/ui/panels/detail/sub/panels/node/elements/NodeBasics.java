@@ -3,13 +3,15 @@ package uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.elements;
 import org.apache.commons.lang3.StringUtils;
 import org.cytoscape.util.swing.OpenBrowser;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.io.DbIdentifiersToLink;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.LinkUtils;
 
 import javax.swing.*;
 import java.awt.*;
+
+import static uk.ac.ebi.intact.app.internal.io.DbIdentifiersToLink.getFancyDatabaseName;
+import static uk.ac.ebi.intact.app.internal.io.DbIdentifiersToLink.getLink;
 
 public class NodeBasics extends AbstractNodeElement {
 
@@ -24,13 +26,15 @@ public class NodeBasics extends AbstractNodeElement {
     protected void fillContent() {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         if (node.description != null) content.add(new JLabel(node.description));
-        content.add(new JLink(DbIdentifiersToLink.getFancyDatabaseName(node.preferredIdentifier) + " · " + node.preferredIdentifier.id, DbIdentifiersToLink.getLink(node.preferredIdentifier), openBrowser));
+        content.add(new JLink(getFancyDatabaseName(node.preferredIdentifier) + " · " + node.preferredIdentifier.id, getLink(node.preferredIdentifier), openBrowser));
         graphDescription = new LinePanel(getBackground());
         graphDescription.add(new JLink(StringUtils.capitalize(node.typeName), node.type.id.getUserAccessURL(), openBrowser));
-        graphDescription.add(new JLabel(" of " + node.species));
-        graphDescription.add(Box.createHorizontalStrut(4));
-        graphDescription.add(LinkUtils.createSpecieLink(openBrowser, node.taxId));
-        graphDescription.add(Box.createHorizontalGlue());
+        if (node.species != null) {
+            graphDescription.add(new JLabel(" of " + node.species));
+            graphDescription.add(Box.createHorizontalStrut(4));
+            graphDescription.add(LinkUtils.createSpecieLink(openBrowser, node.taxId));
+            graphDescription.add(Box.createHorizontalGlue());
+        }
         content.add(graphDescription);
     }
 
