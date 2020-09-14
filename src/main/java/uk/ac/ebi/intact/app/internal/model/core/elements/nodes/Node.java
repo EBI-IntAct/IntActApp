@@ -13,6 +13,7 @@ import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.OntologyIde
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.SourceOntology;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,7 @@ import static uk.ac.ebi.intact.app.internal.model.managers.Manager.INTACT_GRAPH_
 import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields.*;
 
 public class Node extends Interactor implements Comparable<Interactor>, Element {
-    public final Network network;
+    private final WeakReference<Network> network;
     public final CyNode cyNode;
     public final CVTerm type;
     public final Identifier preferredIdentifier;
@@ -46,7 +47,7 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
                 TAX_ID.getValue(nodeRow),
                 -1
         );
-        this.network = network;
+        this.network = new WeakReference<>(network);
         this.cyNode = cyNode;
         this.type =  new CVTerm(nodeRow, TYPE);
         this.nodeRow = nodeRow;
@@ -67,16 +68,18 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
     }
 
     public List<Edge> getAdjacentEdges() {
+        Network network = getNetwork();
         return network.getCyNetwork().getAdjacentEdgeList(cyNode, CyEdge.Type.ANY).stream().map(edge -> Edge.createEdge(network, edge)).collect(toList());
     }
 
     public List<Identifier> getIdentifiers() {
-        CyTable identifiersTable = network.getIdentifiersTable();
+        CyTable identifiersTable = getNetwork().getIdentifiersTable();
         if (identifiersTable == null) return new ArrayList<>();
         return identifierAcs.stream().map(identifierAc -> new Identifier(identifiersTable.getRow(identifierAc))).collect(Collectors.toList());
     }
 
     public List<Feature> getFeatures() {
+        Network network = getNetwork();
         CyTable featuresTable = network.getFeaturesTable();
         if (featuresTable == null) return new ArrayList<>();
         Set<Long> adjacentEdgesSUID = network.getCyNetwork().getAdjacentEdgeList(cyNode, CyEdge.Type.ANY).stream().map(CyIdentifiable::getSUID).collect(Collectors.toSet());
@@ -88,7 +91,7 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
 
     private JsonNode getDetailsJSON() {
         if (detailsJSON != null && !detailsJSON.isNull()) return detailsJSON;
-        detailsJSON = HttpUtils.getJSON(INTACT_GRAPH_WS + "network/node/details/" + ac, new HashMap<>(), network.manager);
+        detailsJSON = HttpUtils.getJSON(INTACT_GRAPH_WS + "network/node/details/" + ac, new HashMap<>(), getNetwork().manager);
         return detailsJSON;
     }
 
@@ -147,5 +150,9 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
     public void updateMutationStatus() {
         mutated = getFeatures().stream().anyMatch(feature -> FeatureClassifier.mutation.contains(feature.type.id));
         MUTATED.setValue(nodeRow, mutated);
+    }
+
+    public Network getNetwork() {
+        return Objects.requireNonNull(network.get());
     }
 }

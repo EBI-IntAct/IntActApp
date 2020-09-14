@@ -70,7 +70,7 @@ public class EvidenceEdge extends Edge {
         ArrayList<Feature> participantFeatures = new ArrayList<>();
         features.put(participant, participantFeatures);
         if (participant == null || featureAcs == null) return;
-
+        Network network = getNetwork();
         for (String featureAc : featureAcs) {
             participantFeatures.add(new Feature(network, network.getFeaturesTable().getRow(featureAc)));
         }
@@ -84,7 +84,7 @@ public class EvidenceEdge extends Edge {
 
     private JsonNode getDetailsJSON() {
         if (detailsJSON != null && !detailsJSON.isNull()) return detailsJSON;
-        detailsJSON = HttpUtils.getJSON(INTACT_GRAPH_WS + "network/edge/details/" + id, new HashMap<>(), network.manager);
+        detailsJSON = HttpUtils.getJSON(INTACT_GRAPH_WS + "network/edge/details/" + id, new HashMap<>(), getNetwork().manager);
         return detailsJSON;
     }
 

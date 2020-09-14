@@ -21,6 +21,7 @@ import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
 
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -28,7 +29,7 @@ import java.util.stream.StreamSupport;
 public class NetworkView {
     private Thread thread;
     public final transient Manager manager;
-    public final transient Network network;
+    private final transient WeakReference<Network> network;
     public final transient CyNetworkView cyView;
     public final transient Set<Node> visibleNodes = new HashSet<>();
     public final transient Set<Edge> visibleEdges = new HashSet<>();
@@ -40,7 +41,7 @@ public class NetworkView {
         this.manager = manager;
         if (cyView != null) {
             this.cyView = cyView;
-            this.network = manager.data.getNetwork(cyView.getModel());
+            this.network = new WeakReference<>(manager.data.getNetwork(cyView.getModel()));
             this.type = type != null ? type : Type.SUMMARY;
             setupFilters(loadData);
         } else {
@@ -77,6 +78,7 @@ public class NetworkView {
     }
 
     public void totalFilter() {
+        Network network = getNetwork();
         (this.type != Type.SUMMARY ? network.getSummaryCyEdges() : network.getEvidenceCyEdges()).forEach(cyEdge -> {
             if (cyEdge == null) return;
             View<CyEdge> edgeView = cyView.getEdgeView(cyEdge);
@@ -92,6 +94,7 @@ public class NetworkView {
         visibleNodes.clear();
         visibleEdges.clear();
 
+        Network network = getNetwork();
         List<Node> nodesToFilter = network.getNodes();
         List<? extends Edge> edgesToFilter = (getType() == Type.SUMMARY) ? network.getSummaryEdges() : network.getEvidenceEdges();
 
@@ -136,7 +139,7 @@ public class NetworkView {
         thread = new Thread(() -> {
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
-                CyNetwork cyNetwork = this.network.getCyNetwork();
+                CyNetwork cyNetwork = getNetwork().getCyNetwork();
                 NetworkFields.VIEW_STATE.setValue(cyNetwork.getRow(cyNetwork), objectMapper.writeValueAsString(this));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
@@ -146,7 +149,7 @@ public class NetworkView {
     }
 
     public void load() {
-        CyNetwork cyNetwork = this.network.getCyNetwork();
+        CyNetwork cyNetwork = getNetwork().getCyNetwork();
         String jsonText = NetworkFields.VIEW_STATE.getValue(cyNetwork.getRow(cyNetwork));
         if (jsonText == null || jsonText.isBlank()) return;
         try {
@@ -200,5 +203,9 @@ public class NetworkView {
         public String toString() {
             return name;
         }
+    }
+
+    public Network getNetwork() {
+        return Objects.requireNonNull(network.get());
     }
 }
