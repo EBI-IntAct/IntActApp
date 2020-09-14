@@ -31,8 +31,8 @@ class TermTable extends JPanel implements ItemListener {
     boolean includeAdditionalInteractors = false;
 
     private LimitRow limitRow;
-    private IButton selectAll;
-    private IButton unselectAll;
+    private JButton selectAll;
+    private JButton unselectAll;
     private JPanel termControlPanel;
 
     public TermTable(ResolveTermsPanel resolver, String term, List<Interactor> interactors, int totalInteractors) {
@@ -90,26 +90,25 @@ class TermTable extends JPanel implements ItemListener {
         label.setAlignmentX(CENTER_ALIGNMENT);
         termControlPanel.add(label);
 
-        selectAll = new IButton("<div style=\"text-align: center;\">Select all<br>previewed<br>interactors</div>");
+        selectAll = new JButton("<html><div style=\"text-align: center;\">Select all<<br>interactors</div></html>");
         selectAll.setEnabled(!getResolver().selectedByDefault);
         selectAll.addActionListener(e -> selectRows(true));
         selectAll.setAlignmentX(CENTER_ALIGNMENT);
-        selectAll.setDisabledColor(Color.WHITE);
         termControlPanel.add(selectAll);
 
-        unselectAll = new IButton("<div style=\"text-align: center;\">Unselect all<br>previewed<br>interactors</div>");
+        unselectAll = new JButton("<html><div style=\"text-align: center;\">Unselect all<<br>interactors</div></html>");
         unselectAll.setEnabled(getResolver().selectedByDefault);
         unselectAll.addActionListener(e -> selectRows(false));
         unselectAll.setAlignmentX(CENTER_ALIGNMENT);
-        unselectAll.setDisabledColor(Color.WHITE);
         termControlPanel.add(unselectAll);
         return termControlPanel;
     }
 
     public void selectRows(boolean b) {
         rows.values().forEach(row -> {
-            if (row.isVisible()) row.selectionCheckBox.setSelected(b);
+            if (row.isVisible()) row.setSelected(b);
         });
+        if (limitRow != null) limitRow.setSelected(b);
     }
 
 
@@ -153,7 +152,7 @@ class TermTable extends JPanel implements ItemListener {
         preferredSize.height = Math.max(preferredSize.height, termControlPanel.getPreferredSize().height + 2 * ResolveTermsPanel.TERM_SPACE - 2);
         return preferredSize;
     }
-    
+
     public ResolveTermsPanel getResolver() {
         return requireNonNull(resolver.get());
     }

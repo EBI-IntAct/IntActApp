@@ -20,6 +20,10 @@ public class ToggleSwitch extends AbstractButton implements MouseListener {
     public ToggleSwitch(boolean activated, Color accentColor) {
         this.activated = activated;
         this.accentColor = accentColor;
+        setFocusPainted(false);
+        setBorderPainted(false);
+        setContentAreaFilled(false);
+        setOpaque(false);
         this.addMouseListener(this);
     }
 
@@ -81,6 +85,15 @@ public class ToggleSwitch extends AbstractButton implements MouseListener {
         return new Dimension(insets.left + width + insets.right, insets.top + height + insets.bottom);
     }
 
+    @Override
+    public Dimension getMinimumSize() {
+        return getPreferredSize();
+    }
+
+    @Override
+    public Dimension getMaximumSize() {
+        return getPreferredSize();
+    }
 
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -99,7 +112,7 @@ public class ToggleSwitch extends AbstractButton implements MouseListener {
 
     @Override
     public void mouseEntered(MouseEvent e) {
-
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
     @Override

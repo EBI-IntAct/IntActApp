@@ -77,6 +77,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     private JPanel descriptionPanel;
     private OptionsPanel optionsPanel;
     private JPanel controlPanel;
+    private JScrollPane scrollPane;
 
     public ResolveTermsPanel(final Manager manager, Network network) {
         this(manager, network, true, true, null);
@@ -94,12 +95,14 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     }
 
     private Dimension calculatePreferredSize() {
-        int width = getPreferredWidth(displayPanel) + getPreferredWidth(rowHeaderPanel);
-        int height = Integer.min(getPreferredHeight(displayPanel), 900);
+        int width = getPreferredWidth(scrollPane) + getPreferredWidth(scrollPane.getVerticalScrollBar());
+//        int width = getPreferredWidth(displayPanel) + getPreferredWidth(rowHeaderPanel);
+        int height = getPreferredHeight(displayPanel);
         for (JComponent component : List.of(descriptionPanel, columnHeaderPanel, optionsPanel, controlPanel)) {
             height += getPreferredHeight(component);
         }
-        return new Dimension(width, height);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        return new Dimension(Integer.min(width, screenSize.width), Integer.min(height, screenSize.height));
     }
 
     private int getPreferredHeight(JComponent component) {
@@ -188,7 +191,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
 
 
     private void initScrollPanel() {
-        JScrollPane scrollPane = new JScrollPane(displayPanel, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane = new JScrollPane(displayPanel, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setAutoscrolls(true);
 
         scrollPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, tableCornerPanel);

@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.filters;
 
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 
@@ -29,19 +30,21 @@ public class DiscreteFilterPanel<T extends Element> extends FilterPanel<Discrete
     private void buildOptionLines() {
         JButton selectAll = new JButton("Select all");
         selectAll.addActionListener(e -> {
-            filter.view.silenceFilters(true);
+            NetworkView view = filter.getNetworkView();
+            view.silenceFilters(true);
             filter.getPropertiesVisibility().keySet().forEach(s -> filter.setPropertyVisibility(s, true));
             checkBoxes.forEach(jCheckBox -> jCheckBox.setSelected(true));
-            filter.view.silenceFilters(false);
-            filter.view.filter();
+            view.silenceFilters(false);
+            view.filter();
         });
         JButton selectNone = new JButton("Select none");
         selectNone.addActionListener(e -> {
-            filter.view.silenceFilters(true);
+            NetworkView view = filter.getNetworkView();
+            view.silenceFilters(true);
             filter.getPropertiesVisibility().keySet().forEach(s -> filter.setPropertyVisibility(s, false));
             checkBoxes.forEach(jCheckBox -> jCheckBox.setSelected(false));
-            filter.view.silenceFilters(false);
-            filter.view.filter();
+            view.silenceFilters(false);
+            view.filter();
         });
         LinePanel buttonsPanel = new LinePanel(lightBackground);
         buttonsPanel.add(selectAll);
