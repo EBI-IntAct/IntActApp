@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.app.internal.model.filters;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
@@ -19,6 +20,7 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
     public DiscreteFilter(NetworkView view, Class<T> elementType, String name) {
         super(view, name, elementType);
         List<T> elements;
+        Network network = getNetwork();
         if (elementType == Node.class) {
             elements = new ArrayList<>((List<T>) network.getNodes());
         } else if (elementType == Edge.class) {
@@ -54,6 +56,7 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
     @Override
     public void filterView() {
         if (propertiesVisibility.values().stream().anyMatch(visible -> !visible)) {
+            NetworkView view = getNetworkView();
             if (Node.class.isAssignableFrom(elementType)) {
                 view.visibleNodes.removeIf(node -> !propertiesVisibility.get(getProperty(elementType.cast(node))));
             } else if (Edge.class.isAssignableFrom(elementType)) {
@@ -76,7 +79,7 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
     public void setPropertyVisibility(String propertyValueToString, boolean visible) {
         if (propertiesVisibility.containsKey(propertyValueToString) && propertiesVisibility.get(propertyValueToString) != visible) {
             propertiesVisibility.put(propertyValueToString, visible);
-            view.filter();
+            getNetworkView().filter();
         }
     }
 

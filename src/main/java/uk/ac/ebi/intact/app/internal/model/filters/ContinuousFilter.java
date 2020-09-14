@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.app.internal.model.filters;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
@@ -29,6 +30,7 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
     public ContinuousFilter(NetworkView view, Class<T> elementType, String name) {
         super(view, name, elementType);
         List<? extends Element> elements;
+        Network network = getNetwork();
         if (Node.class.isAssignableFrom(elementType)) {
             elements = network.getNodes();
         } else if (elementType == SummaryEdge.class) {
@@ -61,7 +63,7 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
     public void filterView() {
         if (currentMin == min && currentMax == max) return;
         Collection<? extends Element> elementsToFilter;
-
+        NetworkView view = getNetworkView();
         if (Node.class.isAssignableFrom(elementType)) {
             elementsToFilter = view.visibleNodes;
         } else if (Edge.class.isAssignableFrom(elementType)) {
@@ -106,7 +108,7 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
 
     public void setCurrentMin(double currentMin) {
         this.currentMin = currentMin;
-        view.filter();
+        getNetworkView().filter();
     }
 
     public double getCurrentMax() {
@@ -115,12 +117,12 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
 
     public void setCurrentMax(double currentMax) {
         this.currentMax = currentMax;
-        view.filter();
+        getNetworkView().filter();
     }
 
     public void setCurrentPositions(double min, double max) {
         this.currentMin = min;
         this.currentMax = max;
-        view.filter();
+        getNetworkView().filter();
     }
 }
