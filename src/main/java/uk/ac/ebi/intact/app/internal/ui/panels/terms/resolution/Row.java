@@ -174,7 +174,7 @@ class Row extends JPanel implements ItemListener {
 
     protected final MouseAdapter mouseAdapter = new MouseAdapter() {
         @Override
-        public void mousePressed(MouseEvent e) {
+        public void mouseClicked(MouseEvent e) {
             selected = !selected;
             selectionCheckBox.setSelected(selected);
         }
@@ -188,5 +188,9 @@ class Row extends JPanel implements ItemListener {
     
     public TermTable getTable() {
         return requireNonNull(table.get());
+    }
+
+    public void setSelected(boolean selected) {
+        selectionCheckBox.setSelected(selected);
     }
 }

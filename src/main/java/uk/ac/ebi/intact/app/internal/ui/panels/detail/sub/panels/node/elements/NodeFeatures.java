@@ -190,14 +190,14 @@ public class NodeFeatures extends AbstractNodeElement {
         @Override
         public void itemStateChanged(ItemEvent e) {
             if (silenceListener) return;
-            Manager manager = edge.network.manager;
+            Manager manager = edge.getNetwork().manager;
             NetworkView currentView = manager.data.getCurrentNetworkView();
             if (currentView != null && currentView.getType() == NetworkView.Type.SUMMARY) {
                 manager.utils.execute(new EvidenceViewTaskFactory(manager, true).createTaskIterator());
             }
 
             boolean selected = e.getStateChange() == ItemEvent.SELECTED;
-            edge.network.getCyNetwork().getRow(edge.cyEdge).set(CyNetwork.SELECTED, selected);
+            edge.getNetwork().getCyNetwork().getRow(edge.cyEdge).set(CyNetwork.SELECTED, selected);
 
             for (SelectEdgeButton checkBox : edgeToCheckBoxes.get(edge)) {
                 checkBox.silenceListener = true;
