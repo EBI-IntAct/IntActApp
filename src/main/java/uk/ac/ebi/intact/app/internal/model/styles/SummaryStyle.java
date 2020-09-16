@@ -2,6 +2,7 @@ package uk.ac.ebi.intact.app.internal.model.styles;
 
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
@@ -11,12 +12,15 @@ import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import java.awt.*;
 
 public class SummaryStyle extends Style {
-    public final static String TITLE = "IntAct - Summary";
     public final static NetworkView.Type type = NetworkView.Type.SUMMARY;
     public static final int edgeWidthValue1 = 1;
     public static final int edgeWidthValue2 = 25;
     public static final double edgeWidth1 = 2d;
     public static final double edgeWidth2 = 25d;
+
+    public SummaryStyle(Manager manager, VisualStyle style) {
+        super(manager, style);
+    }
 
     public SummaryStyle(Manager manager) {
         super(manager);
@@ -62,10 +66,6 @@ public class SummaryStyle extends Style {
         style.addVisualMappingFunction(miScoreToEdgeColor);
     }
 
-    @Override
-    public String getStyleName() {
-        return TITLE;
-    }
 
     @Override
     public NetworkView.Type getStyleViewType() {

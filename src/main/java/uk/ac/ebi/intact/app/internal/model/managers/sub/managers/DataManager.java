@@ -20,9 +20,6 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
-import org.cytoscape.view.vizmap.events.VisualStyleSetListener;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
@@ -49,7 +46,6 @@ public class DataManager implements
         NetworkViewAddedListener,
         NetworkAboutToBeDestroyedListener,
         NetworkViewAboutToBeDestroyedListener,
-        VisualStyleSetListener,
         TableClonedListener ,
         SessionAboutToBeLoadedListener {
     private final Manager manager;
@@ -319,16 +315,6 @@ public class DataManager implements
         }
     }
 
-
-    @Override
-    public void handleEvent(VisualStyleSetEvent e) {
-        NetworkView networkView = getNetworkView(e.getNetworkView());
-        if (networkView == null) return;
-        VisualStyle style = manager.style.styles.get(networkView.getType()).getStyle();
-        if (style != e.getVisualStyle()) {
-            manager.style.styles.get(networkView.getType()).applyStyle(networkView.cyView);
-        }
-    }
 
     //================= Data getters =================//
     public CyNetwork getCurrentCyNetwork() {

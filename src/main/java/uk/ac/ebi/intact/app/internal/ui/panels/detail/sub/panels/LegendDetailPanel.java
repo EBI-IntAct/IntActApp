@@ -54,7 +54,7 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
             loadingSpinner.start();
 
             NodeColorLegendEditor.clearAll(false);
-            manager.style.resetStyles(false, null);
+            manager.style.resetStyles(false);
             StyleMapper.originalKingdomColors.forEach((taxId, paint) -> nodePanel.nodeColorLegendPanel.colorPickers.get(taxId).setCurrentColor((Color) paint));
             StyleMapper.originalSpeciesColors.forEach((taxId, paint) -> nodePanel.nodeColorLegendPanel.colorPickers.get(taxId).setCurrentColor((Color) paint));
 

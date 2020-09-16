@@ -2,6 +2,7 @@ package uk.ac.ebi.intact.app.internal.model.styles;
 
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
@@ -10,12 +11,14 @@ import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 
 import java.awt.*;
 
-public class MutationStyle extends ExpandedStyle {
-
-    public static final String TITLE = "IntAct - Mutation";
+public class MutationStyle extends EvidenceStyle {
     public final static NetworkView.Type type = NetworkView.Type.MUTATION;
     public static final Color mutatedColor = new Color(255, 0, 161);
     public static final Color wildColor = new Color(126, 131, 137);
+
+    public MutationStyle(Manager manager, VisualStyle style) {
+        super(manager, style);
+    }
 
     public MutationStyle(Manager manager) {
         super(manager);
@@ -66,11 +69,6 @@ public class MutationStyle extends ExpandedStyle {
         disruptedToNodeBorderWidth.putMapValue(false, 1.0);
 
         style.addVisualMappingFunction(disruptedToNodeBorderWidth);
-    }
-
-    @Override
-    public String getStyleName() {
-        return TITLE;
     }
 
     @Override

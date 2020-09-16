@@ -176,6 +176,7 @@ public class StyleMapper {
         try {
             String resultText = HttpUtils.getRequestResultForUrl("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&id=" + concatenateTaxIds(taxIdsToCheckAndAdd));
             JSONObject jObject = XML.toJSONObject(resultText);
+            System.out.println(jObject);
             JsonNode taxons = new ObjectMapper().readTree(jObject.toString()).get("TaxaSet").get("Taxon");
             if (taxons.isArray()) {
                 for (JsonNode taxon : taxons) {

@@ -186,14 +186,16 @@ public class NetworkView {
     }
 
     public enum Type {
-        SUMMARY("SUMMARY"),
-        EVIDENCE("EVIDENCE"),
-        MUTATION("MUTATION");
+        SUMMARY("SUMMARY", "IntAct - Summary"),
+        EVIDENCE("EVIDENCE", "IntAct - Evidence"),
+        MUTATION("MUTATION", "IntAct - Mutation");
 
         private final String name;
+        public final String styleName;
 
-        Type(String name) {
+        Type(String name, String styleName) {
             this.name = name;
+            this.styleName = styleName;
         }
 
         @Override

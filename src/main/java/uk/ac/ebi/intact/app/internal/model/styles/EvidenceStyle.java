@@ -4,6 +4,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
@@ -13,13 +14,14 @@ import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 
 import java.awt.*;
 
-public class ExpandedStyle extends Style {
-
-    public static final String TITLE = "IntAct - Evidence";
+public class EvidenceStyle extends Style {
     public final static NetworkView.Type type = NetworkView.Type.EVIDENCE;
 
+    public EvidenceStyle(Manager manager, VisualStyle style) {
+        super(manager, style);
+    }
 
-    public ExpandedStyle(Manager manager) {
+    public EvidenceStyle(Manager manager) {
         super(manager);
     }
 
@@ -52,10 +54,6 @@ public class ExpandedStyle extends Style {
     }
 
 
-    @Override
-    public String getStyleName() {
-        return TITLE;
-    }
     @Override
     public NetworkView.Type getStyleViewType() {
         return type;
