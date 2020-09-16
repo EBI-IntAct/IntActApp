@@ -43,6 +43,7 @@ public class JLink extends JTextField {
         setText(t);
         setToolTipText(uri.toString());
 
+        setBackground(null);
         setEditable(false);
         setOpaque(false);
         setBorder(null);

@@ -4,6 +4,7 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.color.settings.ColorSetting;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
+import uk.ac.ebi.intact.app.internal.ui.components.buttons.IButton;
 import uk.ac.ebi.intact.app.internal.ui.components.combo.box.models.SortedComboBoxModel;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 
@@ -26,7 +27,7 @@ public class NodeColorLegendEditor extends NodeColorPicker implements NodeColorP
     protected JComponent addNewNodeLegendEditorActivator;
     protected String currentTaxId;
     protected JComboBox<String> speciesField;
-    protected JButton removeButton = new JButton(remove);
+    protected JButton removeButton = new IButton(remove);
     private SortedComboBoxModel<String> speciesModel;
 
     public NodeColorLegendEditor(Manager manager, ColorSetting setting, JComponent addNewNodeLegendEditorActivator) {

@@ -24,7 +24,7 @@ Then to install it:
 #### Search network interactors
 To search an IntAct network, go on the left panel, under the network menu  
 ![Query screenshot](doc/screenshots/QueryScreenShot.png)  
-By clicking on the left icon, you can select the mode you are interested into.  
+By clicking on the left icon, you can select the search mode you are interested in.  
 IntAct App provide two of them:
 - Fuzzy Search
     - Search the terms you gave among interactors data :

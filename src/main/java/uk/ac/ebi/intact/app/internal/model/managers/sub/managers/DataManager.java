@@ -238,7 +238,7 @@ public class DataManager implements
                 } else {
                     List<Long> summarizedEdgesSUID = network.getSimilarEvidenceCyEdges(network.getCyEdge(edgeSUID)).stream()
                             .map(CyIdentifiable::getSUID).collect(Collectors.toList());
-                    EdgeFields.SUMMARY_EDGES_SUID.setValue(edgeRow, summarizedEdgesSUID);
+                    EdgeFields.SUMMARIZED_EDGES_SUID.setValue(edgeRow, summarizedEdgesSUID);
                 }
             }
             NetworkFields.UUID.setAllValues(clonedTable, NetworkFields.UUID.getValue(network.getCyRow()));

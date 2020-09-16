@@ -14,7 +14,8 @@ public class NodeAliases extends AbstractNodeElement {
     public NodeAliases(Node node, OpenBrowser openBrowser, JsonNode aliases) {
         super("Aliases", node, openBrowser);
         this.aliases = aliases;
-        fillContent();
+        if (aliases == null) setVisible(false);
+        else fillContent();
     }
 
     @Override

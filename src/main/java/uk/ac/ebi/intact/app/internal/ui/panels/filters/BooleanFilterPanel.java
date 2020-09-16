@@ -28,7 +28,6 @@ public class BooleanFilterPanel<T extends Element> extends FilterPanel<BooleanFi
         toggleSwitch.setActivated(filter.getStatus());
     }
 
-
     @Override
     public void stateChanged(ChangeEvent e) {
         filter.setStatus(toggleSwitch.isActivated());

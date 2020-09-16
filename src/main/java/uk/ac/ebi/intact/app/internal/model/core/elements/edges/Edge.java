@@ -9,12 +9,13 @@ import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 
+import java.lang.ref.WeakReference;
 import java.util.*;
 
 import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields.*;
 
 public abstract class Edge implements Element {
-    public final Network network;
+    private final WeakReference<Network> network;
     public final CyEdge cyEdge;
     public final String name;
     public final CyRow edgeRow;
@@ -39,7 +40,7 @@ public abstract class Edge implements Element {
 
 
     Edge(Network network, CyEdge cyEdge) {
-        this.network = network;
+        this.network = new WeakReference<>(network);
         this.cyEdge = cyEdge;
         edgeRow = network.getCyNetwork().getRow(cyEdge);
 
@@ -81,5 +82,9 @@ public abstract class Edge implements Element {
     @Override
     public boolean isSelected() {
         return edgeRow.get(CyNetwork.SELECTED, Boolean.class);
+    }
+
+    public Network getNetwork() {
+        return Objects.requireNonNull(network.get());
     }
 }

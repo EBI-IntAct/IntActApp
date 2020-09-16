@@ -17,12 +17,12 @@ public class LimitRow extends Row {
 
     @Override
     protected void init() {
-        selected = table.resolver.manager.option.DEFAULT_INCLUDE_ALL_INTERACTORS.getValue();
-        table.includeAdditionalInteractors = selected;
+        selected = getTable().getResolver().manager.option.DEFAULT_INCLUDE_ALL_INTERACTORS.getValue();
+        getTable().includeAdditionalInteractors = selected;
         JCheckBox selectionCheckBox = createSelectionCheckBox(false);
-        selectionCheckBox.addActionListener(e -> table.includeAdditionalInteractors = selectionCheckBox.isSelected());
+        selectionCheckBox.addActionListener(e -> getTable().includeAdditionalInteractors = selectionCheckBox.isSelected());
         addCell(selectionCheckBox, TermColumn.SELECT);
-        JLabel label = new JLabel("Include additional " + (table.totalInteractors - table.interactors.size()) + " matching interactors");
+        JLabel label = new JLabel("Include additional " + (getTable().totalInteractors - getTable().rows.size()) + " matching interactors");
         label.setBorder(new EmptyBorder(5,5,5,0));
         Cell cell = new Cell(label);
         cell.setBackground(selected ? UIColors.xLightPink : UIColors.xLightGray);
@@ -36,7 +36,7 @@ public class LimitRow extends Row {
     @Override
     public void itemStateChanged(ItemEvent e) {
         super.itemStateChanged(e);
-        if (e.getStateChange() == ItemEvent.SELECTED) table.includeAdditionalInteractors = true;
-        else if (e.getStateChange() == ItemEvent.DESELECTED) table.includeAdditionalInteractors = false;
+        if (e.getStateChange() == ItemEvent.SELECTED) getTable().includeAdditionalInteractors = true;
+        else if (e.getStateChange() == ItemEvent.DESELECTED) getTable().includeAdditionalInteractors = false;
     }
 }

@@ -9,6 +9,7 @@ import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.color.settings.
 import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.definitions.Taxons;
+import uk.ac.ebi.intact.app.internal.ui.components.buttons.IButton;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorPicker;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.panels.AbstractLegendPanel;
@@ -26,7 +27,7 @@ import java.util.function.Consumer;
 public class NodeColorLegendPanel extends AbstractLegendPanel implements ColorSettingLoadedListener {
     public final Map<String, NodeColorPicker> colorPickers = new HashMap<>();
     private static final ImageIcon add = IconUtils.createImageIcon("/Buttons/add.png");
-    private final JButton addNodeColorButton = new JButton(add);
+    private final IButton addNodeColorButton = new IButton(add);
     private final JPanel addNodeColorPanel = new JPanel();
     private final JPanel userDefinedSpeciesPanel = new JPanel(new GridBagLayout());
 
@@ -72,7 +73,6 @@ public class NodeColorLegendPanel extends AbstractLegendPanel implements ColorSe
         });
 
         addNodeColorButton.setBackground(UIColors.lightBackground);
-        addNodeColorButton.setOpaque(true);
         addNodeColorButton.setBorder(new EmptyBorder(0, 0, 0, 0));
         addNodeColorPanel.add(addNodeColorButton);
 

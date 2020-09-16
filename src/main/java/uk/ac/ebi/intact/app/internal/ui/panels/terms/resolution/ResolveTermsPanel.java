@@ -51,11 +51,11 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     final Map<TermColumn, Integer> maxWidthsOfColumns = Arrays.stream(TermColumn.values())
             .collect(toMap(termColumn -> termColumn, termColumn -> 0));
 
-    private final Map<TermColumn, Set<Object>> visibleColumnValues = Arrays.stream(TermColumn.values())
+    private final Map<TermColumn, Set<Object>> filterValues = Arrays.stream(TermColumn.values())
             .filter(column -> column.filtered)
             .collect(toMap(column -> column, column -> new HashSet<>()));
 
-    final Map<TermColumn, FilterMenu> columnFilterMenus = Arrays.stream(TermColumn.values())
+    final Map<TermColumn, FilterMenu> filterMenus = Arrays.stream(TermColumn.values())
             .filter(column -> column.filtered)
             .collect(toMap(column -> column, FilterMenu::new));
 
@@ -77,6 +77,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     private JPanel descriptionPanel;
     private OptionsPanel optionsPanel;
     private JPanel controlPanel;
+    private JScrollPane scrollPane;
 
     public ResolveTermsPanel(final Manager manager, Network network) {
         this(manager, network, true, true, null);
@@ -94,12 +95,14 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     }
 
     private Dimension calculatePreferredSize() {
-        int width = getPreferredWidth(displayPanel) + getPreferredWidth(rowHeaderPanel);
-        int height = Integer.min(getPreferredHeight(displayPanel), 900);
+        int width = getPreferredWidth(scrollPane) + getPreferredWidth(scrollPane.getVerticalScrollBar());
+//        int width = getPreferredWidth(displayPanel) + getPreferredWidth(rowHeaderPanel);
+        int height = getPreferredHeight(displayPanel);
         for (JComponent component : List.of(descriptionPanel, columnHeaderPanel, optionsPanel, controlPanel)) {
             height += getPreferredHeight(component);
         }
-        return new Dimension(width, height);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        return new Dimension(Integer.min(width, screenSize.width), Integer.min(height, screenSize.height));
     }
 
     private int getPreferredHeight(JComponent component) {
@@ -165,12 +168,12 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         if (container != tableCornerPanel) helper.expandHoriz();
         container.add(cell, helper);
 
-        if (columnFilterMenus.containsKey(column)) {
+        if (filterMenus.containsKey(column)) {
             cell.setCursor(new Cursor(Cursor.HAND_CURSOR));
             cell.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    FilterMenu menu = columnFilterMenus.get(column);
+                    FilterMenu menu = filterMenus.get(column);
                     menu.show(e.getComponent(), e.getX(), e.getY());
                 }
             });
@@ -188,7 +191,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
 
 
     private void initScrollPanel() {
-        JScrollPane scrollPane = new JScrollPane(displayPanel, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane = new JScrollPane(displayPanel, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setAutoscrolls(true);
 
         scrollPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, tableCornerPanel);
@@ -356,13 +359,13 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
 
     private void createFilters() {
         for (TermTable table : termTables) {
-            for (Interactor interactor : table.interactors) {
-                visibleColumnValues.forEach((column, visibleValues) -> {
+            for (Interactor interactor : table.rows.keySet()) {
+                filterValues.forEach((column, visibleValues) -> {
                     Object value = column.getValue.apply(interactor);
                     if (!visibleValues.contains(value)) {
                         visibleValues.add(value);
                         JCheckBox checkBox = new JCheckBox(value != null ? value.toString() : "", true);
-                        columnFilterMenus.get(column).add(checkBox);
+                        filterMenus.get(column).add(checkBox);
                         checkBox.addItemListener(e -> {
                             switch (e.getStateChange()) {
                                 case ItemEvent.SELECTED:
@@ -388,7 +391,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
     }
 
     private boolean isToKeep(Interactor interactor) {
-        for (Map.Entry<TermColumn, Set<Object>> entry : visibleColumnValues.entrySet()) {
+        for (Map.Entry<TermColumn, Set<Object>> entry : filterValues.entrySet()) {
             Object value = entry.getKey().getValue.apply(interactor);
             Set<Object> visibleValues = entry.getValue();
             if (!visibleValues.contains(value)) {

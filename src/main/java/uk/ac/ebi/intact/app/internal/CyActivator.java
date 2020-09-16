@@ -5,7 +5,6 @@ import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -15,7 +14,6 @@ import org.osgi.framework.Version;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIQueryTask;
-import uk.ac.ebi.intact.app.internal.tasks.query.factories.AddTermsTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ExactQueryTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.FuzzySearchTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.settings.SettingsTask;
@@ -106,16 +104,6 @@ public class CyActivator extends AbstractCyActivator {
             versionProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
             versionProps.setProperty(COMMAND_EXAMPLE_JSON, "{\"version\":\"2.1.0\"}");
             registerService(bc, versionFactory, TaskFactory.class, versionProps);
-        }
-
-        {
-            AddTermsTaskFactory addTerms = new AddTermsTaskFactory(manager);
-            Properties props = new Properties();
-            props.setProperty(PREFERRED_MENU, "Apps.IntAct");
-            props.setProperty(TITLE, "Query for additional nodes");
-            props.setProperty(MENU_GRAVITY, "3.0");
-            props.setProperty(IN_MENU_BAR, "true");
-            registerService(bc, addTerms, NetworkTaskFactory.class, props);
         }
 
 

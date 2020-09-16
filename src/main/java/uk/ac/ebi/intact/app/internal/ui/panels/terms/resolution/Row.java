@@ -16,17 +16,19 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Objects.requireNonNull;
 import static uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution.TermColumn.*;
 
 class Row extends JPanel implements ItemListener {
     protected final EasyGBC layoutHelper = new EasyGBC().expandBoth().anchor("west");
     final Interactor interactor;
-    final TermTable table;
+    final WeakReference<TermTable> table;
     final Map<TermColumn, Cell> cells = new HashMap<>();
     boolean selected;
 
@@ -38,8 +40,8 @@ class Row extends JPanel implements ItemListener {
 
     public Row(Interactor interactor, TermTable table) {
         this.interactor = interactor;
-        this.table = table;
-        selected = table.resolver.selectedByDefault;
+        this.table = new WeakReference<>(table);
+        selected = getTable().getResolver().selectedByDefault;
         this.setLayout(new GridBagLayout());
         this.setBackground(Color.WHITE);
         this.addMouseListener(mouseAdapter);
@@ -56,7 +58,7 @@ class Row extends JPanel implements ItemListener {
         addCell(new CenteredLabel(interactor.interactionCount.toString()), NB_INTERACTIONS);
         addCell(new CenteredLabel(interactor.preferredId), ID);
         addCell(createMatchingColumns(), MATCHING_COLUMNS);
-        highlightMatchingColumns(table.resolver.manager.option.SHOW_HIGHLIGHTS.getValue());
+        highlightMatchingColumns(getTable().getResolver().manager.option.SHOW_HIGHLIGHTS.getValue());
         ComponentUtils.resizeHeight(cells.get(SELECT), getPreferredSize().height, ComponentUtils.SizeType.PREF);
     }
 
@@ -66,8 +68,8 @@ class Row extends JPanel implements ItemListener {
         selectionCheckBox.setSelected(selected);
         selectionCheckBox.addItemListener(this);
         if (allListenersIncluded) {
-            selectionCheckBox.addItemListener(table);
-            selectionCheckBox.addItemListener(table.resolver);
+            selectionCheckBox.addItemListener(getTable());
+            selectionCheckBox.addItemListener(getTable().getResolver());
         }
         return selectionCheckBox;
     }
@@ -119,8 +121,8 @@ class Row extends JPanel implements ItemListener {
 
 
     protected Cell addCell(JComponent cellContent, TermColumn column) {
-        EasyGBC helper = column.isFixedInRowHeader ? table.resolver.rowHeaderHelper.noExpand() : layoutHelper;
-        JPanel container = column.isFixedInRowHeader ? table.resolver.rowHeaderPanel : this;
+        EasyGBC helper = column.isFixedInRowHeader ? getTable().getResolver().rowHeaderHelper.noExpand() : layoutHelper;
+        JPanel container = column.isFixedInRowHeader ? getTable().getResolver().rowHeaderPanel : this;
 
         helper.gridx = column.ordinal();
         Cell cell = new Cell(cellContent);
@@ -134,8 +136,8 @@ class Row extends JPanel implements ItemListener {
         container.add(cell, helper.expandBoth().anchor("west"));
 
         int width = cellContent.getPreferredSize().width;
-        if (table.resolver.maxWidthsOfColumns.get(column) < width) {
-            table.resolver.maxWidthsOfColumns.put(column, width);
+        if (getTable().getResolver().maxWidthsOfColumns.get(column) < width) {
+            getTable().getResolver().maxWidthsOfColumns.put(column, width);
         }
         return cell;
     }
@@ -146,7 +148,7 @@ class Row extends JPanel implements ItemListener {
     }
 
     public void homogenizeWidth() {
-        for (Map.Entry<TermColumn, Integer> entry : table.resolver.maxWidthsOfColumns.entrySet()) {
+        for (Map.Entry<TermColumn, Integer> entry : getTable().getResolver().maxWidthsOfColumns.entrySet()) {
             if (entry.getValue() != 0 && cells.containsKey(entry.getKey())) {
                 Cell cell = cells.get(entry.getKey());
                 Dimension size = cell.getPreferredSize();
@@ -172,7 +174,7 @@ class Row extends JPanel implements ItemListener {
 
     protected final MouseAdapter mouseAdapter = new MouseAdapter() {
         @Override
-        public void mousePressed(MouseEvent e) {
+        public void mouseClicked(MouseEvent e) {
             selected = !selected;
             selectionCheckBox.setSelected(selected);
         }
@@ -182,5 +184,13 @@ class Row extends JPanel implements ItemListener {
     public void setVisible(boolean aFlag) {
         super.setVisible(aFlag);
         cells.values().forEach(cell -> cell.setVisible(aFlag));
+    }
+    
+    public TermTable getTable() {
+        return requireNonNull(table.get());
+    }
+
+    public void setSelected(boolean selected) {
+        selectionCheckBox.setSelected(selected);
     }
 }

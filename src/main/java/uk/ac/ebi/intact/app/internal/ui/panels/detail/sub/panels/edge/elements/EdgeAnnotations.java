@@ -18,7 +18,8 @@ public class EdgeAnnotations extends AbstractEdgeElement {
     public EdgeAnnotations(Edge edge, OpenBrowser openBrowser, JsonNode annotationsData) {
         super("Annotations", edge, openBrowser);
         this.annotationsData = annotationsData;
-        fillContent();
+        if (annotationsData == null) setVisible(false);
+        else fillContent();
     }
 
     @Override

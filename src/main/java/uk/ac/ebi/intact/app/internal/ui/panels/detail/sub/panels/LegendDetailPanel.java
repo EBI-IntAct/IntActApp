@@ -77,7 +77,7 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
         NetworkView networkView = manager.data.getNetworkView(view);
         if (networkView != null) {
             currentView = networkView;
-            currentNetwork = currentView.network;
+            currentNetwork = currentView.getNetwork();
 
             filterCurrentLegends();
 
