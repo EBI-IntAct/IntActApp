@@ -135,6 +135,11 @@ Creating a field :
 After having declared your field, you should provide access to it inside model.core package.   
 Classes inside this package transform raw table data into cohesive data object, easier to manipulate.  
 As such, they provide utility methods to grant access to their data like collection of features for both nodes and edges.  
+They are also responsible for the querying, and the memory handling of the lazily loaded details.
+
+The core architecture is the following:
+
+![Core architecture](doc/diagram/core/CoreModels.png)
 If you add a column which is a MI or a PAR identifier of some other field, we advise you to add it as an OntologyIdentifier inside these core classes.  
 OntologyIdentifier allow easy access to:
 
@@ -142,6 +147,56 @@ OntologyIdentifier allow easy access to:
 - Details url : url to OLS API to provide CV term details such as their description, synonyms, etc.
 - Descendant url : url to OLS API to get all children CV terms of the current one. (Used in styling)
 
-#### 3. UI
 
-To represent the newly added data, 
+
+#### 3. User Interface
+
+To represent the newly added data visually, IntAct App uses the package `ui`. Inside it, we define several custom 
+components in `ui.components` which are used among the different panels in `ui.panels`. Most of IntAct App displaying 
+of data occurs in the `ui.panels.detail.DetailPanel`. which is the right panel in Cytoscape. 
+This detail panel is organised as shown in the following diagrams:
+
+Detail Panel  
+![Detail panel](doc/diagram/ui/1DetailPanel.png)  
+> Legend Panel
+>
+> ![Legend panel](doc/diagram/ui/2LegendPanel.png)
+
+> Node Panel
+>
+> ![Node detail panel](doc/diagram/ui/NodeDetail.png)
+
+
+>  Summary Edge Panel
+>
+> ![Summary detail panel](doc/diagram/ui/SummaryDetail.png)
+> > ![Summary participants panel](doc/diagram/ui/SummaryParticipants.png)
+
+
+> Evidence Edge Panel
+>
+> ![Evidence detail panel](doc/diagram/ui/EvidenceDetails.png)
+> > ![Evidence participants panel](doc/diagram/ui/EvidenceParticipants.png)
+
+### Filters
+Filters are defined within the `model.filters` package. they follow the following architecture:
+
+![Filter architecture](doc/diagram/filters/Filters.png)
+
+If you need to add new filters, you should therefore make them inherit the correct Filter type 
+(Boolean, Discrete or Continuous) and use the proper element you want to filter.  
+
+To use it, it must be instantiated in `NetworkView.setupFilters()`. This will trigger automatically: 
+- The indexing of the current view data to initialize the filter.
+- The save/load of the filter state ins session files
+- The display of the corresponding UI for the given filter. 
+- The functionality of the filters linked with UI
+The UI panel used is based on the type, while it is placed in the correct panel thanks to the generic parameter used.
+
+The different filter UI panels are defined in `ui.panels.filters` as follows:
+
+![Filter panels architecture](doc/diagram/filters/FilterPanels.png)
+
+### Network creation process
+
+![Network creation process](doc/diagram/tasks/QueryTasks.png)

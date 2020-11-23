@@ -3,6 +3,7 @@ package uk.ac.ebi.intact.app.internal.ui.panels.filters;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 
 import javax.swing.*;
@@ -16,8 +17,8 @@ public class DiscreteFilterPanel<T extends Element> extends FilterPanel<Discrete
 
     List<JCheckBox> checkBoxes = new ArrayList<>();
 
-    public DiscreteFilterPanel(DiscreteFilter<T> filter) {
-        super(filter);
+    public DiscreteFilterPanel(Manager manager, DiscreteFilter<T> filter) {
+        super(manager, filter);
         buildOptionLines();
     }
 

@@ -1,7 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.terms.resolution;
 
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
-import uk.ac.ebi.intact.app.internal.ui.components.buttons.IButton;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.FloatingPanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.EasyGBC;
@@ -59,6 +58,7 @@ class TermTable extends JPanel implements ItemListener {
             if (isPaged) {
                 getResolver().rowHeaderHelper.down();
                 limitRow = new LimitRow(this);
+                rows.put(null, limitRow);
                 add(limitRow, layoutHelper.down().expandBoth());
             }
         }

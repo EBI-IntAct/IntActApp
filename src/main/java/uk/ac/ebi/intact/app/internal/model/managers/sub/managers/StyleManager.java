@@ -79,8 +79,8 @@ public class StyleManager {
         }
     }
 
-    public void resetStyles(boolean async) {
-        settings.resetSettings();
+    public void resetStyles(boolean save, boolean async) {
+        settings.resetSettings(save);
         StyleMapper.resetMappings(async);
         for (Style style : styles.values()) {
             style.setNodePaintStyle();

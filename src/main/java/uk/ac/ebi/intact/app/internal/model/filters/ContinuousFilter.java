@@ -19,16 +19,16 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
     protected double currentMin;
     protected double currentMax;
 
-    public ContinuousFilter(NetworkView view, Class<T> elementType, String name, double min, double max) {
-        super(view, name, elementType);
+    public ContinuousFilter(NetworkView view, Class<T> elementType, String name, String definition, double min, double max) {
+        super(view, name, definition, elementType);
         this.min = min;
         this.max = max;
         currentMin = min;
         currentMax = max;
     }
 
-    public ContinuousFilter(NetworkView view, Class<T> elementType, String name) {
-        super(view, name, elementType);
+    public ContinuousFilter(NetworkView view, Class<T> elementType, String name, String definition) {
+        super(view, name, definition, elementType);
         List<? extends Element> elements;
         Network network = getNetwork();
         if (Node.class.isAssignableFrom(elementType)) {

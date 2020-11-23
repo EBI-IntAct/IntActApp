@@ -61,6 +61,7 @@ public class SearchQueryComponent extends JTextField {
             }
         });
         setToolTipText(tooltip);
+        requestFocusInWindow();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.app.internal.model.core.view;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,27 +10,27 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
+import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.model.filters.edge.*;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeSpeciesFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
 
-import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class NetworkView {
-    private Thread thread;
+    private transient Thread thread;
     public final transient Manager manager;
-    private final transient WeakReference<Network> network;
+    private final transient Network network;
     public final transient CyNetworkView cyView;
     public final transient Set<Node> visibleNodes = new HashSet<>();
     public final transient Set<Edge> visibleEdges = new HashSet<>();
@@ -41,7 +42,7 @@ public class NetworkView {
         this.manager = manager;
         if (cyView != null) {
             this.cyView = cyView;
-            this.network = new WeakReference<>(manager.data.getNetwork(cyView.getModel()));
+            this.network = manager.data.getNetwork(cyView.getModel());
             this.type = type != null ? type : Type.SUMMARY;
             setupFilters(loadData);
         } else {
@@ -130,6 +131,15 @@ public class NetworkView {
         manager.utils.fireEvent(new ViewUpdatedEvent(manager, this));
     }
 
+    public Set<String> getPropertyValuesOfFilter(Class<? extends DiscreteFilter<?>> filterClass) {
+        for (Filter<?> filter: filters) {
+            if (filterClass == filter.getClass()) {
+                return ((DiscreteFilter<?>) filter).getProperties();
+            }
+        }
+        return null;
+    }
+
     public void silenceFilters(boolean filtersSilenced) {
         this.filtersSilenced = filtersSilenced;
     }
@@ -138,9 +148,13 @@ public class NetworkView {
         if (thread != null && thread.isAlive()) thread.interrupt();
         thread = new Thread(() -> {
             try {
-                ObjectMapper objectMapper = new ObjectMapper();
+                ObjectMapper om = new ObjectMapper();
+                om.setVisibility(om.getSerializationConfig().
+                        getDefaultVisibilityChecker().
+                        withFieldVisibility(JsonAutoDetect.Visibility.ANY).
+                        withGetterVisibility(JsonAutoDetect.Visibility.NONE));
                 CyNetwork cyNetwork = getNetwork().getCyNetwork();
-                NetworkFields.VIEW_STATE.setValue(cyNetwork.getRow(cyNetwork), objectMapper.writeValueAsString(this));
+                NetworkFields.VIEW_STATE.setValue(cyNetwork.getRow(cyNetwork), om.writeValueAsString(this));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
@@ -175,7 +189,7 @@ public class NetworkView {
 
     @Override
     public String toString() {
-        return "View of " + network.toString();
+        return "View of " + getNetwork().toString();
     }
 
     public Type getType() {
@@ -208,6 +222,6 @@ public class NetworkView {
     }
 
     public Network getNetwork() {
-        return Objects.requireNonNull(network.get());
+        return Objects.requireNonNull(network);
     }
 }

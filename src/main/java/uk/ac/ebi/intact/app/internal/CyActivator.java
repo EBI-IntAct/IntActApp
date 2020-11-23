@@ -12,6 +12,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.tasks.about.factories.AboutTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIQueryTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ExactQueryTaskFactory;
@@ -149,6 +150,15 @@ public class CyActivator extends AbstractCyActivator {
             };
 
             registerService(bc, intactSettingsFactory, TaskFactory.class, propsSettings);
+        }
+
+        {
+            Properties propsSettings = new Properties();
+            propsSettings.setProperty(PREFERRED_MENU, "Apps.IntAct");
+            propsSettings.setProperty(TITLE, "About");
+            propsSettings.setProperty(MENU_GRAVITY, "21.0");
+            propsSettings.setProperty(IN_MENU_BAR, "true");
+            registerService(bc, new AboutTaskFactory(manager), TaskFactory.class, propsSettings);
         }
 
         // Register our Network search factories

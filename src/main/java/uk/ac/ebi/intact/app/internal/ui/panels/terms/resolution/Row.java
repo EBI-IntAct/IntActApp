@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.ui.components.diagrams.InteractorDiagram;
-import uk.ac.ebi.intact.app.internal.ui.components.labels.CenteredLabel;
+import uk.ac.ebi.intact.app.internal.ui.components.labels.center.CenteredLabel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.ComponentUtils;
@@ -58,7 +58,7 @@ class Row extends JPanel implements ItemListener {
         addCell(new CenteredLabel(interactor.interactionCount.toString()), NB_INTERACTIONS);
         addCell(new CenteredLabel(interactor.preferredId), ID);
         addCell(createMatchingColumns(), MATCHING_COLUMNS);
-        highlightMatchingColumns(getTable().getResolver().manager.option.SHOW_HIGHLIGHTS.getValue());
+        highlightMatchingColumns(true);
         ComponentUtils.resizeHeight(cells.get(SELECT), getPreferredSize().height, ComponentUtils.SizeType.PREF);
     }
 
@@ -84,7 +84,7 @@ class Row extends JPanel implements ItemListener {
         speciesPanel.add(Box.createVerticalGlue());
         if (interactor.species == null) return new CenteredLabel("");
         Matcher speciesMatcher = speciesPattern.matcher(interactor.species);
-        if (speciesMatcher.find()) {
+        if (speciesMatcher.find() && !interactor.species.substring(speciesMatcher.end()).isBlank()) {
             speciesPanel.add(new CenteredLabel(speciesMatcher.group()));
             speciesPanel.add(new CenteredLabel(interactor.species.substring(speciesMatcher.end())));
         } else {

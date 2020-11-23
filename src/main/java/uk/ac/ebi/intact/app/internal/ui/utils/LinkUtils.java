@@ -5,12 +5,11 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.CVTerm;
 import uk.ac.ebi.intact.app.internal.ui.components.labels.JLink;
 
+import javax.swing.*;
+
 public class LinkUtils {
-    public static JLink createSpecieLink(OpenBrowser openBrowser, String taxId) {
-        return new JLink(
-                "- TaxId: " + taxId,
-                "https://www.uniprot.org/taxonomy/" + taxId,
-                openBrowser);
+    public static JComponent createSpecieLink(OpenBrowser openBrowser, String taxId) {
+        return new JLink(taxId, "https://www.uniprot.org/taxonomy/" + taxId, openBrowser);
     }
 
     public static JLink createEvidenceEdgeLink(OpenBrowser openBrowser, EvidenceEdge evidenceEdge) {

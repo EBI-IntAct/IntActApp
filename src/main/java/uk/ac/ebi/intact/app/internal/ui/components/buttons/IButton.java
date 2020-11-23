@@ -5,8 +5,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 public class IButton extends JButton  {
     public MouseListener handMouseShape = new MouseAdapter() {
@@ -17,15 +15,15 @@ public class IButton extends JButton  {
     };
 
     public IButton() {
-        clearIconButton();
+        cleanIconButton();
     }
 
     public IButton(ImageIcon icon) {
         super(icon);
-        clearIconButton();
+        cleanIconButton();
     }
 
-    private void clearIconButton() {
+    private void cleanIconButton() {
         setFocusPainted(false);
         setBorderPainted(false);
         setContentAreaFilled(false);

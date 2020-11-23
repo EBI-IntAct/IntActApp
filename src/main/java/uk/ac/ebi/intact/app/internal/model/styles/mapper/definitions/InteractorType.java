@@ -8,7 +8,7 @@ public enum InteractorType {
     BIO_ACTIVE_ENTITY("bioactive entity", "MI_1100", NodeShapeVisualProperty.TRIANGLE),
     PROTEIN("protein", "MI_0326", NodeShapeVisualProperty.ELLIPSE),
     GENE("gene", "MI_0250", NodeShapeVisualProperty.ROUND_RECTANGLE),
-    NUCLEIC_ACID("nucleic acid", "", NodeShapeVisualProperty.PARALLELOGRAM),
+    NUCLEIC_ACID("nucleic acid", "MI_0318", NodeShapeVisualProperty.PARALLELOGRAM),
     DNA("deoxyribonucleic acid", "MI_0319", BasicVisualLexicon.NODE_SHAPE.parseSerializableString("VEE")),
     DNA_S("dna", "", BasicVisualLexicon.NODE_SHAPE.parseSerializableString("VEE")),
     RNA("ribonucleic acid", "MI_0320", NodeShapeVisualProperty.DIAMOND),

@@ -45,7 +45,6 @@ public class ColorSettingManager implements NodeColorPicker.ColorChangedListener
         tableManager = manager.utils.getService(CyTableManager.class);
         table = STYLE_SETTINGS.build(manager, TITLE);
         tableManager.addTable(table);
-        resetSettings();
     }
 
     @Override
@@ -71,13 +70,15 @@ public class ColorSettingManager implements NodeColorPicker.ColorChangedListener
         }
     }
 
-    public void resetSettings() {
+    public void resetSettings(boolean save) {
         speciesSettings.clear();
-        saveSettings(SPECIES_KEY, speciesSettings);
         kingdomSettings.clear();
-        saveSettings(KINGDOM_KEY, kingdomSettings);
         userSettings.clear();
-        saveSettings(USER_KEY, userSettings);
+        if (save) {
+            saveSettings(SPECIES_KEY, speciesSettings);
+            saveSettings(KINGDOM_KEY, kingdomSettings);
+            saveSettings(USER_KEY, userSettings);
+        }
     }
 
     public void removeUserColorSetting(String taxId) {
@@ -111,7 +112,7 @@ public class ColorSettingManager implements NodeColorPicker.ColorChangedListener
     public void applySettingsToStyle() {
         Map<String, Paint> colorScheme = new HashMap<>();
         StyleMapper.harvestKingdomsOf(userSettings.stream().map(ColorSetting::getTaxId).collect(Collectors.toSet()), false);
-        speciesSettings.forEach(colorSetting -> colorScheme.putAll(StyleMapper.updateChildrenColors(colorSetting.taxId, colorSetting.color, true, false)));
+        speciesSettings.forEach(colorSetting -> colorScheme.putAll(StyleMapper.updateChildrenColors(colorSetting.taxId, colorSetting.color, true, true)));
         kingdomSettings.forEach(colorSetting -> colorScheme.putAll(StyleMapper.updateChildrenColors(colorSetting.taxId, colorSetting.color, true, true)));
         userSettings.forEach(colorSetting -> colorScheme.putAll(StyleMapper.updateChildrenColors(colorSetting.taxId, colorSetting.color, false, true)));
         for (Style style : manager.style.getStyles().values()) {

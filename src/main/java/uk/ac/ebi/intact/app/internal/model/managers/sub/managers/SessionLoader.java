@@ -8,7 +8,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView.Type;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.EvidenceStyle;
@@ -25,6 +24,8 @@ import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import static uk.ac.ebi.intact.app.internal.model.core.view.NetworkView.Type;
 
 public class SessionLoader implements SessionLoadedListener {
     final Manager manager;
@@ -75,7 +76,7 @@ public class SessionLoader implements SessionLoadedListener {
     }
 
     private void loadStyles(CySession loadedSession) {
-        manager.style.resetStyles(true);
+        manager.style.resetStyles(false, true);
         for (Type type : Type.values()) {
             boolean styleFound = false;
             for (VisualStyle styleToLoad : loadedSession.getVisualStyles()) {

@@ -20,6 +20,9 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
+import org.cytoscape.view.vizmap.events.VisualStyleSetListener;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
@@ -46,7 +49,8 @@ public class DataManager implements
         NetworkViewAddedListener,
         NetworkAboutToBeDestroyedListener,
         NetworkViewAboutToBeDestroyedListener,
-        TableClonedListener ,
+        VisualStyleSetListener,
+        TableClonedListener,
         SessionAboutToBeLoadedListener {
     private final Manager manager;
     final CyRootNetworkManager rootNetworkManager;
@@ -184,17 +188,36 @@ public class DataManager implements
         networkViewMap.remove(e.getNetworkView());
     }
 
+    public void removeNetwork(Network network) {
+        if (network == null) return;
+        CyNetwork cyNetwork = network.getCyNetwork();
+        if (cyNetwork == null) return;
+        networkMap.remove(cyNetwork);
+        networkViewManager.getNetworkViews(cyNetwork)
+                .forEach(view -> {
+                    networkViewMap.remove(view);
+                    networkViewManager.destroyNetworkView(view);
+                });
+    }
+
     private final Map<CyTable, Network> oldTablesToNewNetwork = new HashMap<>();
+
     private boolean loadingSession = false;
 
     public void setLoadingSession(boolean loadingSession) {
         this.loadingSession = loadingSession;
     }
+
     @Override
     public void handleEvent(SessionAboutToBeLoadedEvent e) {
         loadingSession = true;
     }
 
+    /**
+     * Handles management of new sub networks and cloned networks
+     *
+     * @param e
+     */
     @Override
     public void handleEvent(NetworkAddedEvent e) {
         CyNetwork cyNetwork = e.getNetwork();
@@ -217,6 +240,11 @@ public class DataManager implements
         }
     }
 
+    /**
+     * At network cloning, handles the duplication of IntAct sub tables
+     *
+     * @param e
+     */
     @Override
     public void handleEvent(TableClonedEvent e) {
         CyTable originalTable = e.getOriginalTable();
@@ -247,33 +275,31 @@ public class DataManager implements
     }
 
 
-    public void removeNetwork(Network network) {
-        if (network == null) return;
-        CyNetwork cyNetwork = network.getCyNetwork();
-        if (cyNetwork == null) return;
-        networkMap.remove(cyNetwork);
-        networkViewManager.getNetworkViews(cyNetwork)
-                .forEach(view -> {
-                    networkViewMap.remove(view);
-                    networkViewManager.destroyNetworkView(view);
-                });
-    }
-
-
-
-
-
     private static class NetworkViewTypeToSet {
         final NetworkView.Type type;
         boolean toSet = false;
+        int counterOfStyleResetting = 0;
 
         private NetworkViewTypeToSet(NetworkView.Type type) {
             this.type = type;
         }
     }
 
-    private final Map<CyNetwork, NetworkViewTypeToSet> networkViewTypesToSet = new HashMap<>();
+    /**
+     * Store sub network view types to affect them with {@link #handleEvent(NetworkViewAddedEvent) }
+     */
+    private final Map<CyNetwork, NetworkViewTypeToSet> networkTypesToSet = new HashMap<>();
+    private final Map<NetworkView, NetworkViewTypeToSet> networkViewTypesToSet = new HashMap<>();
 
+    /**
+     * Register and manage sub networks at their creation.<br>
+     * <p>
+     * The created sub network view must be set to its direct parent type.<br>
+     * To do so, addSubNetwork register the network view type of the direct parent within {@link #networkTypesToSet}.<br>
+     * {@link #handleEvent(NetworkViewAddedEvent)} will then set the new sub network view to its parent view type.<br>
+     * Cytoscape will then change from the correct view type to the root parent's one.<br>
+     * {@link #handleEvent(VisualStyleSetEvent)} then interrupt Cytoscape behaviour to set it to the correct style.
+     */
     private void addSubNetwork(CySubNetwork subCyNetwork, CySubNetwork parentCyNetwork) {
         if (networkMap.containsKey(parentCyNetwork)) {
             Network parentNetwork = networkMap.get(parentCyNetwork);
@@ -284,7 +310,7 @@ public class DataManager implements
             for (CyNetworkView cyNetworkView : networkViewManager.getNetworkViews(parentCyNetwork)) {
                 NetworkView networkView = networkViewMap.get(cyNetworkView);
                 if (networkView == null) continue;
-                networkViewTypesToSet.put(subCyNetwork, new NetworkViewTypeToSet(networkView.getType()));
+                networkTypesToSet.put(subCyNetwork, new NetworkViewTypeToSet(networkView.getType()));
                 break;
             }
 
@@ -296,22 +322,56 @@ public class DataManager implements
         }
     }
 
+    /**
+     * Set sub network view style to their parent ones (stored in {@link #networkTypesToSet}) at creation, after {@link #addSubNetwork(CySubNetwork, CySubNetwork)}.<br>
+     * Cytoscape will then change from the correct view type to the root parent's one.<br>
+     * {@link #handleEvent(VisualStyleSetEvent)} then interrupt Cytoscape behaviour to set it to the correct style.<br><br>
+     * <p>
+     * This listener is triggered twice at sub network creation.
+     */
     @Override
     public void handleEvent(NetworkViewAddedEvent e) {
         CyNetwork cyNetwork = e.getNetworkView().getModel();
         if (networkMap.containsKey(cyNetwork)) {
-            if (networkViewTypesToSet.containsKey(cyNetwork)) {
-                NetworkViewTypeToSet networkViewTypeToSet = networkViewTypesToSet.get(cyNetwork);
-                if (!networkViewTypeToSet.toSet) networkViewTypeToSet.toSet = true;
+            if (networkTypesToSet.containsKey(cyNetwork)) {
+                NetworkViewTypeToSet networkViewTypeToSet = networkTypesToSet.get(cyNetwork);
+                if (!networkViewTypeToSet.toSet) networkViewTypeToSet.toSet = true; // Avoid work at first trigger
                 else {
-                    addNetworkView(e.getNetworkView(), false, networkViewTypeToSet.type);
+                    NetworkView networkView = addNetworkView(e.getNetworkView(), false, networkViewTypeToSet.type);
                     manager.style.styles.get(networkViewTypeToSet.type).applyStyle(e.getNetworkView());
-                    networkViewTypesToSet.remove(cyNetwork);
+                    networkViewTypesToSet.put(networkView, networkViewTypeToSet);
+                    networkTypesToSet.remove(cyNetwork);
                 }
             } else {
                 NetworkView networkView = addNetworkView(e.getNetworkView(), false);
                 manager.style.styles.get(NetworkView.Type.SUMMARY).applyStyle(networkView.cyView);
             }
+        }
+    }
+
+    /**
+     * Set sub networks view styles at their {@link #addSubNetwork(CySubNetwork, CySubNetwork) creation} to use the direct parent type instead of root parent one's, the default behaviour of Cytoscape.<br>
+     * <p>
+     * The style need to be set firstly by {@link #handleEvent(NetworkViewAddedEvent)},<br>
+     * so that Cytoscape react by setting the wrong style,<br>
+     * so that this listener is triggered to correct Cytoscape mistake.
+     */
+    @Override
+    public void handleEvent(VisualStyleSetEvent e) {
+        NetworkView networkView = getNetworkView(e.getNetworkView());
+        if (networkView == null) return;
+        if (networkViewTypesToSet.containsKey(networkView)) {
+            NetworkViewTypeToSet correctType = networkViewTypesToSet.get(networkView);
+            VisualStyle correctStyle = manager.style.styles.get(correctType.type).getStyle();
+            VisualStyle currentStyle = manager.style.vmm.getVisualStyle(networkView.cyView);
+
+            if (currentStyle != correctStyle) {
+                manager.style.styles.get(networkView.getType()).applyStyle(networkView.cyView);
+            }
+
+            correctType.counterOfStyleResetting++;
+            if (correctType.counterOfStyleResetting >= 3)
+                networkViewTypesToSet.remove(networkView);
         }
     }
 
