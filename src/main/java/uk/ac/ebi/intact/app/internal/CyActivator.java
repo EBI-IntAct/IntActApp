@@ -14,6 +14,7 @@ import org.osgi.framework.Version;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.about.factories.AboutTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.feedback.factories.FeedbackTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIQueryTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ExactQueryTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.FuzzySearchTaskFactory;
@@ -159,6 +160,15 @@ public class CyActivator extends AbstractCyActivator {
             propsSettings.setProperty(MENU_GRAVITY, "21.0");
             propsSettings.setProperty(IN_MENU_BAR, "true");
             registerService(bc, new AboutTaskFactory(manager), TaskFactory.class, propsSettings);
+        }
+
+        {
+            Properties propsSettings = new Properties();
+            propsSettings.setProperty(PREFERRED_MENU, "Apps.IntAct");
+            propsSettings.setProperty(TITLE, "Feedback - Report bug");
+            propsSettings.setProperty(MENU_GRAVITY, "22.0");
+            propsSettings.setProperty(IN_MENU_BAR, "true");
+            registerService(bc, new FeedbackTaskFactory(manager), TaskFactory.class, propsSettings);
         }
 
         // Register our Network search factories
