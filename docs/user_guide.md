@@ -6,7 +6,7 @@ title: User guide
 ## Search network
 ### Search network interactors
 To search an IntAct network, go on the left panel, under the network menu  
-![Query screenshot](docs/screenshots/QueryScreenShot.png)  
+![Query screenshot](screenshots/QueryScreenShot.png)  
 By clicking on the left icon, you can select the search mode you are interested in.  
 IntAct App provide two of them:
 - Fuzzy Search
