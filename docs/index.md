@@ -1,7 +1,6 @@
 ---
-title: User guide
+title: IntAct App | User Guide
 ---
-# User guide
 
 The developer guide is available [here](dev_guide.md)
 ## Search network

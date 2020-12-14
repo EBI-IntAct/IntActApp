@@ -1,7 +1,7 @@
 ---
-title: Developer guide
+title: IntAct App | Developer Guide
 ---
-# Developer guide
+
 ## Compilation
 To compile and obtain the app jar 
 ```bash
