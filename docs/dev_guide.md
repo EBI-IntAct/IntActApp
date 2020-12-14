@@ -58,7 +58,7 @@ They are also responsible for the querying, and the memory handling of the lazil
 
 The core architecture is the following:
 
-![Core architecture](diagram/core/CoreModels.png)
+![Core architecture](assets/diagram/core/CoreModels.png)
 If you add a column which is a MI or a PAR identifier of some other field, we advise you to add it as an OntologyIdentifier inside these core classes.  
 OntologyIdentifier allow easy access to:
 
@@ -76,31 +76,31 @@ of data occurs in the `ui.panels.detail.DetailPanel`. which is the right panel i
 This detail panel is organised as shown in the following diagrams:
 
 Detail Panel  
-![Detail panel](diagram/ui/1DetailPanel.png)  
+![Detail panel](assets/diagram/ui/1DetailPanel.png)  
 > Legend Panel
 >
-> ![Legend panel](diagram/ui/2LegendPanel.png)
+> ![Legend panel](assets/diagram/ui/2LegendPanel.png)
 
 > Node Panel
 >
-> ![Node detail panel](diagram/ui/NodeDetail.png)
+> ![Node detail panel](assets/diagram/ui/NodeDetail.png)
 
 
 >  Summary Edge Panel
 >
-> ![Summary detail panel](diagram/ui/SummaryDetail.png)
-> > ![Summary participants panel](diagram/ui/SummaryParticipants.png)
+> ![Summary detail panel](assets/diagram/ui/SummaryDetail.png)
+> > ![Summary participants panel](assets/diagram/ui/SummaryParticipants.png)
 
 
 > Evidence Edge Panel
 >
-> ![Evidence detail panel](diagram/ui/EvidenceDetails.png)
-> > ![Evidence participants panel](diagram/ui/EvidenceParticipants.png)
+> ![Evidence detail panel](assets/diagram/ui/EvidenceDetails.png)
+> > ![Evidence participants panel](assets/diagram/ui/EvidenceParticipants.png)
 
 ## Filters
 Filters are defined within the `model.filters` package. they follow the following architecture:
 
-![Filter architecture](diagram/filters/Filters.png)
+![Filter architecture](assets/diagram/filters/Filters.png)
 
 If you need to add new filters, you should therefore make them inherit the correct Filter type 
 (Boolean, Discrete or Continuous) and use the proper element you want to filter.  
@@ -114,8 +114,8 @@ The UI panel used is based on the type, while it is placed in the correct panel 
 
 The different filter UI panels are defined in `ui.panels.filters` as follows:
 
-![Filter panels architecture](diagram/filters/FilterPanels.png)
+![Filter panels architecture](assets/diagram/filters/FilterPanels.png)
 
 ## Network creation process
 
-![Network creation process](diagram/tasks/QueryTasks.png)
+![Network creation process](assets/diagram/tasks/QueryTasks.png)
