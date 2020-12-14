@@ -1,5 +1,5 @@
 ---
-title: IntAct App | Developer Guide
+title: Developer Guide
 ---
 
 ## Compilation

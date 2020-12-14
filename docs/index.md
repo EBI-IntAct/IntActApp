@@ -1,5 +1,5 @@
 ---
-title: IntAct App | User Guide
+title: User Guide
 ---
 
 The developer guide is available [here](dev_guide.md)
