@@ -9,8 +9,8 @@ import uk.ac.ebi.intact.app.internal.model.styles.UIColors;
 import uk.ac.ebi.intact.app.internal.tasks.query.TermsResolvingTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ImportNetworkTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.components.filler.HorizontalFiller;
-import uk.ac.ebi.intact.app.internal.ui.components.labels.CenteredLabel;
-import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
+import uk.ac.ebi.intact.app.internal.ui.components.labels.center.CenteredLabel;
+import uk.ac.ebi.intact.app.internal.ui.components.panels.LinePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.options.OptionsPanel;
 import uk.ac.ebi.intact.app.internal.ui.utils.ComponentUtils;
@@ -35,7 +35,6 @@ import static uk.ac.ebi.intact.app.internal.ui.utils.ComponentUtils.SizeType;
 import static uk.ac.ebi.intact.app.internal.ui.utils.ComponentUtils.resizeHeight;
 
 public class ResolveTermsPanel extends JPanel implements ItemListener {
-    public static final int HEIGHT = 400;
     public static final int TERM_SPACE = 8;
     private static final ImageIcon filterIcon = IconUtils.createImageIcon("/IntAct/DIGITAL/filter.png");
     final Manager manager;
@@ -102,7 +101,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             height += getPreferredHeight(component);
         }
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        return new Dimension(Integer.min(width, screenSize.width), Integer.min(height, screenSize.height));
+        return new Dimension(Integer.min(width, screenSize.width), Integer.min(height, screenSize.height * 9 / 10));
     }
 
     private int getPreferredHeight(JComponent component) {
@@ -215,11 +214,6 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             scrollPane.setRowHeader(viewport);
         }
 
-//        displayPanel.setMinimumSize(new Dimension(900, HEIGHT));
-//        displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
-//        scrollPane.setMinimumSize(new Dimension(900, HEIGHT));
-//        scrollPane.setPreferredSize(new Dimension(900, HEIGHT));
-//        scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, HEIGHT));
         add(scrollPane, layoutHelper.down().expandBoth());
     }
 
@@ -261,11 +255,10 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
 
     private void createOptionPanel() {
         optionsPanel = new OptionsPanel(manager, OptionManager.Scope.DISAMBIGUATION);
-        optionsPanel.addListener(manager.option.SHOW_HIGHLIGHTS, () -> {
-            boolean showHighlightsValue = !manager.option.SHOW_HIGHLIGHTS.getValue();
-            termTables.forEach(table -> table.rows.values().forEach(row -> row.highlightMatchingColumns(showHighlightsValue)));
-        });
-        add(new CollapsablePanel("Options", optionsPanel, true), layoutHelper.down().expandHoriz());
+        JPanel optionLine = new JPanel(new BorderLayout());
+        optionLine.setBorder(new EmptyBorder(5, 0, 0, 0));
+        optionLine.add(optionsPanel, BorderLayout.EAST);
+        add(optionLine, layoutHelper.spanHoriz(1).down().expandHoriz());
     }
 
     private void createControlButtons() {
@@ -305,7 +298,7 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
             if (interactorsToQuery.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No interactors selected. Please select at least one interactor.");
             } else {
-                TaskFactory factory = new ImportNetworkTaskFactory(network, interactorsToQuery.stream().map(interactor -> interactor.ac).collect(toList()), manager.option.ADD_INTERACTING_PARTNERS.getValue(), task.getName());
+                TaskFactory factory = new ImportNetworkTaskFactory(network, interactorsToQuery.stream().filter(Objects::nonNull).map(interactor -> interactor.ac).collect(toList()), manager.option.ADD_INTERACTING_PARTNERS.getValue(), task.getName());
                 manager.utils.execute(factory.createTaskIterator());
                 close();
             }
@@ -353,13 +346,30 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
         public FilterMenu(TermColumn column) {
             super();
             this.column = column;
-            add(new JLabel("Select values to show:"));
+            add(new JLabel(" Select values to show:"));
+            JPanel controlPanel = new LinePanel(Color.WHITE);
+            JButton selectAll = new JButton("Select all");
+            selectAll.addActionListener(e -> this.selectAll(true));
+            controlPanel.add(selectAll);
+            JButton selectNone = new JButton("Unselect all");
+            selectNone.addActionListener(e -> this.selectAll(false));
+            controlPanel.add(selectNone);
+            add(controlPanel);
+        }
+
+        private void selectAll(boolean status) {
+            for (Component component : this.getComponents()) {
+                if (component instanceof JCheckBox) {
+                    ((JCheckBox) component).setSelected(status);
+                }
+            }
         }
     }
 
     private void createFilters() {
         for (TermTable table : termTables) {
             for (Interactor interactor : table.rows.keySet()) {
+                if (interactor == null) continue;
                 filterValues.forEach((column, visibleValues) -> {
                     Object value = column.getValue.apply(interactor);
                     if (!visibleValues.contains(value)) {
@@ -386,7 +396,11 @@ public class ResolveTermsPanel extends JPanel implements ItemListener {
 
     private void filterInteractors() {
         for (TermTable table : termTables) {
-            table.rows.forEach((interactor, row) -> row.setVisible(isToKeep(interactor)));
+            table.rows.forEach((interactor, row) -> {
+                if (interactor != null) {
+                    row.setVisible(isToKeep(interactor));
+                }
+            });
         }
     }
 

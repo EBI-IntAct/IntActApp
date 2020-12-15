@@ -45,6 +45,19 @@ public abstract class Style {
     private static VisualProperty fancyLabelsPositionProperty;
     private static Object fancyLabelsPositionValue;
 
+    public Style(Manager manager, VisualStyle style) {
+        this.manager = manager;
+        vmm = manager.utils.getService(VisualMappingManager.class);
+        eventHelper = manager.utils.getService(CyEventHelper.class);
+        this.style = style;
+        newStyle = false;
+        loadStyle();
+
+        continuousFactory = manager.utils.getService(VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
+        discreteFactory = manager.utils.getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
+        passthroughFactory = manager.utils.getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
+    }
+
     public Style(Manager manager) {
         this.manager = manager;
         vmm = manager.utils.getService(VisualMappingManager.class);
@@ -230,7 +243,9 @@ public abstract class Style {
         networkView.updateView();
     }
 
-    public abstract String getStyleName();
+    public String getStyleName(){
+        return getStyleViewType().styleName;
+    }
 
     public abstract NetworkView.Type getStyleViewType();
 

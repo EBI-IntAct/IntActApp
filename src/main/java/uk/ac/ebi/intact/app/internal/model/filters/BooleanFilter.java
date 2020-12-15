@@ -10,8 +10,8 @@ public abstract class BooleanFilter<T extends Element> extends Filter<T> {
     protected boolean status = false;
     public final String description;
 
-    public BooleanFilter(NetworkView view, Class<T> elementType, String name, String description) {
-        super(view, name, elementType);
+    public BooleanFilter(NetworkView view, Class<T> elementType, String name, String definition, String description) {
+        super(view, name, definition, elementType);
         this.description = description;
     }
 

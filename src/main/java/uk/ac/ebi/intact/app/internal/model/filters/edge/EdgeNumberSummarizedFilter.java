@@ -7,7 +7,7 @@ import uk.ac.ebi.intact.app.internal.model.filters.ContinuousFilter;
 public class EdgeNumberSummarizedFilter extends ContinuousFilter<SummaryEdge> {
 
     public EdgeNumberSummarizedFilter(NetworkView view) {
-        super(view, SummaryEdge.class, "# Summarized edges");
+        super(view, SummaryEdge.class, "# Summarized edges", "Number of evidence of interaction found between two molecules");
     }
 
     @Override

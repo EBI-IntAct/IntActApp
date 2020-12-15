@@ -1,6 +1,8 @@
 package uk.ac.ebi.intact.app.internal.ui.components.panels;
 
 import uk.ac.ebi.intact.app.internal.ui.components.buttons.CollapseAllButton;
+import uk.ac.ebi.intact.app.internal.ui.components.labels.HTMLLabel;
+import uk.ac.ebi.intact.app.internal.ui.components.labels.SelectableLabel;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 
 import javax.swing.*;
@@ -25,7 +27,7 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
     public final CollapseAllButton collapseAllButton = new CollapseAllButton(true, subCollapsablePanels);
     private boolean collapsed;
 
-    private final String title;
+    private String title;
 
     public CollapsablePanel(String title, boolean collapsed) {
         this(title, new VerticalPanel(), collapsed);
@@ -178,6 +180,11 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
         return title;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+        this.headerPanel.setTitle(title);
+    }
+
     private class HeaderPanel extends LinePanel implements ActionListener {
 
         JButton expandButton;
@@ -186,7 +193,7 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
 
         public final EmptyBorder BORDER = new EmptyBorder(0, 4, 0, 0);
 
-        public HeaderPanel(String text, boolean collapsed) {
+        public HeaderPanel(String title, boolean collapsed) {
             this.expanded = !collapsed;
 
             if (collapsed)
@@ -201,8 +208,7 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
 
             expandButton.setPreferredSize(new Dimension(20, 20));
             this.add(expandButton);
-            headerComponent = new JLabel(text);
-            headerComponent.setBorder(BORDER);
+            setTitleComponent(title);
             this.add(headerComponent);
             collapseAllButton.setBorder(BORDER);
             collapseAllButton.setVisible(false);
@@ -212,10 +218,21 @@ public class CollapsablePanel extends JPanel implements ContainerListener {
             this.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         }
 
+        private void setTitleComponent(String title) {
+            if (title.contains("<html>")) headerComponent = new HTMLLabel(title);
+            else headerComponent = new SelectableLabel(title);
+            headerComponent.setBorder(BORDER);
+        }
+
         public void setHeaderComponent(JComponent component) {
             component.setBorder(BORDER);
             this.remove(1);
             this.add(component, 1);
+        }
+
+        private void setTitle(String title) {
+            setTitleComponent(title);
+            setHeaderComponent(headerComponent);
         }
 
         public void actionPerformed(ActionEvent e) {

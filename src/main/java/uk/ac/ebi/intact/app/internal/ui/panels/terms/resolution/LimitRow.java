@@ -21,6 +21,8 @@ public class LimitRow extends Row {
         getTable().includeAdditionalInteractors = selected;
         JCheckBox selectionCheckBox = createSelectionCheckBox(false);
         selectionCheckBox.addActionListener(e -> getTable().includeAdditionalInteractors = selectionCheckBox.isSelected());
+        selectionCheckBox.addItemListener(getTable());
+        selectionCheckBox.addItemListener(getTable().getResolver());
         addCell(selectionCheckBox, TermColumn.SELECT);
         JLabel label = new JLabel("Include additional " + (getTable().totalInteractors - getTable().rows.size()) + " matching interactors");
         label.setBorder(new EmptyBorder(5,5,5,0));
@@ -38,5 +40,9 @@ public class LimitRow extends Row {
         super.itemStateChanged(e);
         if (e.getStateChange() == ItemEvent.SELECTED) getTable().includeAdditionalInteractors = true;
         else if (e.getStateChange() == ItemEvent.DESELECTED) getTable().includeAdditionalInteractors = false;
+    }
+
+    @Override
+    public void highlightMatchingColumns(boolean highlight) {
     }
 }

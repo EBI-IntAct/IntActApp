@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class OrphanNodeFilter extends Filter<Node> {
     public OrphanNodeFilter(NetworkView view) {
-        super(view, "Orphan nodes", Node.class);
+        super(view, "Orphan nodes", "", Node.class);
     }
 
     @Override

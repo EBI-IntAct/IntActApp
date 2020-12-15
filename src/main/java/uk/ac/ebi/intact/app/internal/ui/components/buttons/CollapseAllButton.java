@@ -5,11 +5,8 @@ import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.Collection;
 
 public class CollapseAllButton extends IButton implements ActionListener {
@@ -24,7 +21,6 @@ public class CollapseAllButton extends IButton implements ActionListener {
         this.isUp = isUp;
         this.panels = panels;
         setBorder(new EmptyBorder(0, 0, 0, 0));
-
         setOpaque(false);
         setIcon(isUp ? up : down);
         setToolTipText(isUp ? "Collapse all" : "Expand all");

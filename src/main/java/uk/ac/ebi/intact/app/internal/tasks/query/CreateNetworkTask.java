@@ -7,6 +7,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.*;
+import org.cytoscape.work.TaskMonitor.Level;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
@@ -46,6 +47,7 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         monitor.setTitle("Load IntAct Network");
         monitor.setTitle("Querying IntAct servers");
         monitor.setProgress(0.2);
+        monitor.showMessage(Level.INFO, "Querying IntAct servers");
         begin = Instant.now();
         manager.utils.registerService(this, TaskObserver.class, new Properties());
 
@@ -53,12 +55,13 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         System.out.println(Duration.between(begin, Instant.now()).toSeconds());
         // This may change...
         monitor.setTitle("Parsing result data");
+        monitor.showMessage(Level.INFO, "Parsing data");
         monitor.setProgress(0.4);
         if (cancelled) return;
         CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, results, netName, () -> cancelled);
 
         if (cyNetwork == null) {
-            monitor.showMessage(TaskMonitor.Level.ERROR, "IntAct returned no results");
+            monitor.showMessage(Level.ERROR, "IntAct returned no results");
             return;
         }
 
@@ -68,6 +71,7 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         }
 
         monitor.setTitle("Create summary edges");
+        monitor.showMessage(Level.INFO,"Create summary edges");
         monitor.setProgress(0.6);
         manager.data.addNetwork(network, cyNetwork);
         manager.data.fireIntactNetworkCreated(network);
@@ -79,6 +83,7 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         }
 
         monitor.setTitle("Register network");
+        monitor.showMessage(Level.INFO, "Register network");
         monitor.setProgress(0.7);
         manager.data.setCurrentNetwork(cyNetwork);
         System.out.println(Duration.between(begin, Instant.now()).toSeconds());
@@ -92,7 +97,8 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         }
 
         // Now style the network
-        monitor.setTitle("Create and register network view");
+        monitor.setTitle("Create and register network view + Initialize filters");
+        monitor.showMessage(Level.INFO, "Create and register network view + Initialize filters");
         monitor.setProgress(0.8);
         CyNetworkView networkView = manager.data.createNetworkView(cyNetwork);
         ViewUtils.registerView(manager, networkView);
@@ -104,6 +110,7 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         }
 
         // And lay it out
+        monitor.showMessage(Level.INFO, "Force layout application");
         CyLayoutAlgorithm alg = manager.utils.getService(CyLayoutAlgorithmManager.class).getLayout("force-directed");
         Object context = alg.getDefaultLayoutContext();
         TunableSetter setter = manager.utils.getService(TunableSetter.class);

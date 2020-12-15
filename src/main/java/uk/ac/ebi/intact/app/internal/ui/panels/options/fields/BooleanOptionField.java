@@ -16,6 +16,7 @@ public class BooleanOptionField extends OptionField<OptionManager.Option<Boolean
         super(option, container, layoutHelper);
         toggleSwitch.setActivated(option.getValue());
         toggleSwitch.addChangeListener(this);
+        toggleSwitch.setToolTipText(option.description);
         container.add(toggleSwitch, layoutHelper.anchor("west"));
     }
 

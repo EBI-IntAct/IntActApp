@@ -10,6 +10,10 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.styles.EvidenceStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.MutationStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.Style;
+import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.FeatureFields;
@@ -20,6 +24,8 @@ import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import static uk.ac.ebi.intact.app.internal.model.core.view.NetworkView.Type;
 
 public class SessionLoader implements SessionLoadedListener {
     final Manager manager;
@@ -35,9 +41,8 @@ public class SessionLoader implements SessionLoadedListener {
         manager.data.networkMap.clear();
         manager.data.networkViewMap.clear();
         CySession loadedSession = event.getLoadedSession();
-        manager.style.hardResetStyles();
-        manager.style.resetStyles(true, () -> manager.style.settings.loadSessionSettings(loadedSession));
-        manager.style.setStylesFancy(true);
+
+        loadStyles(loadedSession);
 
         Set<CyNetwork> cyNetworks = loadedSession.getNetworks();
         for (CyNetwork cyNetwork : cyNetworks) {
@@ -59,12 +64,6 @@ public class SessionLoader implements SessionLoadedListener {
         }
 
 
-
-        for (VisualStyle visualStyle : loadedSession.getVisualStyles()) {
-            if (visualStyle.getTitle().contains("IntAct"))
-                manager.style.vmm.removeVisualStyle(visualStyle);
-        }
-
         NetworkView currentView = manager.data.getCurrentNetworkView();
         if (currentView != null) {
             manager.utils.fireEvent(new ViewUpdatedEvent(manager, currentView));
@@ -74,6 +73,48 @@ public class SessionLoader implements SessionLoadedListener {
         }
 
         manager.data.setLoadingSession(false);
+    }
+
+    private void loadStyles(CySession loadedSession) {
+        manager.style.resetStyles(false, true);
+        for (Type type : Type.values()) {
+            boolean styleFound = false;
+            for (VisualStyle styleToLoad : loadedSession.getVisualStyles()) {
+                if (styleToLoad.getTitle().startsWith(type.styleName)) {
+                    Style toReplace = manager.style.styles.get(type);
+                    styleFound = true;
+                    manager.style.vmm.removeVisualStyle(toReplace.getStyle());
+                    manager.style.vmm.addVisualStyle(styleToLoad);
+                    switch (type) {
+                        case SUMMARY:
+                            manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager, styleToLoad));
+                            break;
+                        case EVIDENCE:
+                            manager.style.styles.put(Type.EVIDENCE, new EvidenceStyle(manager, styleToLoad));
+                            break;
+                        case MUTATION:
+                            manager.style.styles.put(Type.MUTATION, new MutationStyle(manager, styleToLoad));
+                            break;
+                    }
+                    break;
+                }
+            }
+            if (!styleFound) {
+                switch (type) {
+                    case SUMMARY:
+                        manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager));
+                        break;
+                    case EVIDENCE:
+                        manager.style.styles.put(Type.EVIDENCE, new EvidenceStyle(manager));
+                        break;
+                    case MUTATION:
+                        manager.style.styles.put(Type.MUTATION, new MutationStyle(manager));
+                        break;
+                }
+            }
+        }
+
+        manager.style.settings.loadSessionSettings(loadedSession);
     }
 
 

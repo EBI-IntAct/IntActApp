@@ -6,7 +6,7 @@ import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 
 public class NodeSpeciesFilter extends DiscreteFilter<Node> {
     public NodeSpeciesFilter(NetworkView view) {
-        super(view, Node.class, "Species");
+        super(view, Node.class, "Species", "Organism of origin of the selected molecule");
     }
 
     @Override

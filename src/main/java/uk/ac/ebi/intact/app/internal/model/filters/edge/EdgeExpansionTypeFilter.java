@@ -6,7 +6,7 @@ import uk.ac.ebi.intact.app.internal.model.filters.BooleanFilter;
 
 public class EdgeExpansionTypeFilter extends BooleanFilter<EvidenceEdge> {
     public EdgeExpansionTypeFilter(NetworkView view) {
-        super(view, EvidenceEdge.class, "Expansion", "Hide spoke expanded");
+        super(view, EvidenceEdge.class, "Expansion", "The method by which complex n-ary data is expanded into binary data.", "Hide spoke expanded");
     }
 
     @Override
