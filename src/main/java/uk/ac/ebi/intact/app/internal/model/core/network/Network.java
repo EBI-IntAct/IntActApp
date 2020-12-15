@@ -106,6 +106,10 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     public Set<String> getNonDefinedTaxon() {
         Set<String> availableTaxIds = new HashSet<>(taxIds);
         availableTaxIds.removeAll(StyleMapper.speciesColors.keySet());
+        availableTaxIds.removeAll(StyleMapper.speciesColors.keySet().stream()
+                .filter(taxId -> StyleMapper.taxIdToChildrenTaxIds.containsKey(taxId))
+                .flatMap(taxId -> StyleMapper.taxIdToChildrenTaxIds.get(taxId).stream())
+                .collect(toSet()));
         Set<String> nonDefinedTaxon = new HashSet<>();
         Set<String> userDefinedTaxIds = NodeColorLegendEditor.getDefinedTaxIds();
         for (String availableTaxId : availableTaxIds) {
@@ -200,7 +204,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         Set<String> sourceFeatures = new HashSet<>();
         Set<String> targetFeatures = new HashSet<>();
 
-        List<Long> summarizedEdgesSUID = EdgeFields.SUMMARY_EDGES_SUID.getValue(summaryRow);
+        List<Long> summarizedEdgesSUID = EdgeFields.SUMMARIZED_EDGES_SUID.getValue(summaryRow);
         Set<Long> summarizedEdgesSUIDSet = new HashSet<>(summarizedEdgesSUID);
         for (CyEdge edge : summarizedEdges) {
             CyRow edgeRow = edgeTable.getRow(edge.getSUID());
@@ -247,7 +251,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
                     if (deletionChain.containsKey(addedEdge)) {
                         Set<EvidenceEdge> evidenceEdgesToAdd = deletionChain.remove(addedEdge);
                         List<CyEdge> summarizedCyEdges = new ArrayList<>();
-                        List<Long> summarizedEdges = EdgeFields.SUMMARY_EDGES_SUID.getValue(cyNetwork.getRow(addedEdge));
+                        List<Long> summarizedEdges = EdgeFields.SUMMARIZED_EDGES_SUID.getValue(cyNetwork.getRow(addedEdge));
 
                         for (EvidenceEdge edgeToAdd : evidenceEdgesToAdd) {
                             if (edgeToAdd == null) continue;

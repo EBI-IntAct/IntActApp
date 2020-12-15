@@ -40,6 +40,9 @@ public class IntegerOptionField extends OptionField<OptionManager.NumericOption<
         slider.setPaintTrack(true);
         slider.setValue(value);
         slider.addChangeListener(this);
+
+        slider.setToolTipText(option.description);
+
         container.add(slider, layoutHelper.right().expandHoriz());
     }
 

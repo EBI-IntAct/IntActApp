@@ -2,25 +2,29 @@ package uk.ac.ebi.intact.app.internal.model.filters;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
+import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+
+import java.util.Objects;
 
 public abstract class Filter<T extends Element> {
     public final transient Manager manager;
-    public final transient Network network;
-    public final transient NetworkView view;
+    private final transient Network network;
+    private final transient NetworkView view;
     public final String name;
+    public final String definition;
     public final Class<T> elementType;
 
-    public Filter(NetworkView view, String name, Class<T> elementType) {
+    public Filter(NetworkView view, String name, String definition, Class<T> elementType) {
         this.view = view;
-        network = view.network;
+        network = view.getNetwork();
         manager = view.manager;
         this.name = name;
+        this.definition = definition;
         this.elementType = elementType;
     }
 
@@ -34,9 +38,13 @@ public abstract class Filter<T extends Element> {
 
     @JsonIgnore
     public boolean isEnabled() {
+        NetworkView view = getNetworkView();
         if (elementType == SummaryEdge.class && view.getType() != NetworkView.Type.SUMMARY) return false;
         if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.SUMMARY) return false;
         return true;
     }
+
+    public Network getNetwork() {return Objects.requireNonNull(network);}
+    public NetworkView getNetworkView() {return Objects.requireNonNull(view);}
 
 }

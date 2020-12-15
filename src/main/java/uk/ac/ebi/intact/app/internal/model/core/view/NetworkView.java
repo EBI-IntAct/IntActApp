@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.app.internal.model.core.view;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,16 +10,17 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
+import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.model.filters.edge.*;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeSpeciesFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
 
 import java.util.*;
@@ -26,9 +28,9 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class NetworkView {
-    private Thread thread;
+    private transient Thread thread;
     public final transient Manager manager;
-    public final transient Network network;
+    private final transient Network network;
     public final transient CyNetworkView cyView;
     public final transient Set<Node> visibleNodes = new HashSet<>();
     public final transient Set<Edge> visibleEdges = new HashSet<>();
@@ -77,6 +79,7 @@ public class NetworkView {
     }
 
     public void totalFilter() {
+        Network network = getNetwork();
         (this.type != Type.SUMMARY ? network.getSummaryCyEdges() : network.getEvidenceCyEdges()).forEach(cyEdge -> {
             if (cyEdge == null) return;
             View<CyEdge> edgeView = cyView.getEdgeView(cyEdge);
@@ -92,6 +95,7 @@ public class NetworkView {
         visibleNodes.clear();
         visibleEdges.clear();
 
+        Network network = getNetwork();
         List<Node> nodesToFilter = network.getNodes();
         List<? extends Edge> edgesToFilter = (getType() == Type.SUMMARY) ? network.getSummaryEdges() : network.getEvidenceEdges();
 
@@ -127,6 +131,15 @@ public class NetworkView {
         manager.utils.fireEvent(new ViewUpdatedEvent(manager, this));
     }
 
+    public Set<String> getPropertyValuesOfFilter(Class<? extends DiscreteFilter<?>> filterClass) {
+        for (Filter<?> filter: filters) {
+            if (filterClass == filter.getClass()) {
+                return ((DiscreteFilter<?>) filter).getProperties();
+            }
+        }
+        return null;
+    }
+
     public void silenceFilters(boolean filtersSilenced) {
         this.filtersSilenced = filtersSilenced;
     }
@@ -135,9 +148,13 @@ public class NetworkView {
         if (thread != null && thread.isAlive()) thread.interrupt();
         thread = new Thread(() -> {
             try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                CyNetwork cyNetwork = this.network.getCyNetwork();
-                NetworkFields.VIEW_STATE.setValue(cyNetwork.getRow(cyNetwork), objectMapper.writeValueAsString(this));
+                ObjectMapper om = new ObjectMapper();
+                om.setVisibility(om.getSerializationConfig().
+                        getDefaultVisibilityChecker().
+                        withFieldVisibility(JsonAutoDetect.Visibility.ANY).
+                        withGetterVisibility(JsonAutoDetect.Visibility.NONE));
+                CyNetwork cyNetwork = getNetwork().getCyNetwork();
+                NetworkFields.VIEW_STATE.setValue(cyNetwork.getRow(cyNetwork), om.writeValueAsString(this));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
@@ -146,7 +163,7 @@ public class NetworkView {
     }
 
     public void load() {
-        CyNetwork cyNetwork = this.network.getCyNetwork();
+        CyNetwork cyNetwork = getNetwork().getCyNetwork();
         String jsonText = NetworkFields.VIEW_STATE.getValue(cyNetwork.getRow(cyNetwork));
         if (jsonText == null || jsonText.isBlank()) return;
         try {
@@ -172,7 +189,7 @@ public class NetworkView {
 
     @Override
     public String toString() {
-        return "View of " + network.toString();
+        return "View of " + getNetwork().toString();
     }
 
     public Type getType() {
@@ -186,19 +203,25 @@ public class NetworkView {
     }
 
     public enum Type {
-        SUMMARY("SUMMARY"),
-        EVIDENCE("EVIDENCE"),
-        MUTATION("MUTATION");
+        SUMMARY("SUMMARY", "IntAct - Summary"),
+        EVIDENCE("EVIDENCE", "IntAct - Evidence"),
+        MUTATION("MUTATION", "IntAct - Mutation");
 
         private final String name;
+        public final String styleName;
 
-        Type(String name) {
+        Type(String name, String styleName) {
             this.name = name;
+            this.styleName = styleName;
         }
 
         @Override
         public String toString() {
             return name;
         }
+    }
+
+    public Network getNetwork() {
+        return Objects.requireNonNull(network);
     }
 }

@@ -10,8 +10,8 @@ public abstract class BooleanFilter<T extends Element> extends Filter<T> {
     protected boolean status = false;
     public final String description;
 
-    public BooleanFilter(NetworkView view, Class<T> elementType, String name, String description) {
-        super(view, name, elementType);
+    public BooleanFilter(NetworkView view, Class<T> elementType, String name, String definition, String description) {
+        super(view, name, definition, elementType);
         this.description = description;
     }
 
@@ -28,7 +28,7 @@ public abstract class BooleanFilter<T extends Element> extends Filter<T> {
     @Override
     public void filterView() {
         if (!isEnabled() || !status) return;
-
+        NetworkView view = getNetworkView();
         if (Node.class.isAssignableFrom(elementType)) {
             view.visibleNodes.removeIf(node -> isToHide(elementType.cast(node)));
         } else if (Edge.class.isAssignableFrom(elementType)) {
@@ -42,6 +42,6 @@ public abstract class BooleanFilter<T extends Element> extends Filter<T> {
 
     public void setStatus(boolean status) {
         this.status = status;
-        view.filter();
+        getNetworkView().filter();
     }
 }

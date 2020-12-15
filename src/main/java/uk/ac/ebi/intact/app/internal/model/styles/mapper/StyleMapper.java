@@ -47,7 +47,6 @@ public class StyleMapper {
             );
 
     public static Hashtable<String, Paint> kingdomColors = Arrays.stream(Taxons.values())
-            .filter(taxons -> !taxons.isSpecies)
             .collect(toMap(
                     taxon -> taxon.taxId,
                     taxon -> taxon.defaultColor,
@@ -100,10 +99,10 @@ public class StyleMapper {
                 taxIdToChildrenTaxIds.get(ARTIFICIAL.taxId).add("-1");
                 speciesColors.put("-1", kingdomColors.get(ARTIFICIAL.taxId));
 
-                for (String parentSpecie : new ArrayList<>(speciesColors.keySet())) {
-                    Paint paint = speciesColors.get(parentSpecie);
-                    addDescendantsColors(parentSpecie, (Color) paint);
-                }
+//                for (String parentSpecie : new ArrayList<>(speciesColors.keySet())) {
+//                    Paint paint = speciesColors.get(parentSpecie);
+//                    addDescendantsColors(parentSpecie, (Color) paint);
+//                }
 
                 fireStyleUpdated();
                 taxIdsReady = true;

@@ -21,6 +21,9 @@ public class StringOptionField extends OptionField<OptionManager.Option<String>>
                 option.setValue(textField.getText());
             }
         });
+
+        textField.setToolTipText(option.description);
+
         container.add(textField, layoutHelper);
     }
 

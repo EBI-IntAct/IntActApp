@@ -6,6 +6,7 @@ import org.cytoscape.model.CyTable;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -50,10 +51,24 @@ public class ListField<E> extends Field<List<E>> {
         }
     }
 
-    public void addValues(CyRow row, List<E> values) {
+    public void addValues(CyRow row, Collection<E> values) {
         List<E> list = row.getList(toString(), elementsType);
         if (list != null) list.addAll(values);
         else row.set(toString(), values);
+    }
+
+    public boolean removeValue(CyRow row, E value) {
+        List<E> list = row.getList(toString(), elementsType);
+        if (list != null) return list.remove(value);
+        else row.set(toString(), new ArrayList<>());
+        return false;
+    }
+
+    public boolean removeValues(CyRow row, Collection<E> values) {
+        List<E> list = row.getList(toString(), elementsType);
+        if (list != null) return list.removeAll(values);
+        else row.set(toString(), new ArrayList<>());
+        return false;
     }
 
     @Override
@@ -74,12 +89,12 @@ public class ListField<E> extends Field<List<E>> {
         setValue(row, getValue(row).stream().filter(filter).collect(Collectors.toList()));
     }
 
-    public void clear(CyRow row) {
-        setValue(row, new ArrayList<>());
-    }
-
     public void forEachElement(CyRow row, Consumer<E> toApply) {
         getValue(row).forEach(toApply);
+    }
+
+    public void clear(CyRow row) {
+        setValue(row, new ArrayList<>());
     }
 
     public void clearAllIn(CyTable table) {

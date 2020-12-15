@@ -7,7 +7,7 @@ import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 public class EdgeTypeFilter extends DiscreteFilter<EvidenceEdge> {
 
     public EdgeTypeFilter(NetworkView view) {
-        super(view, EvidenceEdge.class, "Type");
+        super(view, EvidenceEdge.class, "Type", "Type of relationship between the connected interactors");
     }
 
     @Override

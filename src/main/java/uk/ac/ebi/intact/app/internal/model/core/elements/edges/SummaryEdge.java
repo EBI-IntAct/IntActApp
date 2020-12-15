@@ -32,7 +32,7 @@ public class SummaryEdge extends Edge {
         ArrayList<Feature> participantFeatures = new ArrayList<>();
         features.put(participant, participantFeatures);
         if (participant == null || featureAcs == null) return;
-
+        Network network = getNetwork();
         for (String featureAc : featureAcs) {
             Feature feature = new Feature(network, network.getFeaturesTable().getRow(featureAc));
             if (feature.isPresentIn(edgesSUID)) participantFeatures.add(feature);
@@ -40,13 +40,15 @@ public class SummaryEdge extends Edge {
     }
 
     private Set<Long> getPresentSummarizedEdgesSUID() {
-        return EdgeFields.SUMMARY_EDGES_SUID.getValue(edgeRow).stream()
+        Network network = getNetwork();
+        return EdgeFields.SUMMARIZED_EDGES_SUID.getValue(edgeRow).stream()
                 .filter(suid -> network.getCyEdge(suid) != null)
                 .collect(Collectors.toSet());
     }
 
     public List<EvidenceEdge> getSummarizedEdges() {
-        return EdgeFields.SUMMARY_EDGES_SUID.getValue(edgeRow).stream()
+        Network network = getNetwork();
+        return EdgeFields.SUMMARIZED_EDGES_SUID.getValue(edgeRow).stream()
                 .map(network::getCyEdge)
                 .filter(Objects::nonNull)
                 .map(network::getEvidenceEdge)
@@ -55,7 +57,8 @@ public class SummaryEdge extends Edge {
     }
 
     public void updateSummary() {
-        nbSummarizedEdges = (int) EdgeFields.SUMMARY_EDGES_SUID.getValue(edgeRow).stream()
+        Network network = getNetwork();
+        nbSummarizedEdges = (int) EdgeFields.SUMMARIZED_EDGES_SUID.getValue(edgeRow).stream()
                 .filter(suid -> {
                     CyEdge summarizedCyEdge = network.getCyEdge(suid);
                     if (summarizedCyEdge == null) return false;
@@ -65,7 +68,7 @@ public class SummaryEdge extends Edge {
     }
 
     public boolean isSummarizing(EvidenceEdge edge) {
-        return EdgeFields.SUMMARY_EDGES_SUID.getValue(edgeRow).contains(edge.cyEdge.getSUID());
+        return EdgeFields.SUMMARIZED_EDGES_SUID.getValue(edgeRow).contains(edge.cyEdge.getSUID());
     }
 
     public int getNbSummarizedEdges() {

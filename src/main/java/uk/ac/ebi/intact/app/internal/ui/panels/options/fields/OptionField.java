@@ -14,7 +14,9 @@ public abstract class OptionField<O extends OptionManager.Option<?>> {
         this.container = container;
         this.layoutHelper = layoutHelper;
         this.option = option;
-        container.add(new JLabel(option.label), layoutHelper.down().anchor("east"));
+        JLabel title = new JLabel(option.title);
+        title.setToolTipText(option.description);
+        container.add(title, layoutHelper.down().anchor("east"));
         layoutHelper.right().anchor("west").expandHoriz();
     }
 

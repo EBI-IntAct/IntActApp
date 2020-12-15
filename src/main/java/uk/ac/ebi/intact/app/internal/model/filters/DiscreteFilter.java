@@ -1,24 +1,23 @@
 package uk.ac.ebi.intact.app.internal.model.filters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
-import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
     protected final Map<String, Boolean> propertiesVisibility = new HashMap<>();
 
-    public DiscreteFilter(NetworkView view, Class<T> elementType, String name) {
-        super(view, name, elementType);
+    public DiscreteFilter(NetworkView view, Class<T> elementType, String name, String definition) {
+        super(view, name, definition, elementType);
         List<T> elements;
+        Network network = getNetwork();
         if (elementType == Node.class) {
             elements = new ArrayList<>((List<T>) network.getNodes());
         } else if (elementType == Edge.class) {
@@ -54,6 +53,7 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
     @Override
     public void filterView() {
         if (propertiesVisibility.values().stream().anyMatch(visible -> !visible)) {
+            NetworkView view = getNetworkView();
             if (Node.class.isAssignableFrom(elementType)) {
                 view.visibleNodes.removeIf(node -> !propertiesVisibility.get(getProperty(elementType.cast(node))));
             } else if (Edge.class.isAssignableFrom(elementType)) {
@@ -76,13 +76,14 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
     public void setPropertyVisibility(String propertyValueToString, boolean visible) {
         if (propertiesVisibility.containsKey(propertyValueToString) && propertiesVisibility.get(propertyValueToString) != visible) {
             propertiesVisibility.put(propertyValueToString, visible);
-            view.filter();
+            getNetworkView().filter();
         }
     }
 
     public Map<String, Boolean> getPropertiesVisibility() {
         return new HashMap<>(propertiesVisibility);
     }
+    public Set<String> getProperties() {return new HashSet<>(propertiesVisibility.keySet());}
 
     @Override
     public boolean isEnabled() {

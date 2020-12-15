@@ -7,7 +7,7 @@ import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 public class EdgeHostOrganismFilter extends DiscreteFilter<EvidenceEdge> {
 
     public EdgeHostOrganismFilter(NetworkView view) {
-        super(view, EvidenceEdge.class, "Host organism");
+        super(view, EvidenceEdge.class, "Host organism", "Experimental environment (cell type, tissue, in vitro…) in which the interaction evidence is captured");
     }
 
     @Override

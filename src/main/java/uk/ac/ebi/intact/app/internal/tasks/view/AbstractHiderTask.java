@@ -89,7 +89,7 @@ public abstract class AbstractHiderTask extends AbstractTask {
         }
         if (chosenView != null) {
             cyView = chosenView.cyView;
-            chosenNetwork = chosenView.network;
+            chosenNetwork = chosenView.getNetwork();
         }
     }
 

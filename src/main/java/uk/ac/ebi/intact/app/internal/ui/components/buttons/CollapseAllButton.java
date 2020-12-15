@@ -9,9 +9,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
 
-public class CollapseAllButton extends JButton implements ActionListener {
+public class CollapseAllButton extends IButton implements ActionListener {
     private static final ImageIcon up = IconUtils.createImageIcon("/Buttons/DoubleUp.png");
     private static final ImageIcon down = IconUtils.createImageIcon("/Buttons/DoubleDown.png");
+
 
     private boolean isUp;
     private final Collection<? extends CollapsablePanel> panels;
@@ -19,7 +20,7 @@ public class CollapseAllButton extends JButton implements ActionListener {
     public CollapseAllButton(boolean isUp, Collection<? extends CollapsablePanel> panels) {
         this.isUp = isUp;
         this.panels = panels;
-        setBorder(new EmptyBorder(0,0,0,0));
+        setBorder(new EmptyBorder(0, 0, 0, 0));
         setOpaque(false);
         setIcon(isUp ? up : down);
         setToolTipText(isUp ? "Collapse all" : "Expand all");

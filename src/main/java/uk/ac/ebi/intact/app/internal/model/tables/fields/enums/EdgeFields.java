@@ -31,7 +31,7 @@ public class EdgeFields {
     public static final Field<Boolean> AFFECTED_BY_MUTATION = new Field<>(fields, initializers, Field.Namespace.INTACT, "Affected by mutation", null, Boolean.class, Boolean.FALSE);
 
     public static final Field<Boolean> IS_SUMMARY = new Field<>(fields, initializers, Field.Namespace.SUMMARY, "Is summary", null, Boolean.class, Boolean.FALSE);
-    public static final ListField<Long> SUMMARY_EDGES_SUID = new ListField<>(fields, initializers, Field.Namespace.SUMMARY, "Summarized edges SUID", Long.class);
+    public static final ListField<Long> SUMMARIZED_EDGES_SUID = new ListField<>(fields, initializers, Field.Namespace.SUMMARY, "Summarized edges SUID", Long.class);
     public static final Field<Integer> SUMMARY_NB_EDGES = new Field<>(fields, initializers, Field.Namespace.SUMMARY, "# Summarized edges", null, Integer.class, false);
 
     public static final ParticipantCVField BIOLOGICAL_ROLE = new ParticipantCVField(fields, initializers, "biological role", "participant_biological_role_name", "participant_biological_role_mi_identifier", SourceOntology.MI);

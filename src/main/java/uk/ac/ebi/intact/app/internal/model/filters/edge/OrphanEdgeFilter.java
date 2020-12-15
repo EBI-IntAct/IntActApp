@@ -6,11 +6,12 @@ import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 
 public class OrphanEdgeFilter extends Filter<Edge> {
     public OrphanEdgeFilter(NetworkView view) {
-        super(view, "Orphan edges", Edge.class);
+        super(view, "Orphan edges", "", Edge.class);
     }
 
     @Override
     public void filterView() {
+        NetworkView view = getNetworkView();
         view.visibleEdges.removeIf(edge -> !view.visibleNodes.contains(edge.source) || !view.visibleNodes.contains(edge.target));
     }
 }

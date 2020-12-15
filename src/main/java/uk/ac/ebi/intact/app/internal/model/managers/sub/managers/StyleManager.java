@@ -6,7 +6,7 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.color.settings.ColorSettingManager;
-import uk.ac.ebi.intact.app.internal.model.styles.ExpandedStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.EvidenceStyle;
 import uk.ac.ebi.intact.app.internal.model.styles.MutationStyle;
 import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
@@ -36,7 +36,7 @@ public class StyleManager {
         StyleMapper.initializeNodeTypeToShape();
 
         Style summary = new SummaryStyle(manager);
-        Style expanded = new ExpandedStyle(manager);
+        Style expanded = new EvidenceStyle(manager);
         Style mutation = new MutationStyle(manager);
 
         for (Style style : new Style[]{summary, expanded, mutation}) {
@@ -79,8 +79,8 @@ public class StyleManager {
         }
     }
 
-    public void resetStyles(boolean async, Runnable callback) {
-        settings.resetSettings();
+    public void resetStyles(boolean save, boolean async) {
+        settings.resetSettings(save);
         StyleMapper.resetMappings(async);
         for (Style style : styles.values()) {
             style.setNodePaintStyle();
@@ -89,7 +89,6 @@ public class StyleManager {
             network.completeMissingNodeColorsFromTables(async, null);
         }
         StyleMapper.fireStyleUpdated();
-        if (callback != null) callback.run();
     }
 
     void hardResetStyles() {

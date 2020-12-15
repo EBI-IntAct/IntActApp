@@ -5,6 +5,7 @@ import uk.ac.ebi.intact.app.internal.model.events.RangeChangeEvent;
 import uk.ac.ebi.intact.app.internal.model.events.RangeChangeListener;
 import uk.ac.ebi.intact.app.internal.model.filters.ContinuousFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.edge.EdgeMIScoreFilter;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.components.slider.MIScoreSliderUI;
 import uk.ac.ebi.intact.app.internal.ui.components.slider.RangeSlider;
 
@@ -16,8 +17,8 @@ import static uk.ac.ebi.intact.app.internal.model.styles.UIColors.lightBackgroun
 public class ContinuousFilterPanel<T extends Element> extends FilterPanel<ContinuousFilter<T>> implements RangeChangeListener {
     private final RangeSlider slider = new RangeSlider(0, 100);
 
-    public ContinuousFilterPanel(ContinuousFilter<T> filter) {
-        super(filter);
+    public ContinuousFilterPanel(Manager manager, ContinuousFilter<T> filter) {
+        super(manager, filter);
         content.add(slider, layoutHelper.down().noExpand());
         content.add(Box.createHorizontalGlue(), layoutHelper.right().expandHoriz());
         if (filter instanceof EdgeMIScoreFilter) {

@@ -7,7 +7,7 @@ import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 public class EdgeInteractionDetectionMethodFilter extends DiscreteFilter<EvidenceEdge> {
 
     public EdgeInteractionDetectionMethodFilter(NetworkView view) {
-        super(view, EvidenceEdge.class, "Interaction detection method");
+        super(view, EvidenceEdge.class, "Interaction detection method", "Method used to determine the interaction");
     }
 
     @Override

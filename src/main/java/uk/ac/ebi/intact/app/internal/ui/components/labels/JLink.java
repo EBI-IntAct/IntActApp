@@ -6,7 +6,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.font.TextAttribute;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JLink extends JTextField {
     private static final long serialVersionUID = 8273875024682878518L;
@@ -14,16 +17,19 @@ public class JLink extends JTextField {
     private URI uri;
     private boolean visited = false;
     private final boolean bold;
-    private static final Color baseColor = new Color(134, 56, 148);
+    private static final Color baseColor = new Color(56, 76, 148);
     private static final Color visitedColor = new Color(39, 25, 91);
-    private static final Color hoverColor = new Color(129, 20, 56);
+    private static final Color hoverColor = new Color(129, 20, 20);
 
     private static final Font DEFAULT_FONT;
     private static final Font BOLD_FONT;
 
     static {
         Font font = UIManager.getFont("Label.font");
-        DEFAULT_FONT = (font != null) ? font : new Font("SansSerif", Font.PLAIN, 11);
+        font =(font != null) ? font : new Font("SansSerif", Font.PLAIN, 11);
+        Map<TextAttribute, Object> attributes =  new HashMap<>(font.getAttributes());
+        attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_DOTTED);
+        DEFAULT_FONT = font.deriveFont(attributes);
         BOLD_FONT = DEFAULT_FONT.deriveFont(Font.BOLD);
     }
 
@@ -43,6 +49,7 @@ public class JLink extends JTextField {
         setText(t);
         setToolTipText(uri.toString());
 
+        setBackground(null);
         setEditable(false);
         setOpaque(false);
         setBorder(null);

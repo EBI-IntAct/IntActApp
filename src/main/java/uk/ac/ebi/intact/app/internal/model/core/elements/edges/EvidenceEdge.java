@@ -1,9 +1,11 @@
 package uk.ac.ebi.intact.app.internal.model.core.elements.edges;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
 import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
@@ -16,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static uk.ac.ebi.intact.app.internal.model.managers.Manager.INTACT_GRAPH_WS;
 import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields.*;
 
 public class EvidenceEdge extends Edge {
@@ -32,6 +35,7 @@ public class EvidenceEdge extends Edge {
     public final CVTerm sourceExperimentalRole;
     public final CVTerm targetBiologicalRole;
     public final CVTerm targetExperimentalRole;
+    private JsonNode detailsJSON;
 
     EvidenceEdge(Network network, CyEdge edge) {
         super(network, edge);
@@ -62,20 +66,37 @@ public class EvidenceEdge extends Edge {
         return features;
     }
 
+    protected void buildFeatures(Map<Node, List<Feature>> features, List<String> featureAcs, Node participant) {
+        ArrayList<Feature> participantFeatures = new ArrayList<>();
+        features.put(participant, participantFeatures);
+        if (participant == null || featureAcs == null) return;
+        Network network = getNetwork();
+        for (String featureAc : featureAcs) {
+            participantFeatures.add(new Feature(network, network.getFeaturesTable().getRow(featureAc)));
+        }
+    }
+
     public boolean isAffectedByMutation() {
         return getFeatures().values().stream()
                 .flatMap(List::stream)
                 .anyMatch(feature -> FeatureClassifier.mutation.contains(feature.type.id));
     }
 
-    protected void buildFeatures(Map<Node, List<Feature>> features, List<String> featureAcs, Node participant) {
-        ArrayList<Feature> participantFeatures = new ArrayList<>();
-        features.put(participant, participantFeatures);
-        if (participant == null || featureAcs == null) return;
+    private JsonNode getDetailsJSON() {
+        if (detailsJSON != null && !detailsJSON.isNull()) return detailsJSON;
+        detailsJSON = HttpUtils.getJSON(INTACT_GRAPH_WS + "network/edge/details/" + ac, new HashMap<>(), getNetwork().manager);
+        System.out.println(detailsJSON);
+        return detailsJSON;
+    }
 
-        for (String featureAc : featureAcs) {
-            participantFeatures.add(new Feature(network, network.getFeaturesTable().getRow(featureAc)));
-        }
+    public JsonNode getAnnotations() {
+        JsonNode detailsJSON = getDetailsJSON();
+        return (detailsJSON != null) ? detailsJSON.get("annotations") : null;
+    }
+
+    public JsonNode getParameters() {
+        JsonNode detailsJSON = getDetailsJSON();
+        return (detailsJSON != null) ? detailsJSON.get("parameters") : null;
     }
 
     public EvidenceEdge cloneInto(Network network) {
@@ -110,6 +131,7 @@ public class EvidenceEdge extends Edge {
         PUBMED_ID.setValue(row, pubMedId);
         return (EvidenceEdge) Edge.createEdge(network, edge);
     }
+
 
     @Override
     public String toString() {

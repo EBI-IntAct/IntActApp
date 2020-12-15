@@ -67,7 +67,7 @@ public enum Table {
     public CyTable build(Manager manager, String title) {
         var tableFactory = manager.utils.getService(CyTableFactory.class);
         CyTable table = tableFactory.createTable(title, primaryKey.name, primaryKey.type, isPublic, isMutable, initialSize);
-        initTableColumns(table, table);
+        initColumns(table, table);
         return table;
     }
 
@@ -77,7 +77,7 @@ public enum Table {
         }
     }
 
-    public void initTableColumns(CyTable sharedTable, CyTable localTable) {
+    public void initColumns(CyTable sharedTable, CyTable localTable) {
         for (FieldInitializer initializer : initializers) {
             initializer.createColumn(initializer.isShared() ? sharedTable : localTable);
         }

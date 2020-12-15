@@ -14,19 +14,22 @@ import java.util.stream.Stream;
 
 public class NoGUIQueryTask extends AbstractTask {
     @Tunable(context = "nogui", exampleStringValue = "gtp lrr* cell Q5S007 EBI-2624319", gravity = 0,
-            description = "Space separated terms to search among interactors ids and names to build the network around them.",
+            description = "Space separated terms to search among interactors ids and names to build the network around them. <br>" +
+            "Example: \"gtp lrr* cell Q5S007 EBI-2624319\"",
             required = true)
     public String seedTerms;
 
     @Tunable(context = "nogui", exampleStringValue = "9606, 559292", gravity = 1,
             description = "Comma separated taxon ids of seed interactors around which the network will be built.<br>" +
-                    "If not given, all species will be accepted.")
+                    "If not given, all species will be accepted<br>" +
+                    "Example: \"9606, 559292\"")
     public String taxons;
 
 
     @Tunable(context = "nogui", exampleStringValue = "protein, peptide, small molecule, gene, dna, ds dna, ss dna, rna, complex", gravity = 2,
             description = "Comma separated allowed types of seeds interactor around which the network will be built.<br>" +
-                    "If not given, all types will be allowed for seeds")
+                    "If not given, all types will be allowed for seeds<br>" +
+                    "Example: \"protein, peptide, small molecule, gene, dna, ds dna, ss dna, rna, complex\"")
     public String types;
 
     @Tunable(context = "nogui", gravity = 3,
@@ -63,7 +66,9 @@ public class NoGUIQueryTask extends AbstractTask {
     @Override
     public void run(TaskMonitor taskMonitor) {
         network = new Network(manager);
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Collecting interactors");
         resolveTermsToAcs();
+        taskMonitor.showMessage(TaskMonitor.Level.INFO, "Querying network from interactors");
         buildNetwork();
     }
 
@@ -84,8 +89,7 @@ public class NoGUIQueryTask extends AbstractTask {
         }
 
         if (taxons != null && !taxons.isEmpty()) {
-            Set<Long> allowedTaxIds = Arrays.stream(taxons.split("\\s*,\\s*"))
-                    .map(Long::parseLong)
+            Set<String> allowedTaxIds = Arrays.stream(taxons.split("\\s*,\\s*"))
                     .collect(Collectors.toSet());
             interactorStream = interactorStream.filter(interactor -> allowedTaxIds.contains(interactor.taxId));
         }
