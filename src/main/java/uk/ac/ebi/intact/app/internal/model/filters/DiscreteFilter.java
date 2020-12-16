@@ -64,6 +64,11 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
         }
     }
 
+    @Override
+    public void reset() {
+        propertiesVisibility.replaceAll((k, v) -> v = true);
+        fireFilterUpdated();
+    }
 
     public boolean getPropertyVisibility(String propertyValueToString) {
         if (propertiesVisibility.containsKey(propertyValueToString)) {
@@ -77,13 +82,17 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
         if (propertiesVisibility.containsKey(propertyValueToString) && propertiesVisibility.get(propertyValueToString) != visible) {
             propertiesVisibility.put(propertyValueToString, visible);
             getNetworkView().filter();
+            fireFilterUpdated();
         }
     }
 
     public Map<String, Boolean> getPropertiesVisibility() {
         return new HashMap<>(propertiesVisibility);
     }
-    public Set<String> getProperties() {return new HashSet<>(propertiesVisibility.keySet());}
+
+    public Set<String> getProperties() {
+        return new HashSet<>(propertiesVisibility.keySet());
+    }
 
     @Override
     public boolean isEnabled() {

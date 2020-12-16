@@ -21,4 +21,8 @@ public class OrphanNodeFilter extends Filter<Node> {
         Set<CyEdge> visibleEdges = view.visibleEdges.stream().filter(Objects::nonNull).map(edge -> edge.cyEdge).collect(Collectors.toSet());
         view.visibleNodes.removeIf(node -> !CollectionUtils.anyCommonElement(getNetwork().getCyNetwork().getAdjacentEdgeList(node.cyNode, CyEdge.Type.ANY), visibleEdges));
     }
+
+    @Override
+    public void reset() {
+    }
 }

@@ -36,12 +36,18 @@ public abstract class BooleanFilter<T extends Element> extends Filter<T> {
         }
     }
 
+    @Override
+    public void reset() {
+        status = false;
+        fireFilterUpdated();
+    }
+
     public boolean getStatus() {
         return status;
     }
 
     public void setStatus(boolean status) {
         this.status = status;
-        getNetworkView().filter();
+        fireFilterUpdated();
     }
 }

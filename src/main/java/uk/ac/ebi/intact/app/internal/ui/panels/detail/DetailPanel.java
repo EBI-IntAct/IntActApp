@@ -12,7 +12,6 @@ import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
 import org.cytoscape.view.model.CyNetworkView;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.NetworkCreatedEvent;
@@ -20,9 +19,14 @@ import uk.ac.ebi.intact.app.internal.model.events.NetworkCreatedListener;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedListener;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
-import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.tasks.view.filter.ResetFiltersTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.export.ExtractNetworkViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.MutationViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.ui.components.buttons.DocumentedButton;
+import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.EdgeDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.LegendDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.node.NodeDetailPanel;
@@ -105,8 +109,20 @@ public class DetailPanel extends JPanel
         viewTypesPanel.add(mutationViewType);
         JPanel upperPanel = new JPanel(new GridLayout(1, 2));
         upperPanel.add(viewTypesPanel);
-        this.add(upperPanel, BorderLayout.NORTH);
 
+        VerticalPanel buttons = new VerticalPanel();
+        buttons.setBorder(BorderFactory.createTitledBorder("Actions"));
+        buttons.add(new DocumentedButton(manager,
+                "Reset filters",
+                "Reset all filters of the current view",
+                e -> manager.utils.execute(new ResetFiltersTaskFactory(manager, true).createTaskIterator())));
+        buttons.add(new DocumentedButton(manager,
+                "Extract for analysis",
+                "IntAct App uses summary edges in addition of its evidence edges to support its visualisation features.<br>" +
+                        "In order to perform topological analysis without any extra edges, you can extract the current view with this button.",
+                e -> manager.utils.execute(new ExtractNetworkViewTaskFactory(manager, true).createTaskIterator())));
+        upperPanel.add(buttons);
+        this.add(upperPanel, BorderLayout.NORTH);
 
         legendPanel = new LegendDetailPanel(manager);
         tabs.add("Legend", legendPanel);

@@ -80,6 +80,13 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
         });
     }
 
+    @Override
+    public void reset() {
+        currentMax = max;
+        currentMin = min;
+        fireFilterUpdated();
+    }
+
     public double getMin() {
         return min;
     }
@@ -108,7 +115,7 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
 
     public void setCurrentMin(double currentMin) {
         this.currentMin = currentMin;
-        getNetworkView().filter();
+        fireFilterUpdated();
     }
 
     public double getCurrentMax() {
@@ -117,12 +124,12 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
 
     public void setCurrentMax(double currentMax) {
         this.currentMax = currentMax;
-        getNetworkView().filter();
+        fireFilterUpdated();
     }
 
     public void setCurrentPositions(double min, double max) {
         this.currentMin = min;
         this.currentMax = max;
-        getNetworkView().filter();
+        fireFilterUpdated();
     }
 }

@@ -61,7 +61,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
             mainPanel.setLayout(new GridBagLayout());
             mainPanel.setBackground(UIColors.lightBackground);
             EasyGBC d = new EasyGBC();
-            CollapsablePanel filters = new CollapsablePanel("Filters", filtersPanel, true);
+            CollapsablePanel filters = new CollapsablePanel("Filters", filtersPanel, false);
             filters.setBackground(UIColors.lightBackground);
             mainPanel.add(filters, d.down().anchor("north").expandHoriz());
             mainPanel.add(createNodesPanel(), d.down().anchor("north").expandHoriz());

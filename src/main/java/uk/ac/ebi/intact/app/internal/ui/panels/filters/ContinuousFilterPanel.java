@@ -31,7 +31,7 @@ public class ContinuousFilterPanel<T extends Element> extends FilterPanel<Contin
         setupSlider();
     }
 
-    public void updateFilter(ContinuousFilter<T> filter) {
+    public void updateFilterUI(ContinuousFilter<T> filter) {
         setupSlider();
     }
 
@@ -59,7 +59,10 @@ public class ContinuousFilterPanel<T extends Element> extends FilterPanel<Contin
 
     @Override
     public void handleRangeChanged(RangeChangeEvent event) {
-        if (eventActivated)
+        if (eventActivated) {
+            setListening(false);
             filter.setCurrentPositions(getValue(slider.getValue()), getValue(slider.getUpperValue()));
+            setListening(true);
+        }
     }
 }

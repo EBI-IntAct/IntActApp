@@ -14,13 +14,11 @@ public class HelpButton extends IButton {
     private static final ImageIcon helpIcon = IconUtils.createImageIcon("/Buttons/help.png", 15, 15);
     private JPopupMenu popupMenu = new JPopupMenu();
     private final HTMLLabel message;
-    private String title;
     private String helpText;
 
 
-    public HelpButton(Manager manager, String title, String helpText) {
+    public HelpButton(Manager manager,  String helpText) {
         super(helpIcon);
-        this.title = title;
         this.helpText = "<html>" + helpText + "</html>";
         this.setBorder(new EmptyBorder(0, 5, 0, 0));
         message = new HTMLLabel(this.helpText);
@@ -35,14 +33,6 @@ public class HelpButton extends IButton {
                 popupMenu.show(HelpButton.this, e.getX(), e.getY());
             }
         });
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getHelpText() {

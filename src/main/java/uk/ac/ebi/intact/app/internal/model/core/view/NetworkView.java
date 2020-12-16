@@ -13,6 +13,8 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.events.FilterUpdatedEvent;
+import uk.ac.ebi.intact.app.internal.model.events.FilterUpdatedListener;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
@@ -27,7 +29,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class NetworkView {
+public class NetworkView implements FilterUpdatedListener {
     private transient Thread thread;
     public final transient Manager manager;
     private final transient Network network;
@@ -36,10 +38,12 @@ public class NetworkView {
     public final transient Set<Edge> visibleEdges = new HashSet<>();
     private final List<Filter<?>> filters = new ArrayList<>();
     private boolean filtersSilenced = false;
+    private boolean listeningToFilterUpdate = true;
     private Type type;
 
     public NetworkView(Manager manager, CyNetworkView cyView, boolean loadData, Type type) {
         this.manager = manager;
+        this.manager.utils.registerAllServices(this, new Properties());
         if (cyView != null) {
             this.cyView = cyView;
             this.network = manager.data.getNetwork(cyView.getModel());
@@ -76,6 +80,14 @@ public class NetworkView {
 
         if (loadData) load();
         totalFilter();
+    }
+
+    public void resetFilters() {
+        this.listeningToFilterUpdate = false;
+        filters.forEach(Filter::reset);
+        save();
+        filter();
+        this.listeningToFilterUpdate = true;
     }
 
     public void totalFilter() {
@@ -132,7 +144,7 @@ public class NetworkView {
     }
 
     public Set<String> getPropertyValuesOfFilter(Class<? extends DiscreteFilter<?>> filterClass) {
-        for (Filter<?> filter: filters) {
+        for (Filter<?> filter : filters) {
             if (filterClass == filter.getClass()) {
                 return ((DiscreteFilter<?>) filter).getProperties();
             }
@@ -200,6 +212,13 @@ public class NetworkView {
         this.type = type;
         filter();
         save();
+    }
+
+    @Override
+    public void handleEvent(FilterUpdatedEvent event) {
+        if (listeningToFilterUpdate && event.getFilter().getNetworkView() == this) {
+            filter();
+        }
     }
 
     public enum Type {

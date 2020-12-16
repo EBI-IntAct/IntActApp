@@ -26,8 +26,12 @@ public class ModelUtils {
         return loadJSON(manager, network, network.getCyNetwork(), idToNode, idToName, newEdges, json, () -> false);
     }
 
-    public static boolean isIntactNetwork(CyNetwork network) {
-        return NodeFields.AC.isDefinedIn(network.getDefaultNodeTable()) && EdgeFields.MI_SCORE.isDefinedIn(network.getDefaultEdgeTable());
+    public static boolean isIntactNetwork(CyNetwork cyNetwork) {
+        return cyNetwork != null &&
+                NodeFields.AC.isDefinedIn(cyNetwork.getDefaultNodeTable()) &&
+                EdgeFields.MI_SCORE.isDefinedIn(cyNetwork.getDefaultEdgeTable()) &&
+                NetworkFields.EXPORTED.isDefinedIn(cyNetwork.getDefaultNetworkTable()) &&
+                !NetworkFields.EXPORTED.getValue(cyNetwork.getRow(cyNetwork));
     }
 
     // This method will tell us if we have the new side panel functionality (i.e. namespaces)
