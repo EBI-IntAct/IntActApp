@@ -45,7 +45,7 @@ public class NodeShapeLegendPanel extends AbstractLegendPanel {
             for (String nodeType : nodeShapesLines.keySet()) {
                 nodeShapesLines.get(nodeType).setVisible(
                         networkInteractorTypes.contains(nodeType) ||
-                                (StyleMapper.nodeTypeToParent.containsKey(nodeType) && CollectionUtils.anyCommonElement(networkInteractorTypes, StyleMapper.nodeTypeToParent.get(nodeType)))
+                                (StyleMapper.nodeTypeToChildren.containsKey(nodeType) && CollectionUtils.anyCommonElement(networkInteractorTypes, StyleMapper.nodeTypeToChildren.get(nodeType)))
                 );
             }
         });

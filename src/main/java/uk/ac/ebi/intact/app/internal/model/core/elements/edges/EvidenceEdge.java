@@ -85,7 +85,6 @@ public class EvidenceEdge extends Edge {
     private JsonNode getDetailsJSON() {
         if (detailsJSON != null && !detailsJSON.isNull()) return detailsJSON;
         detailsJSON = HttpUtils.getJSON(INTACT_GRAPH_WS + "network/edge/details/" + ac, new HashMap<>(), getNetwork().manager);
-        System.out.println(detailsJSON);
         return detailsJSON;
     }
 
