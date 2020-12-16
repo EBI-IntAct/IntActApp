@@ -1,53 +1,34 @@
 package uk.ac.ebi.intact.app.internal.tasks.view;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.task.hide.UnHideTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.ListSingleSelection;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.tasks.view.factories.SelectEdgesTaskFactory;
-import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.SelectEdgesTaskFactory;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public abstract class AbstractHiderTask extends AbstractTask {
-    protected Manager manager;
+public abstract class AbstractHiderTask extends AbstractViewTask {
     protected HideTaskFactory hideTaskFactory;
     protected UnHideTaskFactory unHideTaskFactory;
 
-    public final boolean currentView;
-    @Tunable(description = "Network view", longDescription = "Network view to manipulate. If not set, the current one will be used if possible.", dependsOn = "currentView=false")
-    public ListSingleSelection<NetworkView> view;
-    protected CyNetworkView cyView;
-    protected Network chosenNetwork;
-    protected NetworkView chosenView;
 
     public AbstractHiderTask(Manager manager, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, boolean currentView) {
-        this.manager = manager;
+        super(manager, currentView);
         this.hideTaskFactory = hideTaskFactory;
         this.unHideTaskFactory = unHideTaskFactory;
-        this.currentView = currentView;
-        if (!currentView) {
-            view = new ListSingleSelection<>(ArrayUtils.insert(0, manager.data.getViews(), new CurrentView(manager)));
-        }
     }
 
     public AbstractHiderTask(Manager manager, HideTaskFactory hideTaskFactory, UnHideTaskFactory unHideTaskFactory, NetworkView networkView) {
-        this.manager = manager;
+        super(manager, networkView);
         this.hideTaskFactory = hideTaskFactory;
         this.unHideTaskFactory = unHideTaskFactory;
-        this.currentView = false;
-        chosenView = networkView;
     }
 
     protected void collapseEdgesIfNeeded() {
@@ -77,31 +58,6 @@ public abstract class AbstractHiderTask extends AbstractTask {
             insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getSummaryCyEdges()));
             insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getEvidenceCyEdges()));
             insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(cyNetwork, edgesToSelect).createTaskIterator());
-        }
-    }
-
-    private void chooseData() {
-        if (!currentView) {
-            if (chosenView == null) chosenView = view.getSelectedValue();
-            if (chosenView instanceof CurrentView) chosenView = manager.data.getCurrentNetworkView();
-        } else {
-            chosenView = manager.data.getCurrentNetworkView();
-        }
-        if (chosenView != null) {
-            cyView = chosenView.cyView;
-            chosenNetwork = chosenView.getNetwork();
-        }
-    }
-
-    private static class CurrentView extends NetworkView {
-
-        public CurrentView(Manager manager) {
-            super(manager, null, false, Type.SUMMARY);
-        }
-
-        @Override
-        public String toString() {
-            return "";
         }
     }
 }

@@ -20,9 +20,11 @@ import uk.ac.ebi.intact.app.internal.tasks.query.factories.ExactQueryTaskFactory
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.FuzzySearchTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.settings.SettingsTask;
 import uk.ac.ebi.intact.app.internal.tasks.version.factories.VersionTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.export.ExtractNetworkViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.MutationViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.filter.ResetFiltersTaskFactory;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
 import java.util.Properties;
@@ -93,48 +95,42 @@ public class CyActivator extends AbstractCyActivator {
             properties.setProperty(TITLE, "Mutation");
             properties.setProperty(MENU_GRAVITY, "3.0");
             properties.setProperty(IN_MENU_BAR, "true");
+            properties.setProperty(INSERT_SEPARATOR_AFTER, "true");
             registerService(bc, mutationViewTaskFactory, TaskFactory.class, properties);
         }
 
         {
-            VersionTaskFactory versionFactory = new VersionTaskFactory(version);
-            Properties versionProps = new Properties();
-            versionProps.setProperty(COMMAND_NAMESPACE, "intact");
-            versionProps.setProperty(COMMAND, "version");
-            versionProps.setProperty(COMMAND_DESCRIPTION,
-                    "Returns the version of IntActApp");
-            versionProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
-            versionProps.setProperty(COMMAND_EXAMPLE_JSON, "{\"version\":\"2.1.0\"}");
-            registerService(bc, versionFactory, TaskFactory.class, versionProps);
-        }
+            Properties properties = new Properties();
+            properties.setProperty(COMMAND_NAMESPACE, "intact");
+            properties.setProperty(COMMAND, "reset-filters");
+            properties.setProperty(COMMAND_DESCRIPTION, "Reset all filters of the chosen view");
+            properties.setProperty(COMMAND_SUPPORTS_JSON, "false");
 
+            properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
+            properties.setProperty(TITLE, "Reset filters");
+            properties.setProperty(MENU_GRAVITY, "4.0");
+            properties.setProperty(IN_MENU_BAR, "true");
 
-        if (haveGUI) {
-            ShowDetailPanelTaskFactory showResults = new ShowDetailPanelTaskFactory(manager);
-            showResults.reregister();
-            manager.utils.setShowDetailPanelTaskFactory(showResults);
-
-            CyNetwork current = manager.data.getCurrentCyNetwork();
-            if (ModelUtils.ifHaveIntactNS(current)) {
-                manager.utils.execute(showResults.createTaskIterator(), true);
-            }
+            registerService(bc, new ResetFiltersTaskFactory(manager, false), TaskFactory.class, properties);
         }
 
         {
-            Properties propsQueryCommand = new Properties();
-            propsQueryCommand.setProperty(COMMAND_NAMESPACE, "intact");
-            propsQueryCommand.setProperty(COMMAND, "query");
-            propsQueryCommand.setProperty(COMMAND_DESCRIPTION, "Search for interactors ids or names and build network around them");
-            propsQueryCommand.setProperty(COMMAND_SUPPORTS_JSON, "false");
-            AbstractTaskFactory intactCommandQueryFactory = new AbstractTaskFactory() {
-                @Override
-                public TaskIterator createTaskIterator() {
-                    return new TaskIterator(new NoGUIQueryTask(manager));
-                }
-            };
+            Properties properties = new Properties();
+            properties.setProperty(COMMAND_NAMESPACE, "intact");
+            properties.setProperty(COMMAND, "export");
+            properties.setProperty(COMMAND_DESCRIPTION, "Extract network view for analysis");
+            properties.setProperty(COMMAND_SUPPORTS_JSON, "false");
 
-            registerService(bc, intactCommandQueryFactory, TaskFactory.class, propsQueryCommand);
+            properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
+            properties.setProperty(TITLE, "Extract view for analysis");
+            properties.setProperty(MENU_GRAVITY, "5.0");
+            properties.setProperty(IN_MENU_BAR, "true");
+            properties.setProperty(INSERT_SEPARATOR_AFTER, "true");
+
+            registerService(bc, new ExtractNetworkViewTaskFactory(manager, false), TaskFactory.class, properties);
         }
+
+        // 7.0 => Show detail panel
 
         {
             Properties propsSettings = new Properties();
@@ -169,6 +165,46 @@ public class CyActivator extends AbstractCyActivator {
             propsSettings.setProperty(MENU_GRAVITY, "22.0");
             propsSettings.setProperty(IN_MENU_BAR, "true");
             registerService(bc, new FeedbackTaskFactory(manager), TaskFactory.class, propsSettings);
+        }
+
+        // Commands only
+
+        {
+            VersionTaskFactory versionFactory = new VersionTaskFactory(version);
+            Properties versionProps = new Properties();
+            versionProps.setProperty(COMMAND_NAMESPACE, "intact");
+            versionProps.setProperty(COMMAND, "version");
+            versionProps.setProperty(COMMAND_DESCRIPTION, "Returns the version of IntActApp");
+            versionProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
+            versionProps.setProperty(COMMAND_EXAMPLE_JSON, "{\"version\":\"2.1.0\"}");
+            registerService(bc, versionFactory, TaskFactory.class, versionProps);
+        }
+
+        {
+            Properties propsQueryCommand = new Properties();
+            propsQueryCommand.setProperty(COMMAND_NAMESPACE, "intact");
+            propsQueryCommand.setProperty(COMMAND, "query");
+            propsQueryCommand.setProperty(COMMAND_DESCRIPTION, "Search for interactors ids or names and build network around them");
+            propsQueryCommand.setProperty(COMMAND_SUPPORTS_JSON, "false");
+            AbstractTaskFactory intactCommandQueryFactory = new AbstractTaskFactory() {
+                @Override
+                public TaskIterator createTaskIterator() {
+                    return new TaskIterator(new NoGUIQueryTask(manager));
+                }
+            };
+
+            registerService(bc, intactCommandQueryFactory, TaskFactory.class, propsQueryCommand);
+        }
+
+        if (haveGUI) {
+            ShowDetailPanelTaskFactory showResults = new ShowDetailPanelTaskFactory(manager);
+            showResults.reregister();
+            manager.utils.setShowDetailPanelTaskFactory(showResults);
+
+            CyNetwork current = manager.data.getCurrentCyNetwork();
+            if (ModelUtils.isIntactNetwork(current)) {
+                manager.utils.execute(showResults.createTaskIterator(), true);
+            }
         }
 
         // Register our Network search factories

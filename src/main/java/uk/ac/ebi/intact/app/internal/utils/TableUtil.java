@@ -103,7 +103,7 @@ public class TableUtil {
         }
     }
 
-    public static void copyRow(CyTable fromTable, CyTable toTable, Object fromPrimaryKey, Object toPrimaryKey, Set<String> fieldsToExclude) {
+    public static <T> void copyRow(CyTable fromTable, CyTable toTable, T fromPrimaryKey, T toPrimaryKey, Set<String> fieldsToExclude) {
         Set<String> nonNullFieldsToExclude = (fieldsToExclude != null) ? new HashSet<>(fieldsToExclude) : new HashSet<>();
         nonNullFieldsToExclude.add(CyIdentifiable.SUID);
         Map<String, Class<?>> fromColumnNames = fromTable.getColumns().stream().filter(column -> !nonNullFieldsToExclude.contains(column.getName())).collect(Collectors.toMap(CyColumn::getName, CyColumn::getType));

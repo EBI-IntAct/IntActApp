@@ -20,17 +20,20 @@ public class BooleanFilterPanel<T extends Element> extends FilterPanel<BooleanFi
         content.add(toggleSwitch);
         toggleSwitch.addChangeListener(this);
         content.add(label);
-        updateFilter(filter);
+        updateFilterUI(filter);
     }
 
     @Override
-    protected void updateFilter(BooleanFilter<T> filter) {
+    protected void updateFilterUI(BooleanFilter<T> filter) {
         label.setText(filter.description);
         toggleSwitch.setActivated(filter.getStatus());
     }
 
     @Override
     public void stateChanged(ChangeEvent e) {
+        setListening(false);
         filter.setStatus(toggleSwitch.isActivated());
+        setListening(true);
     }
+
 }

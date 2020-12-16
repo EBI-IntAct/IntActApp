@@ -14,4 +14,8 @@ public class OrphanEdgeFilter extends Filter<Edge> {
         NetworkView view = getNetworkView();
         view.visibleEdges.removeIf(edge -> !view.visibleNodes.contains(edge.source) || !view.visibleNodes.contains(edge.target));
     }
+
+    @Override
+    public void reset() {
+    }
 }

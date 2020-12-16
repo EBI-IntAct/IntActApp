@@ -22,7 +22,7 @@ public class DiscreteFilterPanel<T extends Element> extends FilterPanel<Discrete
         buildOptionLines();
     }
 
-    public void updateFilter(DiscreteFilter<T> filter) {
+    public void updateFilterUI(DiscreteFilter<T> filter) {
         content.removeAll();
         checkBoxes.clear();
         buildOptionLines();
@@ -32,19 +32,26 @@ public class DiscreteFilterPanel<T extends Element> extends FilterPanel<Discrete
         JButton selectAll = new JButton("Select all");
         selectAll.addActionListener(e -> {
             NetworkView view = filter.getNetworkView();
+            setListening(false);
             view.silenceFilters(true);
             filter.getPropertiesVisibility().keySet().forEach(s -> filter.setPropertyVisibility(s, true));
             checkBoxes.forEach(jCheckBox -> jCheckBox.setSelected(true));
             view.silenceFilters(false);
+            setListening(true);
             view.filter();
         });
         JButton selectNone = new JButton("Select none");
         selectNone.addActionListener(e -> {
             NetworkView view = filter.getNetworkView();
+            setListening(false);
             view.silenceFilters(true);
+
             filter.getPropertiesVisibility().keySet().forEach(s -> filter.setPropertyVisibility(s, false));
             checkBoxes.forEach(jCheckBox -> jCheckBox.setSelected(false));
+
             view.silenceFilters(false);
+            setListening(true);
+
             view.filter();
         });
         LinePanel buttonsPanel = new LinePanel(lightBackground);
@@ -54,7 +61,11 @@ public class DiscreteFilterPanel<T extends Element> extends FilterPanel<Discrete
         filter.getPropertiesVisibility().keySet().stream().sorted(Comparator.nullsFirst(Comparator.naturalOrder())).forEach((value) -> {
             JCheckBox checkBox = new JCheckBox(value, filter.getPropertyVisibility(value));
             checkBoxes.add(checkBox);
-            checkBox.addActionListener(e -> filter.setPropertyVisibility(value, checkBox.isSelected()));
+            checkBox.addActionListener(e -> {
+                setListening(false);
+                filter.setPropertyVisibility(value, checkBox.isSelected());
+                setListening(true);
+            });
             content.add(checkBox, layoutHelper.down().expandHoriz());
         });
     }

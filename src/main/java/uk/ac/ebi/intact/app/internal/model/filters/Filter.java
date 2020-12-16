@@ -7,6 +7,7 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.events.FilterUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 
 import java.util.Objects;
@@ -29,6 +30,7 @@ public abstract class Filter<T extends Element> {
     }
 
     public abstract void filterView();
+    public abstract void reset();
 
     public boolean load(JsonNode json) {
         if (!name.equals(json.get("name").textValue())) return false;
@@ -47,4 +49,7 @@ public abstract class Filter<T extends Element> {
     public Network getNetwork() {return Objects.requireNonNull(network);}
     public NetworkView getNetworkView() {return Objects.requireNonNull(view);}
 
+    protected void fireFilterUpdated() {
+        manager.utils.fireEvent(new FilterUpdatedEvent(this));
+    }
 }

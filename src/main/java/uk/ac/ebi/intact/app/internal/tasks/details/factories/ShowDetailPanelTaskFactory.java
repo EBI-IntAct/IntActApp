@@ -34,9 +34,8 @@ public class ShowDetailPanelTaskFactory extends AbstractTaskFactory {
             props.setProperty(TITLE, "Show results panel");
             show = true;
         }
-        props.setProperty(MENU_GRAVITY, "5.0");
+        props.setProperty(MENU_GRAVITY, "7.0");
         props.setProperty(IN_MENU_BAR, "true");
-        props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
         manager.utils.registerService(this, TaskFactory.class, props);
     }
 
