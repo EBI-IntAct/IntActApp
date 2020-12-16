@@ -78,8 +78,8 @@ public class StyleMapper {
 
     public static final Hashtable<String, NodeShape> originalNodeTypeToShape = new Hashtable<>(nodeTypeToShape);
 
-    public static final Hashtable<String, List<String>> nodeTypeToParent = new Hashtable<>();
-    public static final Hashtable<String, List<String>> edgeTypeToParent = new Hashtable<>();
+    public static final Hashtable<String, List<String>> nodeTypeToChildren = new Hashtable<>();
+    public static final Hashtable<String, List<String>> edgeTypeToChildren = new Hashtable<>();
 
     public static final Map<String, String> typesToIds = new HashMap<>();
 
@@ -247,7 +247,7 @@ public class StyleMapper {
             if (!nodeTypesWorking) {
                 nodeTypesWorking = true;
                 for (String miType : new ArrayList<>(nodeTypeToShape.keySet())) {
-                    setChildrenValues(nodeTypeToShape, miType, nodeTypeToShape.get(miType), nodeTypeToParent);
+                    setChildrenValues(nodeTypeToShape, miType, nodeTypeToShape.get(miType), nodeTypeToChildren);
                 }
                 nodeTypesReady = true;
             }
@@ -261,15 +261,30 @@ public class StyleMapper {
 
                 Map<String, Paint> originalColors = new Hashtable<>(edgeTypeToPaint);
 
+                // Set descendants
                 Arrays.stream(InteractionType.values())
                         .filter(type -> type.queryChildren)
-                        .forEach(type -> setChildrenValues(edgeTypeToPaint, type.name, type.defaultColor, edgeTypeToParent));
+                        .forEach(type -> setChildrenValues(edgeTypeToPaint, type.name, type.defaultColor, edgeTypeToChildren));
+
+                // Clean descendants from parents recursively to avoid overlapping between children and parents
+                cleanChildrenFromParents(InteractionType.ENZYMATIC_REACTION, edgeTypeToChildren, List.of());
 
                 edgeTypeToPaint.putAll(originalColors);
 
                 edgeTypesReady = true;
             }
         });
+    }
+
+    private static void cleanChildrenFromParents(InteractionType type, Map<String, List<String>> descendantsMap, List<String> toRemove) {
+        if (descendantsMap.containsKey(type.name)) {
+            List<String> descendantsToClean = descendantsMap.get(type.name);
+            List<String> descendants = new ArrayList<>(descendantsToClean);
+            descendantsToClean.removeAll(toRemove);
+            if (type.parent != null) {
+                cleanChildrenFromParents(type.parent, descendantsMap, descendants);
+            }
+        }
     }
 
     private static <T> void setChildrenValues(Map<String, T> mapToFill, String parentLabel, T parentValue, Map<String, List<String>> parentToChildLabelMap) {

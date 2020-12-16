@@ -15,7 +15,7 @@ public class EdgeLegend extends JComponent {
 
     protected int length = 30;
     protected int thickness = 4;
-    protected Paint paint = StyleMapper.edgeTypeToPaint.get(InteractionType.COLOCOALIZATION.name);
+    protected Paint paint = StyleMapper.edgeTypeToPaint.get(InteractionType.COLOCALIZATION.name);
     protected LineType lineType = LineType.SOLID;
 
     private EdgeLegend() {
