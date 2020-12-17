@@ -71,7 +71,7 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         }
 
         monitor.setTitle("Create summary edges");
-        monitor.showMessage(Level.INFO,"Create summary edges");
+        monitor.showMessage(Level.INFO, "Create summary edges");
         monitor.setProgress(0.6);
         manager.data.addNetwork(network, cyNetwork);
         manager.data.fireIntactNetworkCreated(network);
@@ -111,7 +111,9 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
 
         // And lay it out
         monitor.showMessage(Level.INFO, "Force layout application");
-        CyLayoutAlgorithm alg = manager.utils.getService(CyLayoutAlgorithmManager.class).getLayout("force-directed");
+        CyLayoutAlgorithmManager layoutManager = manager.utils.getService(CyLayoutAlgorithmManager.class);
+        CyLayoutAlgorithm alg = layoutManager.getLayout("force-directed-cl");
+        if (alg == null) alg = layoutManager.getLayout("force-directed");
         Object context = alg.getDefaultLayoutContext();
         TunableSetter setter = manager.utils.getService(TunableSetter.class);
         Map<String, Object> layoutArgs = new HashMap<>();

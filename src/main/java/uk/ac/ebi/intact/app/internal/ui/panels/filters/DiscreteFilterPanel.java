@@ -60,6 +60,7 @@ public class DiscreteFilterPanel<T extends Element> extends FilterPanel<Discrete
         content.add(buttonsPanel, layoutHelper.down().expandHoriz());
         filter.getPropertiesVisibility().keySet().stream().sorted(Comparator.nullsFirst(Comparator.naturalOrder())).forEach((value) -> {
             JCheckBox checkBox = new JCheckBox(value, filter.getPropertyVisibility(value));
+            checkBox.setBackground(lightBackground);
             checkBoxes.add(checkBox);
             checkBox.addActionListener(e -> {
                 setListening(false);

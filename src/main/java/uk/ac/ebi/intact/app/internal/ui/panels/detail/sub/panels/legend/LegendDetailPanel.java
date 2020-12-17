@@ -35,7 +35,7 @@ public class LegendDetailPanel extends AbstractDetailPanel implements StyleUpdat
         edgePanel = new EdgeLegendPanel(manager, currentNetwork, currentView);
 
         EasyGBC layoutHelper = new EasyGBC();
-        mainPanel.add(createResetStyleButton(), layoutHelper.anchor("northwest").noExpand());
+        mainPanel.add(createResetStyleButton(), layoutHelper.anchor("northwest").expandHoriz());
         mainPanel.add(loadingSpinner, layoutHelper.down().noExpand());
         mainPanel.add(nodePanel, layoutHelper.down().anchor("west").expandHoriz());
         mainPanel.add(edgePanel, layoutHelper.down().anchor("west").expandHoriz());
