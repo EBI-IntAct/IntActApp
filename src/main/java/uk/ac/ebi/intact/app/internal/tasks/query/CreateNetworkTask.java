@@ -1,11 +1,11 @@
 package uk.ac.ebi.intact.app.internal.tasks.query;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.cytoscape.model.*;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.work.*;
 import org.cytoscape.work.TaskMonitor.Level;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
@@ -16,7 +16,12 @@ import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import static uk.ac.ebi.intact.app.internal.utils.ViewUtils.getLayoutTask;
 
 public class CreateNetworkTask extends AbstractTask implements TaskObserver {
     private final Network network;
@@ -110,22 +115,13 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         }
 
         // And lay it out
-        monitor.showMessage(Level.INFO, "Force layout application");
-        CyLayoutAlgorithmManager layoutManager = manager.utils.getService(CyLayoutAlgorithmManager.class);
-        CyLayoutAlgorithm alg = layoutManager.getLayout("force-directed-cl");
-        if (alg == null) alg = layoutManager.getLayout("force-directed");
-        Object context = alg.getDefaultLayoutContext();
-        TunableSetter setter = manager.utils.getService(TunableSetter.class);
-        Map<String, Object> layoutArgs = new HashMap<>();
-        layoutArgs.put("defaultNodeMass", 10.0);
-        setter.applyTunables(context, layoutArgs);
-        Set<View<CyNode>> nodeViews = new HashSet<>(networkView.getNodeViews());
-        TaskIterator taskIterator = alg.createTaskIterator(networkView, context, nodeViews, null);
+        TaskIterator taskIterator = getLayoutTask(monitor, manager, networkView);
         insertTasksAfterCurrentTask(taskIterator);
 
         manager.utils.showResultsPanel();
         System.out.println(Duration.between(begin, Instant.now()).toSeconds());
     }
+
 
     @ProvidesTitle
     public String getTitle() {
