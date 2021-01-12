@@ -9,6 +9,7 @@ public abstract class OptionField<O extends OptionManager.Option<?>> {
     protected final JPanel container;
     protected final EasyGBC layoutHelper;
     protected final O option;
+    protected boolean silenceUpdate = false;
 
     public OptionField(O option, JPanel container, EasyGBC layoutHelper) {
         this.container = container;
@@ -33,4 +34,9 @@ public abstract class OptionField<O extends OptionManager.Option<?>> {
     }
 
     public abstract void addListener(Runnable listener);
+    protected abstract void updateValue();
+
+    public void update() {
+        if (!silenceUpdate) updateValue();
+    }
 }

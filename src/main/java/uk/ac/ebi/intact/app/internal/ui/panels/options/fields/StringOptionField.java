@@ -14,7 +14,11 @@ public class StringOptionField extends OptionField<OptionManager.Option<String>>
         super(option, container, layoutHelper);
         textField = new JTextField(option.defaultValue);
         textField.setText(option.getValue());
-        textField.addActionListener((e) -> option.setValue(textField.getText()));
+        textField.addActionListener((e) -> {
+            silenceUpdate = true;
+            option.setValue(textField.getText());
+            silenceUpdate = false;
+        });
         textField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
@@ -38,4 +42,8 @@ public class StringOptionField extends OptionField<OptionManager.Option<String>>
         });
     }
 
+    @Override
+    public void updateValue() {
+        textField.setText(option.getValue());
+    }
 }

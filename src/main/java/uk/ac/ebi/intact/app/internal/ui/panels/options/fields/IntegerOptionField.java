@@ -54,9 +54,18 @@ public class IntegerOptionField extends OptionField<OptionManager.NumericOption<
 
     @Override
     public void stateChanged(ChangeEvent e) {
+        silenceUpdate = true;
         int value = slider.getValue();
         option.setValue(value);
         textField.setText(String.valueOf(value));
+        silenceUpdate = false;
+    }
+
+    @Override
+    public void updateValue() {
+        Integer value = option.getValue();
+        textField.setText(String.valueOf(value));
+        slider.setValue(value);
     }
 
     private void textFieldValueChanged() {

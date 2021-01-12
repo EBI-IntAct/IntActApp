@@ -16,4 +16,8 @@ public class DoubleOptionField extends OptionField<OptionManager.NumericOption<D
 
     }
 
+    @Override
+    public void updateValue() {
+
+    }
 }
