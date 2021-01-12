@@ -27,6 +27,13 @@ public class BooleanOptionField extends OptionField<OptionManager.Option<Boolean
 
     @Override
     public void stateChanged(ChangeEvent e) {
+        silenceUpdate = true;
         option.setValue(toggleSwitch.isActivated());
+        silenceUpdate = false;
+    }
+
+    @Override
+    public void updateValue() {
+        toggleSwitch.setActivated(option.getValue());
     }
 }
