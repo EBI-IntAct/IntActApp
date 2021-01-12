@@ -16,5 +16,5 @@ public class NetworkFields {
     public static final Field<Long> IDENTIFIERS_TABLE_REF = new Field<>(fields, initializers, Field.Namespace.IDENTIFIER, "Identifiers", null, Long.class);
     public static final Field<String> UUID = new Field<>(fields, initializers, Field.Namespace.NULL, "UUID", null, String.class);
     public static final Field<String> VIEW_STATE = new Field<>(fields, initializers, Field.Namespace.VIEW, "Data", null, String.class);
-    public static final Field<Boolean> EXPORTED = new Field<>(fields, initializers, Field.Namespace.NULL, "Exported", null, Boolean.class, Boolean.FALSE);
+    public static final Field<Boolean> EXPORTED = new Field<>(fields, initializers, Field.Namespace.VIEW, "Exported", null, Boolean.class, Boolean.TRUE);
 }

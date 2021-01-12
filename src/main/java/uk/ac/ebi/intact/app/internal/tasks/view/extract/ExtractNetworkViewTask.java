@@ -1,26 +1,23 @@
-package uk.ac.ebi.intact.app.internal.tasks.view.export;
+package uk.ac.ebi.intact.app.internal.tasks.view.extract;
 
 import org.cytoscape.model.*;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.View;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.TunableSetter;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
 import uk.ac.ebi.intact.app.internal.tasks.view.AbstractViewTask;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class ExtractNetworkViewTask extends AbstractViewTask {
     @Tunable(description = "Include filtered elements", dependsOn = "view!=")
@@ -62,6 +59,7 @@ public class ExtractNetworkViewTask extends AbstractViewTask {
         }
 
         copyData();
+        NetworkFields.EXPORTED.setValue(newNetwork.getRow(newNetwork), true);
         createView(monitor);
     }
 
@@ -79,11 +77,21 @@ public class ExtractNetworkViewTask extends AbstractViewTask {
         newEdgeTable = newNetwork.getDefaultEdgeTable();
         newNetworkTable = newNetwork.getDefaultNetworkTable();
 
-        Table.NODE.initColumns(newNodeTable, newNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
-        Table.EDGE.initColumns(newEdgeTable, newNetwork.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS));
-        Table.NETWORK.initColumns(newNetworkTable, newNetwork.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS));
+        copyColumns(srcNodeTable, newNodeTable);
+        copyColumns(srcEdgeTable, newEdgeTable);
+        copyColumns(srcNetworkTable, newNetworkTable);
+    }
 
-        NetworkFields.EXPORTED.setValue(newNetwork.getRow(newNetwork), true);
+    private void copyColumns(CyTable srcTable, CyTable newTable) {
+        srcTable.getColumns().forEach(column -> {
+            Class<?> elementType = column.getListElementType();
+            if (newTable.getColumn(column.getName()) != null) return;
+            if (elementType == null) {
+                newTable.createColumn(column.getName(), column.getType(), column.isImmutable(), column.getDefaultValue());
+            } else {
+                newTable.createListColumn(column.getName(), elementType, column.isImmutable());
+            }
+        });
     }
 
     private void copyData() {
@@ -113,16 +121,7 @@ public class ExtractNetworkViewTask extends AbstractViewTask {
 
     private void applyLayout(TaskMonitor monitor, CyNetworkView networkView) {
         if (applyLayout) {
-            monitor.showMessage(TaskMonitor.Level.INFO, "Force layout application");
-            CyLayoutAlgorithm alg = manager.utils.getService(CyLayoutAlgorithmManager.class).getLayout("force-directed");
-            Object context = alg.getDefaultLayoutContext();
-            TunableSetter setter = manager.utils.getService(TunableSetter.class);
-            Map<String, Object> layoutArgs = new HashMap<>();
-            layoutArgs.put("defaultNodeMass", 10.0);
-            setter.applyTunables(context, layoutArgs);
-            Set<View<CyNode>> nodeViews = new HashSet<>(networkView.getNodeViews());
-            TaskIterator taskIterator = alg.createTaskIterator(networkView, context, nodeViews, null);
-            insertTasksAfterCurrentTask(taskIterator);
+            insertTasksAfterCurrentTask(ViewUtils.getLayoutTask(monitor, manager, networkView));
         }
     }
 }

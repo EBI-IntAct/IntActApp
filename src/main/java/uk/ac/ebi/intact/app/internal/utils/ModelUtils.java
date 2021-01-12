@@ -147,6 +147,7 @@ public class ModelUtils {
     private static void initLowerTables(Network network, CyNetwork cyNetwork, CyTable networkTable, CyTable featuresTable, CyTable identifiersTable) {
         CyRow networkRow = networkTable.getRow(cyNetwork.getSUID());
         String uuid = UUID.randomUUID().toString();
+        NetworkFields.EXPORTED.setValue(networkRow, false);
         NetworkFields.UUID.setValue(networkRow, uuid);
         NetworkFields.FEATURES_TABLE_REF.setValue(networkRow, featuresTable.getSUID());
         NetworkFields.IDENTIFIERS_TABLE_REF.setValue(networkRow, identifiersTable.getSUID());
