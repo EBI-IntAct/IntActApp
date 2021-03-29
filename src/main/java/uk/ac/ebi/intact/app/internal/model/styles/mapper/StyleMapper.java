@@ -246,9 +246,14 @@ public class StyleMapper {
         executor.execute(() -> {
             if (!nodeTypesWorking) {
                 nodeTypesWorking = true;
-                for (String miType : new ArrayList<>(nodeTypeToShape.keySet())) {
-                    setChildrenValues(nodeTypeToShape, miType, nodeTypeToShape.get(miType), nodeTypeToChildren);
-                }
+                Map<String, NodeShape> originalShapes = new Hashtable<>(nodeTypeToShape);
+
+                // Set descendants
+                Arrays.stream(InteractorType.values())
+                        .filter(type -> type.queryChildren)
+                        .forEach(type -> setChildrenValues(nodeTypeToShape, type.name, type.shape, nodeTypeToChildren));
+
+                nodeTypeToShape.putAll(originalShapes);
                 nodeTypesReady = true;
             }
         });

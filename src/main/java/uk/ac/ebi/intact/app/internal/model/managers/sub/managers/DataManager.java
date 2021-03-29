@@ -8,7 +8,6 @@ import org.cytoscape.model.events.NetworkAddedEvent;
 import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.task.hide.HideTaskFactory;
@@ -78,7 +77,6 @@ public class DataManager implements
     }
 
     public void loadCurrentSession() {
-        manager.utils.getService(CySessionManager.class).getCurrentSession().getProperties();
         CyNetworkViewManager networkViewManager = manager.utils.getService(CyNetworkViewManager.class);
         for (CyNetwork cyNetwork : manager.utils.getService(CyNetworkManager.class).getNetworkSet()) {
             if (!isIntactNetwork(cyNetwork)) continue;
@@ -316,7 +314,9 @@ public class DataManager implements
 
             subNetwork.setFeaturesTable(parentNetwork.getFeaturesTable());
             subNetwork.setIdentifiersTable(parentNetwork.getIdentifiersTable());
-            NetworkFields.UUID.setValue(subCyNetwork.getRow(subCyNetwork), NetworkFields.UUID.getValue(parentCyNetwork.getRow(parentCyNetwork)));
+            CyRow networkRow = subCyNetwork.getRow(subCyNetwork);
+            NetworkFields.EXPORTED.setValue(networkRow, false);
+            NetworkFields.UUID.setValue(networkRow, NetworkFields.UUID.getValue(parentCyNetwork.getRow(parentCyNetwork)));
             subNetwork.getNodes().forEach(Node::updateMutationStatus);
             subNetwork.getSummaryEdges().forEach(SummaryEdge::updateSummary);
         }

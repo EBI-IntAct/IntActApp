@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.app.internal.tasks.view.export;
+package uk.ac.ebi.intact.app.internal.tasks.view.extract;
 
 import org.cytoscape.work.TaskIterator;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;

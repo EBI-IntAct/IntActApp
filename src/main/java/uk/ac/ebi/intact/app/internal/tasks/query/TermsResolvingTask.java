@@ -83,7 +83,7 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
                         .flatMap(List::stream)
                         .map(interactor -> interactor.ac)
                         .collect(Collectors.toList()),
-                manager.option.ADD_INTERACTING_PARTNERS.getValue(), getName());
+                manager.option.ADD_INTERACTING_PARTNERS.getValue(), true, getName());
         manager.utils.execute(factory.createTaskIterator());
     }
 

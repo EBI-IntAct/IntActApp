@@ -73,7 +73,7 @@ public class EdgeBasics extends AbstractEdgeAttribute {
         if (edge.pubMedId != null && !edge.pubMedId.isEmpty() && !edge.pubMedId.contains("unassigned")) {
             LinePanel publication = new LinePanel(lightBackground);
             publication.add(new JLabel("Described in "));
-            publication.add(new JLink("European PMC - " + edge.pubMedId, "https://europepmc.org/search?query=" + edge.pubMedId, openBrowser));
+            publication.add(new JLink("European PMC - " + edge.pubMedId, "https://europepmc.org/article/MED/" + edge.pubMedId, openBrowser));
             publication.add(Box.createHorizontalGlue());
             content.add(publication);
         }

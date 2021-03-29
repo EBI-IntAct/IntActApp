@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.app.internal.model.managers.sub.managers;
 
 import org.cytoscape.property.CyProperty;
+import uk.ac.ebi.intact.app.internal.model.events.OptionUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.utils.CollectionUtils;
 
@@ -23,9 +24,7 @@ public class OptionManager {
     }
 
     public final NumericOption<Integer> MAX_INTERACTOR_PER_TERM = new NumericOption<>("maxInteractorPerTerm","Max #interactors/term", "Maximum number of matching interactors shown", Integer.class, 25, 1, 1000, List.of(Scope.SEARCH));
-    public final Option<Boolean> DEFAULT_INCLUDE_ALL_INTERACTORS = new Option<>("includeUnseenInteractors", "Add extra interactors by default", "Include extra choices in search when maximum exceeded", Boolean.class, true, List.of(Scope.SEARCH));
-//    public final Option<Boolean> SHOW_HIGHLIGHTS = new Option<>("showHighlights", title,  "Highlight matching columns", Boolean.class, true, List.of(Scope.DISAMBIGUATION));
-    public final Option<Boolean> ADD_INTERACTING_PARTNERS = new Option<>("addingInteractingPartners", "Include first neighbours", "Add interacting partners of seed interactors to network", Boolean.class, true, List.of(Scope.SEARCH, Scope.DISAMBIGUATION));
+    public final Option<Boolean> DEFAULT_INCLUDE_ALL_INTERACTORS = new Option<>("includeUnseenInteractors", "Add extra interactors by default", "Include extra choices in search when maximum exceeded", Boolean.class, true, List.of(Scope.SEARCH));    public final Option<Boolean> ADD_INTERACTING_PARTNERS = new Option<>("addingInteractingPartners", "Include first neighbours", "Add interacting partners of seed interactors to network", Boolean.class, true, List.of(Scope.SEARCH, Scope.DISAMBIGUATION));
     public final NumericOption<Integer> MAX_SELECTED_NODE_INFO_SHOWN = new NumericOption<>("maxSelectedNodeInfoShown","Max selected nodes", "Maximum number of selected nodes shown in details", Integer.class, 15, 0, 100, new ArrayList<>());
     public final NumericOption<Integer> MAX_SELECTED_EDGE_INFO_SHOWN = new NumericOption<>("maxSelectedEdgeInfoShown","Max selected edges", "Maximum number of selected edges shown in details", Integer.class, 15, 0, 100, new ArrayList<>());
 
@@ -50,15 +49,10 @@ public class OptionManager {
 
         public T getValue() {
             if (hasProperty(propertyService, key)) {
-                if (type == Integer.class) {
-                    return type.cast(getIntegerProperty(propertyService, key));
-                } else if (type == Boolean.class) {
-                    return type.cast(getBooleanProperty(propertyService, key));
-                } else if (type == Double.class) {
-                    return type.cast(getDoubleProperty(propertyService, key));
-                } else if (type == String.class) {
-                    return type.cast(getStringProperty(propertyService, key));
-                }
+                if (type == Integer.class) return type.cast(getIntegerProperty(propertyService, key));
+                else if (type == Boolean.class) return type.cast(getBooleanProperty(propertyService, key));
+                else if (type == Double.class) return type.cast(getDoubleProperty(propertyService, key));
+                else if (type == String.class) return type.cast(getStringProperty(propertyService, key));
                 throw new IllegalStateException(type + " is not supported by properties");
             } else {
                 setValue(defaultValue);
@@ -69,6 +63,7 @@ public class OptionManager {
         public void setValue(T value) {
             setStringProperty(propertyService, key, value.toString());
             manager.utils.registerAllServices(propertyService, propertyServiceProperties);
+            manager.utils.fireEvent(new OptionUpdatedEvent(this));
         }
 
         @Override
