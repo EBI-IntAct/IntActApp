@@ -66,6 +66,7 @@ public class CyActivator extends AbstractCyActivator {
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
             properties.setProperty(COMMAND, "summary");
+            properties.setProperty(COMMAND_DESCRIPTION, "Set the view type of the chosen view to Summary");
 
             properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
             properties.setProperty(TITLE, "Summary");
@@ -78,6 +79,7 @@ public class CyActivator extends AbstractCyActivator {
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
             properties.setProperty(COMMAND, "evidence");
+            properties.setProperty(COMMAND_DESCRIPTION, "Set the view type of the chosen view to Evidence");
 
             properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
             properties.setProperty(TITLE, "Evidence");
@@ -90,6 +92,7 @@ public class CyActivator extends AbstractCyActivator {
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
             properties.setProperty(COMMAND, "mutation");
+            properties.setProperty(COMMAND_DESCRIPTION, "Set the view type of the chosen view to Mutation");
 
             properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
             properties.setProperty(TITLE, "Mutation");
@@ -117,7 +120,7 @@ public class CyActivator extends AbstractCyActivator {
         {
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
-            properties.setProperty(COMMAND, "export");
+            properties.setProperty(COMMAND, "extract");
             properties.setProperty(COMMAND_DESCRIPTION, "Extract network view for analysis");
             properties.setProperty(COMMAND_SUPPORTS_JSON, "false");
 

@@ -27,17 +27,18 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
     private final Network network;
     private final List<String> intactAcs;
     private final boolean includeNeighbours;
+    private final boolean applyLayout;
     private final String netName;
     private Instant begin;
 
     public CreateNetworkTask(final Network network,
                              final List<String> intactAcs,
-                             boolean includeNeighbours, final String netName) {
+                             boolean includeNeighbours, boolean applyLayout, final String netName) {
         this.network = network;
         this.intactAcs = intactAcs;
         this.includeNeighbours = includeNeighbours;
         this.netName = netName;
-
+        this.applyLayout = applyLayout;
     }
 
     public void run(TaskMonitor monitor) {
@@ -76,7 +77,7 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         }
 
         monitor.setTitle("Create summary edges");
-        monitor.showMessage(Level.INFO,"Create summary edges");
+        monitor.showMessage(Level.INFO, "Create summary edges");
         monitor.setProgress(0.6);
         manager.data.addNetwork(network, cyNetwork);
         manager.data.fireIntactNetworkCreated(network);
@@ -114,9 +115,11 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
             return;
         }
 
-        // And lay it out
-        TaskIterator taskIterator = getLayoutTask(monitor, manager, networkView);
-        insertTasksAfterCurrentTask(taskIterator);
+        if (applyLayout) {
+            // And lay it out
+            TaskIterator taskIterator = getLayoutTask(monitor, manager, networkView);
+            insertTasksAfterCurrentTask(taskIterator);
+        }
 
         manager.utils.showResultsPanel();
         System.out.println(Duration.between(begin, Instant.now()).toSeconds());

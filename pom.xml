@@ -14,7 +14,7 @@
     <artifactId>intactApp</artifactId>
     <packaging>bundle</packaging>
     <name>${bundle.name}</name>
-    <version>0.9.5</version>
+    <version>0.9.7</version>
 
     <scm>
         <connection>scm:git:https://github.com/EliotRagueneau/IntactApp.git</connection>

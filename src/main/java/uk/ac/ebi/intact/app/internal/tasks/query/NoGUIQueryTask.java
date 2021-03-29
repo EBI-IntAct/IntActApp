@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 public class NoGUIQueryTask extends AbstractTask {
     @Tunable(context = "nogui", exampleStringValue = "gtp lrr* cell Q5S007 EBI-2624319", gravity = 0,
             description = "Space separated terms to search among interactors ids and names to build the network around them. <br>" +
-            "Example: \"gtp lrr* cell Q5S007 EBI-2624319\"",
+                    "Example: \"gtp lrr* cell Q5S007 EBI-2624319\"",
             required = true)
     public String seedTerms;
 
@@ -39,18 +39,24 @@ public class NoGUIQueryTask extends AbstractTask {
     public Boolean includeSeedPartners = true;
 
     @Tunable(context = "nogui", gravity = 4,
+            description = "If true, apply force directed layout algorithm after the extraction on the new network<br>" +
+                    "If false, do not apply any layout algorithm: All elements of the extracted network will be stacked on top of each others visually.<br>" +
+                    "Default value : True")
+    public Boolean applyLayout = true;
+
+    @Tunable(context = "nogui", gravity = 5,
             description = "If true, the query will be an exact query.<br>" +
                     "If false, the query will be a fuzzy search<br>" +
                     "Default value : False")
     public Boolean exactQuery = false;
 
-    @Tunable(context = "nogui", gravity = 4,
+    @Tunable(context = "nogui", gravity = 6,
             description = "If negative or 0, all matching interactors will be used as seeds for network building.<br>" +
                     "If positive, only the top n interactors that matched terms will be used as seeds for network building<br>" +
                     "Default value : 0")
     public Integer maxInteractorsPerTerm = 0;
 
-    @Tunable(context = "nogui", gravity = 5,
+    @Tunable(context = "nogui", gravity = 7,
             description = "Name of the network to build", longDescription = "Name of the network to build.<br> If not given, will be IntAct network")
     public String netName;
 
@@ -98,7 +104,7 @@ public class NoGUIQueryTask extends AbstractTask {
     }
 
     private void buildNetwork() {
-        ImportNetworkTaskFactory factory = new ImportNetworkTaskFactory(network, interactorAcs, includeSeedPartners, netName);
+        ImportNetworkTaskFactory factory = new ImportNetworkTaskFactory(network, interactorAcs, includeSeedPartners, applyLayout, netName);
         insertTasksAfterCurrentTask(factory.createTaskIterator());
     }
 }

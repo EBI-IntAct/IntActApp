@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ExtractNetworkViewTask extends AbstractViewTask {
-    @Tunable(description = "Include filtered elements", dependsOn = "view!=")
+    @Tunable(description = "Include filtered elements.<br> Default = false", dependsOn = "view!=")
     public boolean includeFiltered = false;
 
     @Tunable(description = "Apply layout", dependsOn = "view!=")
