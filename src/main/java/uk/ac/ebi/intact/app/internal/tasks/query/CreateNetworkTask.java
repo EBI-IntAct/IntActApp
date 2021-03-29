@@ -125,7 +125,6 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         System.out.println(Duration.between(begin, Instant.now()).toSeconds());
     }
 
-
     @ProvidesTitle
     public String getTitle() {
         return "Loading interactions";
