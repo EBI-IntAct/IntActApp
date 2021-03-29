@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static uk.ac.ebi.intact.app.internal.utils.ViewUtils.getLayoutTask;
+
 public class CreateNetworkTask extends AbstractTask implements TaskObserver {
     private final Network network;
     private final List<String> intactAcs;
