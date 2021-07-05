@@ -8,11 +8,10 @@ import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
 import java.util.Properties;
 
 public class Manager {
-    private static final String INTACT_WEBSERVICES = "https://wwwdev.ebi.ac.uk/intact/test/ws/";
+    private static final String INTACT_WEBSERVICES = "https://www.ebi.ac.uk/intact/ws/";
 //    private static final String INTACT_WEBSERVICES = "http://127.0.0.1:8081/intact/ws/";
 
-    public static final String INTACT_GRAPH_WS = "https://www.ebi.ac.uk/intact/ws/graph/";
-//    public static final String INTACT_GRAPH_WS = INTACT_WEBSERVICES + "graph/";
+    public static final String INTACT_GRAPH_WS = INTACT_WEBSERVICES + "graph/";
     public static final String INTACT_INTERACTOR_WS = INTACT_WEBSERVICES + "interactor/";
     public static final String INTACT_INTERACTION_WS = INTACT_WEBSERVICES + "interaction/";
 
