@@ -2,9 +2,11 @@ package uk.ac.ebi.intact.app.internal;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
+import org.cytoscape.group.CyGroupSettingsManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -15,6 +17,8 @@ import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.about.factories.AboutTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.feedback.factories.FeedbackTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.group.factories.GroupByTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.group.factories.ShowGroupPanelTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIQueryTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ExactQueryTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.FuzzySearchTaskFactory;
@@ -170,6 +174,19 @@ public class CyActivator extends AbstractCyActivator {
             registerService(bc, new FeedbackTaskFactory(manager), TaskFactory.class, propsSettings);
         }
 
+        {
+            Properties propsSettings = new Properties();
+            propsSettings.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+            propsSettings.setProperty(PREFERRED_MENU, "Apps.IntAct");
+            propsSettings.setProperty(TITLE, "Group By");
+            propsSettings.setProperty(MENU_GRAVITY, "23.0");
+            propsSettings.setProperty(IN_MENU_BAR, "true");
+            registerService(bc, new GroupByTaskFactory(manager), NetworkTaskFactory.class, propsSettings);
+
+            manager.utils.getService(CyGroupSettingsManager.class).setGroupViewType(CyGroupSettingsManager.GroupViewType.COMPOUND);
+            manager.utils.getService(CyGroupSettingsManager.class).setUseNestedNetworks(true);
+        }
+
         // Commands only
 
         {
@@ -208,7 +225,15 @@ public class CyActivator extends AbstractCyActivator {
             if (ModelUtils.isIntactNetwork(current)) {
                 manager.utils.execute(showResults.createTaskIterator(), true);
             }
+
+            ShowGroupPanelTaskFactory showGroupPanelTaskFactory = new ShowGroupPanelTaskFactory(manager);
+            showGroupPanelTaskFactory.reregister();
+            manager.utils.setShowGroupPanelTaskFactory(showGroupPanelTaskFactory);
+            if (ModelUtils.isIntactNetwork(current)) {
+                manager.utils.execute(showGroupPanelTaskFactory.createTaskIterator(), true);
+            }
         }
+
 
         // Register our Network search factories
 

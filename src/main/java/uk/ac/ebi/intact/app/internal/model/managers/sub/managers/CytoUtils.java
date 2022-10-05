@@ -13,6 +13,7 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskObserver;
 import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.group.factories.ShowGroupPanelTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.DetailPanel;
 
 import javax.swing.*;
@@ -27,6 +28,7 @@ public class CytoUtils {
     final SynchronousTaskManager<?> synchronousTaskManager;
     final CommandExecutorTaskFactory commandExecutorTaskFactory;
     ShowDetailPanelTaskFactory detailPanelTaskFactory;
+    ShowGroupPanelTaskFactory groupPanelTaskFactory;
     DetailPanel detailPanel;
 
     public CytoUtils(CyServiceRegistrar registrar) {
@@ -95,6 +97,10 @@ public class CytoUtils {
 
     public void setShowDetailPanelTaskFactory(ShowDetailPanelTaskFactory factory) {
         detailPanelTaskFactory = factory;
+    }
+
+    public void setShowGroupPanelTaskFactory(ShowGroupPanelTaskFactory groupPanelTaskFactory) {
+        this.groupPanelTaskFactory = groupPanelTaskFactory;
     }
 
     public void setDetailPanel(DetailPanel detailPanel) {

@@ -20,11 +20,13 @@ public class Manager {
     public final DataManager data;
     public final StyleManager style;
     public final OptionManager option;
+    public final GroupManager group;
 
 
     public Manager(CyServiceRegistrar registrar) {
         utils = new CytoUtils(registrar);
         FeatureClassifier.initMIIdSets();
+        group = new GroupManager(this);
         data = new DataManager(this);
         data.loadCurrentSession();
         utils.registerService(new SessionLoader(this), SessionLoadedListener.class, new Properties());
