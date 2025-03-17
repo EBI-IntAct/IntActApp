@@ -18,6 +18,7 @@ import uk.ac.ebi.intact.app.internal.tasks.feedback.factories.FeedbackTaskFactor
 import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIQueryTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ExactQueryTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.FuzzySearchTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.query.factories.AdvancedSearchTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.settings.SettingsTask;
 import uk.ac.ebi.intact.app.internal.tasks.version.factories.VersionTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.extract.ExtractNetworkViewTaskFactory;
@@ -221,6 +222,11 @@ public class CyActivator extends AbstractCyActivator {
             FuzzySearchTaskFactory intactSearch = new FuzzySearchTaskFactory(manager);
             Properties propsSearch = new Properties();
             registerService(bc, intactSearch, NetworkSearchTaskFactory.class, propsSearch);
+        }
+        {
+            AdvancedSearchTaskFactory advancedSearchTaskFactory = new AdvancedSearchTaskFactory(manager);
+            Properties propsSearch = new Properties();
+            registerService(bc, advancedSearchTaskFactory, NetworkSearchTaskFactory.class, propsSearch);
         }
 
         manager.utils.info("Intact App initialized");

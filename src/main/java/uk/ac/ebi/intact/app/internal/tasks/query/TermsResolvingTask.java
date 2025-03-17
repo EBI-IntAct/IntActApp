@@ -41,9 +41,15 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
     @Override
     public void run(TaskMonitor monitor) {
         monitor.setTitle("Solving term ambiguity");
+//        System.out.println("Terms: " + terms);
+//        System.out.println("Advanced search: " + advancedSearch);
+//        System.out.println("Interactors to resolve: " + interactorsToResolve);
+//        System.out.println("Exact query: " + exactQuery);
+
         if (terms.isBlank()) {
             monitor.showMessage(TaskMonitor.Level.WARN, "Empty query");
         } else {
+
             interactorsToResolve = resolveTerms(terms, manager.option.MAX_INTERACTOR_PER_TERM.getValue());
 
             if (showNoResults()) return;
@@ -62,7 +68,7 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
                     d.setVisible(true);
                 });
             }
-            if (interactorsToResolve == null || interactorsToResolve.size() == 0) {
+            if (interactorsToResolve == null || interactorsToResolve.isEmpty()) {
                 monitor.showMessage(TaskMonitor.Level.ERROR, "Query returned no terms");
             }
         }
@@ -148,7 +154,7 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
     }
 
     public Map<String, List<Interactor>> getInteractorsToResolve() {
-        return interactorsToResolve;
+        return interactorsToResolve; //todo: is this why the solving term ambiguity takes so long?
     }
 
     public Map<String, Integer> getTotalInteractors() {

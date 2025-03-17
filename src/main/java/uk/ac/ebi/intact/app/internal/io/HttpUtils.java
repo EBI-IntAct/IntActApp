@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import org.cytoscape.io.util.StreamUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 
 import java.io.*;
@@ -19,10 +21,46 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+import static uk.ac.ebi.intact.app.internal.model.managers.Manager.INTACT_GRAPH_WS;
+
 public class HttpUtils {
     private static final HttpClient httpClient = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
             .build();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtils.class);
+
+    public static JsonNode getJsonNetwork(String query, Manager manager) {
+        String baseUrl = INTACT_GRAPH_WS + "advancedSearch/interaction/list";
+        query = URLEncoder.encode(query.trim(), StandardCharsets.UTF_8);
+
+        URI uri = URI.create(baseUrl
+                + "?format=miJSON&maxMIScore=1&minMIScore=0&negativeFilter=POSITIVE_AND_NEGATIVE&query="
+                + query);
+
+        manager.utils.info("URL: " + uri);
+
+        JsonNode jsonObject = null;
+
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .POST(HttpRequest.BodyPublishers.ofString(query, StandardCharsets.UTF_8))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                jsonObject = new ObjectMapper().readTree(response.body());
+            } else {
+                manager.utils.info("Error: " + response.statusCode() + " " + response.body());
+            }
+        } catch (Exception e) {
+            LOGGER.error("Error: " + e.getMessage());
+        }
+
+        return jsonObject;
+    }
 
     public static JsonNode getJSON(String url, Map<String, String> queryMap, Manager manager) {
         URL trueURL;
@@ -114,7 +152,6 @@ public class HttpUtils {
         }
     }
 
-
     public static String getStringArguments(Map<String, String> args) {
         StringBuilder s = null;
         try {
@@ -130,13 +167,11 @@ public class HttpUtils {
         return s != null ? s.toString() : "";
     }
 
-
     public static String truncate(String str) {
         if (str.length() > 1000)
             return str.substring(0, 1000) + "...";
         return str;
     }
-
 
     private static URLConnection executeWithRedirect(Manager manager, String url, Map<String, String> queryMap) throws Exception {
         // Get the connection from Cytoscape

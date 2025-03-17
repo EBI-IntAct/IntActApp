@@ -42,7 +42,7 @@ public class SearchQueryComponent extends JTextField {
 
         // Since we provide our own search component, it should let Cytoscape know
         // when it has been updated by the user, so Cytoscape can give a better
-        // feedback to the user of whether or not the whole search component is ready
+        // feedback to the user of whether the whole search component is ready
         // (e.g. Cytoscape may enable or disable the search button)
         getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -144,7 +144,6 @@ public class SearchQueryComponent extends JTextField {
         queryTextArea.getActionMap().put(ENTER_ACTION_KEY, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // System.out.println("\n\nENTER");
                 SearchQueryComponent.this.firePropertyChange(NetworkSearchTaskFactory.SEARCH_REQUESTED_PROPERTY, null, null);
                 popup.setVisible(false);
             }

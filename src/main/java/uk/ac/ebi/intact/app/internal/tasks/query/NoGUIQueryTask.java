@@ -80,7 +80,7 @@ public class NoGUIQueryTask extends AbstractTask {
 
     private void resolveTermsToAcs() {
         Set<Interactor> interactors = new HashSet<>();
-        TermsResolvingTask task = new TermsResolvingTask(network, seedTerms, null, exactQuery);
+        TermsResolvingTask task = new TermsResolvingTask(network, seedTerms, null, exactQuery); //todo: check for advanced search here
         if (maxInteractorsPerTerm <= 0) {
             Map<String, List<Interactor>> interactorsToResolve = task.resolveTerms(seedTerms, 100);
             interactorsToResolve.values().forEach(interactors::addAll);
