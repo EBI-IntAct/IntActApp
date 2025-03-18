@@ -10,6 +10,7 @@ import org.cytoscape.work.*;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.Field;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
 
@@ -20,28 +21,23 @@ import java.util.*;
 import static uk.ac.ebi.intact.app.internal.utils.ViewUtils.getLayoutTask;
 
 public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
-    private String query;
-    private String name;
-    private Manager manager;
-    private boolean applyLayout;
+    private final String query;
+    private final Manager manager;
+    private final boolean applyLayout;
+    private final Network network;
 
-    public AdvancedSearchTask(Manager manager, String query, String name, boolean applyLayout) {
+    public AdvancedSearchTask(Manager manager, String query, boolean applyLayout) {
         this.query = query;
-        this.name = name;
         this.manager = manager;
         this.network = new Network(manager);
         this.applyLayout = applyLayout;
     }
-
-    private Network network;
 
     Instant begin;
 
     @Override
     public void run(TaskMonitor monitor) throws Exception {
         Manager manager = network.manager;
-        Map<Object, Object> postData = new HashMap<>();
-
         this.setNetworkFromGraphApi();
 
         if (cancelled) return;
@@ -131,6 +127,7 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
             System.out.println("No network found");
         }
     }
+
 
     private void destroyNetwork(Manager manager, Network network) {
         CyNetwork cyNetwork = network.getCyNetwork();

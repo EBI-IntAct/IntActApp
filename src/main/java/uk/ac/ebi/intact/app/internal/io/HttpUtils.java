@@ -8,6 +8,7 @@ import org.cytoscape.io.util.StreamUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.Field;
 
 import java.io.*;
 import java.net.*;
@@ -18,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
@@ -31,12 +33,16 @@ public class HttpUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtils.class);
 
     public static JsonNode getJsonNetwork(String query, Manager manager) {
-        String baseUrl = INTACT_GRAPH_WS + "advancedSearch/interaction/list";
+        String baseUrl = INTACT_GRAPH_WS + "network/fromInteractions";
         query = URLEncoder.encode(query.trim(), StandardCharsets.UTF_8);
 
-        URI uri = URI.create(baseUrl
-                + "?format=miJSON&maxMIScore=1&minMIScore=0&negativeFilter=POSITIVE_AND_NEGATIVE&query="
-                + query);
+        URI uri = URI.create(baseUrl +
+                "?advancedSearch=" +
+                Objects.toString(isAdvancedSearch(query)) +
+                "&query=" +
+                query);
+
+        System.out.println(uri);
 
         manager.utils.info("URL: " + uri);
 
@@ -61,6 +67,18 @@ public class HttpUtils {
 
         return jsonObject;
     }
+
+    public static boolean isAdvancedSearch(String query) {
+        boolean result = false;
+        for (Field field : Field.values()) {
+            if (query.contains(field.getMiqlQuery())) {
+                result = true;
+                return result;
+            }
+        }
+        return result;
+    }
+
 
     public static JsonNode getJSON(String url, Map<String, String> queryMap, Manager manager) {
         URL trueURL;

@@ -22,6 +22,9 @@ public class AdvancedSearchTaskFactory extends AbstractNetworkSearchTaskFactory 
     static URL INTACT_URL;
     static String INTACT_NAME = "IntAct Advanced Search";
     static String INTACT_DESC = "Make an advanced search query"; //todo: see to make a better desc
+    Manager manager;
+    private SearchQueryComponent queryComponent = null;
+    private Network network;
 
     private static final Logger LOGGER = Logger.getLogger(AdvancedSearchTaskFactory.class.getName());
 
@@ -32,10 +35,6 @@ public class AdvancedSearchTaskFactory extends AbstractNetworkSearchTaskFactory 
             LOGGER.warning(e.getMessage());
         }
     }
-
-    Manager manager;
-    private SearchQueryComponent queryComponent = null;
-    private Network network;
 
     public AdvancedSearchTaskFactory(Manager manager) {
         super(INTACT_ID, INTACT_NAME, INTACT_DESC, ICON, INTACT_URL);
@@ -48,7 +47,7 @@ public class AdvancedSearchTaskFactory extends AbstractNetworkSearchTaskFactory 
     }
 
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new AdvancedSearchTask(manager, queryComponent.getQueryText(), "Test", true));
+        return new TaskIterator(new AdvancedSearchTask(manager, queryComponent.getQueryText(), true));
     }
 
     public JComponent getQueryComponent() {
