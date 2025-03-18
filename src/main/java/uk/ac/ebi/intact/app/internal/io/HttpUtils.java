@@ -32,7 +32,7 @@ public class HttpUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtils.class);
 
-    public static JsonNode getJsonNetwork(String query, Manager manager) {
+    public static JsonNode getJsonNetwork(String query, Manager manager) { //todo: add requestBody
         String baseUrl = INTACT_GRAPH_WS + "network/fromInteractions";
         query = URLEncoder.encode(query.trim(), StandardCharsets.UTF_8);
 
@@ -41,8 +41,6 @@ public class HttpUtils {
                 Objects.toString(isAdvancedSearch(query)) +
                 "&query=" +
                 query);
-
-        System.out.println(uri);
 
         manager.utils.info("URL: " + uri);
 
@@ -57,26 +55,59 @@ public class HttpUtils {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
-                jsonObject = new ObjectMapper().readTree(response.body());
+                jsonObject = new ObjectMapper().readTree(response.body()); //todo: should requestBody be here?
             } else {
                 manager.utils.info("Error: " + response.statusCode() + " " + response.body());
             }
         } catch (Exception e) {
-            LOGGER.error("Error: " + e.getMessage());
+            logError(e.getMessage());
         }
 
         return jsonObject;
     }
 
+    public static JsonNode getJsonNetworkWithRequestBody(String query, Manager manager) throws IOException {
+        String baseUrl = INTACT_GRAPH_WS + "network/fromInteractions";
+        URL url = new URL(baseUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setDoOutput(true);
+
+        String body = "{\"advancedSearch\":\"" + isAdvancedSearch(query) + "\", \"query\":\"" + query + "\"}";
+
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = body.getBytes(StandardCharsets.UTF_8);
+            os.write(input, 0, input.length);
+        } catch (Exception e) {
+            LOGGER.error("Error: " + e.getMessage());
+        }
+
+        JsonNode jsonObject = null;
+
+        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            InputStream inputStream = connection.getInputStream();
+            StringBuilder responseBuilder = new StringBuilder();
+            int character;
+            while ((character = inputStream.read()) != -1) {
+                responseBuilder.append((char) character);
+            }
+            String responseBody = responseBuilder.toString();
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            jsonObject = objectMapper.readTree(responseBody); // <-- Here you are parsing the response body
+        }
+        return jsonObject;
+    }
+
     public static boolean isAdvancedSearch(String query) {
-        boolean result = false;
         for (Field field : Field.values()) {
             if (query.contains(field.getMiqlQuery())) {
-                result = true;
-                return result;
+                return true;
             }
         }
-        return result;
+        return false;
     }
 
 
@@ -104,7 +135,7 @@ public class HttpUtils {
             entityStream.close();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logError(e.getMessage());
         }
         return jsonObject;
     }
@@ -121,11 +152,11 @@ public class HttpUtils {
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response == null) {
-                manager.utils.error("No response from " + url + " with post data = " + data.toString());
+                manager.utils.error("No response from " + url + " with post data = " + data);
                 return null;
             }
             if (response.statusCode() != 200) {
-                manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + data.toString());
+                manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + data);
             }
             return new ObjectMapper().readTree(response.body());
 
@@ -149,7 +180,7 @@ public class HttpUtils {
             CompletableFuture<String> body = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .thenApply(response -> {
                         if (response.statusCode() != 200) {
-                            manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + data.toString());
+                            manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + data);
                         }
                         return response;
                     }).thenApply(HttpResponse::body);
@@ -180,7 +211,7 @@ public class HttpUtils {
                     s.append("&").append(key).append("=").append(URLEncoder.encode(args.get(key), StandardCharsets.UTF_8.displayName()));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logError(e.getMessage());
         }
         return s != null ? s.toString() : "";
     }
@@ -197,7 +228,7 @@ public class HttpUtils {
 
         // We want to write on the stream
         connection.setDoOutput(true);
-        // We want to deal with redirection ourself
+        // We want to deal with redirection ourselves
         connection.setInstanceFollowRedirects(false);
 
         // We write the POST arguments
@@ -231,7 +262,7 @@ public class HttpUtils {
                 builder.append(line); // + "\r\n"(no need, json has no line breaks!)
             }
         }
-        System.out.println("JSON error response: " + builder.toString());
+        System.out.println("JSON error response: " + builder);
         return builder.toString();
     }
 
@@ -247,7 +278,7 @@ public class HttpUtils {
             }
             jsonText = builder.toString();
         } catch (IOException e) {
-            e.printStackTrace();
+            logError(e.getMessage());
         }
 
         return jsonText;
@@ -259,7 +290,7 @@ public class HttpUtils {
             try {
                 return new ObjectMapper().readTree(jsonText);
             } catch (JsonProcessingException e) {
-                e.printStackTrace();
+                logError(e.getMessage());
             }
         }
         return null;
@@ -288,4 +319,7 @@ public class HttpUtils {
         return HttpRequest.BodyPublishers.ofString(builder.toString());
     }
 
+    private static void logError(String message) {
+        LOGGER.error(message);
+    }
 }

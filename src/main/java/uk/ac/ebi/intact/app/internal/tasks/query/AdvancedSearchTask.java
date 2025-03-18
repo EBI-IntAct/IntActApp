@@ -1,20 +1,21 @@
 package uk.ac.ebi.intact.app.internal.tasks.query;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.*;
+
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
-import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.Field;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
 
-import java.time.Duration;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 
@@ -45,26 +46,12 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         monitor.setTitle("Querying IntAct servers");
         monitor.setProgress(0.2);
         monitor.showMessage(TaskMonitor.Level.INFO, "Querying IntAct servers");
-        begin = Instant.now();
         manager.utils.registerService(this, TaskObserver.class, new Properties());
 
-        System.out.println(Duration.between(begin, Instant.now()).toSeconds());
-        // This may change...
         monitor.setTitle("Parsing result data");
         monitor.showMessage(TaskMonitor.Level.INFO, "Parsing data");
         monitor.setProgress(0.4);
         if (cancelled) return;
-//        CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, results, netName, () -> cancelled);
-
-//        if (cyNetwork == null) {
-//            monitor.showMessage(TaskMonitor.Level.ERROR, "IntAct returned no results");
-//            return;
-//        }
-
-//        if (cancelled) {
-//            destroyNetwork(manager, network);
-//            return;
-//        }
 
         CyNetwork cyNetwork = network.getCyNetwork();
 
@@ -73,7 +60,6 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         monitor.setProgress(0.6);
         manager.data.addNetwork(network, cyNetwork);
         manager.data.fireIntactNetworkCreated(network);
-        System.out.println(Duration.between(begin, Instant.now()).toSeconds());
 
         if (cancelled) {
             destroyNetwork(manager, network);
@@ -84,7 +70,6 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         monitor.showMessage(TaskMonitor.Level.INFO, "Register network");
         monitor.setProgress(0.7);
         manager.data.setCurrentNetwork(cyNetwork);
-        System.out.println(Duration.between(begin, Instant.now()).toSeconds());
         if (cancelled) {
             manager.utils.getService(CyNetworkManager.class).destroyNetwork(cyNetwork);
         }
@@ -100,7 +85,6 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         monitor.setProgress(0.8);
         CyNetworkView networkView = manager.data.createNetworkView(cyNetwork);
         ViewUtils.registerView(manager, networkView);
-        System.out.println(Duration.between(begin, Instant.now()).toSeconds());
 
         if (cancelled) {
             destroyNetwork(manager, network);
@@ -114,12 +98,16 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         }
 
         manager.utils.showResultsPanel();
-        System.out.println(Duration.between(begin, Instant.now()).toSeconds());
     }
 
 
     private void setNetworkFromGraphApi() {
-        JsonNode fetchedNetwork = HttpUtils.getJsonNetwork(this.query, manager);
+        JsonNode fetchedNetwork;
+        try {
+            fetchedNetwork = HttpUtils.getJsonNetworkWithRequestBody(this.query, manager);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         if (fetchedNetwork != null) {
             CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, "test", () -> cancelled);
             network.setNetwork(cyNetwork);
