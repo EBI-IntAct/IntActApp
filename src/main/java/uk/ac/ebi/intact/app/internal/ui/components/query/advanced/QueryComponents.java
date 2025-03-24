@@ -6,8 +6,8 @@ public class QueryComponents {
     private String userInput;
     private String userInput2;
     private boolean negated;
+    private String name;
 
-    // Getters and setters
     public String getEntity() { return entity; }
     public void setEntity(String entity) { this.entity = entity; }
 
@@ -22,6 +22,9 @@ public class QueryComponents {
 
     public boolean isNegated() { return negated; }
     public void setNegated(boolean negated) { this.negated = negated; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
     @Override
     public String toString() {

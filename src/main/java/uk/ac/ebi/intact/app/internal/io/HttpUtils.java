@@ -1,8 +1,11 @@
 package uk.ac.ebi.intact.app.internal.io;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import org.cytoscape.io.util.StreamUtil;
 import org.slf4j.Logger;
@@ -18,87 +21,50 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static uk.ac.ebi.intact.app.internal.model.managers.Manager.INTACT_GRAPH_WS;
 
 public class HttpUtils {
+
     private static final HttpClient httpClient = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
             .build();
 
+    private static final HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json");
+
+    private static final ObjectMapper mapper = JsonMapper.builder()
+            .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
+            .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true)
+            .build();
+
+    private static final HttpClient client = HttpClient.newHttpClient();
+
+
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtils.class);
 
-    public static JsonNode getJsonNetwork(String query, Manager manager) { //todo: add requestBody
+    public static JsonNode getJsonNetworkWithRequestBody(String query) throws IOException, InterruptedException {
         String baseUrl = INTACT_GRAPH_WS + "network/fromInteractions";
-        query = URLEncoder.encode(query.trim(), StandardCharsets.UTF_8);
 
-        URI uri = URI.create(baseUrl +
-                "?advancedSearch=" +
-                Objects.toString(isAdvancedSearch(query)) +
-                "&query=" +
-                query);
+        Map<String, Object> params = Map.of(
+                "query", query,
+                "advancedSearch", isAdvancedSearch(query)
+        );
 
-        manager.utils.info("URL: " + uri);
+        HttpRequest request = requestBuilder
+                .uri(URI.create(baseUrl))
+                .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(params)))
+                .build();
 
-        JsonNode jsonObject = null;
-
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(uri)
-                    .POST(HttpRequest.BodyPublishers.ofString(query, StandardCharsets.UTF_8))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                jsonObject = new ObjectMapper().readTree(response.body()); //todo: should requestBody be here?
-            } else {
-                manager.utils.info("Error: " + response.statusCode() + " " + response.body());
-            }
-        } catch (Exception e) {
-            logError(e.getMessage());
-        }
-
-        return jsonObject;
-    }
-
-    public static JsonNode getJsonNetworkWithRequestBody(String query, Manager manager) throws IOException {
-        String baseUrl = INTACT_GRAPH_WS + "network/fromInteractions";
-        URL url = new URL(baseUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
-
-        String body = "{\"advancedSearch\":\"" + isAdvancedSearch(query) + "\", \"query\":\"" + query + "\"}";
-
-        try (OutputStream os = connection.getOutputStream()) {
-            byte[] input = body.getBytes(StandardCharsets.UTF_8);
-            os.write(input, 0, input.length);
-        } catch (Exception e) {
-            LOGGER.error("Error: " + e.getMessage());
-        }
-
-        JsonNode jsonObject = null;
-
-        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            InputStream inputStream = connection.getInputStream();
-            StringBuilder responseBuilder = new StringBuilder();
-            int character;
-            while ((character = inputStream.read()) != -1) {
-                responseBuilder.append((char) character);
-            }
-            String responseBody = responseBuilder.toString();
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            jsonObject = objectMapper.readTree(responseBody); // <-- Here you are parsing the response body
-        }
-        return jsonObject;
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return mapper.readTree(response.body());
     }
 
     public static boolean isAdvancedSearch(String query) {

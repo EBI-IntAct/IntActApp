@@ -101,13 +101,14 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
     }
 
 
-    private void setNetworkFromGraphApi() {
+    private void setNetworkFromGraphApi(){
         JsonNode fetchedNetwork;
         try {
-            fetchedNetwork = HttpUtils.getJsonNetworkWithRequestBody(this.query, manager);
-        } catch (IOException e) {
+            fetchedNetwork = HttpUtils. getJsonNetworkWithRequestBody(this.query);
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+
         if (fetchedNetwork != null) {
             CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, "test", () -> cancelled);
             network.setNetwork(cyNetwork);

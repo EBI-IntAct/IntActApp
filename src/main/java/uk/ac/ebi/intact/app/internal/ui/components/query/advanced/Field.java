@@ -134,6 +134,15 @@ public enum Field {
         return matchingFields;
     }
 
+    public static Field getFieldsFromMiQL(String miqlQuery) {
+        for (Field field : FIELD_MAP.values()) {
+            if (field.getMiqlQuery().equalsIgnoreCase(miqlQuery)) {
+                return field;
+            }
+        }
+        return null;
+    }
+
     public static String[] getEntities() {
         Set<String> uniqueEntities = new HashSet<>();
         for (Field field : FIELD_MAP.values()) {
