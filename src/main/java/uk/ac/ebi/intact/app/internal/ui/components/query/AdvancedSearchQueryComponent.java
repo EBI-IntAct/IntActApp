@@ -27,7 +27,8 @@ public class AdvancedSearchQueryComponent {
     private final JPanel rulesPanel = new JPanel();
 
     private int numberOfRuleBuilders = 0;
-//    private int currentBuilderIndex = 0;
+
+    private final Color INTACT_PURPLE = new Color(104, 41, 124);
 
     public static void main(String[] args) {
         AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
@@ -52,9 +53,16 @@ public class AdvancedSearchQueryComponent {
 
         frame.add(scrollPane);
 
+        JPanel buttonContainer = new JPanel();
+        buttonContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
         JButton buildQueryButton = new JButton("Build query");
+
+        setButtonIntactPurple(buildQueryButton);
         buildQueryButton.addActionListener(e -> System.out.println(getMainQuery()));
-        frame.add(buildQueryButton);
+
+        buttonContainer.add(buildQueryButton);
+
+        frame.add(buttonContainer);
 
         frame.setVisible(true);
         return frame;
@@ -119,8 +127,7 @@ public class AdvancedSearchQueryComponent {
         oneRuleBuilder.add(getUserInputProperty2(oneRuleBuilder));
 
         JButton deleteRuleButton = new JButton("Delete rule");
-        deleteRuleButton.setSize(comboboxDimension);
-        deleteRuleButton.setMaximumSize(comboboxDimension);
+        setButtonIntactPurple(deleteRuleButton);
 
         deleteRuleButton.addActionListener(e -> deleteRule(oneRuleBuilder));
         oneRuleBuilder.add(deleteRuleButton);
@@ -249,7 +256,7 @@ public class AdvancedSearchQueryComponent {
 
     private JPanel getQueryInputField(){
         JPanel queryInputFieldContainer = new JPanel();
-        queryInputFieldContainer.setBorder(BorderFactory.createTitledBorder("Built query"));
+
         queryTextField.setMinimumSize(new Dimension(frameWidth, 25));
         queryTextField.setPreferredSize(new Dimension(frameWidth/2, 25));
         queryTextField.setVisible(true);
@@ -259,24 +266,29 @@ public class AdvancedSearchQueryComponent {
 
     private JPanel getAndOrButton() {
         JButton andButton = new JButton("AND");
-        andButton.setForeground(Color.MAGENTA);
-        JButton orButton = new JButton("OR");
-        JButton addRuleButton = new JButton("Add rule");
+        setButtonIntactPurple(andButton);
 
-        Color INTACT_PURPLE = new Color(104, 41, 124);
+        JButton orButton = new JButton("OR");
+        setButtonWhite(orButton);
+
+        JButton addRuleButton = new JButton("+ Rule");
+        setButtonIntactPurple(addRuleButton);
+
+        JButton ruleSetButton = new JButton("+ Ruleset");
+        setButtonIntactPurple(ruleSetButton);
 
         JPanel buttonContainer = new JPanel();
 
         andButton.addActionListener(e -> {
-            andButton.setForeground(Color.MAGENTA);
-            orButton.setForeground(Color.BLACK);
+            setButtonIntactPurple(andButton);
+            setButtonWhite(orButton);
             ruleOperator = "AND";
             queryTextField.setText(getMainQuery());
         });
 
         orButton.addActionListener(e -> {
-            andButton.setForeground(Color.BLACK);
-            orButton.setForeground(Color.MAGENTA);
+            setButtonWhite(andButton);
+            setButtonIntactPurple(orButton);
             ruleOperator = "OR";
             queryTextField.setText(getMainQuery());
         });
@@ -292,10 +304,23 @@ public class AdvancedSearchQueryComponent {
         buttonContainer.add(andButton);
         buttonContainer.add(orButton);
         buttonContainer.add(addRuleButton);
-
-
+        buttonContainer.add(ruleSetButton);
 
         return buttonContainer;
+    }
+
+    private void setButtonIntactPurple(JButton button) {
+        button.setOpaque(true);
+        button.setBorderPainted(false);
+        button.setBackground(INTACT_PURPLE);
+        button.setForeground(Color.WHITE);
+    }
+
+    private void setButtonWhite(JButton button) {
+        button.setOpaque(true);
+        button.setBorderPainted(false);
+        button.setBackground(Color.WHITE);
+        button.setForeground(INTACT_PURPLE);
     }
 
     private void setEntitiesComboBoxesSelected(){
