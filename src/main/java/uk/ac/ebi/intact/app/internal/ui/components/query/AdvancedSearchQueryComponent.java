@@ -4,6 +4,8 @@ import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.Field;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.QueryComponents;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -25,7 +27,7 @@ public class AdvancedSearchQueryComponent {
     private final JPanel rulesPanel = new JPanel();
 
     private int numberOfRuleBuilders = 0;
-    private int currentBuilderIndex = 0;
+//    private int currentBuilderIndex = 0;
 
     public static void main(String[] args) {
         AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
@@ -59,7 +61,9 @@ public class AdvancedSearchQueryComponent {
     }
 
     private void setUpEntitiesPropertiesCombobox(String entitySelected, int index) {
-        if (index < 0 || index >= entitiesPropertiesComboBoxes.size()) return;
+        if (index < 0 || index >= entitiesPropertiesComboBoxes.size()) {
+            return;
+        }
 
         JComboBox<String> entitiesCombobox = entitiesPropertiesComboBoxes.get(index);
         entitiesCombobox.removeAllItems();
@@ -103,18 +107,16 @@ public class AdvancedSearchQueryComponent {
     }
 
     public JPanel getOneRuleBuilderPanel() {
-        currentBuilderIndex = numberOfRuleBuilders - 1;
-
         JPanel oneRuleBuilder = new JPanel();
         oneRuleBuilder.setBorder(BorderFactory.createTitledBorder("Rule"));
         oneRuleBuilder.setLayout(new BoxLayout(oneRuleBuilder, BoxLayout.X_AXIS));
         oneRuleBuilder.setVisible(true);
 
         oneRuleBuilder.add(getEntityComboBox());
-        oneRuleBuilder.add(getEntityPropertiesComboBox());
-        oneRuleBuilder.add(getOperatorsComboBox());
+        oneRuleBuilder.add(getEntityPropertiesComboBox(oneRuleBuilder));
+        oneRuleBuilder.add(getOperatorsComboBox(oneRuleBuilder));
         oneRuleBuilder.add(getUserInputProperty());
-        oneRuleBuilder.add(getUserInputProperty2());
+        oneRuleBuilder.add(getUserInputProperty2(oneRuleBuilder));
 
         JButton deleteRuleButton = new JButton("Delete rule");
         deleteRuleButton.setSize(comboboxDimension);
@@ -125,6 +127,7 @@ public class AdvancedSearchQueryComponent {
 
         setActionListeners();
 
+        numberOfRuleBuilders++;
         return oneRuleBuilder;
     }
 
@@ -143,11 +146,11 @@ public class AdvancedSearchQueryComponent {
         }
 
         numberOfRuleBuilders--;
-
         queryTextField.setText(getMainQuery());
         rulesPanel.revalidate();
         rulesPanel.repaint();
     }
+
     private JComboBox<String> getEntityComboBox() {
         JComboBox<String> entitiesComboBox = new JComboBox<>(Field.getEntities());
         entitiesComboBox.setSize(comboboxDimension);
@@ -155,10 +158,7 @@ public class AdvancedSearchQueryComponent {
 
         entitiesComboBoxes.add(entitiesComboBox);
 
-        entitiesComboBox.setSelectedIndex(0);
-
         entitiesComboBox.addActionListener(e -> {
-
             JComboBox<String> sourceComboBox = (JComboBox<String>) e.getSource();
             int index = entitiesComboBoxes.indexOf(sourceComboBox);
             setUpEntitiesPropertiesCombobox((String) sourceComboBox.getSelectedItem(), index);
@@ -168,23 +168,24 @@ public class AdvancedSearchQueryComponent {
         return entitiesComboBox;
     }
 
-    private JComboBox<String> getEntityPropertiesComboBox() {
+    private JComboBox<String> getEntityPropertiesComboBox(JPanel oneRuleBuilder) {
         JComboBox<String> entitiesPropertiesComboBox = new JComboBox<>();
         entitiesPropertiesComboBox.setSize(comboboxDimension);
         entitiesPropertiesComboBox.setMaximumSize(comboboxDimension);
 
         entitiesPropertiesComboBoxes.add(entitiesPropertiesComboBox);
-
         entitiesPropertiesComboBox.addItemListener(e -> {
+            int currentBuilderIndex = rulesPanel.getComponentZOrder(oneRuleBuilder);
             setUpOperatorsCombobox((String) entitiesPropertiesComboBoxes.get(currentBuilderIndex).getSelectedItem(),
                     (String) entitiesComboBoxes.get(currentBuilderIndex).getSelectedItem(), currentBuilderIndex);
+
             queryTextField.setText(getMainQuery());
         });
 
         return entitiesPropertiesComboBox;
     }
 
-    private JComboBox<String> getOperatorsComboBox() {
+    private JComboBox<String> getOperatorsComboBox(JPanel oneRuleBuilder) {
         JComboBox<String> operatorsComboBox = new JComboBox<>();
         operatorsComboBox.setSize(comboboxDimension);
         operatorsComboBox.setMaximumSize(comboboxDimension);
@@ -192,10 +193,12 @@ public class AdvancedSearchQueryComponent {
         operatorsComboBoxes.add(operatorsComboBox);
 
         operatorsComboBox.addActionListener(e -> {
+            int currentBuilderIndex = rulesPanel.getComponentZOrder(oneRuleBuilder);
+
             userInputProperties2.get(currentBuilderIndex)
-                    .setVisible(operatorsComboBox.getSelectedItem() != null && isUserInput2needed());
+                    .setVisible(operatorsComboBox.getSelectedItem() != null && isUserInput2needed(oneRuleBuilder));
             userInputProperties.get(currentBuilderIndex)
-                    .setVisible(operatorsComboBox.getSelectedItem() != null && isUserInputNeeded());
+                    .setVisible(operatorsComboBox.getSelectedItem() != null && isUserInputNeeded(oneRuleBuilder));
             queryTextField.setText(getMainQuery());
         });
 
@@ -214,15 +217,12 @@ public class AdvancedSearchQueryComponent {
         return userInputProperty;
     }
 
-    private JTextField getUserInputProperty2() {
+    private JTextField getUserInputProperty2(JPanel oneRuleBuilder) {
         JTextField userInputProperty2 = new JTextField(15);
         userInputProperty2.setSize(comboboxDimension);
         userInputProperty2.setMaximumSize(comboboxDimension);
 
         userInputProperties2.add(userInputProperty2);
-
-        userInputProperty2.setVisible(isUserInput2needed());
-
         userInputProperty2.addActionListener(e -> queryTextField.setText(getMainQuery()));
 
         return userInputProperty2;
@@ -235,12 +235,14 @@ public class AdvancedSearchQueryComponent {
         });
     }
 
-    private boolean isUserInput2needed() {
+    private boolean isUserInput2needed(JPanel oneRuleBuilder) {
+        int currentBuilderIndex = rulesPanel.getComponentZOrder(oneRuleBuilder);
         String operatorSelected = (String) operatorsComboBoxes.get(currentBuilderIndex).getSelectedItem();
         return operatorSelected != null && (operatorSelected.equals("∈") || operatorSelected.equals("∉"));
     }
 
-    private boolean isUserInputNeeded(){
+    private boolean isUserInputNeeded(JPanel oneRuleBuilder) {
+        int currentBuilderIndex = rulesPanel.getComponentZOrder(oneRuleBuilder);
         String operatorSelected = (String) operatorsComboBoxes.get(currentBuilderIndex).getSelectedItem();
         return operatorSelected != null && !(operatorSelected.equals("TRUE") || operatorSelected.equals("FALSE"));
     }
@@ -280,10 +282,10 @@ public class AdvancedSearchQueryComponent {
         });
 
         addRuleButton.addActionListener(e -> {
-            numberOfRuleBuilders++;
             rulesPanel.add(getOneRuleBuilderPanel());
             rulesPanel.revalidate();
             rulesPanel.repaint();
+            setEntitiesComboBoxesSelected(); //triggers the actionListener to set up the other comboboxes
             queryTextField.setText(getMainQuery());
         });
 
@@ -291,7 +293,15 @@ public class AdvancedSearchQueryComponent {
         buttonContainer.add(orButton);
         buttonContainer.add(addRuleButton);
 
+
+
         return buttonContainer;
+    }
+
+    private void setEntitiesComboBoxesSelected(){
+        for (JComboBox<String> comboBox : entitiesComboBoxes) {
+            comboBox.setSelectedIndex(0);
+        }
     }
 
     public String getQuery(int builderIndex) {
@@ -389,21 +399,17 @@ public class AdvancedSearchQueryComponent {
         if (queries.length > entitiesComboBoxes.size()) {
             while (queries.length > entitiesComboBoxes.size()) {
                 rulesPanel.add(getOneRuleBuilderPanel());
-                rulesPanel.revalidate();
-                rulesPanel.repaint();
-                queryTextField.setText(getMainQuery());
-                numberOfRuleBuilders++;
             }
         } else if (queries.length < numberOfRuleBuilders) {
             while (queries.length < numberOfRuleBuilders) {
-                numberOfRuleBuilders--;
-                Component lastRule = rulesPanel.getComponents()[numberOfRuleBuilders];
+                Component lastRule = rulesPanel.getComponents()[numberOfRuleBuilders-1];
                 deleteRule((JPanel) lastRule);
-                rulesPanel.revalidate();
-                rulesPanel.repaint();
-                queryTextField.setText(getMainQuery());
             }
         }
+
+        rulesPanel.revalidate();
+        rulesPanel.repaint();
+        queryTextField.setText(getMainQuery());
     }
 
     private String[] getQueriesFromTextField(String queryFromTextField){
