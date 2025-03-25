@@ -108,6 +108,17 @@ public class SearchQueryComponent extends JTextField {
         queryScroll.setPreferredSize(new Dimension(getSize().width, 200));
         popup.setPreferredSize(queryScroll.getPreferredSize());
 
+        JButton testButton = new JButton("QueryBuilder");
+        testButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
+                component.getFrame();
+            }
+        });
+
+        popup.add(testButton, BorderLayout.EAST);
+
         popup.show(this, 0, 0);
         popup.requestFocus();
         queryTextArea.requestFocusInWindow();

@@ -1,5 +1,10 @@
 package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class QueryComponents {
     private String entity;
     private String operator;
@@ -7,24 +12,6 @@ public class QueryComponents {
     private String userInput2;
     private boolean negated;
     private String name;
-
-    public String getEntity() { return entity; }
-    public void setEntity(String entity) { this.entity = entity; }
-
-    public String getOperator() { return operator; }
-    public void setOperator(String operator) { this.operator = operator; }
-
-    public String getUserInput() { return userInput; }
-    public void setUserInput(String userInput) { this.userInput = userInput; }
-
-    public String getUserInput2() { return userInput2; }
-    public void setUserInput2(String userInput2) { this.userInput2 = userInput2; }
-
-    public boolean isNegated() { return negated; }
-    public void setNegated(boolean negated) { this.negated = negated; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
 
     @Override
     public String toString() {

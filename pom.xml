@@ -251,8 +251,14 @@
             <version>${osgi.api.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.34</version>
+            <scope>provided</scope>
+        </dependency>
 
-<!--        <dependency>-->
+        <!--        <dependency>-->
 <!--            <groupId>uk.ac.ebi.intact.search.interactions</groupId>-->
 <!--            <artifactId>intact-search-interactions-service</artifactId>-->
 <!--            <version>${search.interaction.service.version}</version>-->
