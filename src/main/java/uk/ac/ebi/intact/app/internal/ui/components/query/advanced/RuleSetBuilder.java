@@ -30,8 +30,30 @@ public class RuleSetBuilder {
         return ruleSetPanel;
     }
 
-    public String getQuery() {
-        return "(" + getQueriesFromRuleBuilders(rules, ruleOperator) + ")";
+
+    public String getQuery(){
+        String queryFromSubRuleSets = getQueryFromSubRuleSets();
+        if (queryFromSubRuleSets != null) {
+            return "(" + getQueryFromRules() + " " + ruleOperator + " " + getQueryFromSubRuleSets() + ")";
+        } else {
+            return "(" + getQueryFromRules() + ")";
+        }
+    }
+
+    private String getQueryFromRules() {
+        return getQueriesFromRuleBuilders(rules, ruleOperator);
+    }
+
+    private String getQueryFromSubRuleSets(){
+        if (!ruleSetBuilders.isEmpty()) {
+            StringBuilder subQuery = new StringBuilder("(");
+            for (RuleSetBuilder ruleSetBuilder : ruleSetBuilders) {
+                subQuery.append(ruleSetBuilder.getQueryFromRules());
+            }
+            return subQuery + ")";
+        }
+        else {
+            return null;
+        }
     }
 }
-

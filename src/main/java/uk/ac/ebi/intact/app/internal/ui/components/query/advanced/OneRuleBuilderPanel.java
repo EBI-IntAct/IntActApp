@@ -1,5 +1,7 @@
 package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
 
+import uk.ac.ebi.intact.app.internal.ui.components.query.AdvancedSearchQueryComponent;
+
 import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.*;
 
 import javax.swing.*;
@@ -16,6 +18,12 @@ public class OneRuleBuilderPanel {
 
     JTextField userInputProperty = new JTextField();
     JTextField userInputProperty2 = new JTextField();
+
+    AdvancedSearchQueryComponent advancedSearchQueryComponent;
+
+    public OneRuleBuilderPanel(AdvancedSearchQueryComponent advancedSearchQueryComponent) {
+        this.advancedSearchQueryComponent = advancedSearchQueryComponent;
+    }
 
     public JPanel getOneRuleBuilderPanel() {
         oneRule.setBorder(BorderFactory.createTitledBorder("Rule"));
@@ -36,7 +44,8 @@ public class OneRuleBuilderPanel {
 
         entityComboBox.addActionListener(e -> {
             setUpEntityPropertiesCombobox((String) entityComboBox.getSelectedItem());
-//            queryTextField.setText(advancedSearchQueryComponent.getQueriesFromRuleBuilders());
+            advancedSearchQueryComponent.getQueryTextField()
+                    .setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         return entityComboBox;
@@ -59,7 +68,8 @@ public class OneRuleBuilderPanel {
         operatorsComboBox.addActionListener(e -> {
             userInputProperty2.setVisible(operatorsComboBox.getSelectedItem() != null && isUserInput2needed());
             userInputProperty.setVisible(operatorsComboBox.getSelectedItem() != null && isUserInputNeeded());
-//            queryTextField.setText(advancedSearchQueryComponent.getQueriesFromRuleBuilders());
+            advancedSearchQueryComponent.getQueryTextField()
+                    .setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         return operatorsComboBox;
@@ -67,7 +77,9 @@ public class OneRuleBuilderPanel {
 
     private JTextField getUserInputProperty() {
         setCorrectDimensions(userInputProperty);
-//        userInputProperty.addActionListener(e -> queryTextField.setText(advancedSearchQueryComponent.getQueriesFromRuleBuilders()));
+        userInputProperty.addActionListener(e ->
+                advancedSearchQueryComponent.getQueryTextField()
+                        .setText(advancedSearchQueryComponent.getFullQuery()));
         return userInputProperty;
     }
 
@@ -78,7 +90,9 @@ public class OneRuleBuilderPanel {
 
     private JTextField getUserInputProperty2() {
         setCorrectDimensions(userInputProperty2);
-//        userInputProperty2.addActionListener(e -> queryTextField.setText(advancedSearchQueryComponent.getQueriesFromRuleBuilders()));
+        userInputProperty2.addActionListener(e ->
+                advancedSearchQueryComponent.getQueryTextField()
+                        .setText(advancedSearchQueryComponent.getFullQuery()));
         return userInputProperty2;
     }
 

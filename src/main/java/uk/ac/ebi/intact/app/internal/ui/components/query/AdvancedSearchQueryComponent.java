@@ -51,11 +51,28 @@ public class AdvancedSearchQueryComponent {
 
         setButtonIntactPurple(buildQueryButton);
         buildQueryButton.addActionListener(e ->{
-            System.out.println(getQueriesFromRuleBuilders(rules, queryOperators.getRuleOperator()));
+            System.out.println(getFullQuery());
         });
 
         buttonContainer.add(buildQueryButton);
         return buttonContainer;
+    }
+
+    public String getFullQuery(){
+        StringBuilder fullQuery = new StringBuilder();
+        String queryFromRuleBuilders = getQueriesFromRuleBuilders(rules, queryOperators.getRuleOperator());
+        if (queryFromRuleBuilders != null) {
+            fullQuery = new StringBuilder(queryFromRuleBuilders);
+            fullQuery.append(" ")
+                     .append(queryOperators.getRuleOperator())
+                     .append(" ");
+        }
+
+        for (RuleSetBuilder ruleSetBuilder : ruleSetBuilders) {
+            fullQuery.append(ruleSetBuilder.getQuery());
+        }
+
+        return fullQuery.toString();
     }
 
     private JScrollPane getRuleScrollPane() {
@@ -73,7 +90,7 @@ public class AdvancedSearchQueryComponent {
 
     public void addRule(){
         JPanel rulePanel = new JPanel();
-        OneRuleBuilderPanel oneRuleBuilderPanel = new OneRuleBuilderPanel();
+        OneRuleBuilderPanel oneRuleBuilderPanel = new OneRuleBuilderPanel(this);
         rules.add(oneRuleBuilderPanel);
 
         rulePanel.add(oneRuleBuilderPanel.getOneRuleBuilderPanel());

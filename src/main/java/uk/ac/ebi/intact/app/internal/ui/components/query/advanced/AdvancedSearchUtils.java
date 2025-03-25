@@ -30,13 +30,16 @@ public class AdvancedSearchUtils {
     }
 
     public static String getQueriesFromRuleBuilders(ArrayList<OneRuleBuilderPanel> rules, String queryOperator) {
-        ArrayList<String> ruleBuilders = new ArrayList<>();
-        for (OneRuleBuilderPanel oneRuleBuilderPanel : rules) {
-            oneRuleBuilderPanel.getQuery();
-            ruleBuilders.add(oneRuleBuilderPanel.getQuery());
+        if (!rules.isEmpty()){
+            ArrayList<String> ruleBuilders = new ArrayList<>();
+            for (OneRuleBuilderPanel oneRuleBuilderPanel : rules) {
+                oneRuleBuilderPanel.getQuery();
+                ruleBuilders.add(oneRuleBuilderPanel.getQuery());
+            }
+            return String.join(" " + queryOperator + " ", ruleBuilders);
+        } else {
+            return null;
         }
-        System.out.println(String.join(" " + queryOperator + " ", ruleBuilders));
-        return String.join(" " + queryOperator + " ", ruleBuilders);
     }
 
 }

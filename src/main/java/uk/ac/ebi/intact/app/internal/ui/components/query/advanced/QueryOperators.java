@@ -46,16 +46,16 @@ public class QueryOperators {
             setButtonIntactPurple(andButton);
             setButtonWhite(orButton);
             ruleOperator = "AND";
-//            advancedSearchQueryComponent.getQueryTextField()
-//                    .setText(advancedSearchQueryComponent.getQueriesFromRuleBuilders());
+            advancedSearchQueryComponent.getQueryTextField()
+                    .setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         orButton.addActionListener(e -> {
             setButtonWhite(andButton);
             setButtonIntactPurple(orButton);
             ruleOperator = "OR";
-//            advancedSearchQueryComponent.getQueryTextField()
-//                    .setText(advancedSearchQueryComponent.getQueriesFromRuleBuilders());
+            advancedSearchQueryComponent.getQueryTextField()
+                    .setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         buttonContainer.add(andButton);
@@ -74,7 +74,7 @@ public class QueryOperators {
         setButtonIntactPurple(ruleSetButton);
 
         addRuleButton.addActionListener(e -> {
-            OneRuleBuilderPanel rule = new OneRuleBuilderPanel();
+            OneRuleBuilderPanel rule = new OneRuleBuilderPanel(advancedSearchQueryComponent);
 
             parentContainer.add(rule.getOneRuleBuilderPanel());
             rule.setEntityComboboxSelected(); //triggers the actionListener to set up the other comboBoxes
@@ -83,8 +83,8 @@ public class QueryOperators {
             parentContainer.revalidate();
             parentContainer.repaint();
 
-//            advancedSearchQueryComponent.getQueryTextField()
-//                    .setText(advancedSearchQueryComponent.getQueriesFromRuleBuilders());
+            advancedSearchQueryComponent.getQueryTextField()
+                    .setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         ruleSetButton.addActionListener(e -> {
@@ -97,8 +97,8 @@ public class QueryOperators {
             parentContainer.revalidate();
             parentContainer.repaint();
 
-//            advancedSearchQueryComponent.getQueryTextField()
-//                    .setText(advancedSearchQueryComponent.getQueriesFromRuleBuilders());
+            advancedSearchQueryComponent.getQueryTextField()
+                    .setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         buttonContainer.add(addRuleButton);
