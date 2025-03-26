@@ -10,8 +10,7 @@ import java.util.ArrayList;
 public class RuleSetBuilder {
 
     private final JPanel ruleSetPanel = new JPanel();
-    private final String ruleOperator = "AND";
-    private final AdvancedSearchQueryComponent advancedSearchQueryComponent;
+    private final QueryOperators queryOperators;
 
     @Getter
     private final ArrayList<OneRuleBuilderPanel> rules = new ArrayList<>();
@@ -19,29 +18,29 @@ public class RuleSetBuilder {
     @Getter
     private final ArrayList<RuleSetBuilder> ruleSetBuilders = new ArrayList<>();
 
+
     public RuleSetBuilder(AdvancedSearchQueryComponent advancedSearchQueryComponent) {
-        this.advancedSearchQueryComponent = advancedSearchQueryComponent;
+        queryOperators = new QueryOperators(advancedSearchQueryComponent, rules, ruleSetBuilders);
     }
 
     public JPanel getRuleSetPanel() {
         ruleSetPanel.setBorder(BorderFactory.createTitledBorder("Rule Set"));
         ruleSetPanel.setLayout(new BoxLayout(ruleSetPanel, BoxLayout.Y_AXIS));
-        ruleSetPanel.add(new QueryOperators(advancedSearchQueryComponent, rules, ruleSetBuilders).getButtons(ruleSetPanel));
+        ruleSetPanel.add(queryOperators.getButtons(ruleSetPanel));
         return ruleSetPanel;
     }
-
 
     public String getQuery(){
         String queryFromSubRuleSets = getQueryFromSubRuleSets();
         if (queryFromSubRuleSets != null) {
-            return "(" + getQueryFromRules() + " " + ruleOperator + " " + getQueryFromSubRuleSets() + ")";
+            return "(" + getQueryFromRules() + " " + this.queryOperators.getRuleOperator() + " " + getQueryFromSubRuleSets() + ")";
         } else {
             return "(" + getQueryFromRules() + ")";
         }
     }
 
     private String getQueryFromRules() {
-        return getQueriesFromRuleBuilders(rules, ruleOperator);
+        return getQueriesFromRuleBuilders(rules, this.queryOperators.getRuleOperator());
     }
 
     private String getQueryFromSubRuleSets(){
