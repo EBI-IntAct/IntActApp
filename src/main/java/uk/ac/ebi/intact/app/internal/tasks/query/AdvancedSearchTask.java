@@ -2,6 +2,9 @@ package uk.ac.ebi.intact.app.internal.tasks.query;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
@@ -39,7 +42,7 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
     @Override
     public void run(TaskMonitor monitor) throws Exception {
         Manager manager = network.manager;
-        this.setNetworkFromGraphApi();
+        this.setNetworkFromGraphApi(monitor);
 
         if (cancelled) return;
         monitor.setTitle("Load IntAct Network");
@@ -103,11 +106,23 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
 
     private void setNetworkFromGraphApi(){
         JsonNode fetchedNetwork;
+
+        monitor.setTitle("Fetch network from IntAct servers");
+        monitor.setProgress(0);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+
+        Map<String, JsonNode> nodes = new HashMap<>();
+        ArrayNode edgesArray = mapper.createArrayNode();
+
         try {
             fetchedNetwork = HttpUtils. getJsonNetworkWithRequestBody(this.query);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        if (cancelled) return;
 
         if (fetchedNetwork != null) {
             CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, "test", () -> cancelled);
@@ -144,5 +159,24 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
     @Override
     public void allFinished(FinishStatus finishStatus) {
 
+    }
+
+    public static JsonNode mergeJsonNodes(ObjectMapper objectMapper, List<JsonNode> jsonNodes) {
+        ObjectNode merged = objectMapper.createObjectNode();
+        ArrayNode mergedNodes = objectMapper.createArrayNode();
+        ArrayNode mergedEdges = objectMapper.createArrayNode();
+
+        for (JsonNode jsonNode : jsonNodes) {
+            if (jsonNode.has("nodes") && jsonNode.get("nodes").isArray()) {
+                mergedNodes.addAll((ArrayNode) jsonNode.get("nodes"));
+            }
+            if (jsonNode.has("edges") && jsonNode.get("edges").isArray()) {
+                mergedEdges.addAll((ArrayNode) jsonNode.get("edges"));
+            }
+        }
+
+        merged.set("nodes", mergedNodes);
+        merged.set("edges", mergedEdges);
+        return merged;
     }
 }
