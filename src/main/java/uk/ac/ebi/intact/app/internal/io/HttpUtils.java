@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.app.internal.io;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -51,12 +52,14 @@ public class HttpUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtils.class);
 
-    public static JsonNode getJsonNetworkWithRequestBody(String query) throws IOException, InterruptedException {
-        String baseUrl = INTACT_GRAPH_WS + "network/fromInteractions";
+    public static JsonNode getJsonNetworkWithRequestBody(String query, int page) throws IOException, InterruptedException {
+        String baseUrl = INTACT_GRAPH_WS + "network/fromPagedInteractions";
+
 
         Map<String, Object> params = Map.of(
                 "query", query,
-                "advancedSearch", isAdvancedSearch(query)
+                "advancedSearch", isAdvancedSearch(query),
+                "page", page
         );
 
         HttpRequest request = requestBuilder
@@ -64,7 +67,8 @@ public class HttpUtils {
                 .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(params)))
                 .build();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
         return mapper.readTree(response.body());
     }
 
@@ -76,7 +80,6 @@ public class HttpUtils {
         }
         return false;
     }
-
 
     public static JsonNode getJSON(String url, Map<String, String> queryMap, Manager manager) {
         URL trueURL;

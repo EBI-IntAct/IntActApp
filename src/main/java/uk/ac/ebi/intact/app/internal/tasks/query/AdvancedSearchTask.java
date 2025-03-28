@@ -103,8 +103,7 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         manager.utils.showResultsPanel();
     }
 
-
-    private void setNetworkFromGraphApi(){
+    private void setNetworkFromGraphApi(TaskMonitor monitor) {
         JsonNode fetchedNetwork;
 
         monitor.setTitle("Fetch network from IntAct servers");
@@ -117,7 +116,32 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         ArrayNode edgesArray = mapper.createArrayNode();
 
         try {
-            fetchedNetwork = HttpUtils. getJsonNetworkWithRequestBody(this.query);
+            int page = 0;
+            JsonNode pagedResult;
+            do {
+                pagedResult = HttpUtils.getJsonNetworkWithRequestBody(this.query, page++);
+                JsonNode network = pagedResult.get("content").get(0);
+                Number totalPages = pagedResult.get("totalPages").numberValue();
+
+                monitor.showMessage(TaskMonitor.Level.INFO, "Page " + page + " / " + totalPages);
+                monitor.setProgress(page / totalPages.doubleValue());
+                if (cancelled) return;
+
+                for (JsonNode node : network.get("nodes")) {
+                    nodes.putIfAbsent(node.get("id").textValue(), node);
+                }
+
+                edgesArray.addAll((ArrayNode) network.get("edges"));
+
+            } while (!pagedResult.get("last").booleanValue());
+
+            ObjectNode combinedNetwork = mapper.createObjectNode();
+
+            ArrayNode nodesArray = mapper.createArrayNode().addAll(nodes.values());
+            nodesArray.addAll(nodes.values());
+            combinedNetwork.set("nodes", nodesArray);
+            combinedNetwork.set("edges", edgesArray);
+            fetchedNetwork = combinedNetwork;
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
