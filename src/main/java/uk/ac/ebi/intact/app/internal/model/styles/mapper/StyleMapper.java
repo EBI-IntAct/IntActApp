@@ -28,6 +28,8 @@ import static java.util.stream.Collectors.toMap;
 import static uk.ac.ebi.intact.app.internal.model.styles.mapper.definitions.Taxons.ARTIFICIAL;
 
 public class StyleMapper {
+    public static final String BASE_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&id=";
+    public static final int MAX_URL_LENGTH = 2_000;
     private static boolean taxIdsReady = false;
     private static boolean taxIdsWorking = false;
     private static boolean nodeTypesReady = false;
@@ -173,18 +175,42 @@ public class StyleMapper {
             return addedTaxIds;
 
         try {
-            String resultText = HttpUtils.getRequestResultForUrl("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&id=" + concatenateTaxIds(taxIdsToCheckAndAdd));
-            JSONObject jObject = XML.toJSONObject(resultText);
-            JsonNode taxons = new ObjectMapper().readTree(jObject.toString()).get("TaxaSet").get("Taxon");
-            if (taxons.isArray()) {
-                for (JsonNode taxon : taxons) {
-                    addTaxon(addedTaxIds, taxon, setColor);
+            List<String> queries = new ArrayList<>();
+            StringBuilder url = new StringBuilder(BASE_URL);
+            boolean first = true;
+
+            for (String taxId : taxIdsToCheckAndAdd) {
+                // Ignore custom taxids specific to IntAxt
+                if (taxId.startsWith("-")) continue;
+                // Pre-calculate url before modification in append exceeds limit
+                String completeUrl = url.toString();
+
+                if (!first) url.append(",");
+                first = false;
+
+                url.append(taxId);
+
+                if (url.length() > MAX_URL_LENGTH) {
+                    queries.add(completeUrl);
+                    url = new StringBuilder(BASE_URL).append(taxId);
                 }
-            } else {
-                addTaxon(addedTaxIds, taxons, setColor);
+
             }
 
+            queries.add(url.toString());
 
+            for (String query : queries) {
+                String resultText = HttpUtils.getRequestResultForUrl(query);
+                JSONObject jObject = XML.toJSONObject(resultText);
+                JsonNode taxons = new ObjectMapper().readTree(jObject.toString()).get("TaxaSet").get("Taxon");
+                if (taxons.isArray()) {
+                    for (JsonNode taxon : taxons) {
+                        addTaxon(addedTaxIds, taxon, setColor);
+                    }
+                } else {
+                    addTaxon(addedTaxIds, taxons, setColor);
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -329,10 +355,6 @@ public class StyleMapper {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private static String concatenateTaxIds(Set<String> taxIds) {
-        return taxIds.stream().filter(taxId -> !taxId.startsWith("-")).collect(toList()).toString().replaceAll("[\\[\\]]", "").replaceAll(" ", "%20");
     }
 
     public static boolean speciesNotReady() {
