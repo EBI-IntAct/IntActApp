@@ -2,14 +2,16 @@ package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
 
 import lombok.Getter;
 import uk.ac.ebi.intact.app.internal.ui.components.query.AdvancedSearchQueryComponent;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RulePanel;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RuleSetPanel;
 
 import javax.swing.*;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.setButtonIntactPurple;
-import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.setButtonWhite;
+import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.*;
 
 public class QueryOperators {
 
@@ -19,18 +21,18 @@ public class QueryOperators {
     AdvancedSearchQueryComponent advancedSearchQueryComponent;
 
     @Getter
-    private final ArrayList<OneRuleBuilderPanel> rules;
+    private final ArrayList<RulePanel> rules;
 
     @Getter
-    private final ArrayList<RuleSetBuilder> ruleSetBuilders;
+    private final ArrayList<RuleSetPanel> ruleSetPanels;
 
 
     public QueryOperators(AdvancedSearchQueryComponent advancedSearchQueryComponent,
-                          ArrayList<OneRuleBuilderPanel> rules,
-                          ArrayList<RuleSetBuilder> ruleSetBuilders) {
+                          ArrayList<RulePanel> rules,
+                          ArrayList<RuleSetPanel> ruleSetPanels) {
         this.advancedSearchQueryComponent = advancedSearchQueryComponent;
         this.rules = rules;
-        this.ruleSetBuilders = ruleSetBuilders;
+        this.ruleSetPanels = ruleSetPanels;
     }
 
     public JPanel getAndOrButton() {
@@ -73,13 +75,15 @@ public class QueryOperators {
         JButton ruleSetButton = new JButton("+ Ruleset");
         setButtonIntactPurple(ruleSetButton);
 
+
         addRuleButton.addActionListener(e -> {
-            OneRuleBuilderPanel rule = new OneRuleBuilderPanel(advancedSearchQueryComponent);
+            RulePanel rule = new RulePanel(advancedSearchQueryComponent);
 
             parentContainer.add(rule.getOneRuleBuilderPanel());
             rule.setEntityComboboxSelected(); //triggers the actionListener to set up the other comboBoxes
 
             rules.add(rule);
+
             parentContainer.revalidate();
             parentContainer.repaint();
 
@@ -88,12 +92,12 @@ public class QueryOperators {
         });
 
         ruleSetButton.addActionListener(e -> {
-            RuleSetBuilder ruleSet = new RuleSetBuilder(
+            RuleSetPanel ruleSet = new RuleSetPanel(
                     advancedSearchQueryComponent);
 
             parentContainer.add(ruleSet.getRuleSetPanel());
 
-            ruleSetBuilders.add(ruleSet);
+            ruleSetPanels.add(ruleSet);
             parentContainer.revalidate();
             parentContainer.repaint();
 

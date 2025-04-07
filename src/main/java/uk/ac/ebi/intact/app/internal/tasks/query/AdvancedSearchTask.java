@@ -75,9 +75,6 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         manager.data.setCurrentNetwork(cyNetwork);
         if (cancelled) {
             manager.utils.getService(CyNetworkManager.class).destroyNetwork(cyNetwork);
-        }
-
-        if (cancelled) {
             destroyNetwork(manager, network);
             return;
         }
@@ -95,7 +92,6 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         }
 
         if (applyLayout) {
-            // And lay it out
             TaskIterator taskIterator = getLayoutTask(monitor, manager, networkView);
             insertTasksAfterCurrentTask(taskIterator);
         }
@@ -148,12 +144,8 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
 
         if (cancelled) return;
 
-        if (fetchedNetwork != null) {
-            CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, "test", () -> cancelled);
-            network.setNetwork(cyNetwork);
-        } else {
-            System.out.println("No network found");
-        }
+        CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, "test", () -> cancelled);
+        network.setNetwork(cyNetwork);
     }
 
 

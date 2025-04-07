@@ -1,6 +1,7 @@
-package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
+package uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels;
 
 import uk.ac.ebi.intact.app.internal.ui.components.query.AdvancedSearchQueryComponent;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.Field;
 
 import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.*;
 
@@ -8,21 +9,23 @@ import javax.swing.*;
 
 import java.util.Objects;
 
-public class OneRuleBuilderPanel {
+public class RulePanel {
 
     JPanel oneRule = new JPanel();
 
-    JComboBox<String> entityComboBox = new JComboBox<>(Field.getEntities());
-    JComboBox<String> entityPropertiesCombobox = new JComboBox<>();
-    JComboBox<String> operatorsComboBox = new JComboBox<>();
+    public JComboBox<String> entityComboBox = new JComboBox<>(Field.getEntities());
+    public JComboBox<String> entityPropertiesCombobox = new JComboBox<>();
+    public JComboBox<String> operatorsComboBox = new JComboBox<>();
 
-    JTextField userInputProperty = new JTextField();
-    JTextField userInputProperty2 = new JTextField();
+    public JTextField userInputProperty = new JTextField();
+    public JTextField userInputProperty2 = new JTextField();
 
     AdvancedSearchQueryComponent advancedSearchQueryComponent;
 
-    public OneRuleBuilderPanel(AdvancedSearchQueryComponent advancedSearchQueryComponent) {
+    public RulePanel(AdvancedSearchQueryComponent advancedSearchQueryComponent) {
         this.advancedSearchQueryComponent = advancedSearchQueryComponent;
+        getOneRuleBuilderPanel();
+        oneRule.add(getDeletePanelButton(oneRule));
     }
 
     public JPanel getOneRuleBuilderPanel() {
@@ -35,6 +38,9 @@ public class OneRuleBuilderPanel {
         oneRule.add(getOperatorsComboBox());
         oneRule.add(getUserInputProperty());
         oneRule.add(getUserInputProperty2());
+
+        oneRule.revalidate();
+        oneRule.repaint();
 
         return oneRule;
     }

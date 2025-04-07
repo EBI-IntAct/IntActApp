@@ -18,10 +18,10 @@ import java.util.logging.Logger;
 
 public class AdvancedSearchTaskFactory extends AbstractNetworkSearchTaskFactory {
     private static final Icon ICON = IconUtils.createImageIcon("/IntAct/DIGITAL/ICON_PNG/Cropped_Gradient790.png");
-    static String INTACT_ID = "uk.ac.ebi.intact.advanced.search";
+    private static final String INTACT_ID = "uk.ac.ebi.intact.advanced.search";
     static URL INTACT_URL;
-    static String INTACT_NAME = "IntAct Advanced Search";
-    static String INTACT_DESC = "Make an advanced search query"; //todo: see to make a better desc
+    private static final String INTACT_NAME = "IntAct Advanced Search";
+    private static final String INTACT_DESC = "Make an advanced search query"; //todo: see to make a better desc
     Manager manager;
     private SearchQueryComponent queryComponent = null;
     private Network network;

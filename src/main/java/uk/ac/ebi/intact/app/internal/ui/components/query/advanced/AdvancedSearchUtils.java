@@ -1,5 +1,7 @@
 package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
 
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RulePanel;
+
 import javax.swing.*;
 
 import java.awt.*;
@@ -29,17 +31,34 @@ public class AdvancedSearchUtils {
         button.setForeground(INTACT_PURPLE);
     }
 
-    public static String getQueriesFromRuleBuilders(ArrayList<OneRuleBuilderPanel> rules, String queryOperator) {
+    public static String getQueriesFromRuleBuilders(ArrayList<RulePanel> rules, String queryOperator) {
         if (!rules.isEmpty()){
             ArrayList<String> ruleBuilders = new ArrayList<>();
-            for (OneRuleBuilderPanel oneRuleBuilderPanel : rules) {
-                oneRuleBuilderPanel.getQuery();
-                ruleBuilders.add(oneRuleBuilderPanel.getQuery());
+            for (RulePanel rulePanel : rules) {
+                rulePanel.getQuery();
+                ruleBuilders.add(rulePanel.getQuery());
             }
             return String.join(" " + queryOperator + " ", ruleBuilders);
         } else {
             return null;
         }
     }
+
+    public static JButton getDeletePanelButton(JPanel panelToDelete) {
+        JButton deleteButton = new JButton("X");
+        setButtonIntactPurple(deleteButton);
+
+        deleteButton.addActionListener(e -> {
+            Container parent = panelToDelete.getParent();
+            if (parent != null) {
+                parent.remove(panelToDelete);
+                parent.revalidate();
+                parent.repaint();
+            }
+        });
+
+        return deleteButton;
+    }
+
 
 }

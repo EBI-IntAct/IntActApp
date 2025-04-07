@@ -3,19 +3,30 @@ package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Setter
 @Getter
 public class QueryComponents {
     private String entity;
     private String operator;
+    private String name;
     private String userInput;
     private String userInput2;
     private boolean negated;
-    private String name;
+    private boolean isRuleSet;
+    private QueryComponents parent;
+    private List<QueryComponents> children;
 
-    @Override
-    public String toString() {
-        return "Entity: " + entity + ", Operator: " + operator + ", UserInput: " + userInput +
-                (userInput2 != null ? ", UserInput2: " + userInput2 : "");
+    public QueryComponents() {
+        this.children = new ArrayList<>();
+    }
+
+    public void addChild(QueryComponents child) {
+        if (child != null) {
+            child.setParent(this);
+            this.children.add(child);
+        }
     }
 }

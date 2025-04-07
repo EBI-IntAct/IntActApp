@@ -1,8 +1,11 @@
 package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
 
+import lombok.Getter;
+
 import java.time.Year;
 import java.util.*;
 
+@Getter
 public enum Field {
     P_ID("id","Identifiers", "string", "participant"),
     P_ID_A("idA","Identifier", "string", "participantA"),
@@ -86,30 +89,6 @@ public enum Field {
         this.entity = entity;
         this.defaultValue = defaultValue;
         this.operators = operators;
-    }
-
-    public String getMiqlQuery() {
-        return miqlQuery;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public String getEntity() {
-        return entity;
-    }
-
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-
-    public String[] getOperators() {
-        return operators;
     }
 
     public static Field getFieldFromNameAndEntity(String name, String entity) {

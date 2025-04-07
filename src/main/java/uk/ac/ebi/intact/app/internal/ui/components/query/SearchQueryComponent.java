@@ -19,6 +19,7 @@ public class SearchQueryComponent extends JTextField {
     private JTextArea queryTextArea = null;
     private JScrollPane queryScroll = null;
     private JPopupMenu popup = null;
+    final String[] textFromQueryBuilder = {null};
 
     public SearchQueryComponent() {
         super();
@@ -87,6 +88,9 @@ public class SearchQueryComponent extends JTextField {
     }
 
     public String getQueryText() {
+        if (textFromQueryBuilder[0] != null) {
+            return textFromQueryBuilder[0];
+        }
         if (queryTextArea == null) return "";
         return queryTextArea.getText();
     }
@@ -108,22 +112,33 @@ public class SearchQueryComponent extends JTextField {
         queryScroll.setPreferredSize(new Dimension(getSize().width, 200));
         popup.setPreferredSize(queryScroll.getPreferredSize());
 
-        JButton testButton = new JButton("QueryBuilder");
-        testButton.addActionListener(new ActionListener() {
+        JButton queryBuilder = new JButton("Query builder");
+        queryBuilder.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
                 component.getFrame();
+
+                component.getQueryTextField().addActionListener(new ActionListener() {
+                    //todo: check to put the action listener somewhere else or to trigger actions when updated
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        textFromQueryBuilder[0] = component.getQueryTextField().getText();
+                        queryTextArea.setText(textFromQueryBuilder[0]);
+                        queryTextArea.revalidate();
+                        queryTextArea.repaint();
+                        updateQueryTextField();
+                    }
+                });
             }
         });
 
-        popup.add(testButton, BorderLayout.EAST);
+        popup.add(queryBuilder, BorderLayout.EAST);
 
         popup.show(this, 0, 0);
         popup.requestFocus();
         queryTextArea.requestFocusInWindow();
         queryTextArea.setToolTipText(tooltip);
-
     }
 
     private void updateQueryTextField() {
@@ -133,6 +148,7 @@ public class SearchQueryComponent extends JTextField {
         if (text.length() > 30)
             text = text.substring(0, 30) + "...";
         setText(text);
+        System.out.println(text);
     }
 
     private void fireQueryChanged() {
