@@ -1,16 +1,13 @@
 package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
 
-import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.Range;
-import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.Rule;
-import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.RuleSet;
-import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.StackFrame;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.*;
 
 import java.util.*;
 
 public class MIQLParser {
 
     public RuleSet parseMIQL(String miql) {
-        miql = "(" + miql + ")"; //todo: check how to avoid to add a new ruleset everytime
+        miql = "(" + miql + ")";
         RuleSet out = null;
         Deque<StackFrame> stack = new ArrayDeque<>();
         int end, stackLevel;
@@ -52,30 +49,40 @@ public class MIQLParser {
         return out;
     }
 
-
     private Rule extractSetRule(String input, int start, String value) {
         int previousSpaceIndex = input.lastIndexOf(" ", start - 2);
-        if (previousSpaceIndex < 0) previousSpaceIndex = 0;
-
-        String potentialNot = input.substring(Math.max(previousSpaceIndex - 3, 0), previousSpaceIndex).trim().toLowerCase();
-        String operator = potentialNot.equals("not") ? "not in" : "in";
-
-        String miql = input.substring(previousSpaceIndex + 1, start - 1);
-        String name = input.substring(previousSpaceIndex + 1, start - 2);
-
-        String cleanValue = value == null || value.trim().equals("undefined") ? null : value;
-
-        Field field = Field.getFieldsFromMiQL(miql);
-
-        if (field != null) {
-            String entity = field.getEntity();
-            return new Rule(miql, operator, entity, cleanValue, null, name);
+        if (input.length() > previousSpaceIndex + 1 && input.charAt(previousSpaceIndex + 1) == '(') {
+            previousSpaceIndex++; // Avoid hitting the start parenthesis
         }
 
-        System.out.println("No field found for: " + miql);
-        return null;
-    }
+        // Detect if the value is enclosed in parentheses, indicating a set or range
+        if (value.startsWith("(") && value.endsWith(")")) {
+            value = value.substring(1, value.length() - 1); // Remove parentheses for processing
+        }
 
+        // Now that we have the value inside parentheses, split it correctly
+        String[] values = value.split(","); // In case there are multiple values inside the parentheses
+
+        String potentialNot = input.substring(Math.max(previousSpaceIndex - 3, 0), previousSpaceIndex);
+        String operator = potentialNot.equals("NOT") || potentialNot.equals("not") ? "not in" : "in"; // Use "in" for sets/ranges
+
+        String field = input.substring(previousSpaceIndex + 1, start - 1);
+        Field parsedField = Field.getFieldsFromMiQL(field);
+        String entity = parsedField != null ? parsedField.getEntity() : null;
+
+        // If "undefined" is used in value, assign null, otherwise, assign the parsed value(s)
+        if ("undefined".equals(value)) {
+            return new Rule(field, operator, entity, null, null, input);
+        } else {
+            // For single value inside parentheses, assign that value
+            if (values.length == 1) {
+                return new Rule(field, operator, entity, values[0].trim(), null, input);
+            } else {
+                // Handle multiple values if they exist (in case of a range)
+                return new Rule(field, operator, entity, String.join(",", values).trim(), null, input);
+            }
+        }
+    }
 
     private void setupLevelMap(Map<Integer, List<Range>> levelMap, int stackLevel, Range range) {
         levelMap.computeIfAbsent(stackLevel, k -> new ArrayList<>()).add(range);
@@ -100,6 +107,8 @@ public class MIQLParser {
     private void fillRuleSet(RuleSet ruleSet, String value) {
         ruleSet.condition = value.matches(".*\\sOR\\s.*") ? "or" : "and";
         String[] ruleStrings = value.split("\\sAND\\s|\\sOR\\s");
+        Set<String> fieldsProcessed = new HashSet<>();
+
         for (String ruleStr : ruleStrings) {
             ruleStr = ruleStr.trim();
             if (!ruleStr.isEmpty()) {
@@ -109,8 +118,11 @@ public class MIQLParser {
                 if (indexOfColon == -1) continue;
                 String miql = ruleStr.substring(isNot ? 4 : 0, indexOfColon);
 
-                String userInput = ruleStr.substring(indexOfColon + 1);
+                if (fieldsProcessed.contains(miql)) {
+                    continue;
+                }
 
+                String userInput = ruleStr.substring(indexOfColon + 1);
                 userInput = userInput.trim().replaceAll("[\\[\\]]", "");
 
                 String userInput1;
@@ -128,7 +140,10 @@ public class MIQLParser {
                 String operator = userInput.startsWith("[") ? (isNot ? "∉" : "∈") : ruleOperator;
                 String ruleEntity = Field.getFieldsFromMiQL(miql).getEntity();
                 String ruleName = Field.getFieldsFromMiQL(miql).getName();
+
                 ruleSet.rules.add(new Rule(miql, operator, ruleEntity, userInput1.equals("undefined") ? null : userInput1, userInput2.equals("undefined") ? null : userInput2, ruleName));
+
+                fieldsProcessed.add(miql);
             }
         }
     }

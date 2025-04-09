@@ -117,7 +117,7 @@ public class SearchQueryComponent extends JTextField {
             @Override
             public void actionPerformed(ActionEvent e) {
                 AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
-                component.getFrame();
+                component.getFrame(queryTextArea.getText());
 
                 component.getQueryTextField().addActionListener(new ActionListener() {
                     //todo: check to put the action listener somewhere else or to trigger actions when updated

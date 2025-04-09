@@ -7,6 +7,7 @@ import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.Advance
 
 import javax.swing.*;
 
+import java.awt.*;
 import java.util.Objects;
 
 public class RulePanel {
@@ -17,8 +18,12 @@ public class RulePanel {
     public JComboBox<String> entityPropertiesCombobox = new JComboBox<>();
     public JComboBox<String> operatorsComboBox = new JComboBox<>();
 
+
+    public JTextArea firstBracket = new JTextArea("[");
     public JTextField userInputProperty = new JTextField();
+    public JTextArea textTO = new JTextArea(" TO ");
     public JTextField userInputProperty2 = new JTextField();
+    public JTextArea lastBracket = new JTextArea("]");
 
     AdvancedSearchQueryComponent advancedSearchQueryComponent;
 
@@ -32,12 +37,16 @@ public class RulePanel {
         oneRule.setBorder(BorderFactory.createTitledBorder("Rule"));
         oneRule.setLayout(new BoxLayout(oneRule, BoxLayout.X_AXIS));
         oneRule.setVisible(true);
+        setUpDisplay();
 
         oneRule.add(getEntityComboBox());
         oneRule.add(getEntityPropertiesComboBox());
         oneRule.add(getOperatorsComboBox());
+        oneRule.add(firstBracket);
         oneRule.add(getUserInputProperty());
+        oneRule.add(textTO);
         oneRule.add(getUserInputProperty2());
+        oneRule.add(lastBracket);
 
         oneRule.revalidate();
         oneRule.repaint();
@@ -71,13 +80,36 @@ public class RulePanel {
         setCorrectDimensions(operatorsComboBox);
 
         operatorsComboBox.addActionListener(e -> {
-            userInputProperty2.setVisible(operatorsComboBox.getSelectedItem() != null && isUserInput2needed());
+            setUserInput2Visible();
             userInputProperty.setVisible(operatorsComboBox.getSelectedItem() != null && isUserInputNeeded());
             advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         return operatorsComboBox;
     }
+
+    private void setUserInput2Visible(){
+        boolean visible = operatorsComboBox.getSelectedItem() != null && isUserInput2needed();
+        userInputProperty2.setVisible(visible);
+        firstBracket.setVisible(visible);
+        lastBracket.setVisible(visible);
+        textTO.setVisible(visible);
+    }
+
+    private void setUpDisplay(){
+        firstBracket.setMaximumSize(new Dimension(10,20));
+        lastBracket.setMaximumSize(new Dimension(10,20));
+        textTO.setMaximumSize(new Dimension(10,20));
+
+        firstBracket.setEditable(false);
+        lastBracket.setEditable(false);
+        textTO.setEditable(false);
+
+        firstBracket.setBackground(UIManager.getColor("Panel.background"));
+        lastBracket.setBackground(UIManager.getColor("Panel.background"));
+        textTO.setBackground(UIManager.getColor("Panel.background"));
+    }
+
 
     private JTextField getUserInputProperty() {
         setCorrectDimensions(userInputProperty);
@@ -193,7 +225,6 @@ public class RulePanel {
                     return "";
             }
         }
-
         return query;
     }
 

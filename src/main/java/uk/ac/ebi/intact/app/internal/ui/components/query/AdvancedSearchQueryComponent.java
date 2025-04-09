@@ -6,6 +6,7 @@ import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.*;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RulePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RuleSetPanel;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.Rule;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.RuleComponent;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.RuleSet;
 
 import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.*;
@@ -17,14 +18,10 @@ import java.util.ArrayList;
 
 public class AdvancedSearchQueryComponent {
     static int frameWidth = 2000;
-
-    //    private final String TEST_STRING = "NOT idA:IDA AND (interaction_id:ID AND pubid:PUBMEDID AND (source:DATABASE))";
-//    private final String TEST_STRING = "rdate:[12345 TO 6789] AND (taxidHost:12345)";
-    private final String TEST_STRING = "NOT idA:IDA AND (interaction_id:(ID) AND pubid:PUBMEDID AND (source:DATABASE))"; //todo: check for the "in" which seems to create another ruleset?
-
+    private JFrame frame;
 
     @Getter
-    private final JTextField queryTextField = new JTextField(TEST_STRING);
+    private final JTextField queryTextField = new JTextField();
 
     public final JPanel rulesPanel = new JPanel();
 
@@ -34,12 +31,20 @@ public class AdvancedSearchQueryComponent {
     private final MIQLParser miqlParser = new MIQLParser();
 
     public static void main(String[] args) {
+//        for test purposes
+
+//        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:ID AND pubid:PUBMEDID AND (source:DATABASE))";
+//        final String TEST_STRING = "rdate:[12345 TO 6789] AND (taxidHost:12345)";
+        final String TEST_STRING = "id:456 AND id:(758)";
+//        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:(ID) AND pubid:PUBMEDID AND (source:DATABASE))"; //todo: check for the "in" which seems to create another ruleset?
+
         AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
-        component.getFrame();
+        component.getFrame(TEST_STRING);
     }
 
-    public void getFrame() {
-        JFrame frame = new JFrame("Advanced Search Query Builder");
+    public void getFrame(String input) {
+        queryTextField.setText(input);
+        frame = new JFrame("Advanced Search Query Builder");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(frameWidth, 1000);
         frame.setLayout(new BorderLayout());
@@ -62,11 +67,8 @@ public class AdvancedSearchQueryComponent {
 
         setButtonIntactPurple(buildQueryButton);
         buildQueryButton.addActionListener(e ->{
-            queryTextField.setText(getFullQuery());
-            System.out.println(getFullQuery());
-
-            //todo: return query to main App
-            //todo: add a close on built query
+            queryTextField.setText(getFullQuery()); //this trigger action to the queryTextField and push the data to the main app
+            frame.dispose();
         });
 
         buttonContainer.add(buildQueryButton);
@@ -74,6 +76,8 @@ public class AdvancedSearchQueryComponent {
     }
 
     public String getFullQuery() {
+        //todo: see why it is flipping the query around? (is it related on how the panels components are stacked?)
+
         StringBuilder fullQuery = new StringBuilder();
         for (int i = 0; i < panels.size(); i++) {
             Object panel = panels.get(i);
@@ -117,7 +121,7 @@ public class AdvancedSearchQueryComponent {
                 modifyComboboxFromQuery(parsedQuery, 0);
 
                 String builtQuery = getFullQuery();
-                System.out.println("Built Query: " + builtQuery); //todo: check why an additional ruleset is added everytime
+                System.out.println("Built Query: " + builtQuery);
                 queryTextField.setText(builtQuery);
             } else {
                 JOptionPane.showMessageDialog(null, "Failed to parse query. Please check the syntax.");
@@ -129,60 +133,56 @@ public class AdvancedSearchQueryComponent {
     }
 
     private RuleSetPanel modifyComboboxFromQuery(RuleSet ruleSet, int indentLevel) {
-        rulesPanel.removeAll();
-        panels.clear();
-
-        RuleSetPanel currentRuleSetPanel = new RuleSetPanel(this);
-        currentRuleSetPanel.getPanels().clear();
-
-        if (ruleSet.rules.size() == 1 && ruleSet.rules.get(0) instanceof Rule) {
-            Rule rule = (Rule) ruleSet.rules.get(0);
-
-            RulePanel rulePanel = new RulePanel(this);
-
-            rulePanel.entityComboBox.setSelectedItem(rule.getEntity());
-            rulePanel.entityPropertiesCombobox.setSelectedItem(rule.getName());
-            rulePanel.operatorsComboBox.setSelectedItem(rule.getOperator());
-            rulePanel.userInputProperty.setText(rule.getUserInput1());
-            rulePanel.userInputProperty2.setText(rule.getUserInput2());
-
-            currentRuleSetPanel.addRulePanel(rulePanel);
-        } else {
-            for (Object ruleComponent : ruleSet.rules) {
-                if (ruleComponent instanceof RuleSet) {
-                    RuleSet nestedRuleSet = (RuleSet) ruleComponent;
-
-                    RuleSetPanel nestedPanel = modifyComboboxFromQuery(nestedRuleSet, indentLevel + 1);
-                    currentRuleSetPanel.addRuleSetPanel(nestedPanel);
-
-                } else if (ruleComponent instanceof Rule) {
-                    Rule rule = (Rule) ruleComponent;
-                    RulePanel rulePanel = new RulePanel(this);
-
-                    rulePanel.entityComboBox.setSelectedItem(rule.getEntity());
-                    rulePanel.entityPropertiesCombobox.setSelectedItem(rule.getName());
-                    rulePanel.operatorsComboBox.setSelectedItem(rule.getOperator());
-                    rulePanel.userInputProperty.setText(rule.getUserInput1());
-                    rulePanel.userInputProperty2.setText(rule.getUserInput2());
-
-                    currentRuleSetPanel.addRulePanel(rulePanel);
-                }
-            }
+        if (indentLevel == 0) {
+            rulesPanel.removeAll();
+            panels.clear();
         }
 
-        if (!currentRuleSetPanel.getPanels().isEmpty()) {
-            if (indentLevel == 0) {
-                rulesPanel.add(currentRuleSetPanel.getRuleSetPanel());
-                panels.add(currentRuleSetPanel);
+        RuleSetPanel currentRuleSetPanel = (indentLevel == 0) ? null : new RuleSetPanel(this);
+        if (currentRuleSetPanel != null) {
+            currentRuleSetPanel.getPanels().clear();
+        }
+
+        for (Object ruleComponent : ruleSet.rules) {
+            if (ruleComponent instanceof RuleSet) {
+                RuleSet nestedRuleSet = (RuleSet) ruleComponent;
+                RuleSetPanel nestedPanel = modifyComboboxFromQuery(nestedRuleSet, indentLevel + 1);
+
+                if (nestedPanel != null) {
+                    if (indentLevel == 0) {
+                        rulesPanel.add(nestedPanel.getRuleSetPanel());
+                        panels.add(nestedPanel);
+                    } else {
+                        currentRuleSetPanel.addRuleSetPanel(nestedPanel);
+                    }
+                }
+
+            } else if (ruleComponent instanceof Rule) {
+                Rule rule = (Rule) ruleComponent;
+                RulePanel rulePanel = new RulePanel(this);
+
+                rulePanel.entityComboBox.setSelectedItem(rule.getEntity());
+                rulePanel.entityPropertiesCombobox.setSelectedItem(rule.getName());
+                rulePanel.operatorsComboBox.setSelectedItem(rule.getOperator());
+                rulePanel.userInputProperty.setText(rule.getUserInput1());
+                rulePanel.userInputProperty2.setText(rule.getUserInput2());
+
+                if (indentLevel == 0) {
+                    rulesPanel.add(rulePanel.getOneRuleBuilderPanel());
+                    panels.add(rulePanel);
+                } else {
+                    currentRuleSetPanel.addRulePanel(rulePanel);
+                }
             }
         }
 
         if (indentLevel == 0) {
             rulesPanel.revalidate();
             rulesPanel.repaint();
+            return null;
+        } else {
+            return currentRuleSetPanel;
         }
-
-        return currentRuleSetPanel;
     }
 
 }
