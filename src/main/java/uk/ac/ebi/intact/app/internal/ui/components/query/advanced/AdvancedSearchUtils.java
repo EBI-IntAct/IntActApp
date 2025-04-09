@@ -1,11 +1,13 @@
 package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
 
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RulePanel;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RuleSetPanel;
 
 import javax.swing.*;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class AdvancedSearchUtils {
     final static Color INTACT_PURPLE = new Color(104, 41, 124);
@@ -31,12 +33,17 @@ public class AdvancedSearchUtils {
         button.setForeground(INTACT_PURPLE);
     }
 
-    public static String getQueriesFromRuleBuilders(ArrayList<RulePanel> rules, String queryOperator) {
-        if (!rules.isEmpty()){
+    public static String getQueriesFromRuleBuilders(ArrayList<Object> panels, String queryOperator) {
+        if (!panels.isEmpty()){
             ArrayList<String> ruleBuilders = new ArrayList<>();
-            for (RulePanel rulePanel : rules) {
-                rulePanel.getQuery();
-                ruleBuilders.add(rulePanel.getQuery());
+            for (Object panel : panels) {
+                if (panel instanceof RulePanel) {
+                    RulePanel rulePanel = (RulePanel) panel;
+                    ruleBuilders.add(rulePanel.getQuery());
+                } else if (panel instanceof RuleSetPanel) {
+                    RuleSetPanel ruleSetPanel = (RuleSetPanel) panel;
+                    ruleBuilders.add(ruleSetPanel.getQuery());
+                }
             }
             return String.join(" " + queryOperator + " ", ruleBuilders);
         } else {

@@ -9,6 +9,7 @@ import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.Advance
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Getter
 public class RuleSetPanel {
@@ -18,12 +19,11 @@ public class RuleSetPanel {
     @Setter
     private QueryOperators queryOperators;
 
-    private final ArrayList<RulePanel> rules = new ArrayList<>();
-
-    private final ArrayList<RuleSetPanel> ruleSetPanels = new ArrayList<>();
+    @Getter
+    private final ArrayList<Object> panels = new ArrayList<>();
 
     public RuleSetPanel(AdvancedSearchQueryComponent advancedSearchQueryComponent) {
-        queryOperators = new QueryOperators(advancedSearchQueryComponent, rules, ruleSetPanels);
+        queryOperators = new QueryOperators(advancedSearchQueryComponent, panels);
         ruleSetPanel.setBorder(BorderFactory.createTitledBorder("Rule Set"));
         ruleSetPanel.setLayout(new BoxLayout(ruleSetPanel, BoxLayout.Y_AXIS));
         ruleSetPanel.add(queryOperators.getButtons(ruleSetPanel));
@@ -40,29 +40,38 @@ public class RuleSetPanel {
     }
 
     private String getQueryFromRules() {
+        ArrayList<Object> rules = panels.stream()
+                .filter(panel -> panel instanceof RulePanel)
+                .map(panel -> (RulePanel) panel)
+                .collect(Collectors.toCollection(ArrayList::new));
+
         return getQueriesFromRuleBuilders(rules, this.queryOperators.getRuleOperator());
     }
 
     private String getQueryFromSubRuleSets(){
-        if (!ruleSetPanels.isEmpty()) {
-            StringBuilder subQuery = new StringBuilder("(");
-            for (RuleSetPanel ruleSetPanel : ruleSetPanels) {
-                subQuery.append(ruleSetPanel.getQueryFromRules());
+        ArrayList<RuleSetPanel> subRuleSets = panels.stream()
+                .filter(panel -> panel instanceof RuleSetPanel)
+                .map(panel -> (RuleSetPanel) panel)
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        if (!subRuleSets.isEmpty()) {
+            StringBuilder subQuery = new StringBuilder();
+            for (RuleSetPanel subRuleSet : subRuleSets) {
+                subQuery.append(subRuleSet.getQuery());
             }
-            return subQuery + ")";
+            return subQuery.toString();
         }
-        else {
-            return null;
-        }
+
+        return null;
     }
     
     public void addRulePanel(RulePanel rulePanel) {
-        rules.add(rulePanel);
+        panels.add(rulePanel);
         ruleSetPanel.add(rulePanel.getOneRuleBuilderPanel());
     }
 
     public void addRuleSetPanel(RuleSetPanel ruleSetPanelToAdd) {
-        ruleSetPanels.add(ruleSetPanelToAdd);
+        panels.add(ruleSetPanelToAdd);
         ruleSetPanel.add(ruleSetPanelToAdd.getRuleSetPanel());
         ruleSetPanel.revalidate();
         ruleSetPanel.repaint();

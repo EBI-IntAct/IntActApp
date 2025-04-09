@@ -6,17 +6,19 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Rule implements RuleComponent {
-    String field;
+    String miql;
     String operator;
     String entity;
-    String value;
+    String userInput1;
+    String userInput2;
     String name;
 
-    public Rule(String field, String operator, String entity, String value, String name) {
-        this.field = field;
+    public Rule(String miql, String operator, String entity, String userInput1, String userInput2, String name) {
+        this.miql = miql;
         this.operator = operator;
         this.entity = entity;
-        this.value = value;
+        this.userInput1 = userInput1;
+        this.userInput2 = userInput2;
         this.name = name;
     }
 

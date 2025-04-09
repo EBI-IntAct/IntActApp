@@ -50,8 +50,7 @@ public class RulePanel {
 
         entityComboBox.addActionListener(e -> {
             setUpEntityPropertiesCombobox((String) entityComboBox.getSelectedItem());
-            advancedSearchQueryComponent.getQueryTextField()
-                    .setText(advancedSearchQueryComponent.getFullQuery());
+            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         return entityComboBox;
@@ -74,8 +73,7 @@ public class RulePanel {
         operatorsComboBox.addActionListener(e -> {
             userInputProperty2.setVisible(operatorsComboBox.getSelectedItem() != null && isUserInput2needed());
             userInputProperty.setVisible(operatorsComboBox.getSelectedItem() != null && isUserInputNeeded());
-            advancedSearchQueryComponent.getQueryTextField()
-                    .setText(advancedSearchQueryComponent.getFullQuery());
+            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         return operatorsComboBox;
@@ -84,8 +82,8 @@ public class RulePanel {
     private JTextField getUserInputProperty() {
         setCorrectDimensions(userInputProperty);
         userInputProperty.addActionListener(e ->
-                advancedSearchQueryComponent.getQueryTextField()
-                        .setText(advancedSearchQueryComponent.getFullQuery()));
+                advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery())
+        );
         return userInputProperty;
     }
 
@@ -97,8 +95,8 @@ public class RulePanel {
     private JTextField getUserInputProperty2() {
         setCorrectDimensions(userInputProperty2);
         userInputProperty2.addActionListener(e ->
-                advancedSearchQueryComponent.getQueryTextField()
-                        .setText(advancedSearchQueryComponent.getFullQuery()));
+                advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery())
+        );
         return userInputProperty2;
     }
 

@@ -21,18 +21,13 @@ public class QueryOperators {
     AdvancedSearchQueryComponent advancedSearchQueryComponent;
 
     @Getter
-    private final ArrayList<RulePanel> rules;
-
-    @Getter
-    private final ArrayList<RuleSetPanel> ruleSetPanels;
+    ArrayList<Object> panels;
 
 
     public QueryOperators(AdvancedSearchQueryComponent advancedSearchQueryComponent,
-                          ArrayList<RulePanel> rules,
-                          ArrayList<RuleSetPanel> ruleSetPanels) {
+                          ArrayList<Object> panels) {
         this.advancedSearchQueryComponent = advancedSearchQueryComponent;
-        this.rules = rules;
-        this.ruleSetPanels = ruleSetPanels;
+        this.panels = panels;
     }
 
     public JPanel getAndOrButton() {
@@ -48,16 +43,14 @@ public class QueryOperators {
             setButtonIntactPurple(andButton);
             setButtonWhite(orButton);
             ruleOperator = "AND";
-            advancedSearchQueryComponent.getQueryTextField()
-                    .setText(advancedSearchQueryComponent.getFullQuery());
+            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         orButton.addActionListener(e -> {
             setButtonWhite(andButton);
             setButtonIntactPurple(orButton);
             ruleOperator = "OR";
-            advancedSearchQueryComponent.getQueryTextField()
-                    .setText(advancedSearchQueryComponent.getFullQuery());
+            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         buttonContainer.add(andButton);
@@ -82,13 +75,12 @@ public class QueryOperators {
             parentContainer.add(rule.getOneRuleBuilderPanel());
             rule.setEntityComboboxSelected(); //triggers the actionListener to set up the other comboBoxes
 
-            rules.add(rule);
+            panels.add(rule);
 
             parentContainer.revalidate();
             parentContainer.repaint();
 
-            advancedSearchQueryComponent.getQueryTextField()
-                    .setText(advancedSearchQueryComponent.getFullQuery());
+            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         ruleSetButton.addActionListener(e -> {
@@ -97,12 +89,11 @@ public class QueryOperators {
 
             parentContainer.add(ruleSet.getRuleSetPanel());
 
-            ruleSetPanels.add(ruleSet);
+            panels.add(ruleSet);
             parentContainer.revalidate();
             parentContainer.repaint();
 
-            advancedSearchQueryComponent.getQueryTextField()
-                    .setText(advancedSearchQueryComponent.getFullQuery());
+            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         buttonContainer.add(addRuleButton);

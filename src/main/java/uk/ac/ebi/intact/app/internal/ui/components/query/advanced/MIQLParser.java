@@ -10,7 +10,7 @@ import java.util.*;
 public class MIQLParser {
 
     public RuleSet parseMIQL(String miql) {
-        miql = "(" + miql + ")";
+        miql = "(" + miql + ")"; //todo: check how to avoid to add a new ruleset everytime
         RuleSet out = null;
         Deque<StackFrame> stack = new ArrayDeque<>();
         int end, stackLevel;
@@ -52,17 +52,30 @@ public class MIQLParser {
         return out;
     }
 
-    private Rule extractSetRule(String miql, int start, String value) {
-        int previousSpaceIndex = miql.lastIndexOf(" ", start - 2);
+
+    private Rule extractSetRule(String input, int start, String value) {
+        int previousSpaceIndex = input.lastIndexOf(" ", start - 2);
         if (previousSpaceIndex < 0) previousSpaceIndex = 0;
 
-        String potentialNot = miql.substring(Math.max(previousSpaceIndex - 3, 0), previousSpaceIndex).trim();
-        String operator = potentialNot.equalsIgnoreCase("NOT") ? "not in" : "in";
-        String field = miql.substring(previousSpaceIndex + 1, start - 1);
-        String name = miql.substring(previousSpaceIndex + 1, start - 2);
+        String potentialNot = input.substring(Math.max(previousSpaceIndex - 3, 0), previousSpaceIndex).trim().toLowerCase();
+        String operator = potentialNot.equals("not") ? "not in" : "in";
 
-        return new Rule(field, operator, field, value.equals("undefined") ? null : value, name);
+        String miql = input.substring(previousSpaceIndex + 1, start - 1);
+        String name = input.substring(previousSpaceIndex + 1, start - 2);
+
+        String cleanValue = value == null || value.trim().equals("undefined") ? null : value;
+
+        Field field = Field.getFieldsFromMiQL(miql);
+
+        if (field != null) {
+            String entity = field.getEntity();
+            return new Rule(miql, operator, entity, cleanValue, null, name);
+        }
+
+        System.out.println("No field found for: " + miql);
+        return null;
     }
+
 
     private void setupLevelMap(Map<Integer, List<Range>> levelMap, int stackLevel, Range range) {
         levelMap.computeIfAbsent(stackLevel, k -> new ArrayList<>()).add(range);
@@ -94,12 +107,28 @@ public class MIQLParser {
                 String ruleOperator = isNot ? "≠" : "=";
                 int indexOfColon = ruleStr.indexOf(':');
                 if (indexOfColon == -1) continue;
-                String ruleFieldKeyword = ruleStr.substring(isNot ? 4 : 0, indexOfColon);
-                String ruleValue = ruleStr.substring(indexOfColon + 1);
-                String operator = ruleValue.startsWith("[") ? (isNot ? "∉" : "∈") : ruleOperator;
-                String ruleEntity = Field.getFieldsFromMiQL(ruleFieldKeyword).getEntity();
-                String ruleName = Field.getFieldsFromMiQL(ruleFieldKeyword).getName();
-                ruleSet.rules.add(new Rule(ruleFieldKeyword, operator, ruleEntity, ruleValue.equals("undefined") ? null : ruleValue, ruleName));
+                String miql = ruleStr.substring(isNot ? 4 : 0, indexOfColon);
+
+                String userInput = ruleStr.substring(indexOfColon + 1);
+
+                userInput = userInput.trim().replaceAll("[\\[\\]]", "");
+
+                String userInput1;
+                String userInput2;
+
+                if (userInput.contains(" TO ")) {
+                    String[] parts = userInput.split(" TO ");
+                    userInput1 = parts[0].trim();
+                    userInput2 = parts[1].trim();
+                } else {
+                    userInput1 = userInput.trim();
+                    userInput2 = "";
+                }
+
+                String operator = userInput.startsWith("[") ? (isNot ? "∉" : "∈") : ruleOperator;
+                String ruleEntity = Field.getFieldsFromMiQL(miql).getEntity();
+                String ruleName = Field.getFieldsFromMiQL(miql).getName();
+                ruleSet.rules.add(new Rule(miql, operator, ruleEntity, userInput1.equals("undefined") ? null : userInput1, userInput2.equals("undefined") ? null : userInput2, ruleName));
             }
         }
     }
