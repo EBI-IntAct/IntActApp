@@ -13,6 +13,8 @@ import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.Advance
 import javax.swing.*;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 public class AdvancedSearchQueryComponent {
@@ -24,6 +26,7 @@ public class AdvancedSearchQueryComponent {
 
     public final JPanel rulesPanel = new JPanel();
 
+    @Getter
     private final ArrayList<Object> panels = new ArrayList<>();
 
     private final QueryOperators queryOperators = new QueryOperators(this, panels);
@@ -33,12 +36,12 @@ public class AdvancedSearchQueryComponent {
 //        for test purposes
 
 //        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:ID AND pubid:PUBMEDID AND (source:DATABASE))";
-        final String TEST_STRING = "rdate:[12345 TO 6789] AND (taxidHost:12345)";
+//        final String TEST_STRING = "rdate:[12345 TO 6789] AND (taxidHost:12345)";
 //        final String TEST_STRING = "(id:456 AND id:(758))";
-//        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:(ID) AND pubid:PUBMEDID AND (source:DATABASE))"; //todo: check for the "in" which seems to create another ruleset?
+        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:(ID) AND pubid:PUBMEDID AND (source:DATABASE))"; //todo: check for the "in" which seems to create another ruleset?
 
         AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
-        component.getFrame(TEST_STRING);
+//        component.getFrame(TEST_STRING);
     }
 
     public void getFrame(String input) {
@@ -66,7 +69,10 @@ public class AdvancedSearchQueryComponent {
 
         setButtonIntactPurple(buildQueryButton);
         buildQueryButton.addActionListener(e ->{
-            queryTextField.setText(getFullQuery()); //this trigger action to the queryTextField and push the data to the main app
+            queryTextField.setText(getFullQuery());
+            for (ActionListener actionListener : queryTextField.getActionListeners()) {
+                actionListener.actionPerformed(new ActionEvent(queryTextField, ActionEvent.ACTION_PERFORMED, null));
+            }
             frame.dispose();
         });
 
@@ -75,16 +81,9 @@ public class AdvancedSearchQueryComponent {
     }
 
     public String getFullQuery() {
-        //todo: see why it is flipping the query around? (is it related on how the panels components are stacked?)
-
         StringBuilder fullQuery = new StringBuilder();
         for (int i = 0; i < panels.size(); i++) {
             Object panel = panels.get(i);
-//            if (panel instanceof RulePanel) {
-//                fullQuery.append(((RulePanel) panel).getQuery());
-//            } else if (panel instanceof RuleSetPanel) {
-//                fullQuery.append(((RuleSetPanel) panel).getQuery());
-//            }
             if (panel instanceof RuleSetPanel) {
                 fullQuery.append(((RuleSetPanel) panel).getQuery());
             }
@@ -123,10 +122,8 @@ public class AdvancedSearchQueryComponent {
 
             if (parsedQuery != null && parsedQuery.rules != null && !parsedQuery.rules.isEmpty()) {
                 modifyComboboxFromQuery(parsedQuery, 0);
-
                 String builtQuery = getFullQuery();
                 queryTextField.setText(builtQuery);
-                System.out.println("Query built in queryInputField");
             } else {
                 JOptionPane.showMessageDialog(null, "Failed to parse query. Please check the syntax.");
             }

@@ -139,10 +139,6 @@ public class MIQLParser {
         Field parsedField = Field.getFieldsFromMiQL(field);
         String entity = parsedField != null ? parsedField.getEntity() : null;
         String fieldName = parsedField != null ? parsedField.getName() : field;
-        //todo: check for userinput2
-
-        System.out.println("SetRule entity: " + entity + " field: " + field + " value: " + value + " operator: " + operator);
-
         if (entity != null) {
             return new Rule(field, operator, entity, value, null, fieldName);
         }

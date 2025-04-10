@@ -8,7 +8,6 @@ import javax.swing.*;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class AdvancedSearchUtils {
     final static Color INTACT_PURPLE = new Color(104, 41, 124);
@@ -53,7 +52,6 @@ public class AdvancedSearchUtils {
     }
 
     public static JButton getDeletePanelButton(JPanel panelToDelete, AdvancedSearchQueryComponent advancedSearchQueryComponent) {
-        //TODO: check to also remove from the query
         JButton deleteButton = new JButton("X");
         setButtonIntactPurple(deleteButton);
 
@@ -64,11 +62,41 @@ public class AdvancedSearchUtils {
                 parent.revalidate();
                 parent.repaint();
             }
+
+            Object toRemove = findPanel(panelToDelete, advancedSearchQueryComponent.getPanels());
+
+            if (toRemove != null) {
+                advancedSearchQueryComponent.getPanels().remove(toRemove);
+            }
+
             advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         return deleteButton;
     }
+
+    private static Object findPanel(JPanel panelToDelete, ArrayList<Object> panels) {
+        for (Object obj : panels) {
+            if (obj instanceof RulePanel) {
+                if (((RulePanel) obj).getOneRuleBuilderPanel() == panelToDelete) {
+                    return obj;
+                }
+            } else if (obj instanceof RuleSetPanel) {
+                RuleSetPanel ruleSetPanel = (RuleSetPanel) obj;
+                if (ruleSetPanel.getRuleSetPanel() == panelToDelete) {
+                    return obj;
+                }
+
+                Object nested = findPanel(panelToDelete, ruleSetPanel.getPanels());
+                if (nested != null) {
+                    ruleSetPanel.getPanels().remove(nested);
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
 
 
 }

@@ -1,6 +1,8 @@
 package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
 
 import lombok.Getter;
+import lombok.Setter;
+
 import uk.ac.ebi.intact.app.internal.ui.components.query.AdvancedSearchQueryComponent;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RulePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RuleSetPanel;
@@ -9,13 +11,13 @@ import javax.swing.*;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.*;
 
 public class QueryOperators {
 
     @Getter
+    @Setter
     private String ruleOperator = "AND";
 
     AdvancedSearchQueryComponent advancedSearchQueryComponent;

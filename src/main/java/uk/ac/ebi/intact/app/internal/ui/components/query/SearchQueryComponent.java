@@ -118,9 +118,7 @@ public class SearchQueryComponent extends JTextField {
             public void actionPerformed(ActionEvent e) {
                 AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
                 component.getFrame(queryTextArea.getText());
-
                 component.getQueryTextField().addActionListener(new ActionListener() {
-                    //todo: check to put the action listener somewhere else or to trigger actions when updated
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         textFromQueryBuilder[0] = component.getQueryTextField().getText();
@@ -148,7 +146,6 @@ public class SearchQueryComponent extends JTextField {
         if (text.length() > 30)
             text = text.substring(0, 30) + "...";
         setText(text);
-        System.out.println(text);
     }
 
     private void fireQueryChanged() {
