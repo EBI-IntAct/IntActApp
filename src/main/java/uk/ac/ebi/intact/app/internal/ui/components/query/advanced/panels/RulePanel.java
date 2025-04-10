@@ -30,7 +30,7 @@ public class RulePanel {
     public RulePanel(AdvancedSearchQueryComponent advancedSearchQueryComponent) {
         this.advancedSearchQueryComponent = advancedSearchQueryComponent;
         getOneRuleBuilderPanel();
-        oneRule.add(getDeletePanelButton(oneRule));
+        oneRule.add(getDeletePanelButton(oneRule, advancedSearchQueryComponent));
     }
 
     public JPanel getOneRuleBuilderPanel() {
@@ -141,7 +141,7 @@ public class RulePanel {
         entityPropertiesCombobox.removeAllItems();
 
         for (Field field : Field.values()) {
-            if (field.getEntity().equalsIgnoreCase(entitySelected.trim())) {
+            if (entitySelected != null && field.getEntity().equalsIgnoreCase(entitySelected.trim())) {
                 entityPropertiesCombobox.addItem(field.getName());
             }
         }

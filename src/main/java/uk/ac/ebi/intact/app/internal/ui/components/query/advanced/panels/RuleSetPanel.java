@@ -27,7 +27,7 @@ public class RuleSetPanel {
         ruleSetPanel.setBorder(BorderFactory.createTitledBorder("Rule Set"));
         ruleSetPanel.setLayout(new BoxLayout(ruleSetPanel, BoxLayout.Y_AXIS));
         ruleSetPanel.add(queryOperators.getButtons(ruleSetPanel));
-        ruleSetPanel.add(getDeletePanelButton(ruleSetPanel));
+        ruleSetPanel.add(getDeletePanelButton(ruleSetPanel, advancedSearchQueryComponent));
     }
 
     public String getQuery(){

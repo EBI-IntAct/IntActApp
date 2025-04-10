@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
 
+import uk.ac.ebi.intact.app.internal.ui.components.query.AdvancedSearchQueryComponent;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RulePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RuleSetPanel;
 
@@ -51,7 +52,8 @@ public class AdvancedSearchUtils {
         }
     }
 
-    public static JButton getDeletePanelButton(JPanel panelToDelete) {
+    public static JButton getDeletePanelButton(JPanel panelToDelete, AdvancedSearchQueryComponent advancedSearchQueryComponent) {
+        //TODO: check to also remove from the query
         JButton deleteButton = new JButton("X");
         setButtonIntactPurple(deleteButton);
 
@@ -62,6 +64,7 @@ public class AdvancedSearchUtils {
                 parent.revalidate();
                 parent.repaint();
             }
+            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
         });
 
         return deleteButton;

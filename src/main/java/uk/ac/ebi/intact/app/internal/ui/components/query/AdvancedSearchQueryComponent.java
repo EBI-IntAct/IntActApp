@@ -6,7 +6,6 @@ import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.*;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RulePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RuleSetPanel;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.Rule;
-import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.RuleComponent;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.RuleSet;
 
 import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.*;
@@ -34,8 +33,8 @@ public class AdvancedSearchQueryComponent {
 //        for test purposes
 
 //        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:ID AND pubid:PUBMEDID AND (source:DATABASE))";
-//        final String TEST_STRING = "rdate:[12345 TO 6789] AND (taxidHost:12345)";
-        final String TEST_STRING = "id:456 AND id:(758)";
+        final String TEST_STRING = "rdate:[12345 TO 6789] AND (taxidHost:12345)";
+//        final String TEST_STRING = "(id:456 AND id:(758))";
 //        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:(ID) AND pubid:PUBMEDID AND (source:DATABASE))"; //todo: check for the "in" which seems to create another ruleset?
 
         AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
@@ -81,16 +80,21 @@ public class AdvancedSearchQueryComponent {
         StringBuilder fullQuery = new StringBuilder();
         for (int i = 0; i < panels.size(); i++) {
             Object panel = panels.get(i);
-            if (panel instanceof RulePanel) {
-                fullQuery.append(((RulePanel) panel).getQuery());
-            } else if (panel instanceof RuleSetPanel) {
+//            if (panel instanceof RulePanel) {
+//                fullQuery.append(((RulePanel) panel).getQuery());
+//            } else if (panel instanceof RuleSetPanel) {
+//                fullQuery.append(((RuleSetPanel) panel).getQuery());
+//            }
+            if (panel instanceof RuleSetPanel) {
                 fullQuery.append(((RuleSetPanel) panel).getQuery());
+            }
+            else if (panel instanceof RulePanel) {
+                fullQuery.append(((RulePanel) panel).getQuery());
             }
             if (i < panels.size() - 1) {
                 fullQuery.append(" ").append(queryOperators.getRuleOperator()).append(" ");
             }
         }
-        System.out.println(fullQuery);
         return fullQuery.toString();
     }
 
@@ -121,8 +125,8 @@ public class AdvancedSearchQueryComponent {
                 modifyComboboxFromQuery(parsedQuery, 0);
 
                 String builtQuery = getFullQuery();
-                System.out.println("Built Query: " + builtQuery);
                 queryTextField.setText(builtQuery);
+                System.out.println("Query built in queryInputField");
             } else {
                 JOptionPane.showMessageDialog(null, "Failed to parse query. Please check the syntax.");
             }
@@ -162,7 +166,7 @@ public class AdvancedSearchQueryComponent {
                 RulePanel rulePanel = new RulePanel(this);
 
                 rulePanel.entityComboBox.setSelectedItem(rule.getEntity());
-                rulePanel.entityPropertiesCombobox.setSelectedItem(rule.getName());
+                rulePanel.entityPropertiesCombobox.setSelectedItem(rule.getFieldName());
                 rulePanel.operatorsComboBox.setSelectedItem(rule.getOperator());
                 rulePanel.userInputProperty.setText(rule.getUserInput1());
                 rulePanel.userInputProperty2.setText(rule.getUserInput2());

@@ -28,7 +28,8 @@ public class MIQLParser {
                     end = index;
                     int start = frame.getStart();
                     value = miql.substring(start + 1, end);
-                    if (frame.getStart() > 0 && array[start - 1] == ':') {
+
+                    if (start > 0 && array[start - 1] == ':') {
                         Rule rule = extractSetRule(miql, start, value);
                         if (!stack.isEmpty()) {
                             stack.peek().getRuleSet().rules.add(rule);
@@ -43,45 +44,9 @@ public class MIQLParser {
                             stack.peek().getRuleSet().rules.add(ruleSet);
                         }
                     }
-                    break;
             }
         }
         return out;
-    }
-
-    private Rule extractSetRule(String input, int start, String value) {
-        int previousSpaceIndex = input.lastIndexOf(" ", start - 2);
-        if (input.length() > previousSpaceIndex + 1 && input.charAt(previousSpaceIndex + 1) == '(') {
-            previousSpaceIndex++; // Avoid hitting the start parenthesis
-        }
-
-        // Detect if the value is enclosed in parentheses, indicating a set or range
-        if (value.startsWith("(") && value.endsWith(")")) {
-            value = value.substring(1, value.length() - 1); // Remove parentheses for processing
-        }
-
-        // Now that we have the value inside parentheses, split it correctly
-        String[] values = value.split(","); // In case there are multiple values inside the parentheses
-
-        String potentialNot = input.substring(Math.max(previousSpaceIndex - 3, 0), previousSpaceIndex);
-        String operator = potentialNot.equals("NOT") || potentialNot.equals("not") ? "not in" : "in"; // Use "in" for sets/ranges
-
-        String field = input.substring(previousSpaceIndex + 1, start - 1);
-        Field parsedField = Field.getFieldsFromMiQL(field);
-        String entity = parsedField != null ? parsedField.getEntity() : null;
-
-        // If "undefined" is used in value, assign null, otherwise, assign the parsed value(s)
-        if ("undefined".equals(value)) {
-            return new Rule(field, operator, entity, null, null, input);
-        } else {
-            // For single value inside parentheses, assign that value
-            if (values.length == 1) {
-                return new Rule(field, operator, entity, values[0].trim(), null, input);
-            } else {
-                // Handle multiple values if they exist (in case of a range)
-                return new Rule(field, operator, entity, String.join(",", values).trim(), null, input);
-            }
-        }
     }
 
     private void setupLevelMap(Map<Integer, List<Range>> levelMap, int stackLevel, Range range) {
@@ -91,61 +56,97 @@ public class MIQLParser {
     private String removeSuperiorRules(String value, int start, int end, int stackLevel, Map<Integer, List<Range>> levelMap) {
         int deleted = start;
         List<Range> superiorRanges = levelMap.get(stackLevel + 1);
+
         if (superiorRanges != null) {
             for (Range superiorRange : superiorRanges) {
-                int startSuperiorRange = superiorRange.getStart();
-                int endSuperiorRange = superiorRange.getEnd();
-                if (startSuperiorRange > start && endSuperiorRange < end) {
-                    value = value.substring(0, startSuperiorRange - deleted) + value.substring(endSuperiorRange - deleted);
-                    deleted += endSuperiorRange - startSuperiorRange;
+                if (superiorRange.getStart() > start && superiorRange.getEnd() < end) {
+                    value = value.substring(0, superiorRange.getStart() - deleted) +
+                            value.substring(superiorRange.getEnd() - deleted);
+                    deleted += superiorRange.getEnd() - superiorRange.getStart();
                 }
             }
         }
         return value;
     }
 
-    private void fillRuleSet(RuleSet ruleSet, String value) {
-        ruleSet.condition = value.matches(".*\\sOR\\s.*") ? "or" : "and";
-        String[] ruleStrings = value.split("\\sAND\\s|\\sOR\\s");
-        Set<String> fieldsProcessed = new HashSet<>();
+    public void fillRuleSet(RuleSet ruleSet, String value) {
+        ruleSet.setCondition(value.contains("OR") ? "or" : "and");
 
+        List<RuleComponent> superiorRuleSets = ruleSet.getRules();
+        int i = 0;
+        ruleSet.setRules(new ArrayList<>());
+
+        String[] ruleStrings = value.split("\\sAND\\s|\\sOR\\s");
         for (String ruleStr : ruleStrings) {
             ruleStr = ruleStr.trim();
+
             if (!ruleStr.isEmpty()) {
-                boolean isNot = ruleStr.startsWith("NOT ") || ruleStr.startsWith("not ");
-                String ruleOperator = isNot ? "≠" : "=";
-                int indexOfColon = ruleStr.indexOf(':');
-                if (indexOfColon == -1) continue;
-                String miql = ruleStr.substring(isNot ? 4 : 0, indexOfColon);
-
-                if (fieldsProcessed.contains(miql)) {
-                    continue;
-                }
-
-                String userInput = ruleStr.substring(indexOfColon + 1);
-                userInput = userInput.trim().replaceAll("[\\[\\]]", "");
-
-                String userInput1;
-                String userInput2;
-
-                if (userInput.contains(" TO ")) {
-                    String[] parts = userInput.split(" TO ");
-                    userInput1 = parts[0].trim();
-                    userInput2 = parts[1].trim();
+                if ("()".equals(ruleStr)) {
+                    ruleSet.getRules().add(superiorRuleSets.get(i++));
                 } else {
-                    userInput1 = userInput.trim();
-                    userInput2 = "";
+                    ruleStr = ruleStr.trim();
+                    boolean different = ruleStr.toUpperCase().startsWith("NOT ");
+                    String ruleOperator = different ? "≠" : "=";
+
+                    int indexOfColon = ruleStr.indexOf(":");
+                    if (indexOfColon == -1) indexOfColon = ruleStr.length();
+
+                    String ruleFieldKeyword = ruleStr.substring(different ? 4 : 0, indexOfColon);
+                    Field ruleField = Field.getFieldsFromMiQL(ruleFieldKeyword);
+
+                    if (ruleField != null) {
+                        String ruleValue = ruleStr.substring(indexOfColon + 1).trim();
+                        String operator = ruleValue.startsWith("[") ? (different ? "∉" : "∈") : ruleOperator;
+
+                        String userInput1 = ruleValue;
+                        String userInput2 = null;
+
+                        if (ruleValue.startsWith("[") && ruleValue.endsWith("]") && ruleValue.contains("TO")) {
+                            ruleValue = ruleValue.replace("[", "").replace("]", "");
+                            String[] userInputs = ruleValue.split("TO");
+                            userInput1 = userInputs[0].trim();
+                            userInput2 = userInputs[1].trim();
+                        }
+
+
+                        if (ruleValue.startsWith("(")) {
+                            ruleSet.getRules().add(superiorRuleSets.remove(superiorRuleSets.size() - 1));
+                        } else if ("undefined".equals(ruleValue)) {
+                            ruleSet.getRules().add(new Rule(ruleFieldKeyword, operator, ruleField.getEntity(), userInput1, userInput2, ruleField.getName()));
+                        } else {
+                            ruleSet.getRules().add(new Rule(ruleFieldKeyword, operator, ruleField.getEntity(), userInput1, userInput2, ruleField.getName()));
+                        }
+                    }
                 }
-
-                String operator = userInput.startsWith("[") ? (isNot ? "∉" : "∈") : ruleOperator;
-                String ruleEntity = Field.getFieldsFromMiQL(miql).getEntity();
-                String ruleName = Field.getFieldsFromMiQL(miql).getName();
-
-                ruleSet.rules.add(new Rule(miql, operator, ruleEntity, userInput1.equals("undefined") ? null : userInput1, userInput2.equals("undefined") ? null : userInput2, ruleName));
-
-                fieldsProcessed.add(miql);
             }
         }
+    }
+
+    private Rule extractSetRule(String input, int start, String value) {
+        int previousSpaceIndex = input.lastIndexOf(" ", start - 2);
+        if (input.length() > previousSpaceIndex + 1 && input.charAt(previousSpaceIndex + 1) == '(') {
+            previousSpaceIndex++;
+        }
+
+        if (value.startsWith("(") && value.endsWith(")")) {
+            value = value.substring(1, value.length() - 1); // Remove parentheses for processing
+        }
+
+        String potentialNot = input.substring(Math.max(previousSpaceIndex - 3, 0), previousSpaceIndex);
+        String operator = potentialNot.equals("NOT") || potentialNot.equals("not") ? "not in" : "in";
+
+        String field = input.substring(previousSpaceIndex + 1, start - 1);
+        Field parsedField = Field.getFieldsFromMiQL(field);
+        String entity = parsedField != null ? parsedField.getEntity() : null;
+        String fieldName = parsedField != null ? parsedField.getName() : field;
+        //todo: check for userinput2
+
+        System.out.println("SetRule entity: " + entity + " field: " + field + " value: " + value + " operator: " + operator);
+
+        if (entity != null) {
+            return new Rule(field, operator, entity, value, null, fieldName);
+        }
+        return null;
     }
 
 }

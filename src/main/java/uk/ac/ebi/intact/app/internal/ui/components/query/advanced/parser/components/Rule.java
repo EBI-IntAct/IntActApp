@@ -11,15 +11,15 @@ public class Rule implements RuleComponent {
     String entity;
     String userInput1;
     String userInput2;
-    String name;
+    String fieldName;
 
-    public Rule(String miql, String operator, String entity, String userInput1, String userInput2, String name) {
+    public Rule(String miql, String operator, String entity, String userInput1, String userInput2, String fieldName) {
         this.miql = miql;
         this.operator = operator;
         this.entity = entity;
         this.userInput1 = userInput1;
         this.userInput2 = userInput2;
-        this.name = name;
+        this.fieldName = fieldName;
     }
 
     @Override
