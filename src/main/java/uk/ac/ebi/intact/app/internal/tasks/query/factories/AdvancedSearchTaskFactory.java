@@ -19,21 +19,24 @@ import java.util.logging.Logger;
 public class AdvancedSearchTaskFactory extends AbstractNetworkSearchTaskFactory {
     private static final Icon ICON = IconUtils.createImageIcon("/IntAct/DIGITAL/ICON_PNG/Cropped_Gradient790.png");
     private static final String INTACT_ID = "uk.ac.ebi.intact.advanced.search";
-    static URL INTACT_URL;
     private static final String INTACT_NAME = "IntAct Advanced Search";
-    private static final String INTACT_DESC = "Make an advanced search query"; //todo: see to make a better desc
-    Manager manager;
+    private static final String INTACT_DESC = "Make an advanced search query";
+    private static final URL INTACT_URL = buildUrl();
+
     private SearchQueryComponent queryComponent = null;
     private Network network;
 
+    Manager manager;
+
     private static final Logger LOGGER = Logger.getLogger(AdvancedSearchTaskFactory.class.getName());
 
-    static {
+    private static URL buildUrl() {
         try {
-            INTACT_URL = new URL("https://www.ebi.ac.uk/intact/home#advanced-search");
+            return new URL("https://www.ebi.ac.uk/intact/home#advanced-search");
         } catch (MalformedURLException e) {
             LOGGER.warning(e.getMessage());
         }
+        return null;
     }
 
     public AdvancedSearchTaskFactory(Manager manager) {

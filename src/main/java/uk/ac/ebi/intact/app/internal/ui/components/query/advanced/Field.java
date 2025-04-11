@@ -133,4 +133,14 @@ public enum Field {
 
         return sortedEntities.toArray(new String[0]);
     }
+
+    public static String getMiQlRegex() {
+        Set<String> uniqueMiqls = new HashSet<>();
+        for (Field field : FIELD_MAP.values()) {
+            uniqueMiqls.add(field.getMiqlQuery());
+        }
+        List<String> sortedMiqls = new ArrayList<>(uniqueMiqls);
+        Collections.sort(sortedMiqls);
+        return String.join("|", sortedMiqls);
+    }
 }

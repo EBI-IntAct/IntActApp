@@ -118,11 +118,14 @@ public class SearchQueryComponent extends JTextField {
             public void actionPerformed(ActionEvent e) {
                 AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
                 component.getFrame(queryTextArea.getText());
-                component.getQueryTextField().addActionListener(new ActionListener() {
+
+                component.getQueryTextField().getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "submitQuery");
+                component.getQueryTextField().getActionMap().put("submitQuery", new AbstractAction() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        textFromQueryBuilder[0] = component.getQueryTextField().getText();
-                        queryTextArea.setText(textFromQueryBuilder[0]);
+                        String builtQuery = component.getQueryTextField().getText();
+                        textFromQueryBuilder[0] = builtQuery;
+                        queryTextArea.setText(builtQuery);
                         queryTextArea.revalidate();
                         queryTextArea.repaint();
                         updateQueryTextField();
@@ -130,6 +133,7 @@ public class SearchQueryComponent extends JTextField {
                 });
             }
         });
+
 
         popup.add(queryBuilder, BorderLayout.EAST);
 

@@ -2,6 +2,7 @@ package uk.ac.ebi.intact.app.internal.ui.components.query;
 
 import lombok.Getter;
 
+import org.apache.log4j.Logger;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.*;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RulePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RuleSetPanel;
@@ -11,6 +12,9 @@ import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.compone
 import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.*;
 
 import javax.swing.*;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -22,7 +26,7 @@ public class AdvancedSearchQueryComponent {
     private JFrame frame;
 
     @Getter
-    private final JTextField queryTextField = new JTextField();
+    private final JTextPane queryTextField = new JTextPane();
 
     public final JPanel rulesPanel = new JPanel();
 
@@ -38,10 +42,10 @@ public class AdvancedSearchQueryComponent {
 //        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:ID AND pubid:PUBMEDID AND (source:DATABASE))";
 //        final String TEST_STRING = "rdate:[12345 TO 6789] AND (taxidHost:12345)";
 //        final String TEST_STRING = "(id:456 AND id:(758))";
-        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:(ID) AND pubid:PUBMEDID AND (source:DATABASE))"; //todo: check for the "in" which seems to create another ruleset?
+        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:(ID) OR pubid:PUBMEDID OR (source:DATABASE))"; //todo: check for the "in" which seems to create another ruleset?
 
         AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
-//        component.getFrame(TEST_STRING);
+        component.getFrame(TEST_STRING);
     }
 
     public void getFrame(String input) {
@@ -68,13 +72,19 @@ public class AdvancedSearchQueryComponent {
         JButton buildQueryButton = new JButton("Build query");
 
         setButtonIntactPurple(buildQueryButton);
-        buildQueryButton.addActionListener(e ->{
-            queryTextField.setText(getFullQuery());
-            for (ActionListener actionListener : queryTextField.getActionListeners()) {
-                actionListener.actionPerformed(new ActionEvent(queryTextField, ActionEvent.ACTION_PERFORMED, null));
+        buildQueryButton.addActionListener(e -> {
+            String fullQuery = getFullQuery();
+            queryTextField.setText(fullQuery);
+            highlightQuery(fullQuery);
+
+            Action submitAction = queryTextField.getActionMap().get("submitQuery");
+            if (submitAction != null) {
+                submitAction.actionPerformed(new ActionEvent(queryTextField, ActionEvent.ACTION_PERFORMED, null));
             }
+
             frame.dispose();
         });
+
 
         buttonContainer.add(buildQueryButton);
         return buttonContainer;
@@ -117,15 +127,24 @@ public class AdvancedSearchQueryComponent {
         queryTextField.setPreferredSize(new Dimension(frameWidth/2, 25));
         queryTextField.setVisible(true);
 
-        queryTextField.addActionListener(e -> {
-            RuleSet parsedQuery = miqlParser.parseMIQL(queryTextField.getText());
+        queryTextField.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "submitQuery");
+        queryTextField.getActionMap().put("submitQuery", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String input = queryTextField.getText();
+                highlightQuery(input);
 
-            if (parsedQuery != null && parsedQuery.rules != null && !parsedQuery.rules.isEmpty()) {
-                modifyComboboxFromQuery(parsedQuery, 0);
-                String builtQuery = getFullQuery();
-                queryTextField.setText(builtQuery);
-            } else {
-                JOptionPane.showMessageDialog(null, "Failed to parse query. Please check the syntax.");
+                RuleSet parsedQuery = miqlParser.parseMIQL(input);
+                if (parsedQuery != null && parsedQuery.rules != null && !parsedQuery.rules.isEmpty()) {
+                    queryOperators.setRuleOperator(parsedQuery.condition);
+                    queryOperators.updateAndOrButtons();
+
+                    modifyComboboxFromQuery(parsedQuery, 0);
+                    String builtQuery = getFullQuery();
+                    highlightQuery(builtQuery);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Failed to parse query. Please check the syntax.");
+                }
             }
         });
 
@@ -139,15 +158,20 @@ public class AdvancedSearchQueryComponent {
             panels.clear();
         }
 
-        RuleSetPanel currentRuleSetPanel = (indentLevel == 0) ? null : new RuleSetPanel(this);
-        if (currentRuleSetPanel != null) {
+        RuleSetPanel currentRuleSetPanel = null;
+
+        if (indentLevel != 0) {
+            currentRuleSetPanel = new RuleSetPanel(this);
             currentRuleSetPanel.getPanels().clear();
+            currentRuleSetPanel.getQueryOperators().setRuleOperator(ruleSet.condition);
+            currentRuleSetPanel.getQueryOperators().updateAndOrButtons();
         }
 
         for (Object ruleComponent : ruleSet.rules) {
             if (ruleComponent instanceof RuleSet) {
                 RuleSet nestedRuleSet = (RuleSet) ruleComponent;
                 RuleSetPanel nestedPanel = modifyComboboxFromQuery(nestedRuleSet, indentLevel + 1);
+
 
                 if (nestedPanel != null) {
                     if (indentLevel == 0) {
@@ -185,5 +209,45 @@ public class AdvancedSearchQueryComponent {
             return currentRuleSetPanel;
         }
     }
+
+    public void highlightQuery(String query) {
+        StyledDocument doc = queryTextField.getStyledDocument();
+        doc.removeUndoableEditListener(null);
+
+        queryTextField.setText("");
+
+        Style defaultStyle = queryTextField.addStyle("default", null);
+        StyleConstants.setForeground(defaultStyle, Color.BLACK);
+
+        Style operatorStyle = queryTextField.addStyle("operator", null);
+        StyleConstants.setForeground(operatorStyle, new Color(229, 191, 86));
+
+        Style miQLStyle = queryTextField.addStyle("keyword", null);
+        StyleConstants.setForeground(miQLStyle, new Color(165, 87, 202));
+
+        Style ruleStyle = queryTextField.addStyle("rule", null);
+        StyleConstants.setForeground(ruleStyle, new Color(58, 132, 176));
+
+        String[] tokens = query.split("((?<=\\W)|(?=\\W))");
+
+        for (String token : tokens) {
+            Style styleToUse = defaultStyle;
+
+            if (token.equals("AND") || token.equals("OR") || token.equals("NOT")) {
+                styleToUse = operatorStyle;
+            } else if (token.matches(Field.getMiQlRegex())) {
+                styleToUse = miQLStyle;
+            } else if (token.matches("[(:)]")) {
+                styleToUse = ruleStyle;
+            }
+
+            try {
+                doc.insertString(doc.getLength(), token, styleToUse);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
 }

@@ -20,6 +20,9 @@ public class QueryOperators {
     @Setter
     private String ruleOperator = "AND";
 
+    private final JButton andButton = new JButton("AND");
+    private final JButton orButton = new JButton("OR");
+
     AdvancedSearchQueryComponent advancedSearchQueryComponent;
 
     @Getter
@@ -35,10 +38,10 @@ public class QueryOperators {
     public JPanel getAndOrButton() {
         JPanel buttonContainer = new JPanel();
 
-        JButton andButton = new JButton("AND");
+
         setButtonIntactPurple(andButton);
 
-        JButton orButton = new JButton("OR");
+
         setButtonWhite(orButton);
 
         andButton.addActionListener(e -> {
@@ -46,6 +49,7 @@ public class QueryOperators {
             setButtonWhite(orButton);
             ruleOperator = "AND";
             advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
+            advancedSearchQueryComponent.highlightQuery(advancedSearchQueryComponent.getQueryTextField().getText());
         });
 
         orButton.addActionListener(e -> {
@@ -53,6 +57,7 @@ public class QueryOperators {
             setButtonIntactPurple(orButton);
             ruleOperator = "OR";
             advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
+            advancedSearchQueryComponent.highlightQuery(advancedSearchQueryComponent.getQueryTextField().getText());
         });
 
         buttonContainer.add(andButton);
@@ -83,6 +88,7 @@ public class QueryOperators {
             parentContainer.repaint();
 
             advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
+            advancedSearchQueryComponent.highlightQuery(advancedSearchQueryComponent.getQueryTextField().getText());
         });
 
         ruleSetButton.addActionListener(e -> {
@@ -96,6 +102,7 @@ public class QueryOperators {
             parentContainer.repaint();
 
             advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
+            advancedSearchQueryComponent.highlightQuery(advancedSearchQueryComponent.getQueryTextField().getText());
         });
 
         buttonContainer.add(addRuleButton);
@@ -113,4 +120,13 @@ public class QueryOperators {
         return container;
     }
 
+    public void updateAndOrButtons() {
+        if (ruleOperator.equals("AND")) {
+            setButtonIntactPurple(andButton);
+            setButtonWhite(orButton);
+        } else {
+            setButtonWhite(andButton);
+            setButtonIntactPurple(orButton);
+        }
+    }
 }

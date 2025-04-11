@@ -70,7 +70,7 @@ public class MIQLParser {
     }
 
     public void fillRuleSet(RuleSet ruleSet, String value) {
-        ruleSet.setCondition(value.contains("OR") ? "or" : "and");
+        ruleSet.setCondition(value.contains("OR") ? "OR" : "AND");
 
         List<RuleComponent> superiorRuleSets = ruleSet.getRules();
         int i = 0;
@@ -92,6 +92,7 @@ public class MIQLParser {
                     if (indexOfColon == -1) indexOfColon = ruleStr.length();
 
                     String ruleFieldKeyword = ruleStr.substring(different ? 4 : 0, indexOfColon);
+
                     Field ruleField = Field.getFieldsFromMiQL(ruleFieldKeyword);
 
                     if (ruleField != null) {
@@ -129,7 +130,7 @@ public class MIQLParser {
         }
 
         if (value.startsWith("(") && value.endsWith(")")) {
-            value = value.substring(1, value.length() - 1); // Remove parentheses for processing
+            value = value.substring(1, value.length() - 1);
         }
 
         String potentialNot = input.substring(Math.max(previousSpaceIndex - 3, 0), previousSpaceIndex);
