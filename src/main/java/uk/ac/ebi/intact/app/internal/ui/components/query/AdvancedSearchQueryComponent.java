@@ -33,6 +33,9 @@ public class AdvancedSearchQueryComponent {
     @Getter
     private final ArrayList<Object> panels = new ArrayList<>();
 
+    @Getter
+    private final JButton buildQueryButton = new JButton("Build query");
+
     private final QueryOperators queryOperators = new QueryOperators(this, panels);
     private final MIQLParser miqlParser = new MIQLParser();
 
@@ -69,7 +72,6 @@ public class AdvancedSearchQueryComponent {
     private JPanel getBuildQueryButtonContainer(){
         JPanel buttonContainer = new JPanel();
         buttonContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
-        JButton buildQueryButton = new JButton("Build query");
 
         setButtonIntactPurple(buildQueryButton);
         buildQueryButton.addActionListener(e -> {
@@ -131,6 +133,8 @@ public class AdvancedSearchQueryComponent {
         queryTextField.getActionMap().put("submitQuery", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
+                System.out.println(queryTextField.getText());
                 String input = queryTextField.getText();
                 highlightQuery(input);
 
@@ -248,6 +252,4 @@ public class AdvancedSearchQueryComponent {
             }
         }
     }
-
-
 }
