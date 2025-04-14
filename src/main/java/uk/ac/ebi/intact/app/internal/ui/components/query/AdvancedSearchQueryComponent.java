@@ -40,12 +40,9 @@ public class AdvancedSearchQueryComponent {
     private final MIQLParser miqlParser = new MIQLParser();
 
     public static void main(String[] args) {
-//        for test purposes
+        //todo: for test purpose, remove for prod version
 
-//        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:ID AND pubid:PUBMEDID AND (source:DATABASE))";
-//        final String TEST_STRING = "rdate:[12345 TO 6789] AND (taxidHost:12345)";
-//        final String TEST_STRING = "(id:456 AND id:(758))";
-        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:(ID) OR pubid:PUBMEDID OR (source:DATABASE))"; //todo: check for the "in" which seems to create another ruleset?
+        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:(ID) OR pubid:PUBMEDID OR (source:DATABASE))";
 
         AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
         component.getFrame(TEST_STRING);
