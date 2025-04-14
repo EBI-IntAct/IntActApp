@@ -54,7 +54,7 @@ public class AdvancedSearchTaskFactory extends AbstractNetworkSearchTaskFactory 
     }
 
     public JComponent getQueryComponent() {
-        if (queryComponent == null) queryComponent = new SearchQueryComponent();
+        if (queryComponent == null) queryComponent = new SearchQueryComponent(true);
         return queryComponent;
     }
 

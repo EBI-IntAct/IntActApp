@@ -11,7 +11,7 @@ import java.awt.event.*;
 
 public class SearchQueryComponent extends JTextField {
     private static final long serialVersionUID = 1L;
-    private static final String DEF_SEARCH_TEXT = "← Change query type     | Enter one term per line |    Options →";
+    private static final String DEF_SEARCH_TEXT = "← Change query type     | Enter one term per line |    Options →"; //todo: should it be changed for advanced search?
     final int vgap = 1;
     final int hgap = 5;
     final String tooltip;
@@ -20,11 +20,13 @@ public class SearchQueryComponent extends JTextField {
     private JScrollPane queryScroll = null;
     private JPopupMenu popup = null;
     final String[] textFromQueryBuilder = {null};
+    final boolean isAdvancedSearch;
 
-    public SearchQueryComponent() {
+    public SearchQueryComponent(boolean advancedSearch) {
         super();
         init();
         tooltip = "Press " + (LookAndFeelUtil.isMac() ? "Command" : "Ctrl") + "+ENTER to run the search";
+        isAdvancedSearch = advancedSearch;
     }
 
     void init() {
@@ -112,6 +114,18 @@ public class SearchQueryComponent extends JTextField {
         queryScroll.setPreferredSize(new Dimension(getSize().width, 200));
         popup.setPreferredSize(queryScroll.getPreferredSize());
 
+        if (isAdvancedSearch) {
+            JButton queryBuilderButton = getBuildQueryButton();
+            popup.add(queryBuilderButton, BorderLayout.EAST);
+        }
+
+        popup.show(this, 0, 0);
+        popup.requestFocus();
+        queryTextArea.requestFocusInWindow();
+        queryTextArea.setToolTipText(tooltip);
+    }
+
+    private JButton getBuildQueryButton() {
         JButton queryBuilder = new JButton("Query builder");
         queryBuilder.addActionListener(new ActionListener() {
             @Override
@@ -133,13 +147,7 @@ public class SearchQueryComponent extends JTextField {
             }
         });
 
-
-        popup.add(queryBuilder, BorderLayout.EAST);
-
-        popup.show(this, 0, 0);
-        popup.requestFocus();
-        queryTextArea.requestFocusInWindow();
-        queryTextArea.setToolTipText(tooltip);
+        return queryBuilder;
     }
 
     private void updateQueryTextField() {

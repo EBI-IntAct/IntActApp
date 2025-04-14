@@ -114,14 +114,31 @@ public class MIQLParserTest {
 
     @Test
     public void testParseQueryWithNestedRuleset() {
-        String TEST_STRING = "idA:IDA AND (interaction_id:(ID) OR pubid:PUBMEDID OR (source:DATABASE))";
-        RuleSet parsedResult = parser.parseMIQL(TEST_STRING);
-        Assert.assertEquals(parsedResult.rules.size(), 2);
+        String TEST_STRING = "idA:IDA AND (interaction_id:ID OR pubid:PUBMEDID OR (source:DATABASE))";
+        RuleSet fullQuery = parser.parseMIQL(TEST_STRING);
+        Assert.assertEquals(fullQuery.rules.size(), 2);
 
-        RuleComponent rule = parsedResult.getRules().get(1);
-        Assert.assertTrue(rule instanceof RuleSet);
-        RuleSet parsedRuleSet = (RuleSet) rule;
-        Assert.assertEquals(parsedRuleSet.rules.size(), 3);
+        RuleComponent parentRuleSet = fullQuery.getRules().get(1);
+        Assert.assertTrue(parentRuleSet instanceof RuleSet);
+
+        Assert.assertEquals(((RuleSet) parentRuleSet).rules.size(), 3);
+
+        RuleComponent childRuleSet = ((RuleSet) parentRuleSet).rules.get(2);
+        Assert.assertTrue(childRuleSet instanceof  RuleSet);
+    }
+
+    @Test
+    public void testParseQueryWithRuleSetAndIn(){
+        String TEST_STRING = "idA:IDA AND (interaction_id:(ID) OR pubid:PUBMEDID OR (source:DATABASE))";
+        RuleSet fullQuery = parser.parseMIQL(TEST_STRING);
+        Assert.assertEquals(fullQuery.rules.size(), 2);
+
+        RuleComponent parentRuleSet = fullQuery.getRules().get(1);
+        Assert.assertTrue(parentRuleSet instanceof RuleSet);
+
+        Assert.assertEquals(((RuleSet) parentRuleSet).rules.size(), 3);
+
+        Assert.assertEquals(((RuleSet) parentRuleSet).rules.get(2).getRule(0).getOperator(), "in");
     }
 
 }
