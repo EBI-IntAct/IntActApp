@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.app.internal.model.core.elements.edges;
 
+import lombok.Getter;
 import org.cytoscape.model.CyEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
@@ -26,6 +27,16 @@ public class SummaryEdge extends Edge {
         buildFeatures(features, sourceFeatureAcs, source, presentSummarizedEdgesSUID);
         buildFeatures(features, targetFeatureAcs, target, presentSummarizedEdgesSUID);
         return features;
+    }
+
+    public Boolean isNegative() {
+        List<EvidenceEdge> summarizedEdges = getSummarizedEdges();
+        for (EvidenceEdge edge : summarizedEdges) {
+            if (edge.isNegativeInteraction){
+                return true;
+            }
+        }
+        return false;
     }
 
     protected void buildFeatures(Map<Node, List<Feature>> features, List<String> featureAcs, Node participant, Set<Long> edgesSUID) {
@@ -64,6 +75,7 @@ public class SummaryEdge extends Edge {
                     if (summarizedCyEdge == null) return false;
                     return network.getEvidenceEdge(summarizedCyEdge) != null;
                 }).count();
+        EdgeFields.IS_NEGATIVE_INTERACTION.setValue(edgeRow, isNegative());
         EdgeFields.SUMMARY_NB_EDGES.setValue(edgeRow, nbSummarizedEdges);
     }
 
