@@ -1,6 +1,5 @@
 package uk.ac.ebi.intact.app.internal.model.core.elements.edges;
 
-import lombok.Getter;
 import org.cytoscape.model.CyEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
@@ -32,7 +31,7 @@ public class SummaryEdge extends Edge {
     public Boolean isNegative() {
         List<EvidenceEdge> summarizedEdges = getSummarizedEdges();
         for (EvidenceEdge edge : summarizedEdges) {
-            if (edge.isNegativeInteraction){
+            if (edge.isNegative){
                 return true;
             }
         }

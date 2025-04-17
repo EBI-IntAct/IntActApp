@@ -103,7 +103,7 @@ public class EdgeParticipants extends AbstractEdgeAttribute {
             nodePanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
         }
 
-        content.add(new EdgeDiagram(StyleMapper.edgeTypeToPaint.get(edge.type.value), 4, edge.expansionType != null && !edge.expansionType.isBlank(), edge.isNegativeInteraction));
+        content.add(new EdgeDiagram(StyleMapper.edgeTypeToPaint.get(edge.type.value), 4, edge.expansionType != null && !edge.expansionType.isBlank(), edge.isNegative));
     }
 
     private class ParticipantInfoPanel extends LinePanel {

@@ -131,7 +131,6 @@ public class AdvancedSearchQueryComponent {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                System.out.println(queryTextField.getText());
                 String input = queryTextField.getText();
                 highlightQuery(input);
 

@@ -7,6 +7,7 @@ import uk.ac.ebi.intact.app.internal.model.filters.BooleanFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.ContinuousFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
+import uk.ac.ebi.intact.app.internal.model.filters.edge.EdgePositiveFilter;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.components.buttons.HelpButton;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.CollapsablePanel;
@@ -61,6 +62,9 @@ public abstract class FilterPanel<F extends Filter<? extends Element>> extends C
         } else if (filter instanceof DiscreteFilter) {
             return new DiscreteFilterPanel<>(manager, (DiscreteFilter<T>) filter);
         } else if (filter instanceof BooleanFilter) {
+            if (filter instanceof EdgePositiveFilter) {
+                return new ToggleFilterPanel<>(manager, (EdgePositiveFilter) filter);
+            }
             return new BooleanFilterPanel<>(manager, (BooleanFilter<T>) filter);
         }
         return null;

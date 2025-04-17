@@ -33,7 +33,7 @@ public class EvidenceEdge extends Edge {
     public final CVTerm targetBiologicalRole;
     public final CVTerm targetExperimentalRole;
     private JsonNode detailsJSON;
-    public final Boolean isNegativeInteraction;
+    public final Boolean isNegative;
 
     EvidenceEdge(Network network, CyEdge edge) {
         super(network, edge);
@@ -53,7 +53,7 @@ public class EvidenceEdge extends Edge {
         targetExperimentalRole = new CVTerm(edgeRow, EXPERIMENTAL_ROLE.TARGET);
 
         pubMedId = PUBMED_ID.getValue(edgeRow);
-        isNegativeInteraction = IS_NEGATIVE_INTERACTION.getValue(edgeRow);
+        isNegative = IS_NEGATIVE_INTERACTION.getValue(edgeRow);
     }
 
     @Override
