@@ -1,6 +1,5 @@
 package uk.ac.ebi.intact.app.internal.io;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -43,14 +42,10 @@ public class HttpUtils {
             .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true)
             .build();
 
-    private static final HttpClient client = HttpClient.newHttpClient();
-
-
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtils.class);
 
     public static JsonNode getJsonNetworkWithRequestBody(String query, int page) throws IOException, InterruptedException {
         String baseUrl = INTACT_GRAPH_WS + "network/fromPagedInteractions";
-
 
         Map<String, Object> params = Map.of(
                 "query", query,
@@ -63,7 +58,7 @@ public class HttpUtils {
                 .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(params)))
                 .build();
 
-        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
         return mapper.readTree(response.body());
     }

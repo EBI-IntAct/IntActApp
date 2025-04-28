@@ -37,8 +37,6 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         this.applyLayout = applyLayout;
     }
 
-    Instant begin;
-
     @Override
     public void run(TaskMonitor monitor) throws Exception {
         Manager manager = network.manager;
@@ -79,7 +77,6 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
             return;
         }
 
-        // Now style the network
         monitor.setTitle("Create and register network view + Initialize filters");
         monitor.showMessage(TaskMonitor.Level.INFO, "Create and register network view + Initialize filters");
         monitor.setProgress(0.8);

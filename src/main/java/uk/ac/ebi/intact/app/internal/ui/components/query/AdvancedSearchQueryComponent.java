@@ -39,15 +39,6 @@ public class AdvancedSearchQueryComponent {
     private final QueryOperators queryOperators = new QueryOperators(this, panels);
     private final MIQLParser miqlParser = new MIQLParser();
 
-    public static void main(String[] args) {
-        //todo: for test purpose, remove for prod version
-
-        final String TEST_STRING = "NOT idA:IDA AND (interaction_id:(ID) OR pubid:PUBMEDID OR (source:DATABASE))";
-
-        AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
-        component.getFrame(TEST_STRING);
-    }
-
     public void getFrame(String input) {
         queryTextField.setText(input);
         frame = new JFrame("Advanced Search Query Builder");
@@ -55,13 +46,21 @@ public class AdvancedSearchQueryComponent {
         frame.setSize(frameWidth, 1000);
         frame.setLayout(new BorderLayout());
 
-        JPanel pageStartContainer = new JPanel(new BorderLayout());
-        pageStartContainer.add(getQueryInputField(), BorderLayout.LINE_START);
-        pageStartContainer.add(queryOperators.getButtons(rulesPanel), BorderLayout.LINE_END);
+        JPanel pageStartContainer = new JPanel(new GridLayout(2, 1));
+        pageStartContainer.setSize(frameWidth, 50);
+
+        JPanel queryContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        queryContainer.add(getQueryInputField(), BorderLayout.LINE_START);
+        queryContainer.add(getBuildQueryButtonContainer(), BorderLayout.CENTER);
+
+        JPanel buttonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonsContainer.add(queryOperators.getButtons(rulesPanel), BorderLayout.LINE_END);
+
+        pageStartContainer.add(queryContainer);
+        pageStartContainer.add(buttonsContainer);
 
         frame.add(pageStartContainer, BorderLayout.PAGE_START);
         frame.add(getRuleScrollPane(), BorderLayout.CENTER);
-        frame.add(getBuildQueryButtonContainer(), BorderLayout.PAGE_END);
 
         frame.setVisible(true);
     }
@@ -72,6 +71,7 @@ public class AdvancedSearchQueryComponent {
 
         setButtonIntactPurple(buildQueryButton);
         buildQueryButton.addActionListener(e -> {
+
             String fullQuery = getFullQuery();
             queryTextField.setText(fullQuery);
             highlightQuery(fullQuery);

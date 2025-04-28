@@ -9,7 +9,7 @@ import java.util.Properties;
 
 public class Manager {
 //    private static final String INTACT_WEBSERVICES = "https://www.ebi.ac.uk/intact/ws/";
-    private static final String INTACT_WEBSERVICES = "http://localhost:8083/intact/ws/";
+    private static final String INTACT_WEBSERVICES = "https://wwwdev.ebi.ac.uk/intact/ws/";
 
     public static final String INTACT_GRAPH_WS = INTACT_WEBSERVICES + "graph/";
     public static final String INTACT_INTERACTOR_WS = INTACT_WEBSERVICES + "interactor/";

@@ -10,10 +10,10 @@ public class EdgePositiveFilter extends BooleanFilter<Edge> {
 
     @Setter
     @Getter
-    private boolean isNegativeHidden;
+    private boolean isNegativeHidden = areTheyPositiveInteractions() && areTheyNegativeInteractions();
     @Setter
     @Getter
-    private boolean isPositiveHidden;
+    private boolean isPositiveHidden = !areTheyPositiveInteractions();
 
     public EdgePositiveFilter(NetworkView networkView) {
         super(networkView,
@@ -30,5 +30,33 @@ public class EdgePositiveFilter extends BooleanFilter<Edge> {
         } else {
             return isPositiveHidden;
         }
+    }
+
+    @Override
+    public void reset() {
+        setNegativeHidden(areTheyPositiveInteractions() && areTheyNegativeInteractions());
+        setPositiveHidden(!areTheyPositiveInteractions());
+        status = areTheyNegativeInteractions() || areTheyPositiveInteractions();
+        fireFilterUpdated();
+    }
+
+    public boolean areTheyNegativeInteractions() {
+        NetworkView networkView = getNetworkView();
+        for (Edge edge : networkView.getNetwork().getEvidenceEdges()){
+            if (edge.isNegative){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean areTheyPositiveInteractions() {
+        NetworkView networkView = getNetworkView();
+        for (Edge edge : networkView.getNetwork().getEvidenceEdges()){
+            if (!edge.isNegative){
+                return true;
+            }
+        }
+        return false;
     }
 }
