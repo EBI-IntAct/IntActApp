@@ -27,4 +27,6 @@ public class NodeFields {
     public static final ListField<String> FEATURES = new ListField<>(fields, initializers, Field.Namespace.FEATURE, "Features", String.class);
     public static final ListField<String> IDENTIFIERS = new ListField<>(fields, initializers, Field.Namespace.IDENTIFIER, "Identifiers", String.class);
     public static final Field<String> ELABEL_STYLE = new Field<>(fields, initializers, Field.Namespace.NULL, "enhancedLabel Passthrough", null, String.class, "label: attribute=\"name\" labelsize=12 labelAlignment=center outline=true outlineColor=black outlineTransparency=130 outlineWidth=5 background=false color=white dropShadow=false");
+
+    public static final Field<String> ORTHOLOG_GROUP_ID = new Field<>(fields, initializers, Field.Namespace.NULL, "Ortholog group id", null, String.class); //todo: change the jsonkey when available
 }
