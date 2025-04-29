@@ -155,4 +155,8 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
     public Network getNetwork() {
         return Objects.requireNonNull(network.get());
     }
+
+    public String getOrthologGroupId(){
+        return ORTHOLOG_GROUP_ID.getValue(nodeRow);
+    }
 }
