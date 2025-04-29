@@ -11,6 +11,7 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.NodeCouple;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.elements.orthologs.OrthologGroupFactory;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -460,4 +462,42 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     public CyRow getCyRow() {
         return cyNetwork.getRow(cyNetwork);
     }
+
+    public void createOrthologGroups(){
+        OrthologGroupFactory orthologGroupFactory = new OrthologGroupFactory();
+        List<CyEdge> cySummaryEdges = summaryEdges.values().stream().map(summaryEdge -> summaryEdge.cyEdge).collect(toList());
+        for (List<CyNode> cyNodesOrthologGroup: groupNodes()){
+            orthologGroupFactory.createGroup(cyNetwork, cyNodesOrthologGroup, cySummaryEdges, true);
+        }
+    }
+
+    private List<List<CyNode>> groupNodes() {
+        List<List<CyNode>> nodesByOrthologs = new ArrayList<>();
+
+        List<CyNode> cyNodes = sortNodesByOrthologs();
+
+        String currentOrthologGroupId = null;
+        List<CyNode> currentOrthologGroup = new ArrayList<>();
+
+        for (CyNode cyNode : cyNodes) {
+            Node intactNode = nodes.get(cyNode);
+            if (Objects.equals(currentOrthologGroupId, intactNode.getOrthologGroupId())){
+                currentOrthologGroup.add(intactNode.cyNode);
+            } else {
+                currentOrthologGroupId = intactNode.getOrthologGroupId();
+                nodesByOrthologs.add(currentOrthologGroup);
+                currentOrthologGroup = new ArrayList<>();
+            }
+        }
+
+        return nodesByOrthologs;
+    }
+
+    private List<CyNode> sortNodesByOrthologs() {
+        return nodes.entrySet().stream()
+                .sorted(Comparator.comparing(entry -> entry.getValue().getOrthologGroupId()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+    }
+
 }
