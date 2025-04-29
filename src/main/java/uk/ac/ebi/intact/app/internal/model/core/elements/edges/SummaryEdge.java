@@ -29,13 +29,7 @@ public class SummaryEdge extends Edge {
     }
 
     public Boolean isNegative() {
-        List<EvidenceEdge> summarizedEdges = getSummarizedEdges();
-        for (EvidenceEdge edge : summarizedEdges) {
-            if (edge.isNegative){
-                return true;
-            }
-        }
-        return false;
+        return getSummarizedEdges().stream().anyMatch(edge -> edge.isNegative);
     }
 
     protected void buildFeatures(Map<Node, List<Feature>> features, List<String> featureAcs, Node participant, Set<Long> edgesSUID) {

@@ -38,18 +38,9 @@ public class ToggleFilterPanel<T extends Element> extends FilterPanel<BooleanFil
         JPanel buttonPanel = getButtonPanel();
         content.add(buttonPanel, layoutHelper.down().expandHoriz());
 
-        positiveButton.addActionListener(e -> {
-            updateFilter(true, false);
-            positiveButton.setSelected(true);
-        });
-        negativeButton.addActionListener(e -> {
-            updateFilter(false, true);
-            negativeButton.setSelected(true);
-        });
-        bothButton.addActionListener(e -> {
-            updateFilter(false, false);
-            bothButton.setSelected(true);
-        });
+        positiveButton.addActionListener(e -> updateFilter(true, false));
+        negativeButton.addActionListener(e -> updateFilter(false, true));
+        bothButton.addActionListener(e -> updateFilter(false, false));
     }
 
     private JPanel getButtonPanel() {
@@ -58,31 +49,31 @@ public class ToggleFilterPanel<T extends Element> extends FilterPanel<BooleanFil
         buttonPanel.add(positiveButton);
         buttonPanel.add(bothButton);
         buttonPanel.add(negativeButton);
-        
+
         buttonPanel.setBackground(new Color(251, 251, 251));
 
         return buttonPanel;
     }
 
     private void setButtonsEnabled() {
-        boolean isThereNegativeInteractions = ((EdgePositiveFilter) filter).areTheyNegativeInteractions();
-        boolean isTherePositiveInteractions = ((EdgePositiveFilter) filter).areTheyPositiveInteractions();
+        boolean isThereNegativeInteractions = ((EdgePositiveFilter) filter).areThereNegativeInteractions();
+        boolean isTherePositiveInteractions = ((EdgePositiveFilter) filter).areTherePositiveInteractions();
 
         negativeButton.setEnabled(isThereNegativeInteractions);
         positiveButton.setEnabled(isTherePositiveInteractions);
         bothButton.setEnabled(isThereNegativeInteractions && isTherePositiveInteractions);
     }
 
-    private void updateFilter(boolean showPositive, boolean showNegative) {
-        ((EdgePositiveFilter) filter).setPositiveHidden(showNegative);
-        ((EdgePositiveFilter) filter).setNegativeHidden(showPositive);
+    private void updateFilter(boolean showOnlyPositive, boolean showOnlyNegative) {
+        ((EdgePositiveFilter) filter).setPositiveHidden(showOnlyNegative);
+        ((EdgePositiveFilter) filter).setNegativeHidden(showOnlyPositive);
 
-        boolean shouldEnableFilter = showPositive || showNegative;
+        boolean shouldEnableFilter = showOnlyPositive || showOnlyNegative;
         filter.setStatus(shouldEnableFilter);
 
-        positiveButton.setSelected(false);
-        negativeButton.setSelected(false);
-        bothButton.setSelected(false);
+        positiveButton.setSelected(showOnlyPositive && !showOnlyNegative);
+        negativeButton.setSelected(!showOnlyPositive && showOnlyNegative);
+        bothButton.setSelected(!showOnlyPositive && !showOnlyNegative);
     }
 
     @Override
@@ -90,8 +81,8 @@ public class ToggleFilterPanel<T extends Element> extends FilterPanel<BooleanFil
         label.setText(filter.description);
         setButtonsEnabled();
 
-        boolean isThereNegativeInteractions = ((EdgePositiveFilter) filter).areTheyNegativeInteractions();
-        boolean isTherePositiveInteractions = ((EdgePositiveFilter) filter).areTheyPositiveInteractions();
+        boolean isThereNegativeInteractions = ((EdgePositiveFilter) filter).areThereNegativeInteractions();
+        boolean isTherePositiveInteractions = ((EdgePositiveFilter) filter).areTherePositiveInteractions();
 
         negativeButton.setSelected(isThereNegativeInteractions && !isTherePositiveInteractions);
         positiveButton.setSelected(isTherePositiveInteractions);

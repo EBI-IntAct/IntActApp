@@ -10,10 +10,10 @@ public class EdgePositiveFilter extends BooleanFilter<Edge> {
 
     @Setter
     @Getter
-    private boolean isNegativeHidden = areTheyPositiveInteractions() && areTheyNegativeInteractions();
+    private boolean isNegativeHidden = areTherePositiveInteractions() && areThereNegativeInteractions();
     @Setter
     @Getter
-    private boolean isPositiveHidden = !areTheyPositiveInteractions();
+    private boolean isPositiveHidden = !areTherePositiveInteractions();
 
     public EdgePositiveFilter(NetworkView networkView) {
         super(networkView,
@@ -34,29 +34,21 @@ public class EdgePositiveFilter extends BooleanFilter<Edge> {
 
     @Override
     public void reset() {
-        setNegativeHidden(areTheyPositiveInteractions() && areTheyNegativeInteractions());
-        setPositiveHidden(!areTheyPositiveInteractions());
-        status = areTheyNegativeInteractions() || areTheyPositiveInteractions();
+        boolean anyPositive = areTherePositiveInteractions();
+        boolean anyNegative = areThereNegativeInteractions();
+        setNegativeHidden(anyPositive && anyNegative);
+        setPositiveHidden(!anyPositive);
+        status = anyPositive || anyNegative;
         fireFilterUpdated();
     }
 
-    public boolean areTheyNegativeInteractions() {
+    public boolean areThereNegativeInteractions() {
         NetworkView networkView = getNetworkView();
-        for (Edge edge : networkView.getNetwork().getEvidenceEdges()){
-            if (edge.isNegative){
-                return true;
-            }
-        }
-        return false;
+        return networkView.getNetwork().getEvidenceEdges().stream().anyMatch(edge -> edge.isNegative);
     }
 
-    public boolean areTheyPositiveInteractions() {
+    public boolean areTherePositiveInteractions() {
         NetworkView networkView = getNetworkView();
-        for (Edge edge : networkView.getNetwork().getEvidenceEdges()){
-            if (!edge.isNegative){
-                return true;
-            }
-        }
-        return false;
+        return networkView.getNetwork().getEvidenceEdges().stream().anyMatch(edge -> !edge.isNegative);
     }
 }
