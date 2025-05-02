@@ -6,13 +6,10 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.filters.BooleanFilter;
 
+@Setter
+@Getter
 public class EdgePositiveFilter extends BooleanFilter<Edge> {
-
-    @Setter
-    @Getter
     private boolean isNegativeHidden = areTherePositiveInteractions() && areThereNegativeInteractions();
-    @Setter
-    @Getter
     private boolean isPositiveHidden = !areTherePositiveInteractions();
 
     public EdgePositiveFilter(NetworkView networkView) {

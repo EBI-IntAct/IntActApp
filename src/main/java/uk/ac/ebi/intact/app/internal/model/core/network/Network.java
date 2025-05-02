@@ -1,6 +1,10 @@
 package uk.ac.ebi.intact.app.internal.model.core.network;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.*;
 import org.cytoscape.model.events.*;
 import org.cytoscape.task.hide.HideTaskFactory;
@@ -11,12 +15,12 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.NodeCouple;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.elements.orthologs.OrthologGroupFactory;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
@@ -25,13 +29,13 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.Position;
 
 public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, RemovedEdgesListener {
+    @JsonIgnore
     ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
     public final Manager manager;
     CyNetwork cyNetwork;
@@ -51,9 +55,15 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     private final Map<String, String> speciesNameToId = new HashMap<>();
     private final Map<String, String> speciesIdToName = new HashMap<>();
 
+    CyGroupFactory groupFactory;
+    CyGroupManager groupManager;
+
+    Map<String, CyGroup> cyGroups = new HashMap<>();
 
     public Network(Manager manager) {
         this.manager = manager;
+        groupFactory = manager.utils.getService(CyGroupFactory.class);
+        groupManager = manager.utils.getService(CyGroupManager.class);
     }
 
     public CyNetwork getCyNetwork() {
@@ -463,41 +473,49 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return cyNetwork.getRow(cyNetwork);
     }
 
-    public void createOrthologGroups(){
-        OrthologGroupFactory orthologGroupFactory = new OrthologGroupFactory();
-        List<CyEdge> cySummaryEdges = summaryEdges.values().stream().map(summaryEdge -> summaryEdge.cyEdge).collect(toList());
-        for (List<CyNode> cyNodesOrthologGroup: groupNodes()){
-            orthologGroupFactory.createGroup(cyNetwork, cyNodesOrthologGroup, cySummaryEdges, true);
+    public Map<String, List<CyNode>> groupNodesByProperty(String columnName) {
+        Map<String, List<CyNode>> groups = new HashMap<>();
+
+        for (CyNode cyNode : cyNetwork.getNodeList()) {
+            CyRow row = cyNetwork.getRow(cyNode);
+            String value = row.get(columnName, String.class);
+            if (value == null) value = "Undefined";
+
+            groups.computeIfAbsent(value, k -> new ArrayList<>()).add(cyNode);
         }
+
+        return groups;
     }
 
-    private List<List<CyNode>> groupNodes() {
-        List<List<CyNode>> nodesByOrthologs = new ArrayList<>();
+    public void createGroupsByProperty(String columnName) {
+        Map<String, List<CyNode>> groups = groupNodesByProperty(columnName);
 
-        List<CyNode> cyNodes = sortNodesByOrthologs();
-
-        String currentOrthologGroupId = null;
-        List<CyNode> currentOrthologGroup = new ArrayList<>();
-
-        for (CyNode cyNode : cyNodes) {
-            Node intactNode = nodes.get(cyNode);
-            if (Objects.equals(currentOrthologGroupId, intactNode.getOrthologGroupId())){
-                currentOrthologGroup.add(intactNode.cyNode);
-            } else {
-                currentOrthologGroupId = intactNode.getOrthologGroupId();
-                nodesByOrthologs.add(currentOrthologGroup);
-                currentOrthologGroup = new ArrayList<>();
+        groups.forEach((key, cyNodes) -> {
+            if (cyNodes.size() > 1) {
+                CyGroup group = groupFactory.createGroup(cyNetwork, cyNodes, null, true);
+                groupManager.addGroup(group);
+                cyGroups.put(key, group);
             }
-        }
-
-        return nodesByOrthologs;
+        });
     }
 
-    private List<CyNode> sortNodesByOrthologs() {
-        return nodes.entrySet().stream()
-                .sorted(Comparator.comparing(entry -> entry.getValue().getOrthologGroupId()))
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+    public void collapseGroups(String columnName) {
+        //todo: check to use the columnName to collapse by property
+        cyGroups.forEach((key, group) -> {
+            group.collapse(cyNetwork);
+            CyRow row = getCyRow(group.getGroupNode());
+            if (row != null) {
+                row.set(NodeFields.NAME.name, key);
+                row.set(columnName, key);
+//                row.set(NodeFields.TYPE, new CVField()) todo: check what we want for type (https://www.ebi.ac.uk/ols4/ontologies/mi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FMI_2426)
+            }
+        });
+    }
+
+
+    public void expandGroups(String columnName) {
+        //todo: check to use the columnName to expand by property
+        cyGroups.forEach((key, group) -> group.expand(cyNetwork));
     }
 
 }
