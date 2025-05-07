@@ -32,7 +32,7 @@ public class OrthologGroupFilter extends BooleanFilter<Node> {
             network.collapseGroups(NodeFields.ORTHOLOG_GROUP_ID.name);
         }
         else {
-            network.expandGroups(NodeFields.ORTHOLOG_GROUP_ID.name);
+            network.expandGroups();
         }
     }
 
