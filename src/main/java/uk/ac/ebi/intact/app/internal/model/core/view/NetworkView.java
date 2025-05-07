@@ -27,7 +27,6 @@ import uk.ac.ebi.intact.app.internal.model.filters.node.OrthologyGroupingDatabas
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeSpeciesFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
-import uk.ac.ebi.intact.app.internal.model.filters.node.OrthologGroupFilter;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
 
@@ -73,7 +72,6 @@ public class NetworkView implements FilterUpdatedListener {
     private void setupFilters(boolean loadData) {
         filters.add(new NodeTypeFilter(this));
         filters.add(new NodeSpeciesFilter(this));
-        filters.add(new OrthologGroupFilter(this));
 
         filters.add(new EdgeMIScoreFilter(this));
         filters.add(new EdgeInteractionDetectionMethodFilter(this));
