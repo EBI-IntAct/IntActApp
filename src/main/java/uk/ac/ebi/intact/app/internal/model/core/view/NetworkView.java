@@ -22,7 +22,6 @@ import uk.ac.ebi.intact.app.internal.model.filters.edge.*;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeSpeciesFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
-import uk.ac.ebi.intact.app.internal.model.filters.node.OrthologGroupFilter;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
 
@@ -67,7 +66,6 @@ public class NetworkView implements FilterUpdatedListener {
     private void setupFilters(boolean loadData) {
         filters.add(new NodeTypeFilter(this));
         filters.add(new NodeSpeciesFilter(this));
-        filters.add(new OrthologGroupFilter(this));
 
         filters.add(new EdgeMIScoreFilter(this));
         filters.add(new EdgeInteractionDetectionMethodFilter(this));
@@ -100,7 +98,6 @@ public class NetworkView implements FilterUpdatedListener {
             View<CyEdge> edgeView = cyView.getEdgeView(cyEdge);
             if (edgeView == null) return;
             edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
-
         });
         filter();
     }
@@ -227,7 +224,8 @@ public class NetworkView implements FilterUpdatedListener {
     public enum Type {
         SUMMARY("SUMMARY", "IntAct - Summary"),
         EVIDENCE("EVIDENCE", "IntAct - Evidence"),
-        MUTATION("MUTATION", "IntAct - Mutation");
+        MUTATION("MUTATION", "IntAct - Mutation"),
+        ORTHOLOGY("ORTHOLOGY", "IntAct - Orthology"),;
 
         private final String name;
         public final String styleName;
