@@ -20,6 +20,8 @@ import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedListener;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.OrthologyViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.filter.ResetFiltersTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.extract.ExtractNetworkViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
@@ -57,10 +59,12 @@ public class DetailPanel extends JPanel
     private final JRadioButton summaryViewType = new JRadioButton("Summary");
     private final JRadioButton evidenceViewType = new JRadioButton("Evidence");
     private final JRadioButton mutationViewType = new JRadioButton("Mutation");
+    private final JRadioButton orthologyViewType = new JRadioButton("Orthology");
 
     private final SummaryViewTaskFactory summaryViewTaskFactory;
     private final EvidenceViewTaskFactory evidenceViewTaskFactory;
     private final MutationViewTaskFactory mutationViewTaskFactory;
+    private final OrthologyViewTaskFactory orthologyViewTaskFactory;
 
     private final NodeDetailPanel nodePanel;
     private final EdgeDetailPanel edgePanel;
@@ -77,17 +81,38 @@ public class DetailPanel extends JPanel
         summaryViewTaskFactory = new SummaryViewTaskFactory(manager, true);
         evidenceViewTaskFactory = new EvidenceViewTaskFactory(manager, true);
         mutationViewTaskFactory = new MutationViewTaskFactory(manager, true);
+        orthologyViewTaskFactory = new OrthologyViewTaskFactory(manager, true);
+
 
         ButtonGroup viewTypes = new ButtonGroup();
         viewTypes.add(summaryViewType);
         viewTypes.add(evidenceViewType);
         viewTypes.add(mutationViewType);
-
+        viewTypes.add(orthologyViewType);
 
         NetworkView view = manager.data.getCurrentNetworkView();
-        summaryViewType.addActionListener(e -> manager.utils.execute(summaryViewTaskFactory.createTaskIterator()));
-        evidenceViewType.addActionListener(e -> manager.utils.execute(evidenceViewTaskFactory.createTaskIterator()));
-        mutationViewType.addActionListener(e -> manager.utils.execute(mutationViewTaskFactory.createTaskIterator()));
+        Network network = manager.data.getCurrentNetwork();
+
+        summaryViewType.addActionListener(e -> {
+            network.expandGroups();
+            manager.utils.execute(summaryViewTaskFactory.createTaskIterator());
+        });
+
+        evidenceViewType.addActionListener(e -> {
+            network.expandGroups();
+            manager.utils.execute(evidenceViewTaskFactory.createTaskIterator());
+        });
+
+        mutationViewType.addActionListener(e -> {
+            network.expandGroups();
+            manager.utils.execute(mutationViewTaskFactory.createTaskIterator());
+        });
+
+        orthologyViewType.addActionListener(e -> {
+            manager.utils.execute(orthologyViewTaskFactory.createTaskIterator());
+            network.collapseGroups(NodeFields.ORTHOLOG_GROUP_ID.name);
+        });
+
         if (view != null) {
             switch (view.getType()) {
                 case SUMMARY:
@@ -99,6 +124,9 @@ public class DetailPanel extends JPanel
                 case MUTATION:
                     mutationViewType.setSelected(true);
                     break;
+                case ORTHOLOGY:
+                    orthologyViewType.setSelected(true);
+                    break;
             }
         }
 
@@ -107,6 +135,7 @@ public class DetailPanel extends JPanel
         viewTypesPanel.add(summaryViewType);
         viewTypesPanel.add(evidenceViewType);
         viewTypesPanel.add(mutationViewType);
+        viewTypesPanel.add(orthologyViewType);
         JPanel upperPanel = new JPanel(new GridLayout(1, 2));
         upperPanel.add(viewTypesPanel);
 
@@ -233,6 +262,9 @@ public class DetailPanel extends JPanel
                 case MUTATION:
                     mutationViewType.setSelected(true);
                     break;
+                case ORTHOLOGY:
+                    orthologyViewType.setSelected(true);
+                    break;
             }
         }
     }
@@ -310,6 +342,9 @@ public class DetailPanel extends JPanel
                 break;
             case MUTATION:
                 mutationViewType.setSelected(true);
+                break;
+            case ORTHOLOGY:
+                orthologyViewType.setSelected(true);
                 break;
         }
     }

@@ -45,6 +45,9 @@ public class EdgeLegendPanel extends AbstractLegendPanel {
             case MUTATION:
                 newPanel = mutationEdgeLegendPanel;
                 break;
+            case ORTHOLOGY:
+                newPanel = evidenceEdgeLegendPanel;
+                break;
         }
 
         content.add(newPanel, new EasyGBC().anchor("west").expandHoriz());

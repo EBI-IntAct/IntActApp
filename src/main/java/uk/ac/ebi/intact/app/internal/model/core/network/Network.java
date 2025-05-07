@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.app.internal.model.core.network;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
@@ -20,7 +21,6 @@ import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
@@ -55,10 +55,13 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     private final Map<String, String> speciesNameToId = new HashMap<>();
     private final Map<String, String> speciesIdToName = new HashMap<>();
 
-    CyGroupFactory groupFactory;
-    CyGroupManager groupManager;
+    private final CyGroupFactory groupFactory;
+    private final CyGroupManager groupManager;
 
-    Map<String, CyGroup> cyGroups = new HashMap<>();
+    private final Map<String, CyGroup> cyGroups = new HashMap<>();
+
+    @Getter
+    boolean areGroupCollapsed = false;
 
     public Network(Manager manager) {
         this.manager = manager;
@@ -489,7 +492,6 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
     public void createGroupsByProperty(String columnName) {
         Map<String, List<CyNode>> groups = groupNodesByProperty(columnName);
-
         groups.forEach((key, cyNodes) -> {
             if (cyNodes.size() > 1) {
                 CyGroup group = groupFactory.createGroup(cyNetwork, cyNodes, null, true);
@@ -501,21 +503,20 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
     public void collapseGroups(String columnName) {
         //todo: check to use the columnName to collapse by property
+        createGroupsByProperty(columnName);
         cyGroups.forEach((key, group) -> {
             group.collapse(cyNetwork);
-            CyRow row = getCyRow(group.getGroupNode());
-            if (row != null) {
-                row.set(NodeFields.NAME.name, key);
-                row.set(columnName, key);
-//                row.set(NodeFields.TYPE, new CVField()) todo: check what we want for type (https://www.ebi.ac.uk/ols4/ontologies/mi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FMI_2426)
-            }
         });
+        areGroupCollapsed = true;
     }
 
 
-    public void expandGroups(String columnName) {
+    public void expandGroups() {
         //todo: check to use the columnName to expand by property
-        cyGroups.forEach((key, group) -> group.expand(cyNetwork));
+        if (areGroupCollapsed) {
+            cyGroups.forEach((key, group) -> group.expand(cyNetwork));
+            areGroupCollapsed = false;
+        }
     }
 
 }

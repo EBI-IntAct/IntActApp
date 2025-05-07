@@ -10,10 +10,7 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.styles.EvidenceStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.MutationStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.Style;
-import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.*;
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.FeatureFields;
@@ -95,6 +92,9 @@ public class SessionLoader implements SessionLoadedListener {
                         case MUTATION:
                             manager.style.styles.put(Type.MUTATION, new MutationStyle(manager, styleToLoad));
                             break;
+                        case ORTHOLOGY:
+                            manager.style.styles.put(Type.ORTHOLOGY, new OrthologyStyle(manager, styleToLoad));
+                            break;
                     }
                     break;
                 }
@@ -109,6 +109,9 @@ public class SessionLoader implements SessionLoadedListener {
                         break;
                     case MUTATION:
                         manager.style.styles.put(Type.MUTATION, new MutationStyle(manager));
+                        break;
+                    case ORTHOLOGY:
+                        manager.style.styles.put(Type.ORTHOLOGY, new OrthologyStyle(manager));
                         break;
                 }
             }
