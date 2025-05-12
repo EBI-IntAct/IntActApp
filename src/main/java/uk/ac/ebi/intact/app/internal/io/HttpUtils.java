@@ -128,32 +128,31 @@ public class HttpUtils {
         }
     }
 
-    public static JsonNode postJSON(String url, Map<Object, Object> data, Manager manager, Supplier<Boolean> isCancelled) {
+    public static JsonNode postJSON(String url, Map<Object, Object> body, Manager manager, Supplier<Boolean> isCancelled) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .POST(buildFormDataFromMap(data))
                     .uri(URI.create(url))
+                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body)))
                     .setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
-                    .header("Content-Type", "application/x-www-form-urlencoded")
                     .header("accept", "application/json")
                     .build();
             Instant begin = Instant.now();
-            CompletableFuture<String> body = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+            CompletableFuture<String> responseBody = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .thenApply(response -> {
                         if (response.statusCode() != 200) {
-                            manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + data);
+                            manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + body);
                         }
                         return response;
                     }).thenApply(HttpResponse::body);
 
-            while (!body.isDone()) {
+            while (!responseBody.isDone()) {
                 if (isCancelled.get()) {
-                    body.cancel(true);
+                    responseBody.cancel(true);
                     return null;
                 }
             }
             System.out.println("Response received in " + Duration.between(begin, Instant.now()).toSeconds() + "s from " + url);
-            return new ObjectMapper().readTree(body.get());
+            return new ObjectMapper().readTree(responseBody.get());
 
         } catch (Exception e) {
             // e.printStackTrace();
