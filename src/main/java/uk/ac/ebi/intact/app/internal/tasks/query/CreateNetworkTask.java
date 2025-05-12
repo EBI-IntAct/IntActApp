@@ -57,7 +57,7 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         begin = Instant.now();
         manager.utils.registerService(this, TaskObserver.class, new Properties());
 
-        JsonNode results = HttpUtils.postJSON(Manager.INTACT_GRAPH_WS + "network/data", postData, manager, () -> cancelled);
+        JsonNode results = HttpUtils.postJSON(Manager.INTACT_GRAPH_WS + "network/fromInteractors", postData, manager, () -> cancelled);
         System.out.println(Duration.between(begin, Instant.now()).toSeconds());
         // This may change...
         monitor.setTitle("Parsing result data");
