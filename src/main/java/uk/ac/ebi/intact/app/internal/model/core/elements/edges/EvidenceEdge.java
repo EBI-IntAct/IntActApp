@@ -39,7 +39,8 @@ public class EvidenceEdge extends Edge {
         super(network, edge);
         ac = AC.getValue(edgeRow);
         type = new CVTerm(edgeRow, TYPE);
-        id = ID.getValue(edgeRow);
+//        id = ID.getValue(edgeRow);
+        id = ID.getValue(edgeRow) != null ? ID.getValue(edgeRow) : -1L;
         interactionDetectionMethod = new CVTerm(edgeRow, INTERACTION_DETECTION_METHOD);
         participantDetectionMethod = new CVTerm(edgeRow, PARTICIPANT_DETECTION_METHOD);
         hostOrganism = HOST_ORGANISM.getValue(edgeRow);

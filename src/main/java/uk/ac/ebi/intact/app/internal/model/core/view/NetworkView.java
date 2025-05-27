@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -33,6 +34,7 @@ public class NetworkView implements FilterUpdatedListener {
     private transient Thread thread;
     public final transient Manager manager;
     private final transient Network network;
+    @Getter
     public final transient CyNetworkView cyView;
     public final transient Set<Node> visibleNodes = new HashSet<>();
     public final transient Set<Edge> visibleEdges = new HashSet<>();
