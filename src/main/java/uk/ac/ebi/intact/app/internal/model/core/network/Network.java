@@ -7,6 +7,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.group.CyGroupSettingsManager;
 import org.cytoscape.model.*;
 import org.cytoscape.model.events.*;
 import org.cytoscape.task.hide.HideTaskFactory;
@@ -556,10 +557,12 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
 
     public void collapseGroups(String columnName) {
-        //todo: check to use the columnName to collapse by property
-        createGroupsByProperty(columnName);
+        if (cyGroups.isEmpty()) createGroupsByProperty(columnName);
+
         cyGroups.forEach((key, group) -> {
-            group.collapse(cyNetwork);
+            group.expand(cyNetwork);
+            applyLayoutInsideCompound(group);
+//            applyLayoutOutsideCompound(group);
         });
 
         areGroupCollapsed = true;
