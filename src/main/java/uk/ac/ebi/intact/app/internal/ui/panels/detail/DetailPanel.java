@@ -130,7 +130,7 @@ public class DetailPanel extends JPanel
             }
         }
 
-        JPanel viewTypesPanel = new JPanel(new GridLayout(3, 1));
+        JPanel viewTypesPanel = new JPanel(new GridLayout(4, 1));
         viewTypesPanel.setBorder(BorderFactory.createTitledBorder("View types"));
         viewTypesPanel.add(summaryViewType);
         viewTypesPanel.add(evidenceViewType);

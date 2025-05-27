@@ -15,7 +15,7 @@ import static org.cytoscape.model.CyTableFactory.InitialTableSize.MEDIUM;
 import static org.cytoscape.model.CyTableFactory.InitialTableSize.SMALL;
 
 public enum Table {
-    NODE(NodeFields.SUID, NodeFields.fields, NodeFields.initializers, true, true, MEDIUM, "identifiers", "label"),
+    NODE(NodeFields.SUID, NodeFields.fields, NodeFields.initializers, true, true, MEDIUM, "identifiers", "label", "ortholog_group"),
     EDGE(EdgeFields.SUID, EdgeFields.fields, EdgeFields.initializers, true, true, MEDIUM, "source", "target"),
     NETWORK(NetworkFields.SUID, NetworkFields.fields, NetworkFields.initializers, true, true, SMALL),
     FEATURE(FeatureFields.AC, FeatureFields.fields, FeatureFields.initializers, true, true, MEDIUM),

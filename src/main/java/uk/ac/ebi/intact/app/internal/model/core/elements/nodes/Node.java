@@ -1,6 +1,8 @@
 package uk.ac.ebi.intact.app.internal.model.core.elements.nodes;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.Getter;
+import lombok.Setter;
 import org.cytoscape.model.*;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
@@ -31,6 +33,10 @@ public class Node extends Interactor implements Comparable<Interactor>, Element 
     public final CyRow nodeRow;
     public boolean mutated;
     private JsonNode detailsJSON;
+
+    @Getter
+    @Setter
+    private List<String> orthologGroups;
 
     public Node(final Network network, final CyNode cyNode) {
         this(network, cyNode, network.getCyNetwork().getRow(cyNode));

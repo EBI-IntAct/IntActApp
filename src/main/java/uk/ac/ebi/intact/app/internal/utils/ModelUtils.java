@@ -224,6 +224,10 @@ public class ModelUtils {
 
     private static CyNode createNode(CyNetwork cyNetwork, JsonNode nodeJSON, Map<String, CyNode> idToNode, Map<String, String> idToName, CyTable xRefsTable) {
         String intactId = nodeJSON.get("id").textValue();
+        List<String> orthologGroups = new ArrayList<>();
+
+        nodeJSON.get("ortholog_group").elements().forEachRemaining(orthologGroup ->
+                orthologGroups.add(orthologGroup.asText()));
 
         if (idToNode.containsKey(intactId)) return idToNode.get(intactId);
 
@@ -245,6 +249,7 @@ public class ModelUtils {
             nodeRow.set(entry.getKey(), getJsonNodeValue(entry.getValue()));
         });
 
+        NodeFields.ORTHOLOG_GROUP_ID.setValue(nodeRow, orthologGroups);
         idToNode.put(intactId, newNode);
         idToName.put(intactId, NodeFields.NAME.getValue(nodeRow));
         return newNode;
