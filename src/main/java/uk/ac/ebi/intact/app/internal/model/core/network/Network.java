@@ -562,9 +562,9 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         cyGroups.forEach((key, group) -> {
             group.expand(cyNetwork);
             applyLayoutInsideCompound(group);
-//            applyLayoutOutsideCompound(group);
         });
 
+        applyLayoutOutsideCompound();
         areGroupCollapsed = true;
     }
 
@@ -629,40 +629,46 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return nodeViews;
     }
 
-    private void applyLayoutOutsideCompound(CyGroup group) {
+    private void applyLayoutOutsideCompound() {
         CyLayoutAlgorithmManager layoutAlgorithmManager = manager.utils.getService(CyLayoutAlgorithmManager.class);
-        CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("yfiles.OrganicLayout"); //has to be from yfiles, or it does not take the compound
+
+        layoutAlgorithmManager.getAllLayouts().forEach(layout -> {
+            System.out.println(layout.getName());
+        });
+
+        CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("yfiles.RemoveOverlaps");
 
         manager.data.getNetworkViews(this).forEach(view -> {
-            TaskIterator task = layoutAlgorithm.createTaskIterator(view.cyView, layoutAlgorithm.createLayoutContext(), getNodeViewsExceptGroups(group), null);
+            TaskIterator task = layoutAlgorithm.createTaskIterator(view.cyView, layoutAlgorithm.createLayoutContext(), getNodeViewsExceptGroups(view), null);
             manager.utils.getService(TaskManager.class).execute(task);
             view.cyView.updateView();
         });
     }
 
-    private Set<View<CyNode>> getNodeViewsExceptGroups(CyGroup group) {
+    private Set<View<CyNode>> getNodeViewsExceptGroups(NetworkView networkView) {
         Set<View<CyNode>> nodeViews = new HashSet<>();
-        NetworkView networkView = manager.data.getCurrentNetworkView();
 
-        Set<CyNode> nodesToExclude = new HashSet<>(group.getNodeList());
-        nodesToExclude.add(group.getGroupNode());
+        Set<View<CyNode>> nodesToExclude = new HashSet<>();
 
-        for (CyNode node : cyNetwork.getNodeList()) {
-            if (!nodesToExclude.contains(node)) {
-                View<CyNode> nodeView = networkView.cyView.getNodeView(node);
-                if (nodeView != null) {
-                    nodeViews.add(nodeView);
-                }
-            }
+        for (CyGroup group: cyGroups.values()){
+            nodesToExclude.addAll(getNodeViews(group));
+            nodesToExclude.add(networkView.getCyView().getNodeView(group.getGroupNode()));
         }
 
+        networkView.cyView.getNodeViews().forEach(node -> {
+           if (!nodesToExclude.contains(node)) {
+               nodeViews.add(node);
+           }
+        });
+        System.out.println("Number of nodeViews: " + nodeViews.size());
         return nodeViews;
     }
 
 
     private void applyPreferredLayout() {
         CyLayoutAlgorithmManager layoutAlgorithmManager = manager.utils.getService(CyLayoutAlgorithmManager.class);
-        CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("yfiles.OrganicLayout");
+        CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("force-directed-cl"); //do we want another layout? this one is the base one for intact
+//        CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("yfiles.OrganicLayout");
 
         List<NetworkView> networkViews = manager.data.getNetworkViews(this);
 
