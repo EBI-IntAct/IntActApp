@@ -35,7 +35,6 @@ public class StyleManager {
         Style summary = new SummaryStyle(manager);
         Style expanded = new EvidenceStyle(manager);
         Style mutation = new MutationStyle(manager);
-        Style orthology = new OrthologyStyle(manager);
 
         for (Style style : new Style[]{summary, expanded, mutation}) {
             styles.put(style.getStyleViewType(), style);
