@@ -37,6 +37,7 @@ public class EdgeLegendPanel extends AbstractLegendPanel {
         switch (newType) {
             default:
             case SUMMARY:
+            case ORTHOLOGY:
                 newPanel = summaryEdgeLegendPanel;
                 break;
             case EVIDENCE:
@@ -44,9 +45,6 @@ public class EdgeLegendPanel extends AbstractLegendPanel {
                 break;
             case MUTATION:
                 newPanel = mutationEdgeLegendPanel;
-                break;
-            case ORTHOLOGY:
-                newPanel = evidenceEdgeLegendPanel;
                 break;
         }
 
