@@ -15,7 +15,6 @@ public class OrthologyViewTask extends AbstractHiderTask {
 
     @Override
     public void run(TaskMonitor taskMonitor) throws Exception {
-//        collapseEdgesIfNeeded();
         if (chosenView != null && chosenView.getType() != NetworkView.Type.ORTHOLOGY) {
             manager.data.viewChanged(NetworkView.Type.ORTHOLOGY, chosenView);
         }

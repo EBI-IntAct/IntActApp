@@ -4,13 +4,16 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.Getter;
+
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
@@ -20,6 +23,7 @@ import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.model.filters.edge.*;
+import uk.ac.ebi.intact.app.internal.model.filters.node.NodeOrthologGroup;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeSpeciesFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
@@ -69,6 +73,7 @@ public class NetworkView implements FilterUpdatedListener {
         filters.add(new NodeTypeFilter(this));
         filters.add(new NodeSpeciesFilter(this));
 
+
         filters.add(new EdgeMIScoreFilter(this));
         filters.add(new EdgeInteractionDetectionMethodFilter(this));
         filters.add(new EdgeParticipantDetectionMethodFilter(this));
@@ -80,6 +85,10 @@ public class NetworkView implements FilterUpdatedListener {
 
         filters.add(new OrphanNodeFilter(this)); // Must be after edge filters
         filters.add(new OrphanEdgeFilter(this));
+
+//        if (type.equals(Type.ORTHOLOGY)) {
+            filters.add(new NodeOrthologGroup(this));
+//        }
 
         if (loadData) load();
         totalFilter();
