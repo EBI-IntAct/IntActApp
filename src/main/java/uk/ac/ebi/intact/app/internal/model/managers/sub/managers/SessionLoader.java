@@ -84,6 +84,7 @@ public class SessionLoader implements SessionLoadedListener {
                     manager.style.vmm.addVisualStyle(styleToLoad);
                     switch (type) {
                         case SUMMARY:
+                        case ORTHOLOGY:
                             manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager, styleToLoad));
                             break;
                         case EVIDENCE:
@@ -92,9 +93,6 @@ public class SessionLoader implements SessionLoadedListener {
                         case MUTATION:
                             manager.style.styles.put(Type.MUTATION, new MutationStyle(manager, styleToLoad));
                             break;
-                        case ORTHOLOGY:
-                            manager.style.styles.put(Type.ORTHOLOGY, new OrthologyStyle(manager, styleToLoad));
-                            break;
                     }
                     break;
                 }
@@ -102,6 +100,7 @@ public class SessionLoader implements SessionLoadedListener {
             if (!styleFound) {
                 switch (type) {
                     case SUMMARY:
+                    case ORTHOLOGY:
                         manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager));
                         break;
                     case EVIDENCE:
@@ -109,9 +108,6 @@ public class SessionLoader implements SessionLoadedListener {
                         break;
                     case MUTATION:
                         manager.style.styles.put(Type.MUTATION, new MutationStyle(manager));
-                        break;
-                    case ORTHOLOGY:
-                        manager.style.styles.put(Type.ORTHOLOGY, new OrthologyStyle(manager));
                         break;
                 }
             }
