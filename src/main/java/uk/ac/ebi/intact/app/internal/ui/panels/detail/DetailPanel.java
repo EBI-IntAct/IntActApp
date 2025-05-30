@@ -10,6 +10,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.events.SelectedNodesAndEdgesEvent;
 import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
 import org.cytoscape.view.model.CyNetworkView;
+
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
@@ -44,7 +45,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-
 public class DetailPanel extends JPanel
         implements CytoPanelComponent2,
         SetCurrentNetworkListener,
@@ -75,6 +75,12 @@ public class DetailPanel extends JPanel
 
     public DetailPanel(final Manager manager) {
         this.manager = manager;
+
+        NetworkView view = manager.data.getCurrentNetworkView();
+        Network network = manager.data.getCurrentNetwork();
+
+        System.out.println("From detail panel: " + network);
+
         manager.utils.registerAllServices(this, new Properties());
         this.setLayout(new BorderLayout());
 
@@ -83,15 +89,11 @@ public class DetailPanel extends JPanel
         mutationViewTaskFactory = new MutationViewTaskFactory(manager, true);
         orthologyViewTaskFactory = new OrthologyViewTaskFactory(manager, true);
 
-
         ButtonGroup viewTypes = new ButtonGroup();
         viewTypes.add(summaryViewType);
         viewTypes.add(evidenceViewType);
         viewTypes.add(mutationViewType);
         viewTypes.add(orthologyViewType);
-
-        NetworkView view = manager.data.getCurrentNetworkView();
-        Network network = manager.data.getCurrentNetwork();
 
         summaryViewType.addActionListener(e -> {
             network.expandGroups();
@@ -110,7 +112,7 @@ public class DetailPanel extends JPanel
 
         orthologyViewType.addActionListener(e -> {
             manager.utils.execute(orthologyViewTaskFactory.createTaskIterator());
-            network.collapseGroups(NodeFields.ORTHOLOG_GROUP_ID.name);
+            network.collapseGroups(NodeFields.ORTHOLOG_GROUP_ID.name, "panther"); //panther is the default
         });
 
         if (view != null) {
