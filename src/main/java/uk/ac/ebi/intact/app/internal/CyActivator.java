@@ -15,6 +15,7 @@ import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.about.factories.AboutTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.feedback.factories.FeedbackTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIAdvancedSearchTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIQueryTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ExactQueryTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.FuzzySearchTaskFactory;
