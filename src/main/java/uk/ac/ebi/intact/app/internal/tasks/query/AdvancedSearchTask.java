@@ -29,7 +29,7 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
     private final Manager manager;
     private final boolean applyLayout;
     private final Network network;
-    private String netName;
+    private String netName = null;
 
     public AdvancedSearchTask(Manager manager, String query, boolean applyLayout) {
         this.query = query;
@@ -147,7 +147,7 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
 
         if (cancelled) return;
 
-        CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, netName == null ? query : netName, () -> cancelled);
+        CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, query, () -> cancelled);
         network.setNetwork(cyNetwork);
     }
 
