@@ -29,12 +29,18 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
     private final Manager manager;
     private final boolean applyLayout;
     private final Network network;
+    private String netName;
 
     public AdvancedSearchTask(Manager manager, String query, boolean applyLayout) {
         this.query = query;
         this.manager = manager;
         this.network = new Network(manager);
         this.applyLayout = applyLayout;
+    }
+
+    public AdvancedSearchTask(Manager manager, String query, boolean applyLayout, String netName) {
+        this(manager, query, applyLayout);
+        this.netName = netName;
     }
 
     @Override
@@ -141,7 +147,7 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
 
         if (cancelled) return;
 
-        CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, query, () -> cancelled);
+        CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, netName == null ? query : netName, () -> cancelled);
         network.setNetwork(cyNetwork);
     }
 
