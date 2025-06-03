@@ -64,7 +64,6 @@ public abstract class FilterPanel<F extends Filter<? extends Element>> extends C
             }
             return new BooleanFilterPanel<>(manager, (BooleanFilter<T>) filter);
         } else if (filter instanceof RadioButtonFilter){
-            System.out.println("Radio filter");
             return new RadioButtonFilterPanel<>(manager, (RadioButtonFilter<T>) filter);
         }
         return null;
