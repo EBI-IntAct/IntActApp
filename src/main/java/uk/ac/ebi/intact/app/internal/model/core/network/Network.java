@@ -2,7 +2,6 @@ package uk.ac.ebi.intact.app.internal.model.core.network;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
-
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
@@ -18,7 +17,6 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
-
 import org.cytoscape.work.TunableSetter;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
@@ -35,11 +33,10 @@ import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
-import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
 
 import java.awt.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -477,11 +474,10 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
     public Map<String, List<CyNode>> groupNodesByProperty(String columnName, String database) {
         Map<String, List<CyNode>> groups = new HashMap<>();
-        CyNetwork currentNetwork = manager.data.getCurrentCyNetwork();
+        CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
 
-        for (CyNode cyNode : currentNetwork.getNodeList()) {
-            CyRow row = currentNetwork.getRow(cyNode);
-
+        for (CyNode cyNode : currentCyNetwork.getNodeList()) {
+            CyRow row = currentCyNetwork.getRow(cyNode);
             List<String> value = row.get(columnName, List.class);
             String id = null;
             if (value != null) {

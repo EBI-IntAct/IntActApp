@@ -143,7 +143,8 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         if (cancelled) return;
 
         CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, netName != null ? netName : query, () -> cancelled);
-        network.setNetwork(cyNetwork);
+        manager.data.addNetwork(network, cyNetwork);
+        manager.data.fireIntactNetworkCreated(network);
     }
 
 
