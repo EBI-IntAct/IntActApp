@@ -17,7 +17,7 @@ public class RadioButtonFilterPanel <T extends Element> extends FilterPanel<Radi
 
     public RadioButtonFilterPanel(Manager manager, RadioButtonFilter<T> filter) {
         super(manager, filter);
-        this.properties = manager.data.getCurrentNetwork().getOrhtologyDbs();
+        this.properties = manager.data.getCurrentNetwork().getOrthologyDbs();
         this.selectedProperty = filter.getCurrentSelectedDb();
 
         buildRadioButtons();
@@ -44,7 +44,6 @@ public class RadioButtonFilterPanel <T extends Element> extends FilterPanel<Radi
 
         content.add(buttonPanel, layoutHelper.down().expandHoriz());
     }
-
 
     private JPanel getButtonPanel() {
         JPanel buttonPanel = new JPanel();

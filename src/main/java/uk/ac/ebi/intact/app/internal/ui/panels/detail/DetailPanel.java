@@ -79,8 +79,6 @@ public class DetailPanel extends JPanel
         NetworkView view = manager.data.getCurrentNetworkView();
         Network network = manager.data.getCurrentNetwork();
 
-        System.out.println("From detail panel: " + network);
-
         manager.utils.registerAllServices(this, new Properties());
         this.setLayout(new BorderLayout());
 
@@ -112,7 +110,7 @@ public class DetailPanel extends JPanel
 
         orthologyViewType.addActionListener(e -> {
             manager.utils.execute(orthologyViewTaskFactory.createTaskIterator());
-            network.collapseGroups(NodeFields.ORTHOLOG_GROUP_ID.name, "panther"); //panther is the default
+            manager.data.getCurrentNetwork().collapseGroups(NodeFields.ORTHOLOG_GROUP_ID.name, "panther"); //panther is the default
         });
 
         if (view != null) {
