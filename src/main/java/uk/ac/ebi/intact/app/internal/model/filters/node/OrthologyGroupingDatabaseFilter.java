@@ -5,9 +5,9 @@ import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.filters.RadioButtonFilter;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 
-public class NodeOrthologGroup extends RadioButtonFilter<Node> {
+public class OrthologyGroupingDatabaseFilter extends RadioButtonFilter<Node> {
 
-    public NodeOrthologGroup(NetworkView view) {
+    public OrthologyGroupingDatabaseFilter(NetworkView view) {
         super(view,
                 "Ortholog Group database",
                 "Select which database to use for orthology grouping",
@@ -16,4 +16,10 @@ public class NodeOrthologGroup extends RadioButtonFilter<Node> {
                 "panther"
         );
     }
+
+    @Override
+    public boolean isEnabled() {
+        return super.getNetworkView().getNetwork().getOrthologyDbs().size() > 1;
+    }
+
 }
