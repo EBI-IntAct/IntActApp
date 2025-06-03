@@ -23,7 +23,7 @@ import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.model.filters.edge.*;
-import uk.ac.ebi.intact.app.internal.model.filters.node.NodeOrthologGroup;
+import uk.ac.ebi.intact.app.internal.model.filters.node.OrthologyGroupingDatabaseFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeSpeciesFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
@@ -73,7 +73,6 @@ public class NetworkView implements FilterUpdatedListener {
         filters.add(new NodeTypeFilter(this));
         filters.add(new NodeSpeciesFilter(this));
 
-
         filters.add(new EdgeMIScoreFilter(this));
         filters.add(new EdgeInteractionDetectionMethodFilter(this));
         filters.add(new EdgeParticipantDetectionMethodFilter(this));
@@ -86,9 +85,7 @@ public class NetworkView implements FilterUpdatedListener {
         filters.add(new OrphanNodeFilter(this)); // Must be after edge filters
         filters.add(new OrphanEdgeFilter(this));
 
-//        if (type.equals(Type.ORTHOLOGY)) {
-            filters.add(new NodeOrthologGroup(this));
-//        }
+        filters.add(new OrthologyGroupingDatabaseFilter(this));
 
         if (loadData) load();
         totalFilter();

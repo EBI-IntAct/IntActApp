@@ -6,6 +6,9 @@ import lombok.Setter;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 public class RadioButtonFilter<T extends Element> extends Filter<T>  {
@@ -22,11 +25,12 @@ public class RadioButtonFilter<T extends Element> extends Filter<T>  {
 
     @Override
     public void filterView() {
-//        manager.data.getCurrentNetwork().collapseGroups(property, currentSelectedDb);
     }
 
     @Override
     public void reset() {
         this.currentSelectedDb = defaultSelectedDb;
     }
+
+
 }

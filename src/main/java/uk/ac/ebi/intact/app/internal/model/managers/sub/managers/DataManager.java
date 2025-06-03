@@ -133,6 +133,7 @@ public class DataManager implements
     public void addNetwork(Network network, CyNetwork cyNetwork) {
         networkMap.put(cyNetwork, network);
         network.setNetwork(cyNetwork);
+        setCurrentNetwork(cyNetwork);
     }
 
     public void setCurrentNetwork(CyNetwork cyNetwork) {
