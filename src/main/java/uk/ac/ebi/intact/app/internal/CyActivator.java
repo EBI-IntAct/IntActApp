@@ -190,23 +190,7 @@ public class CyActivator extends AbstractCyActivator {
             propsQueryCommand.setProperty(COMMAND_NAMESPACE, "intact");
             propsQueryCommand.setProperty(COMMAND, "advancedQuery");
             propsQueryCommand.setProperty(COMMAND_DESCRIPTION, "Search for interaction using MIQL (advanced search from IntAct)");
-            propsQueryCommand.setProperty(COMMAND_SUPPORTS_JSON, "false");
-            AbstractTaskFactory intactCommandQueryFactory = new AbstractTaskFactory() {
-                @Override
-                public TaskIterator createTaskIterator() {
-                    return new TaskIterator(new NoGUIAdvancedSearchTask(manager));
-                }
-            };
-
-            registerService(bc, intactCommandQueryFactory, TaskFactory.class, propsQueryCommand);
-        }
-
-        {
-            Properties propsQueryCommand = new Properties();
-            propsQueryCommand.setProperty(COMMAND_NAMESPACE, "intact");
-            propsQueryCommand.setProperty(COMMAND, "advancedQuery");
-            propsQueryCommand.setProperty(COMMAND_DESCRIPTION, "Search for interaction using MIQL (advanced search from IntAct)");
-            propsQueryCommand.setProperty(COMMAND_SUPPORTS_JSON, "false");
+            propsQueryCommand.setProperty(COMMAND_SUPPORTS_JSON, "true");
             AbstractTaskFactory intactCommandQueryFactory = new AbstractTaskFactory() {
                 @Override
                 public TaskIterator createTaskIterator() {
