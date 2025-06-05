@@ -15,6 +15,7 @@ import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.about.factories.AboutTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.feedback.factories.FeedbackTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIAdvancedSearchTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIQueryTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ExactQueryTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.FuzzySearchTaskFactory;
@@ -203,23 +204,7 @@ public class CyActivator extends AbstractCyActivator {
             propsQueryCommand.setProperty(COMMAND_NAMESPACE, "intact");
             propsQueryCommand.setProperty(COMMAND, "advancedQuery");
             propsQueryCommand.setProperty(COMMAND_DESCRIPTION, "Search for interaction using MIQL (advanced search from IntAct)");
-            propsQueryCommand.setProperty(COMMAND_SUPPORTS_JSON, "false");
-            AbstractTaskFactory intactCommandQueryFactory = new AbstractTaskFactory() {
-                @Override
-                public TaskIterator createTaskIterator() {
-                    return new TaskIterator(new NoGUIAdvancedSearchTask(manager));
-                }
-            };
-
-            registerService(bc, intactCommandQueryFactory, TaskFactory.class, propsQueryCommand);
-        }
-
-        {
-            Properties propsQueryCommand = new Properties();
-            propsQueryCommand.setProperty(COMMAND_NAMESPACE, "intact");
-            propsQueryCommand.setProperty(COMMAND, "advancedQuery");
-            propsQueryCommand.setProperty(COMMAND_DESCRIPTION, "Search for interaction using MIQL (advanced search from IntAct)");
-            propsQueryCommand.setProperty(COMMAND_SUPPORTS_JSON, "false");
+            propsQueryCommand.setProperty(COMMAND_SUPPORTS_JSON, "true");
             AbstractTaskFactory intactCommandQueryFactory = new AbstractTaskFactory() {
                 @Override
                 public TaskIterator createTaskIterator() {

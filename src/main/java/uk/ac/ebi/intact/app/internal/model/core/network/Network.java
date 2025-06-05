@@ -14,7 +14,6 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TunableSetter;
@@ -24,7 +23,6 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.NodeCouple;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
-import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
@@ -525,21 +523,24 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         groupSettings.setEnableAttributeAggregation(true);
 
         Map<String, List<CyNode>> groups = groupNodesByProperty(columnName, database);
-
-        CyNetwork currentNetwork = manager.data.getCurrentCyNetwork();
+        CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
+        CyNetworkView currentCyNetworkView = manager.data.getCurrentCyView();
 
         groups.forEach((key, cyNodes) -> {
             if (cyNodes.size() > 1) {
-                CyGroup group = groupFactory.createGroup(currentNetwork, cyNodes, null, true);
-                groupManager.addGroup(group);
+                CyGroup group = groupFactory.createGroup(currentCyNetwork, cyNodes, null, true);
+                group.addGroupToNetwork(currentCyNetwork);
+                currentCyNetworkView.updateView();
 
-                CyNode groupNode = group.getGroupNode();
-                CyRow row = nodeTable.getRow(groupNode.getSUID());
+                View<CyNode> groupNodeView = currentCyNetworkView.getNodeView(group.getGroupNode());
+                if (groupNodeView != null) {
+                    CyRow row = nodeTable.getRow(group.getGroupNode().getSUID());
+                    row.set(NodeFields.NAME.name, key);
+                    row.set(NodeFields.ORTHOLOG_GROUP_PARTICIPANTS.name, getProteinsIdsFromGroup(group));
 
-                row.set(NodeFields.NAME.name, key);
-                row.set(NodeFields.ORTHOLOG_GROUP_PARTICIPANTS.name, getProteinsIdsFromGroup(group));
-
-                applyLayoutInsideCompound(group);
+                } else {
+                    System.err.println("Group node view is null for group: " + key);
+                }
             }
         });
     }
@@ -547,18 +548,11 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     public void collapseGroups(String columnName, String database) {
         CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
         if (groupManager.getGroupSet(currentCyNetwork).isEmpty()) createGroupsByProperty(columnName, database);
-
-        groupManager.getGroupSet(currentCyNetwork).forEach( group -> {
-            group.addGroupToNetwork(currentCyNetwork);
-            applyLayoutInsideCompound(group);
-        });
-
-        applyLayoutOutsideCompound();
+        applyGroupingLayout();
         areGroupCollapsed = true;
     }
 
     public void expandGroups() {
-        areGroupCollapsed = false;
         CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
 
         groupManager.getGroupSet(currentCyNetwork).forEach(group -> {
@@ -571,6 +565,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         });
 
         applyPreferredLayout();
+        areGroupCollapsed = false;
     }
 
     private List<String> getProteinsIdsFromGroup(CyGroup group) {
@@ -594,112 +589,70 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return Optional.ofNullable(ac);
     }
 
-    private void applyLayoutInsideCompound(CyGroup group) {
-        CyLayoutAlgorithmManager layoutAlgorithmManager = manager.utils.getService(CyLayoutAlgorithmManager.class);
-
-        CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("yfiles.CircularLayout");
-
-        CyNetworkView currentCyView = manager.data.getCurrentCyView();
-        if (currentCyView!=null){
-            TaskIterator task = layoutAlgorithm.createTaskIterator(currentCyView, layoutAlgorithm.createLayoutContext(), getNodeViews(group), null);
-            manager.utils.getService(TaskManager.class).execute(task);
-            currentCyView.updateView();
-        }
-    }
-
-    private Set<View<CyNode>> getNodeViews(CyGroup group) {
-        Set<View<CyNode>> nodeViews = new HashSet<>();
-        CyNetworkView currentCyView = manager.data.getCurrentCyView();
-
-        for (CyNode node : group.getNodeList()) {
-            View<CyNode> view = currentCyView.getNodeView(node);
-            if (view != null) {
-                nodeViews.add(view);
-            } else {
-                System.err.println("Warning: No node view found for node " + node.getSUID());
-            }
-        }
-
-        return nodeViews;
-    }
-
-    private void applyLayoutOutsideCompound() {
-        CyNetworkView currentCyView = manager.data.getCurrentCyView();
-        NetworkView currentNetworkView = manager.data.getCurrentNetworkView();
-        CyLayoutAlgorithmManager layoutAlgorithmManager = manager.utils.getService(CyLayoutAlgorithmManager.class);
-
-        CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("yfiles.RemoveOverlaps");
-
-        if (currentNetworkView!=null){
-            TaskIterator task = layoutAlgorithm.createTaskIterator(currentCyView, layoutAlgorithm.createLayoutContext(), getNodeViewsExceptGroups(currentNetworkView), null);
-            manager.utils.getService(TaskManager.class).execute(task);
-            currentCyView.updateView();
-        }
-    }
-
-    private Set<View<CyNode>> getNodeViewsExceptGroups(NetworkView networkView) {
-        Set<View<CyNode>> nodeViews = new HashSet<>();
-        Set<View<CyNode>> nodesToExclude = new HashSet<>();
-
-        for (CyGroup group : groupManager.getGroupSet(manager.data.getCurrentCyNetwork())) {
-            for (CyNode node : group.getNodeList()) {
-                View<CyNode> view = networkView.cyView.getNodeView(node);
-                if (view != null) {
-                    nodesToExclude.add(view);
-                } else {
-                    System.err.println("Warning: No node view found for group member node " + node.getSUID());
-                }
-            }
-
-            View<CyNode> groupView = networkView.cyView.getNodeView(group.getGroupNode());
-            if (groupView != null) {
-                nodesToExclude.add(groupView);
-            } else {
-                System.err.println("Warning: No view found for group node " + group.getGroupNode().getSUID());
-            }
-        }
-
-        for (View<CyNode> nodeView : networkView.cyView.getNodeViews()) {
-            if (nodeView != null && !nodesToExclude.contains(nodeView)) {
-                nodeViews.add(nodeView);
-            }
-        }
-
-        return nodeViews;
-    }
-
     private void applyPreferredLayout() {
         CyLayoutAlgorithmManager layoutAlgorithmManager = manager.utils.getService(CyLayoutAlgorithmManager.class);
         CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("force-directed-cl");
 
-        List<NetworkView> networkViews = manager.data.getNetworkViews(manager.data.getCurrentNetwork());
+        CyNetworkView cyView = manager.data.getCurrentCyView();
+        CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
 
-        for (NetworkView view : networkViews) {
-            CyNetworkView cyView = view.cyView;
-            CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
-
-            Set<View<CyNode>> nodeViews = new HashSet<>();
-            for (CyNode node : currentCyNetwork.getNodeList()) {
-                View<CyNode> nodeView = cyView.getNodeView(node);
-                if (nodeView != null) {
-                    nodeViews.add(nodeView);
-                }
+        Set<View<CyNode>> nodeViews = new HashSet<>();
+        for (CyNode node : currentCyNetwork.getNodeList()) {
+            View<CyNode> nodeView = cyView.getNodeView(node);
+            if (nodeView != null) {
+                nodeViews.add(nodeView);
             }
-
-            Object layoutContext = layoutAlgorithm.createLayoutContext();
-            TunableSetter setter = manager.utils.getService(TunableSetter.class);
-            Map<String, Object> layoutArgs = new HashMap<>();
-            layoutArgs.put("defaultNodeMass", 10.0);
-            setter.applyTunables(layoutContext, layoutArgs);
-
-            TaskIterator taskIterator = layoutAlgorithm.createTaskIterator(
-                    cyView,
-                    layoutContext,
-                    nodeViews,
-                    null
-            );
-            manager.utils.getService(TaskManager.class).execute(taskIterator);
-            cyView.updateView();
         }
+
+        Object layoutContext = layoutAlgorithm.createLayoutContext();
+        TunableSetter setter = manager.utils.getService(TunableSetter.class);
+        Map<String, Object> layoutArgs = new HashMap<>();
+        layoutArgs.put("defaultNodeMass", 10.0);
+        setter.applyTunables(layoutContext, layoutArgs);
+
+        TaskIterator taskIterator = layoutAlgorithm.createTaskIterator(
+                cyView,
+                layoutContext,
+                nodeViews,
+                null
+        );
+        manager.utils.getService(TaskManager.class).execute(taskIterator);
+        cyView.updateView();
+    }
+
+    private void applyGroupingLayout() {
+        CyLayoutAlgorithmManager layoutAlgorithmManager = manager.utils.getService(CyLayoutAlgorithmManager.class);
+        CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("cose");
+
+        CyNetworkView cyView = manager.data.getCurrentCyView();
+        CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
+
+        Set<View<CyNode>> nodeViews = new HashSet<>();
+        for (CyNode node : currentCyNetwork.getNodeList()) {
+            View<CyNode> nodeView = cyView.getNodeView(node);
+            if (nodeView != null) {
+                nodeViews.add(nodeView);
+            }
+        }
+
+        Object layoutContext = layoutAlgorithm.createLayoutContext();
+        TunableSetter tunableSetter = manager.utils.getService(TunableSetter.class);
+
+        Map<String, Object> layoutArgs = new HashMap<>();
+        layoutArgs.put("springStrength", 10);
+        layoutArgs.put("gravityStrength", 80);
+
+
+        tunableSetter.applyTunables(layoutContext, layoutArgs);
+
+        TaskIterator taskIterator = layoutAlgorithm.createTaskIterator(
+                cyView,
+                layoutContext,
+                nodeViews,
+                null
+        );
+
+        manager.utils.getService(TaskManager.class).execute(taskIterator);
+        cyView.updateView();
     }
 }
