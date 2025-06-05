@@ -52,7 +52,6 @@
                         <Embed-Transitive>true</Embed-Transitive>
                         <Cytoscape-App-Dependencies>
                             enhancedGraphics;1.5.4,
-                            yFiles;1.1.5
                         </Cytoscape-App-Dependencies>
                     </instructions>
                 </configuration>
