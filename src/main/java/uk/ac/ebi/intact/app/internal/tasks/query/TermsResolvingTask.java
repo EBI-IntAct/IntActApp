@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.app.internal.tasks.query;
 
+import lombok.Getter;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskFactory;
@@ -26,7 +27,9 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
     private final Network network;
     private final String terms;
     private final String panelTitle;
+    @Getter
     Map<String, List<Interactor>> interactorsToResolve = null;
+    @Getter
     Map<String, Integer> totalInteractors = new HashMap<>();
     final boolean exactQuery;
 
@@ -147,14 +150,6 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
     private static String buildQuery(List<String> termsToComplete) {
         if (termsToComplete.size() == 1) return String.format("\"%s\"", termsToComplete.get(0));
         return String.join(",", termsToComplete);
-    }
-
-    public Map<String, List<Interactor>> getInteractorsToResolve() {
-        return interactorsToResolve; //todo: is this why the solving term ambiguity takes so long?
-    }
-
-    public Map<String, Integer> getTotalInteractors() {
-        return totalInteractors;
     }
 
     public boolean hasNoAmbiguity() {
