@@ -41,10 +41,6 @@ public class TermsResolvingTask extends AbstractTask implements ObservableTask {
     @Override
     public void run(TaskMonitor monitor) {
         monitor.setTitle("Solving term ambiguity");
-//        System.out.println("Terms: " + terms);
-//        System.out.println("Advanced search: " + advancedSearch);
-//        System.out.println("Interactors to resolve: " + interactorsToResolve);
-//        System.out.println("Exact query: " + exactQuery);
 
         if (terms.isBlank()) {
             monitor.showMessage(TaskMonitor.Level.WARN, "Empty query");

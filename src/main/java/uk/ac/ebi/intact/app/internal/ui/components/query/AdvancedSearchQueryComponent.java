@@ -18,8 +18,9 @@ import javax.swing.text.StyledDocument;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class AdvancedSearchQueryComponent {
     static int frameWidth = 2000;
@@ -38,6 +39,8 @@ public class AdvancedSearchQueryComponent {
 
     private final QueryOperators queryOperators = new QueryOperators(this, panels);
     private final MIQLParser miqlParser = new MIQLParser();
+
+    private final Logger logger = Logger.getLogger(AdvancedSearchQueryComponent.class);
 
     public void getFrame(String input) {
         queryTextField.setText(input);
@@ -90,20 +93,17 @@ public class AdvancedSearchQueryComponent {
     }
 
     public String getFullQuery() {
-        StringBuilder fullQuery = new StringBuilder();
-        for (int i = 0; i < panels.size(); i++) {
-            Object panel = panels.get(i);
-            if (panel instanceof RuleSetPanel) {
-                fullQuery.append(((RuleSetPanel) panel).getQuery());
-            }
-            else if (panel instanceof RulePanel) {
-                fullQuery.append(((RulePanel) panel).getQuery());
-            }
-            if (i < panels.size() - 1) {
-                fullQuery.append(" ").append(queryOperators.getRuleOperator()).append(" ");
-            }
-        }
-        return fullQuery.toString();
+        return panels.stream()
+                .map(panel -> {
+                    if (panel instanceof RuleSetPanel) {
+                        return ((RuleSetPanel) panel).getQuery();
+                    } else if (panel instanceof RulePanel) {
+                        return ((RulePanel) panel).getQuery();
+                    }
+                    logger.warn("Panel type does not return query: " + panel.getClass().getName());
+                    return null;
+                })
+                .collect(Collectors.joining(" " + queryOperators.getRuleOperator() + " "));
     }
 
     private JScrollPane getRuleScrollPane() {

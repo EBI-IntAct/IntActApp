@@ -134,6 +134,7 @@ public class HttpUtils {
                     .uri(URI.create(url))
                     .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body)))
                     .setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
+                    .header("Content-Type", "application/json")
                     .header("accept", "application/json")
                     .build();
             Instant begin = Instant.now();
