@@ -103,6 +103,7 @@ public class AdvancedSearchQueryComponent {
                     logger.warn("Panel type does not return query: " + panel.getClass().getName());
                     return null;
                 })
+                .filter(Objects::nonNull)
                 .collect(Collectors.joining(" " + queryOperators.getRuleOperator() + " "));
     }
 
