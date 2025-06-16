@@ -51,7 +51,7 @@
                         <Embed-Dependency>*;scope=!provided|!test</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Cytoscape-App-Dependencies>
-                            enhancedGraphics;1.5.4,
+                            enhancedGraphics;1.5.4
                         </Cytoscape-App-Dependencies>
                     </instructions>
                 </configuration>

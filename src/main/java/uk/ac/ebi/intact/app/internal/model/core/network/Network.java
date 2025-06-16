@@ -68,9 +68,6 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     private final CyGroupFactory groupFactory;
     private CyGroupManager groupManager;
 
-    @Getter
-    boolean areGroupCollapsed = false;
-
     public Network(Manager manager) {
         this.manager = manager;
         groupFactory = manager.utils.getService(CyGroupFactory.class);
@@ -549,7 +546,6 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
         if (groupManager.getGroupSet(currentCyNetwork).isEmpty()) createGroupsByProperty(columnName, database);
         applyGroupingLayout();
-        areGroupCollapsed = true;
     }
 
     public void expandGroups() {
@@ -565,7 +561,6 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         });
 
         applyPreferredLayout();
-        areGroupCollapsed = false;
     }
 
     private List<String> getProteinsIdsFromGroup(CyGroup group) {

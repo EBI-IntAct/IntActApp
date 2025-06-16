@@ -72,6 +72,7 @@ public class DetailPanel extends JPanel
     private boolean registered;
     private final JTabbedPane tabs = new JTabbedPane(JTabbedPane.BOTTOM);
 
+    private final String DEFAULT_ORTHOLOGY_DB = "panther";
 
     public DetailPanel(final Manager manager) {
         this.manager = manager;
@@ -110,7 +111,7 @@ public class DetailPanel extends JPanel
 
         orthologyViewType.addActionListener(e -> {
             manager.utils.execute(orthologyViewTaskFactory.createTaskIterator());
-            manager.data.getCurrentNetwork().collapseGroups(NodeFields.ORTHOLOG_GROUP_ID.name, "panther"); //panther is the default
+            manager.data.getCurrentNetwork().collapseGroups(NodeFields.ORTHOLOG_GROUP_ID.name, DEFAULT_ORTHOLOGY_DB);
         });
 
         if (view != null) {
