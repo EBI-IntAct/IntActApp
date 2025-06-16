@@ -21,6 +21,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -64,12 +65,7 @@ public class HttpUtils {
     }
 
     public static boolean isAdvancedSearch(String query) {
-        for (Field field : Field.values()) {
-            if (query.contains(field.getMiqlQuery())) {
-                return true;
-            }
-        }
-        return false;
+        return Arrays.stream(Field.values()).anyMatch(field -> query.contains(field.getMiqlQuery()));
     }
 
     public static JsonNode getJSON(String url, Map<String, String> queryMap, Manager manager) {
