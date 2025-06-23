@@ -112,7 +112,7 @@ public class ModelUtils {
             JsonNode edgesJSON = json.get("edges");
 
             List<CyNode> nodes = new ArrayList<>();
-            if (nodesJSON.size() > 0) {
+            if (!nodesJSON.isEmpty()) {
                 createUnknownColumnsFromIntactJSON(nodesJSON, nodeTable);
                 for (JsonNode node : nodesJSON) {
                     nodes.add(createNode(cyNetwork, node, idToNode, idToName, identifiersTable));
@@ -123,7 +123,7 @@ public class ModelUtils {
                     }
                 }
             }
-            if (edgesJSON.size() > 0) {
+            if (!edgesJSON.isEmpty()) {
                 createUnknownColumnsFromIntactJSON(edgesJSON, edgeTable);
                 for (JsonNode edge : edgesJSON) {
                     createEdge(cyNetwork, edge, idToNode, idToName, newEdges, featuresTable);
@@ -179,11 +179,13 @@ public class ModelUtils {
                 String key = entry.getKey();
                 if (columnToType.containsKey(key)) return;
                 JsonNode value = entry.getValue();
-                if (value.isArray()) {
-                    columnToType.put(key, getJsonNodeValueClass(value.get(0)));
-                    listKeys.add(key);
-                } else {
-                    columnToType.put(key, getJsonNodeValueClass(value));
+                if (!value.isNull()) {
+                    if (value.isArray()) {
+                        columnToType.put(key, getJsonNodeValueClass(value.get(0)));
+                        listKeys.add(key);
+                    } else {
+                        columnToType.put(key, getJsonNodeValueClass(value));
+                    }
                 }
             });
         }
@@ -210,6 +212,7 @@ public class ModelUtils {
     }
 
     private static Object getJsonNodeValue(JsonNode valueNode) {
+        if (valueNode.isNull()) return null;
         if (valueNode.isBoolean()) return valueNode.booleanValue();
         else if (valueNode.isDouble()) return valueNode.booleanValue();
         else if (valueNode.isLong()) return valueNode.longValue();
@@ -228,9 +231,11 @@ public class ModelUtils {
     private static CyNode createNode(CyNetwork cyNetwork, JsonNode nodeJSON, Map<String, CyNode> idToNode, Map<String, String> idToName, CyTable xRefsTable) {
         String intactId = nodeJSON.get("id").textValue();
         List<String> orthologGroups = new ArrayList<>();
-
-        nodeJSON.get("ortholog_group").elements().forEachRemaining(orthologGroup ->
-                orthologGroups.add(orthologGroup.asText()));
+        JsonNode orthologGroupsNode = nodeJSON.get("ortholog_group");
+        if (orthologGroupsNode != null) {
+            orthologGroupsNode.elements().forEachRemaining(orthologGroup ->
+                    orthologGroups.add(orthologGroup.asText()));
+        }
 
         if (idToNode.containsKey(intactId)) return idToNode.get(intactId);
 
