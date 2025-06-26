@@ -21,14 +21,14 @@ import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedListener;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
-import uk.ac.ebi.intact.app.internal.tasks.view.factories.OrthologyViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.parameters.OrthologyViewParameterTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.filter.ResetFiltersTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.extract.ExtractNetworkViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.MutationViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.components.buttons.DocumentedButton;
+import uk.ac.ebi.intact.app.internal.ui.components.buttons.ToggleSwitch;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.EdgeDetailPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.legend.LegendDetailPanel;
@@ -40,10 +40,8 @@ import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
-import java.util.Properties;
 
 public class DetailPanel extends JPanel
         implements CytoPanelComponent2,
@@ -59,12 +57,14 @@ public class DetailPanel extends JPanel
     private final JRadioButton summaryViewType = new JRadioButton("Summary");
     private final JRadioButton evidenceViewType = new JRadioButton("Evidence");
     private final JRadioButton mutationViewType = new JRadioButton("Mutation");
-    private final JRadioButton orthologyViewType = new JRadioButton("Orthology");
+
+    private final ToggleSwitch orthologyButton = new ToggleSwitch(false);
 
     private final SummaryViewTaskFactory summaryViewTaskFactory;
     private final EvidenceViewTaskFactory evidenceViewTaskFactory;
     private final MutationViewTaskFactory mutationViewTaskFactory;
-    private final OrthologyViewTaskFactory orthologyViewTaskFactory;
+
+    private OrthologyViewParameterTaskFactory orthologyViewParameterTaskFactory;
 
     private final NodeDetailPanel nodePanel;
     private final EdgeDetailPanel edgePanel;
@@ -72,7 +72,6 @@ public class DetailPanel extends JPanel
     private boolean registered;
     private final JTabbedPane tabs = new JTabbedPane(JTabbedPane.BOTTOM);
 
-    private final String DEFAULT_ORTHOLOGY_DB = "panther";
 
     public DetailPanel(final Manager manager) {
         this.manager = manager;
@@ -86,33 +85,18 @@ public class DetailPanel extends JPanel
         summaryViewTaskFactory = new SummaryViewTaskFactory(manager, true);
         evidenceViewTaskFactory = new EvidenceViewTaskFactory(manager, true);
         mutationViewTaskFactory = new MutationViewTaskFactory(manager, true);
-        orthologyViewTaskFactory = new OrthologyViewTaskFactory(manager, true);
+        orthologyViewParameterTaskFactory = new OrthologyViewParameterTaskFactory(manager, view, isNetworkGroupedByOrthology(network));
 
         ButtonGroup viewTypes = new ButtonGroup();
         viewTypes.add(summaryViewType);
         viewTypes.add(evidenceViewType);
         viewTypes.add(mutationViewType);
-        viewTypes.add(orthologyViewType);
 
-        summaryViewType.addActionListener(e -> {
-            network.expandGroups();
-            manager.utils.execute(summaryViewTaskFactory.createTaskIterator());
-        });
+        summaryViewType.addActionListener(e -> manager.utils.execute(summaryViewTaskFactory.createTaskIterator()));
 
-        evidenceViewType.addActionListener(e -> {
-            network.expandGroups();
-            manager.utils.execute(evidenceViewTaskFactory.createTaskIterator());
-        });
+        evidenceViewType.addActionListener(e -> manager.utils.execute(evidenceViewTaskFactory.createTaskIterator()));
 
-        mutationViewType.addActionListener(e -> {
-            network.expandGroups();
-            manager.utils.execute(mutationViewTaskFactory.createTaskIterator());
-        });
-
-        orthologyViewType.addActionListener(e -> {
-            manager.utils.execute(orthologyViewTaskFactory.createTaskIterator());
-            manager.data.getCurrentNetwork().collapseGroups(NodeFields.ORTHOLOG_GROUP_ID.name, DEFAULT_ORTHOLOGY_DB);
-        });
+        mutationViewType.addActionListener(e -> manager.utils.execute(mutationViewTaskFactory.createTaskIterator()));
 
         if (view != null) {
             switch (view.getType()) {
@@ -125,18 +109,18 @@ public class DetailPanel extends JPanel
                 case MUTATION:
                     mutationViewType.setSelected(true);
                     break;
-                case ORTHOLOGY:
-                    orthologyViewType.setSelected(true);
-                    break;
             }
         }
 
         JPanel viewTypesPanel = new JPanel(new GridLayout(4, 1));
-        viewTypesPanel.setBorder(BorderFactory.createTitledBorder("View types"));
+        viewTypesPanel.setBorder(BorderFactory.createTitledBorder("View"));
         viewTypesPanel.add(summaryViewType);
         viewTypesPanel.add(evidenceViewType);
         viewTypesPanel.add(mutationViewType);
-        viewTypesPanel.add(orthologyViewType);
+
+        JPanel viewParamsPanel = getViewParamsPanel();
+        viewTypesPanel.add(viewParamsPanel);
+
         JPanel upperPanel = new JPanel(new GridLayout(1, 2));
         upperPanel.add(viewTypesPanel);
 
@@ -172,6 +156,24 @@ public class DetailPanel extends JPanel
         repaint();
     }
 
+    private JPanel getViewParamsPanel() {
+        JPanel viewParamsPanel = new JPanel();
+        viewParamsPanel.setBorder(BorderFactory.createTitledBorder("Parameters"));
+        orthologyButton.setActivated(false);
+        orthologyButton.addChangeListener(e -> {
+            if (!orthologyButton.isActivated()) {
+                orthologyButton.setText("Group by orthology");
+            } else {
+                orthologyButton.setText("Ungroup by orthology");
+            }
+            orthologyViewParameterTaskFactory.setParameterApplied(orthologyButton.isActivated());
+            manager.utils.execute(orthologyViewParameterTaskFactory.createTaskIterator());
+        });
+        viewParamsPanel.add(orthologyButton);
+        JLabel orthologyLabel = new JLabel("Orthology");
+        viewParamsPanel.add(orthologyLabel);
+        return viewParamsPanel;
+    }
 
     public void showCytoPanel() {
         CySwingApplication swingApplication = manager.utils.getService(CySwingApplication.class);
@@ -219,7 +221,6 @@ public class DetailPanel extends JPanel
         return "IntAct";
     }
 
-
     private Instant lastSelection = Instant.now();
 
     @Override
@@ -263,11 +264,20 @@ public class DetailPanel extends JPanel
                 case MUTATION:
                     mutationViewType.setSelected(true);
                     break;
-                case ORTHOLOGY:
-                    orthologyViewType.setSelected(true);
-                    break;
             }
         }
+    }
+
+    private void updateParamsButton(NetworkView networkView) {
+        Network network = networkView.getNetwork();
+        boolean isGrouped = network != null && isNetworkGroupedByOrthology(network);
+        orthologyViewParameterTaskFactory = new OrthologyViewParameterTaskFactory(manager, networkView, isNetworkGroupedByOrthology(network));
+        orthologyButton.setActivated(isGrouped);
+        orthologyButton.setText(isGrouped ? "Ungroup by orthology" : "Group by orthology");
+    }
+
+    private boolean isNetworkGroupedByOrthology(Network network) {
+        return !network.getGroupManager().getGroupSet(network.getCyNetwork()).isEmpty();
     }
 
     @Override
@@ -298,9 +308,7 @@ public class DetailPanel extends JPanel
         }
         edgePanel.setupFilters(edgeFilters);
         nodePanel.setupFilters(nodeFilters);
-
     }
-
 
     @Override
     public void handleEvent(SetCurrentNetworkViewEvent e) {
@@ -312,6 +320,7 @@ public class DetailPanel extends JPanel
             NetworkView view = manager.data.getNetworkView(cyView);
             if (view != null) {
                 setupFilters(view);
+                updateParamsButton(view);
             }
         }
     }
@@ -343,9 +352,6 @@ public class DetailPanel extends JPanel
                 break;
             case MUTATION:
                 mutationViewType.setSelected(true);
-                break;
-            case ORTHOLOGY:
-                orthologyViewType.setSelected(true);
                 break;
         }
     }

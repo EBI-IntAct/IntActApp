@@ -10,13 +10,7 @@ import org.cytoscape.group.CyGroupSettingsManager;
 import org.cytoscape.model.*;
 import org.cytoscape.model.events.*;
 import org.cytoscape.task.hide.HideTaskFactory;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TunableSetter;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.NodeCouple;
@@ -37,6 +31,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -66,6 +61,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     private final Map<String, String> speciesIdToName = new HashMap<>();
 
     private final CyGroupFactory groupFactory;
+    @Getter
     private CyGroupManager groupManager;
 
     public Network(Manager manager) {
@@ -469,15 +465,13 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
     public Map<String, List<CyNode>> groupNodesByProperty(String columnName, String database) {
         Map<String, List<CyNode>> groups = new HashMap<>();
-        CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
 
-        for (CyNode cyNode : currentCyNetwork.getNodeList()) {
-            CyRow row = currentCyNetwork.getRow(cyNode);
-            List<String> value = row.get(columnName, List.class);
-            String id = null;
-            if (value != null) {
-                id = getOrthologGroupIdWithDb(database.trim(), value);
-            }
+        for (CyNode cyNode : cyNetwork.getNodeList()) {
+            CyRow row = cyNetwork.getRow(cyNode);
+            if (row == null || !row.isSet(columnName)) continue;
+
+            Object value = row.getRaw(columnName);
+            String id = convertValueToString(value, database);
 
             if (id != null) {
                 groups.computeIfAbsent(id, k -> new ArrayList<>()).add(cyNode);
@@ -486,26 +480,39 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return groups;
     }
 
-    public Set<String> getOrthologyDbs(){
-        CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
-        Set<String> dbs = new HashSet<>();
-        for (CyNode cyNode : currentCyNetwork.getNodeList()) {
-            CyRow row = currentCyNetwork.getRow(cyNode);
-            List<String> values = row.get(NodeFields.ORTHOLOG_GROUP_ID.name, List.class);
-            if (values != null) {
-                values.forEach(value -> {
-                    String[] splitId = value.split(":");
-                    dbs.add(splitId[0]);
-                });
+    private String convertValueToString(Object value, String database) {
+        if (value == null) {
+            return null;
+        } else if (value instanceof List) {
+            if (database != null) {
+                List<String> stringList = (List<String>) value;
+                return getGroupsIds(database.trim(), stringList);
             }
+            return null;
+        } else if (value instanceof String) {
+            return (String) value;
+        } else if (value instanceof Number || value instanceof Boolean) {
+            return value.toString(); // Number handles Integer, Double, Long, etc.
         }
-        return dbs;
+        return null;
     }
 
-    private String getOrthologGroupIdWithDb(String db, List<String> ids) {
+    public Set<String> getDatabases(String field){
+        return nodeTable.getColumn(field).getValues(List.class).stream()
+                .map(list -> (List<String>) list)
+                .filter(Objects::nonNull)
+                .flatMap(values -> values.stream()
+                        .filter(Objects::nonNull)
+                        .map((String v) -> v.split(":")[0]))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
+    private String getGroupsIds(String db, List<?> ids) {
         if (ids.isEmpty()) return null;
-        for (String id : ids) {
-            String[] splitId = id.split(":");
+        for (Object id : ids) {
+            String idAsString = id.toString();
+            String[] splitId = idAsString.split(":");
             if (splitId[0].equals(db)) {
                 return splitId[1];
             }
@@ -513,54 +520,35 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return null;
     }
 
-    public void createGroupsByProperty(String columnName, String database) {
+    public void collapseGroups(String columnName, String database) {
+        if (!groupManager.getGroupSet(cyNetwork).isEmpty()){
+            groupManager.reset();
+        }
         CyGroupSettingsManager groupSettings = manager.utils.getService(CyGroupSettingsManager.class);
         groupSettings.setGroupViewType(CyGroupSettingsManager.GroupViewType.COMPOUND);
         groupSettings.setDoubleClickAction(CyGroupSettingsManager.DoubleClickAction.NONE);
         groupSettings.setEnableAttributeAggregation(true);
-
         Map<String, List<CyNode>> groups = groupNodesByProperty(columnName, database);
-        CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
-        CyNetworkView currentCyNetworkView = manager.data.getCurrentCyView();
-
         groups.forEach((key, cyNodes) -> {
             if (cyNodes.size() > 1) {
-                CyGroup group = groupFactory.createGroup(currentCyNetwork, cyNodes, null, true);
-                group.addGroupToNetwork(currentCyNetwork);
-                currentCyNetworkView.updateView();
-
-                View<CyNode> groupNodeView = currentCyNetworkView.getNodeView(group.getGroupNode());
-                if (groupNodeView != null) {
-                    CyRow row = nodeTable.getRow(group.getGroupNode().getSUID());
-                    row.set(NodeFields.NAME.name, key);
-                    row.set(NodeFields.ORTHOLOG_GROUP_PARTICIPANTS.name, getProteinsIdsFromGroup(group));
-
-                } else {
-                    System.err.println("Group node view is null for group: " + key);
-                }
+                CyGroup group = groupFactory.createGroup(cyNetwork, cyNodes, null, true);
+                group.addGroupToNetwork(cyNetwork);
+                CyRow row = nodeTable.getRow(group.getGroupNode().getSUID());
+                row.set(NodeFields.NAME.name, key);
+                row.set(NodeFields.GROUP_PARTICIPANTS.name, getProteinsIdsFromGroup(group));
             }
         });
-    }
-
-    public void collapseGroups(String columnName, String database) {
-        CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
-        if (groupManager.getGroupSet(currentCyNetwork).isEmpty()) createGroupsByProperty(columnName, database);
-        applyGroupingLayout();
     }
 
     public void expandGroups() {
-        CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
-
-        groupManager.getGroupSet(currentCyNetwork).forEach(group -> {
-            group.expand(currentCyNetwork);
+        groupManager.getGroupSet(cyNetwork).forEach(group -> {
+            group.expand(cyNetwork);
             CyNode groupNode = group.getGroupNode();
             if (groupNode != null) {
-                currentCyNetwork.removeNodes(Collections.singleton(groupNode));
+                cyNetwork.removeNodes(Collections.singleton(groupNode));
             }
-            groupManager.getGroup(groupNode, currentCyNetwork).removeGroupFromNetwork(currentCyNetwork);
+            groupManager.getGroup(groupNode, cyNetwork).removeGroupFromNetwork(cyNetwork);
         });
-
-        applyPreferredLayout();
     }
 
     private List<String> getProteinsIdsFromGroup(CyGroup group) {
@@ -572,8 +560,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     }
 
     private Optional<String> getProteinIdFromNode(CyNode node) {
-        CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
-        CyTable nodeTable = currentCyNetwork.getDefaultNodeTable();
+        CyTable nodeTable = cyNetwork.getDefaultNodeTable();
         CyRow row = nodeTable.getRow(node.getSUID());
 
         if (row == null) {
@@ -582,72 +569,5 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
         String ac = NodeFields.PREFERRED_ID.getValue(row);
         return Optional.ofNullable(ac);
-    }
-
-    private void applyPreferredLayout() {
-        CyLayoutAlgorithmManager layoutAlgorithmManager = manager.utils.getService(CyLayoutAlgorithmManager.class);
-        CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("force-directed-cl");
-
-        CyNetworkView cyView = manager.data.getCurrentCyView();
-        CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
-
-        Set<View<CyNode>> nodeViews = new HashSet<>();
-        for (CyNode node : currentCyNetwork.getNodeList()) {
-            View<CyNode> nodeView = cyView.getNodeView(node);
-            if (nodeView != null) {
-                nodeViews.add(nodeView);
-            }
-        }
-
-        Object layoutContext = layoutAlgorithm.createLayoutContext();
-        TunableSetter setter = manager.utils.getService(TunableSetter.class);
-        Map<String, Object> layoutArgs = new HashMap<>();
-        layoutArgs.put("defaultNodeMass", 10.0);
-        setter.applyTunables(layoutContext, layoutArgs);
-
-        TaskIterator taskIterator = layoutAlgorithm.createTaskIterator(
-                cyView,
-                layoutContext,
-                nodeViews,
-                null
-        );
-        manager.utils.getService(TaskManager.class).execute(taskIterator);
-        cyView.updateView();
-    }
-
-    private void applyGroupingLayout() {
-        CyLayoutAlgorithmManager layoutAlgorithmManager = manager.utils.getService(CyLayoutAlgorithmManager.class);
-        CyLayoutAlgorithm layoutAlgorithm = layoutAlgorithmManager.getLayout("cose");
-
-        CyNetworkView cyView = manager.data.getCurrentCyView();
-        CyNetwork currentCyNetwork = manager.data.getCurrentCyNetwork();
-
-        Set<View<CyNode>> nodeViews = new HashSet<>();
-        for (CyNode node : currentCyNetwork.getNodeList()) {
-            View<CyNode> nodeView = cyView.getNodeView(node);
-            if (nodeView != null) {
-                nodeViews.add(nodeView);
-            }
-        }
-
-        Object layoutContext = layoutAlgorithm.createLayoutContext();
-        TunableSetter tunableSetter = manager.utils.getService(TunableSetter.class);
-
-        Map<String, Object> layoutArgs = new HashMap<>();
-        layoutArgs.put("springStrength", 10);
-        layoutArgs.put("gravityStrength", 80);
-
-
-        tunableSetter.applyTunables(layoutContext, layoutArgs);
-
-        TaskIterator taskIterator = layoutAlgorithm.createTaskIterator(
-                cyView,
-                layoutContext,
-                nodeViews,
-                null
-        );
-
-        manager.utils.getService(TaskManager.class).execute(taskIterator);
-        cyView.updateView();
     }
 }

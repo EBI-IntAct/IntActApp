@@ -81,7 +81,7 @@ public class DataManager implements
         for (CyNetwork cyNetwork : manager.utils.getService(CyNetworkManager.class).getNetworkSet()) {
             if (!isIntactNetwork(cyNetwork)) continue;
             Network network = new Network(manager);
-            addNetwork(network, cyNetwork);
+            addNetwork(network, cyNetwork, false);
             linkNetworkTablesFromTableData(network);
             fireIntactNetworkCreated(network);
             network.completeMissingNodeColorsFromTables(true, null);
@@ -130,10 +130,12 @@ public class DataManager implements
         return cyNetwork;
     }
 
-    public void addNetwork(Network network, CyNetwork cyNetwork) {
+    public void addNetwork(Network network, CyNetwork cyNetwork, boolean setAsCurrent) {
         networkMap.put(cyNetwork, network);
         network.setNetwork(cyNetwork);
-        setCurrentNetwork(cyNetwork);
+        if (setAsCurrent) {
+            setCurrentNetwork(cyNetwork);
+        }
     }
 
     public void setCurrentNetwork(CyNetwork cyNetwork) {
@@ -225,7 +227,7 @@ public class DataManager implements
         if (parentCyNetwork != null) addSubNetwork(newNetwork, parentCyNetwork);
         else if (!loadingSession && ModelUtils.isIntactNetwork(cyNetwork) && !networkMap.containsKey(cyNetwork)) { // Cloned network
             Network network = new Network(manager);
-            addNetwork(network, cyNetwork);
+            addNetwork(network, cyNetwork, false);
             CloneTableTaskFactory cloneTable = new CloneTableTaskFactory(manager);
             NetworkFields.UUID.setValue(cyNetwork.getRow(cyNetwork), UUID.randomUUID().toString());
 
@@ -304,7 +306,7 @@ public class DataManager implements
             Network parentNetwork = networkMap.get(parentCyNetwork);
             handleSubNetworkEdges(subCyNetwork, parentNetwork);
             Network subNetwork = new Network(manager);
-            addNetwork(subNetwork, subCyNetwork);
+            addNetwork(subNetwork, subCyNetwork, false);
 
             for (CyNetworkView cyNetworkView : networkViewManager.getNetworkViews(parentCyNetwork)) {
                 NetworkView networkView = networkViewMap.get(cyNetworkView);
@@ -423,6 +425,10 @@ public class DataManager implements
     public void viewChanged(NetworkView.Type newType, NetworkView view) {
         view.setType(newType);
         manager.style.styles.get(newType).applyStyle(view.cyView);
+        manager.utils.fireEvent(new ViewUpdatedEvent(manager, view));
+    }
+
+    public void viewParameterChanged(NetworkView view){
         manager.utils.fireEvent(new ViewUpdatedEvent(manager, view));
     }
 

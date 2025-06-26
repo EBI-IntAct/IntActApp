@@ -25,8 +25,8 @@ import uk.ac.ebi.intact.app.internal.tasks.version.factories.VersionTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.extract.ExtractNetworkViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.MutationViewTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.view.factories.OrthologyViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.parameters.OrthologyViewParameterTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.filter.ResetFiltersTaskFactory;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
@@ -105,7 +105,7 @@ public class CyActivator extends AbstractCyActivator {
             registerService(bc, mutationViewTaskFactory, TaskFactory.class, properties);
         }
         {
-            OrthologyViewTaskFactory orthologyViewTaskFactory = new OrthologyViewTaskFactory(manager, false);
+            OrthologyViewParameterTaskFactory orthologyViewTaskFactory = new OrthologyViewParameterTaskFactory(manager, false);
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");
             properties.setProperty(COMMAND, "orthology");

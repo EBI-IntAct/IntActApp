@@ -11,7 +11,7 @@ import java.awt.event.*;
 
 public class SearchQueryComponent extends JTextField {
     private static final long serialVersionUID = 1L;
-    private static final String DEF_SEARCH_TEXT = "← Change query type     | Enter one term per line |    Options →"; //todo: should it be changed for advanced search?
+    private static final String DEF_SEARCH_TEXT = "← Change query type     | Enter one term per line |    Options →";
     final int vgap = 1;
     final int hgap = 5;
     final String tooltip;

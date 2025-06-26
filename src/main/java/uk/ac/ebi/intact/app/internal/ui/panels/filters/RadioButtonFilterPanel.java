@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.filters;
 
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
+import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.filters.RadioButtonFilter;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 
@@ -8,6 +9,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+
 import java.util.Set;
 
 public class RadioButtonFilterPanel <T extends Element> extends FilterPanel<RadioButtonFilter<T>> implements ChangeListener {
@@ -17,9 +19,8 @@ public class RadioButtonFilterPanel <T extends Element> extends FilterPanel<Radi
 
     public RadioButtonFilterPanel(Manager manager, RadioButtonFilter<T> filter) {
         super(manager, filter);
-        this.properties = manager.data.getCurrentNetwork().getOrthologyDbs();
-        this.selectedProperty = filter.getCurrentSelectedDb();
-
+        this.properties =  super.getFilter().getProperties();
+        this.selectedProperty = filter.getCurrentSelectedProperty();
         buildRadioButtons();
         updateFilterUI(filter);
     }
@@ -33,7 +34,7 @@ public class RadioButtonFilterPanel <T extends Element> extends FilterPanel<Radi
 
             radioButton.addActionListener(e -> {
                 selectedProperty = property;
-                filter.setCurrentSelectedDb(selectedProperty);
+                filter.setCurrentSelectedProperty(selectedProperty);
                 filter.filterView();
                 stateChanged(new ChangeEvent(this));
             });
@@ -41,7 +42,6 @@ public class RadioButtonFilterPanel <T extends Element> extends FilterPanel<Radi
             buttonGroup.add(radioButton);
             buttonPanel.add(radioButton);
         }
-
         content.add(buttonPanel, layoutHelper.down().expandHoriz());
     }
 
@@ -58,8 +58,9 @@ public class RadioButtonFilterPanel <T extends Element> extends FilterPanel<Radi
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        manager.data.getCurrentNetwork().expandGroups();
-        manager.data.getCurrentNetwork().collapseGroups(filter.getProperty(), selectedProperty);
+        Network network = super.getFilter().getNetwork();
+        network.expandGroups();
+        network.collapseGroups(filter.getGroupingField(), selectedProperty);
     }
 
     @Override

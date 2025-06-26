@@ -19,7 +19,7 @@ public class OrthologyGroupingDatabaseFilter extends RadioButtonFilter<Node> {
 
     @Override
     public boolean isEnabled() {
-        return super.getNetworkView().getNetwork().getOrthologyDbs().size() > 1;
+        return super.getNetworkView().getNetwork().getDatabases(NodeFields.ORTHOLOG_GROUP_ID.name).size() > 1;
     }
 
 }

@@ -47,7 +47,7 @@ public class SessionLoader implements SessionLoadedListener {
                 if (ModelUtils.ifHaveIntactNS(cyNetwork)) {
                     updateSUIDList(cyNetwork.getDefaultEdgeTable(), EdgeFields.SUMMARIZED_EDGES_SUID, CyEdge.class, loadedSession);
                     Network network = new Network(manager);
-                    manager.data.addNetwork(network, cyNetwork);
+                    manager.data.addNetwork(network, cyNetwork, false);
                     network.completeMissingNodeColorsFromTables(true, () -> manager.data.networkViewMap.values().forEach(NetworkView::accordStyleToType));
                 }
             }
