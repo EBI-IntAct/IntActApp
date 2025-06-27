@@ -47,7 +47,11 @@ public class NetworkView implements FilterUpdatedListener {
         if (cyView != null) {
             this.cyView = cyView;
             this.network = manager.data.getNetwork(cyView.getModel());
-            this.type = type != null ? type : Type.SUMMARY;
+            if (this.network.getQueryParams() != null && this.network.getQueryParams().getNetworkViewType() != null) {
+                this.type = this.network.getQueryParams().getNetworkViewType();
+            } else {
+                this.type = type != null ? type : Type.SUMMARY;
+            }
             setupFilters(loadData);
         } else {
             this.cyView = null;

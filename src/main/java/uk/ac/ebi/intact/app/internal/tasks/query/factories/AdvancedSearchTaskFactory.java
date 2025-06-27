@@ -5,10 +5,8 @@ import org.cytoscape.work.TaskIterator;
 
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.OptionManager;
 import uk.ac.ebi.intact.app.internal.tasks.query.AdvancedSearchTask;
 import uk.ac.ebi.intact.app.internal.ui.components.query.SearchQueryComponent;
-import uk.ac.ebi.intact.app.internal.ui.panels.options.OptionsPanel;
 import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 
 import javax.swing.*;
@@ -50,7 +48,7 @@ public class AdvancedSearchTaskFactory extends AbstractNetworkSearchTaskFactory 
     }
 
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new AdvancedSearchTask(manager, queryComponent.getQueryText(), true));
+        return new TaskIterator(new AdvancedSearchTask(manager, queryComponent.getQueryText(), null, true));
     }
 
     public JComponent getQueryComponent() {

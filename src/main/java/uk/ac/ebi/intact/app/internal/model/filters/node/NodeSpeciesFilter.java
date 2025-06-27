@@ -5,8 +5,13 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 
 public class NodeSpeciesFilter extends DiscreteFilter<Node> {
+
     public NodeSpeciesFilter(NetworkView view) {
-        super(view, Node.class, "Species", "Organism of origin of the selected molecule");
+        super(view,
+                Node.class,
+                "Species",
+                "Organism of origin of the selected molecule",
+                view.getNetwork().getQueryParams() != null ? view.getNetwork().getQueryParams().getInteractorSpeciesFilter() : null);
     }
 
     @Override

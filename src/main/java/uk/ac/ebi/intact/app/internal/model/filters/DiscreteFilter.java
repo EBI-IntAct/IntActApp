@@ -15,6 +15,10 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
     protected final Map<String, Boolean> propertiesVisibility = new HashMap<>();
 
     public DiscreteFilter(NetworkView view, Class<T> elementType, String name, String definition) {
+        this(view, elementType, name, definition, null);
+    }
+
+    public DiscreteFilter(NetworkView view, Class<T> elementType, String name, String definition, Set<String> selectedProperties) {
         super(view, name, definition, elementType);
         List<T> elements;
         Network network = getNetwork();
@@ -30,7 +34,10 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
         } else return;
 
         for (T element : elements) {
-            if (element != null) propertiesVisibility.put(getProperty(element), true);
+            if (element != null) {
+                String property = getProperty(element);
+                propertiesVisibility.put(property, selectedProperties == null || selectedProperties.contains(property));
+            }
         }
     }
 

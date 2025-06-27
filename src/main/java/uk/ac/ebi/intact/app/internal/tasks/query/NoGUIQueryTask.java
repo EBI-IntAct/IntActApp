@@ -1,6 +1,5 @@
 package uk.ac.ebi.intact.app.internal.tasks.query;
 
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -13,7 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class NoGUIQueryTask extends AbstractTask {
+public class NoGUIQueryTask extends AbstractSearchTask {
     @Tunable(context = "nogui", exampleStringValue = "gtp lrr* cell Q5S007 EBI-2624319", gravity = 0,
             description = "Space separated terms to search among interactors ids and names to build the network around them. <br>" +
                     "Example: \"gtp lrr* cell Q5S007 EBI-2624319\"",
@@ -76,7 +75,7 @@ public class NoGUIQueryTask extends AbstractTask {
 
     @Override
     public void run(TaskMonitor taskMonitor) {
-        network = new Network(manager);
+        network = new Network(manager, getQueryParams());
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Collecting interactors");
         resolveTermsToAcs();
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Querying network from interactors");

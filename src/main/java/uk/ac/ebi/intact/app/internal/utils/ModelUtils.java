@@ -2,6 +2,7 @@ package uk.ac.ebi.intact.app.internal.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.cytoscape.model.*;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
@@ -179,11 +180,15 @@ public class ModelUtils {
                 String key = entry.getKey();
                 if (columnToType.containsKey(key)) return;
                 JsonNode value = entry.getValue();
-                if (value.isArray()) {
-                    columnToType.put(key, getJsonNodeValueClass(value.get(0)));
-                    listKeys.add(key);
-                } else {
-                    columnToType.put(key, getJsonNodeValueClass(value));
+                if (!value.isNull()) {
+                    if (value.isArray()) {
+                        if (!value.isEmpty()) {
+                            columnToType.put(key, getArrayNodeValueClass((ArrayNode) value));
+                            listKeys.add(key);
+                        }
+                    } else {
+                        columnToType.put(key, getJsonNodeValueClass(value));
+                    }
                 }
             });
         }
@@ -200,6 +205,15 @@ public class ModelUtils {
         }
     }
 
+    private static Class<?> getArrayNodeValueClass(ArrayNode arrayNode) {
+        for (JsonNode value : arrayNode) {
+            if (!value.isNull()) {
+                return getJsonNodeValueClass(value);
+            }
+        }
+        return String.class;
+    }
+
     private static Class<?> getJsonNodeValueClass(JsonNode valueNode) {
         if (valueNode.isBoolean()) return Boolean.class;
         else if (valueNode.isDouble()) return Double.class;
@@ -210,6 +224,7 @@ public class ModelUtils {
     }
 
     private static Object getJsonNodeValue(JsonNode valueNode) {
+        if (valueNode.isNull()) return null;
         if (valueNode.isBoolean()) return valueNode.booleanValue();
         else if (valueNode.isDouble()) return valueNode.booleanValue();
         else if (valueNode.isLong()) return valueNode.longValue();

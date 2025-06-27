@@ -2,9 +2,8 @@ package uk.ac.ebi.intact.app.internal.tasks.query;
 
 import org.cytoscape.work.*;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
-import uk.ac.ebi.intact.app.internal.tasks.query.factories.ImportNetworkTaskFactory;
 
-public class NoGUIAdvancedSearchTask extends AbstractTask {
+public class NoGUIAdvancedSearchTask extends AbstractSearchTask {
 
     @Tunable(context = "nogui", exampleStringValue = "negative:true and species:9606", gravity = 0,
             description = "Advanced query to be run. <br>" +
@@ -34,7 +33,7 @@ public class NoGUIAdvancedSearchTask extends AbstractTask {
 
     @Override
     public void run(TaskMonitor taskMonitor) throws Exception {
-        TaskIterator taskIterator = new TaskIterator( new AdvancedSearchTask(manager, query, applyLayout, netName));
+        TaskIterator taskIterator = new TaskIterator( new AdvancedSearchTask(manager, query, getQueryParams(), applyLayout, netName));
         if (!asynchronous) {
             insertTasksAfterCurrentTask(taskIterator);
         } else {

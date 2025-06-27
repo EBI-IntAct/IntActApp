@@ -10,6 +10,7 @@ import org.cytoscape.work.*;
 import org.cytoscape.work.TaskMonitor.Level;
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
@@ -110,7 +111,11 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         monitor.setTitle("Create and register network view + Initialize filters");
         monitor.showMessage(Level.INFO, "Create and register network view + Initialize filters");
         monitor.setProgress(0.8);
-        CyNetworkView networkView = manager.data.createNetworkView(cyNetwork);
+        NetworkView.Type networkViewType = null;
+        if (network.getQueryParams() != null && network.getQueryParams().getNetworkViewType() != null) {
+            networkViewType = network.getQueryParams().getNetworkViewType();
+        }
+        CyNetworkView networkView = manager.data.createNetworkView(cyNetwork, networkViewType);
         ViewUtils.registerView(manager, networkView);
         System.out.println(Duration.between(begin, Instant.now()).toSeconds());
 

@@ -17,7 +17,8 @@ public class EdgeMutationFilter extends BooleanFilter<Edge> {
                         "structure in comparison to a reference entity due to an insertion, deletion or substitution event." +
                         " When possible, the effect of such changes on the specific interaction involved versus the reference" +
                         "(wild type) version of the molecule are reported",
-                "Hide edges without mutations");
+                "Hide edges without mutations",
+                view.getNetwork().getQueryParams() != null ? view.getNetwork().getQueryParams().getMutationFilter() : null);
     }
 
     @Override
