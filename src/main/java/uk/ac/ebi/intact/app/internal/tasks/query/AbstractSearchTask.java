@@ -48,23 +48,22 @@ public abstract class AbstractSearchTask extends AbstractTask {
             description = "Parameter to display network on evidence view")
     public Boolean expanded;
 
-    protected QueryParams getQueryParams() {
-        return QueryParams.builder()
+    protected QueryFilters getQueryParams() {
+        return QueryFilters.builder()
                 .interactorSpeciesFilter(paramToSet(interactorSpeciesFilter))
                 .interactionTypesFilter(paramToSet(interactionTypesFilter))
                 .interactionHostOrganismsFilter(paramToSet(interactionHostOrganismsFilter))
                 .negativeFilter(negativeFilter != null
-                        ? QueryParams.NegativeFilterStatus.valueOf(negativeFilter)
+                        ? QueryFilters.NegativeFilterStatus.valueOf(negativeFilter)
                         : null)
                 .minMIScore(minMIScore)
                 .maxMIScore(maxMIScore)
                 .mutationFilter(mutationFilter)
                 .expansionFilter(expansionFilter)
-                .networkViewType(getNetworkViewType())
                 .build();
     }
 
-    private NetworkView.Type getNetworkViewType() {
+    protected NetworkView.Type getNetworkViewType() {
         if (mutationStyle != null && mutationStyle) {
             return NetworkView.Type.MUTATION;
         } else if (expanded != null && expanded) {

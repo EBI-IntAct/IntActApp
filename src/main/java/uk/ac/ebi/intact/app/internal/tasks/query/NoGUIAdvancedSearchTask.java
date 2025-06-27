@@ -33,7 +33,8 @@ public class NoGUIAdvancedSearchTask extends AbstractSearchTask {
 
     @Override
     public void run(TaskMonitor taskMonitor) throws Exception {
-        TaskIterator taskIterator = new TaskIterator( new AdvancedSearchTask(manager, query, getQueryParams(), applyLayout, netName));
+        TaskIterator taskIterator = new TaskIterator( new AdvancedSearchTask(
+                manager, query, getQueryParams(), getNetworkViewType(), applyLayout, netName));
         if (!asynchronous) {
             insertTasksAfterCurrentTask(taskIterator);
         } else {

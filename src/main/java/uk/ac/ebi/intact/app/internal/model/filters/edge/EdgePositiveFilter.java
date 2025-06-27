@@ -5,7 +5,7 @@ import lombok.Setter;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.filters.BooleanFilter;
-import uk.ac.ebi.intact.app.internal.tasks.query.QueryParams;
+import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 
 public class EdgePositiveFilter extends BooleanFilter<Edge> {
 
@@ -16,18 +16,16 @@ public class EdgePositiveFilter extends BooleanFilter<Edge> {
     @Getter
     private boolean isPositiveHidden = !areTherePositiveInteractions();
 
-    public EdgePositiveFilter(NetworkView networkView) {
+    public EdgePositiveFilter(NetworkView networkView, QueryFilters queryFilters) {
         super(networkView,
                 Edge.class,
                 "Positive Interaction",
                 "Positive and/or negative interactions only",
                 "Positive and/or negative interactions only",
                 null);
-        if (networkView.getNetwork().getQueryParams() != null && networkView.getNetwork().getQueryParams().getNegativeFilter() != null) {
-            isNegativeHidden = QueryParams.NegativeFilterStatus.POSITIVE_ONLY.equals(
-                    networkView.getNetwork().getQueryParams().getNegativeFilter());
-            isPositiveHidden = QueryParams.NegativeFilterStatus.NEGATIVE_ONLY.equals(
-                    networkView.getNetwork().getQueryParams().getNegativeFilter());
+        if (queryFilters != null && queryFilters.getNegativeFilter() != null) {
+            isNegativeHidden = QueryFilters.NegativeFilterStatus.POSITIVE_ONLY.equals(queryFilters.getNegativeFilter());
+            isPositiveHidden = QueryFilters.NegativeFilterStatus.NEGATIVE_ONLY.equals(queryFilters.getNegativeFilter());
         } else {
             isNegativeHidden = areTherePositiveInteractions() && areThereNegativeInteractions();
             isPositiveHidden = !areTherePositiveInteractions();

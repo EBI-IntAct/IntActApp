@@ -34,6 +34,7 @@ import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.*;
 import uk.ac.ebi.intact.app.internal.tasks.clone.TableClonedEvent;
 import uk.ac.ebi.intact.app.internal.tasks.clone.TableClonedListener;
 import uk.ac.ebi.intact.app.internal.tasks.clone.factories.CloneTableTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
 import java.util.*;
@@ -85,7 +86,7 @@ public class DataManager implements
             fireIntactNetworkCreated(network);
             network.completeMissingNodeColorsFromTables(true, null);
             for (CyNetworkView view : networkViewManager.getNetworkViews(cyNetwork)) {
-                addNetworkView(view, true);
+                addNetworkView(view, true, null);
             }
         }
     }
@@ -142,26 +143,24 @@ public class DataManager implements
         manager.utils.getService(CyApplicationManager.class).setCurrentNetwork(cyNetwork);
     }
 
-    public CyNetworkView createNetworkView(CyNetwork cyNetwork) {
-        return createNetworkView(cyNetwork, null);
-    }
-
-    public CyNetworkView createNetworkView(CyNetwork cyNetwork, NetworkView.Type networkViewType) {
+    public CyNetworkView createNetworkView(CyNetwork cyNetwork, QueryFilters queryFilters, NetworkView.Type networkViewType) {
         CyNetworkView view = manager.utils.getService(CyNetworkViewFactory.class)
                 .createNetworkView(cyNetwork);
         manager.style.setStylesFancy(true);
         if (networkMap.containsKey(cyNetwork)) {
-            networkMap.get(cyNetwork).hideEdgesAndCreateViewWithStyle(view, networkViewType);
+            networkMap.get(cyNetwork).hideEdgesAndCreateNetworkViewWithParams(view, queryFilters, networkViewType);
         }
         return view;
     }
 
-    public NetworkView addNetworkView(CyNetworkView cyView, boolean loadData) {
-        return addNetworkView(cyView, loadData, NetworkView.Type.SUMMARY);
-    }
-
     public NetworkView addNetworkView(CyNetworkView cyView, boolean loadData, NetworkView.Type type) {
         NetworkView view = new NetworkView(manager, cyView, loadData, type);
+        networkViewMap.put(cyView, view);
+        return view;
+    }
+
+    public NetworkView addNetworkView(CyNetworkView cyView, QueryFilters queryFilters, NetworkView.Type type) {
+        NetworkView view = new NetworkView(manager, cyView, queryFilters, type);
         networkViewMap.put(cyView, view);
         return view;
     }
@@ -345,7 +344,7 @@ public class DataManager implements
                     networkTypesToSet.remove(cyNetwork);
                 }
             } else {
-                NetworkView networkView = addNetworkView(e.getNetworkView(), false);
+                NetworkView networkView = addNetworkView(e.getNetworkView(), false, null);
                 networkView.accordStyleToType();
             }
         }

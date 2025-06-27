@@ -48,7 +48,7 @@ public class AdvancedSearchTaskFactory extends AbstractNetworkSearchTaskFactory 
     }
 
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new AdvancedSearchTask(manager, queryComponent.getQueryText(), null, true));
+        return new TaskIterator(new AdvancedSearchTask(manager, queryComponent.getQueryText(), true));
     }
 
     public JComponent getQueryComponent() {

@@ -26,19 +26,27 @@ import static uk.ac.ebi.intact.app.internal.utils.ViewUtils.getLayoutTask;
 
 public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
     private final String query;
+    private final QueryFilters queryFilters;
+    private final NetworkView.Type networkViewType;
     private final boolean applyLayout;
     private final Network network;
     private String netName;
 
-    public AdvancedSearchTask(Manager manager, String query, QueryParams queryParams, boolean applyLayout) {
+    private AdvancedSearchTask(Manager manager, String query, QueryFilters queryFilters, NetworkView.Type networkViewType, boolean applyLayout) {
         this.query = query;
-        this.network = new Network(manager, queryParams);
+        this.queryFilters = queryFilters;
+        this.networkViewType = networkViewType;
+        this.network = new Network(manager);
         this.applyLayout = applyLayout;
     }
 
-    public AdvancedSearchTask(Manager manager, String query, QueryParams queryParams, boolean applyLayout, String netName) {
-        this(manager, query, queryParams, applyLayout);
+    public AdvancedSearchTask(Manager manager, String query, QueryFilters queryFilters, NetworkView.Type networkViewType, boolean applyLayout, String netName) {
+        this(manager, query, queryFilters, networkViewType, applyLayout);
         this.netName = netName;
+    }
+
+    public AdvancedSearchTask(Manager manager, String query, boolean applyLayout) {
+        this(manager, query, null, null, applyLayout);
     }
 
     @Override
@@ -84,11 +92,7 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         monitor.setTitle("Create and register network view + Initialize filters");
         monitor.showMessage(TaskMonitor.Level.INFO, "Create and register network view + Initialize filters");
         monitor.setProgress(0.8);
-        NetworkView.Type networkViewType = null;
-        if (network.getQueryParams() != null && network.getQueryParams().getNetworkViewType() != null) {
-            networkViewType = network.getQueryParams().getNetworkViewType();
-        }
-        CyNetworkView networkView = manager.data.createNetworkView(cyNetwork, networkViewType);
+        CyNetworkView networkView = manager.data.createNetworkView(cyNetwork, queryFilters, networkViewType);
         ViewUtils.registerView(manager, networkView);
 
         if (cancelled) {

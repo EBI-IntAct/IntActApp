@@ -59,7 +59,7 @@ public class SessionLoader implements SessionLoadedListener {
         linkIntactTablesToNetwork(loadedSession.getTables(), loadedSession);
         for (CyNetworkView view : loadedSession.getNetworkViews()) {
             if (manager.data.getNetwork(view.getModel()) != null) {
-                manager.data.addNetworkView(view, true);
+                manager.data.addNetworkView(view, true, null);
             }
         }
 

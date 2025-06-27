@@ -2,13 +2,12 @@ package uk.ac.ebi.intact.app.internal.tasks.query;
 
 import lombok.Builder;
 import lombok.Data;
-import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 
 import java.util.Set;
 
 @Data
 @Builder
-public class QueryParams {
+public class QueryFilters {
 
     private Set<String> interactorSpeciesFilter;
     private Set<String> interactionTypesFilter;
@@ -18,7 +17,6 @@ public class QueryParams {
     private Double maxMIScore;
     private Boolean mutationFilter;
     private Boolean expansionFilter;
-    private NetworkView.Type networkViewType;
 
     public enum NegativeFilterStatus {
         POSITIVE_ONLY(false),

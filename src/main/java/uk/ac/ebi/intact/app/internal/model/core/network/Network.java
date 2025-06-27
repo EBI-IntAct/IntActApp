@@ -17,7 +17,7 @@ import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
-import uk.ac.ebi.intact.app.internal.tasks.query.QueryParams;
+import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
@@ -39,7 +39,6 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     CyTable nodeTable;
     CyTable featuresTable;
     CyTable identifiersTable;
-    QueryParams queryParams;
 
     private final Map<CyNode, Node> nodes = new HashMap<>();
     // Summary edges
@@ -52,14 +51,8 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     private final Map<String, String> speciesNameToId = new HashMap<>();
     private final Map<String, String> speciesIdToName = new HashMap<>();
 
-
     public Network(Manager manager) {
-        this(manager, null);
-    }
-
-    public Network(Manager manager, QueryParams queryParams) {
         this.manager = manager;
-        this.queryParams = queryParams;
     }
 
     public CyNetwork getCyNetwork() {
@@ -128,16 +121,14 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     }
 
 
-    public void hideEdgesAndCreateViewWithStyle(CyNetworkView cyNetworkView, NetworkView.Type viewType) {
+    public void hideEdgesAndCreateNetworkViewWithParams(CyNetworkView cyNetworkView, QueryFilters queryFilters, NetworkView.Type networkViewType) {
         HideTaskFactory hideTaskFactory = manager.utils.getService(HideTaskFactory.class);
-
-        if (viewType != null && viewType != NetworkView.Type.SUMMARY) {
+        if (networkViewType != NetworkView.Type.SUMMARY) {
             manager.utils.execute(hideTaskFactory.createTaskIterator(cyNetworkView, null, getSummaryCyEdges()));
         } else {
             manager.utils.execute(hideTaskFactory.createTaskIterator(cyNetworkView, null, getEvidenceCyEdges()));
         }
-
-        NetworkView networkView = manager.data.addNetworkView(cyNetworkView, false);
+        NetworkView networkView = manager.data.addNetworkView(cyNetworkView, queryFilters, networkViewType);
         networkView.accordStyleToType();
     }
 
@@ -474,9 +465,5 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
     public CyRow getCyRow() {
         return cyNetwork.getRow(cyNetwork);
-    }
-
-    public QueryParams getQueryParams() {
-        return queryParams;
     }
 }

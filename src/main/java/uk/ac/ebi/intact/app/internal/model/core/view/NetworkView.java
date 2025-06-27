@@ -24,6 +24,7 @@ import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
+import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,18 +42,27 @@ public class NetworkView implements FilterUpdatedListener {
     private boolean listeningToFilterUpdate = true;
     private Type type;
 
+    public NetworkView(Manager manager, CyNetworkView cyView, QueryFilters queryFilters, Type type) {
+        this(manager, cyView, type);
+        if (cyView != null) {
+            setupFiltersWithParams(queryFilters);
+        }
+    }
+
     public NetworkView(Manager manager, CyNetworkView cyView, boolean loadData, Type type) {
+        this(manager, cyView, type);
+        if (cyView != null) {
+            setupFiltersAndLoadData(loadData);
+        }
+    }
+
+    private NetworkView(Manager manager, CyNetworkView cyView, Type type) {
         this.manager = manager;
         this.manager.utils.registerAllServices(this, new Properties());
         if (cyView != null) {
             this.cyView = cyView;
             this.network = manager.data.getNetwork(cyView.getModel());
-            if (this.network.getQueryParams() != null && this.network.getQueryParams().getNetworkViewType() != null) {
-                this.type = this.network.getQueryParams().getNetworkViewType();
-            } else {
-                this.type = type != null ? type : Type.SUMMARY;
-            }
-            setupFilters(loadData);
+            this.type = type != null ? type : Type.SUMMARY;
         } else {
             this.cyView = null;
             this.network = null;
@@ -67,24 +77,32 @@ public class NetworkView implements FilterUpdatedListener {
         return new ArrayList<>(filters);
     }
 
-    private void setupFilters(boolean loadData) {
-        filters.add(new NodeTypeFilter(this));
-        filters.add(new NodeSpeciesFilter(this));
+    private void setupFiltersAndLoadData(boolean loadData) {
+        setupFilters(null);
+        if (loadData) load();
+        totalFilter();
+    }
 
-        filters.add(new EdgeMIScoreFilter(this));
+    private void setupFiltersWithParams(QueryFilters queryFilters) {
+        setupFilters(queryFilters);
+        totalFilter();
+    }
+
+    private void setupFilters(QueryFilters queryFilters) {
+        filters.add(new NodeTypeFilter(this));
+        filters.add(new NodeSpeciesFilter(this, queryFilters));
+
+        filters.add(new EdgeMIScoreFilter(this, queryFilters));
         filters.add(new EdgeInteractionDetectionMethodFilter(this));
         filters.add(new EdgeParticipantDetectionMethodFilter(this));
-        filters.add(new EdgeHostOrganismFilter(this));
-        filters.add(new EdgeExpansionTypeFilter(this));
-        filters.add(new EdgeTypeFilter(this));
-        filters.add(new EdgeMutationFilter(this));
-        filters.add(new EdgePositiveFilter(this));
+        filters.add(new EdgeHostOrganismFilter(this, queryFilters));
+        filters.add(new EdgeExpansionTypeFilter(this, queryFilters));
+        filters.add(new EdgeTypeFilter(this, queryFilters));
+        filters.add(new EdgeMutationFilter(this, queryFilters));
+        filters.add(new EdgePositiveFilter(this, queryFilters));
 
         filters.add(new OrphanNodeFilter(this)); // Must be after edge filters
         filters.add(new OrphanEdgeFilter(this));
-
-        if (loadData) load();
-        totalFilter();
     }
 
     public void resetFilters() {

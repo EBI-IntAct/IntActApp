@@ -75,7 +75,7 @@ public class NoGUIQueryTask extends AbstractSearchTask {
 
     @Override
     public void run(TaskMonitor taskMonitor) {
-        network = new Network(manager, getQueryParams());
+        network = new Network(manager);
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Collecting interactors");
         resolveTermsToAcs();
         taskMonitor.showMessage(TaskMonitor.Level.INFO, "Querying network from interactors");
@@ -108,7 +108,8 @@ public class NoGUIQueryTask extends AbstractSearchTask {
     }
 
     private void buildNetwork() {
-        ImportNetworkTaskFactory factory = new ImportNetworkTaskFactory(network, interactorAcs, includeSeedPartners, applyLayout, netName);
+        ImportNetworkTaskFactory factory = new ImportNetworkTaskFactory(
+                network, interactorAcs, getQueryParams(), getNetworkViewType(), includeSeedPartners, applyLayout, netName);
         TaskIterator taskIterator = factory.createTaskIterator();
         if (!asynchronous) {
             insertTasksAfterCurrentTask(taskIterator);

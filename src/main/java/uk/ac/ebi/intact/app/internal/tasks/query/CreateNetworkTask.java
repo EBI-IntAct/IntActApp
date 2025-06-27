@@ -27,6 +27,8 @@ import static uk.ac.ebi.intact.app.internal.utils.ViewUtils.getLayoutTask;
 public class CreateNetworkTask extends AbstractTask implements TaskObserver {
     private final Network network;
     private final List<String> intactAcs;
+    private final QueryFilters queryFilters;
+    private final NetworkView.Type networkViewType;
     private final boolean includeNeighbours;
     private final boolean applyLayout;
     private final String netName;
@@ -34,9 +36,13 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
 
     public CreateNetworkTask(final Network network,
                              final List<String> intactAcs,
+                             final QueryFilters queryFilters,
+                             final NetworkView.Type networkViewType,
                              boolean includeNeighbours, boolean applyLayout, final String netName) {
         this.network = network;
         this.intactAcs = intactAcs;
+        this.queryFilters = queryFilters;
+        this.networkViewType = networkViewType;
         this.includeNeighbours = includeNeighbours;
         this.netName = netName;
         this.applyLayout = applyLayout;
@@ -111,11 +117,7 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         monitor.setTitle("Create and register network view + Initialize filters");
         monitor.showMessage(Level.INFO, "Create and register network view + Initialize filters");
         monitor.setProgress(0.8);
-        NetworkView.Type networkViewType = null;
-        if (network.getQueryParams() != null && network.getQueryParams().getNetworkViewType() != null) {
-            networkViewType = network.getQueryParams().getNetworkViewType();
-        }
-        CyNetworkView networkView = manager.data.createNetworkView(cyNetwork, networkViewType);
+        CyNetworkView networkView = manager.data.createNetworkView(cyNetwork, queryFilters, networkViewType);
         ViewUtils.registerView(manager, networkView);
         System.out.println(Duration.between(begin, Instant.now()).toSeconds());
 
