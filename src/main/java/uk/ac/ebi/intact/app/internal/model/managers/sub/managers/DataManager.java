@@ -332,22 +332,38 @@ public class DataManager implements
      */
     @Override
     public void handleEvent(NetworkViewAddedEvent e) {
-        CyNetwork cyNetwork = e.getNetworkView().getModel();
+        CyNetworkView cyNetworkView = e.getNetworkView();
+        CyNetwork cyNetwork = cyNetworkView.getModel();
         if (networkMap.containsKey(cyNetwork)) {
             if (networkTypesToSet.containsKey(cyNetwork)) {
                 NetworkViewTypeToSet networkViewTypeToSet = networkTypesToSet.get(cyNetwork);
-                if (!networkViewTypeToSet.toSet) networkViewTypeToSet.toSet = true; // Avoid work at first trigger
-                else {
-                    NetworkView networkView = addNetworkView(e.getNetworkView(), false, networkViewTypeToSet.type);
+                if (!networkViewTypeToSet.toSet) {
+                    // Avoid work at first trigger
+                    networkViewTypeToSet.toSet = true;
+                } else {
+                    NetworkView networkView = getOrCreateNetworkView(cyNetworkView, networkViewTypeToSet.type);
                     networkView.accordStyleToType();
                     networkViewTypesToSet.put(networkView, networkViewTypeToSet);
                     networkTypesToSet.remove(cyNetwork);
                 }
             } else {
-                NetworkView networkView = addNetworkView(e.getNetworkView(), false, null);
+                NetworkView networkView = getOrCreateNetworkView(cyNetworkView, null);
                 networkView.accordStyleToType();
             }
         }
+    }
+
+    private NetworkView getOrCreateNetworkView(CyNetworkView cyNetworkView, NetworkView.Type type) {
+        NetworkView networkView;
+        if (networkViewMap.containsKey(cyNetworkView)) {
+            networkView = networkViewMap.get(cyNetworkView);
+            if (type != null) {
+                networkView.setType(type);
+            }
+        } else {
+            networkView = addNetworkView(cyNetworkView, false, type);
+        }
+        return networkView;
     }
 
     /**
