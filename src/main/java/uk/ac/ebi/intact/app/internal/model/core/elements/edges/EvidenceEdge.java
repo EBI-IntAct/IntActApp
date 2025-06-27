@@ -65,6 +65,36 @@ public class EvidenceEdge extends Edge {
         return features;
     }
 
+    @Override
+    public boolean isNegative() {
+        return isNegative;
+    }
+
+    @Override
+    public boolean isSpokeExpansion() {
+        return expansionType != null && expansionType.equals("spoke expansion");
+    }
+
+    @Override
+    public Collection<String> getHostOrganisms() {
+        return List.of(hostOrganism);
+    }
+
+    @Override
+    public Collection<String> getInteractionDetectionMethods() {
+        return List.of(interactionDetectionMethod.value);
+    }
+
+    @Override
+    public Collection<String> getParticipantDetectionMethods() {
+        return List.of(participantDetectionMethod.value);
+    }
+
+    @Override
+    public Collection<String> getTypes() {
+        return List.of(type.value);
+    }
+
     protected void buildFeatures(Map<Node, List<Feature>> features, List<String> featureAcs, Node participant) {
         ArrayList<Feature> participantFeatures = new ArrayList<>();
         features.put(participant, participantFeatures);
@@ -130,7 +160,6 @@ public class EvidenceEdge extends Edge {
 
         return (EvidenceEdge) Edge.createEdge(network, edge);
     }
-
 
     @Override
     public String toString() {

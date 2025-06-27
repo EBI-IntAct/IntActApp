@@ -34,7 +34,7 @@ public class EdgePositiveFilter extends BooleanFilter<Edge> {
 
     @Override
     public boolean isToHide(Edge element) {
-        if (element.isNegative){
+        if (element.isNegative()){
             return isNegativeHidden;
         } else {
             return isPositiveHidden;
@@ -53,11 +53,11 @@ public class EdgePositiveFilter extends BooleanFilter<Edge> {
 
     public boolean areThereNegativeInteractions() {
         NetworkView networkView = getNetworkView();
-        return networkView.getNetwork().getEvidenceEdges().stream().anyMatch(edge -> edge.isNegative);
+        return networkView.getNetwork().getEvidenceEdges().stream().anyMatch(Edge::isNegative);
     }
 
     public boolean areTherePositiveInteractions() {
         NetworkView networkView = getNetworkView();
-        return networkView.getNetwork().getEvidenceEdges().stream().anyMatch(edge -> !edge.isNegative);
+        return networkView.getNetwork().getEvidenceEdges().stream().anyMatch(edge -> !edge.isNegative());
     }
 }

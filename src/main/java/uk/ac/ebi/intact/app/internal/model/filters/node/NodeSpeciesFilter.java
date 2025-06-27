@@ -5,6 +5,9 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 
+import java.util.Collection;
+import java.util.List;
+
 public class NodeSpeciesFilter extends DiscreteFilter<Node> {
 
     public NodeSpeciesFilter(NetworkView view, QueryFilters queryFilters) {
@@ -16,7 +19,7 @@ public class NodeSpeciesFilter extends DiscreteFilter<Node> {
     }
 
     @Override
-    public String getPropertyValue(Node element) {
-        return element.species;
+    public Collection<String> getPropertyValues(Node element) {
+        return List.of(element.species);
     }
 }

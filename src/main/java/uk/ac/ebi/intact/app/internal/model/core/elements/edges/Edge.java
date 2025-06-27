@@ -6,6 +6,7 @@ import org.cytoscape.model.CyRow;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
+import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.CVTerm;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 
@@ -26,7 +27,6 @@ public abstract class Edge implements Element {
     public final List<String> targetFeatureAcs;
     public final boolean isNegative;
 
-
     public static Edge createEdge(Network network, CyEdge edge) {
         if (network == null || edge == null) return null;
         CyRow edgeRow = network.getCyNetwork().getRow(edge);
@@ -38,7 +38,6 @@ public abstract class Edge implements Element {
             return new EvidenceEdge(network, edge);
         }
     }
-
 
     Edge(Network network, CyEdge cyEdge) {
         this.network = new WeakReference<>(network);
@@ -62,7 +61,19 @@ public abstract class Edge implements Element {
         isNegative = IS_NEGATIVE_INTERACTION.getValue(edgeRow);
     }
 
-    public abstract Map<Node, List<Feature>> getFeatures() ;
+    public abstract Map<Node, List<Feature>> getFeatures();
+
+    public abstract boolean isNegative();
+
+    public abstract boolean isSpokeExpansion();
+
+    public abstract Collection<String> getHostOrganisms();
+
+    public abstract Collection<String> getInteractionDetectionMethods();
+
+    public abstract Collection<String> getParticipantDetectionMethods();
+
+    public abstract Collection<String> getTypes();
 
     @Override
     public boolean equals(Object o) {

@@ -35,8 +35,9 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
 
         for (T element : elements) {
             if (element != null) {
-                String property = getProperty(element);
-                propertiesVisibility.put(property, selectedProperties == null || selectedProperties.contains(property));
+                Collection<String> properties = getProperties(element);
+                properties.forEach(property ->
+                        propertiesVisibility.put(property, selectedProperties == null || selectedProperties.contains(property)));
             }
         }
     }
@@ -50,11 +51,11 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
         return true;
     }
 
-    protected abstract String getPropertyValue(T element);
+    protected abstract Collection<String> getPropertyValues(T element);
 
-    public String getProperty(T element) {
-        String property = getPropertyValue(element);
-        return property != null ? property : "";
+    public Collection<String> getProperties(T element) {
+        Collection<String> properties = getPropertyValues(element);
+        return properties != null ? properties : List.of();
     }
 
     @Override
@@ -62,11 +63,13 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
         if (propertiesVisibility.values().stream().anyMatch(visible -> !visible)) {
             NetworkView view = getNetworkView();
             if (Node.class.isAssignableFrom(elementType)) {
-                view.visibleNodes.removeIf(node -> !propertiesVisibility.get(getProperty(elementType.cast(node))));
+                view.visibleNodes.removeIf(node ->
+                        getProperties(elementType.cast(node)).stream().noneMatch(propertiesVisibility::get));
             } else if (Edge.class.isAssignableFrom(elementType)) {
                 if (elementType == SummaryEdge.class && view.getType() != NetworkView.Type.SUMMARY) return;
                 if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.SUMMARY) return;
-                view.visibleEdges.removeIf(edge -> !propertiesVisibility.get(getProperty(elementType.cast(edge))));
+                view.visibleEdges.removeIf(edge ->
+                        getProperties(elementType.cast(edge)).stream().noneMatch(propertiesVisibility::get));
             }
         }
     }

@@ -28,8 +28,52 @@ public class SummaryEdge extends Edge {
         return features;
     }
 
-    public Boolean isNegative() {
-        return getSummarizedEdges().stream().anyMatch(edge -> edge.isNegative);
+    @Override
+    public boolean isNegative() {
+        return getSummarizedEdges().stream().anyMatch(EvidenceEdge::isNegative);
+    }
+
+    @Override
+    public boolean isSpokeExpansion() {
+        return getSummarizedEdges().stream().allMatch(EvidenceEdge::isSpokeExpansion);
+    }
+
+    @Override
+    public Collection<String> getHostOrganisms() {
+        return getSummarizedEdges().stream()
+                .map(edge -> edge.hostOrganism)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<String> getInteractionDetectionMethods() {
+        return getSummarizedEdges().stream()
+                .map(edge -> edge.interactionDetectionMethod)
+                .filter(Objects::nonNull)
+                .map(interactionDetectionMethod -> interactionDetectionMethod.value)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<String> getParticipantDetectionMethods() {
+        return getSummarizedEdges().stream()
+                .map(edge -> edge.participantDetectionMethod)
+                .filter(Objects::nonNull)
+                .map(participantDetectionMethod -> participantDetectionMethod.value)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<String> getTypes() {
+        return getSummarizedEdges().stream()
+                .map(edge -> edge.type)
+                .filter(Objects::nonNull)
+                .map(type -> type.value)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     protected void buildFeatures(Map<Node, List<Feature>> features, List<String> featureAcs, Node participant, Set<Long> edgesSUID) {
