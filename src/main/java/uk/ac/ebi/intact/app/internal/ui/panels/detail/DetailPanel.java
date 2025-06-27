@@ -112,11 +112,17 @@ public class DetailPanel extends JPanel
             }
         }
 
-        JPanel viewTypesPanel = new JPanel(new GridLayout(4, 1));
+        VerticalPanel viewTypesPanel = new VerticalPanel();
+
+
+
         viewTypesPanel.setBorder(BorderFactory.createTitledBorder("View"));
-        viewTypesPanel.add(summaryViewType);
-        viewTypesPanel.add(evidenceViewType);
-        viewTypesPanel.add(mutationViewType);
+        VerticalPanel viewsContainer = new VerticalPanel();
+        viewsContainer.add(summaryViewType);
+        viewsContainer.add(evidenceViewType);
+        viewsContainer.add(mutationViewType);
+        viewsContainer.setLayout(new GridLayout(3,0));
+        viewTypesPanel.add(viewsContainer);
 
         JPanel viewParamsPanel = getViewParamsPanel();
         viewTypesPanel.add(viewParamsPanel);
@@ -158,7 +164,9 @@ public class DetailPanel extends JPanel
 
     private JPanel getViewParamsPanel() {
         JPanel viewParamsPanel = new JPanel();
+        viewParamsPanel.setLayout(new FlowLayout(FlowLayout.LEFT)); // Align components left
         viewParamsPanel.setBorder(BorderFactory.createTitledBorder("Parameters"));
+
         orthologyButton.setActivated(false);
         orthologyButton.addChangeListener(e -> {
             if (!orthologyButton.isActivated()) {
@@ -169,12 +177,12 @@ public class DetailPanel extends JPanel
             orthologyViewParameterTaskFactory.setParameterApplied(orthologyButton.isActivated());
             manager.utils.execute(orthologyViewParameterTaskFactory.createTaskIterator());
         });
+
         viewParamsPanel.add(orthologyButton);
-        JLabel orthologyLabel = new JLabel("Orthology");
-        viewParamsPanel.add(orthologyLabel);
+        viewParamsPanel.add(new JLabel("Orthology"));
+
         return viewParamsPanel;
     }
-
     public void showCytoPanel() {
         CySwingApplication swingApplication = manager.utils.getService(CySwingApplication.class);
         CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
