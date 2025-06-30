@@ -39,4 +39,6 @@ public class EdgeFields {
     public static final ParticipantListField<String> FEATURES = new ParticipantListField<>(fields, initializers, "features", String.class);
 
     public static final Field<Long> ID = new Field<>(fields, initializers, Field.Namespace.INTACT, "ID", "id", Long.class);
+
+    public static final Field<Boolean> IS_NEGATIVE_INTERACTION = new Field<>(fields, initializers, Field.Namespace.SUMMARY, "negative interaction", "is_negative", Boolean.class, Boolean.FALSE);
 }

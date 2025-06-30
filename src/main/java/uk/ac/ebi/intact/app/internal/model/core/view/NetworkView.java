@@ -74,6 +74,7 @@ public class NetworkView implements FilterUpdatedListener {
         filters.add(new EdgeExpansionTypeFilter(this));
         filters.add(new EdgeTypeFilter(this));
         filters.add(new EdgeMutationFilter(this));
+        filters.add(new EdgePositiveFilter(this));
 
         filters.add(new OrphanNodeFilter(this)); // Must be after edge filters
         filters.add(new OrphanEdgeFilter(this));

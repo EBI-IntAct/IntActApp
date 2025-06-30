@@ -24,6 +24,7 @@ public abstract class Edge implements Element {
     public final double miScore;
     public final List<String> sourceFeatureAcs;
     public final List<String> targetFeatureAcs;
+    public final boolean isNegative;
 
 
     public static Edge createEdge(Network network, CyEdge edge) {
@@ -57,6 +58,8 @@ public abstract class Edge implements Element {
         if (targetFeatureAcs != null) {
             targetFeatureAcs.removeIf(String::isBlank);
         }
+
+        isNegative = IS_NEGATIVE_INTERACTION.getValue(edgeRow);
     }
 
     public abstract Map<Node, List<Feature>> getFeatures() ;

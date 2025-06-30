@@ -1,11 +1,17 @@
 package uk.ac.ebi.intact.app.internal.io;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import org.cytoscape.io.util.StreamUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.Field;
 
 import java.io.*;
 import java.net.*;
@@ -15,14 +21,52 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+import static uk.ac.ebi.intact.app.internal.model.managers.Manager.INTACT_GRAPH_WS;
+
 public class HttpUtils {
+
     private static final HttpClient httpClient = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
             .build();
+
+    private static final HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json");
+
+    private static final ObjectMapper mapper = JsonMapper.builder()
+            .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
+            .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true)
+            .build();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtils.class);
+
+    public static JsonNode getJsonNetworkWithRequestBody(String query, int page) throws IOException, InterruptedException {
+        String baseUrl = INTACT_GRAPH_WS + "network/fromPagedInteractions";
+
+        Map<String, Object> params = Map.of(
+                "query", query,
+                "advancedSearch", isAdvancedSearch(query),
+                "page", page
+        );
+
+        HttpRequest request = requestBuilder
+                .uri(URI.create(baseUrl))
+                .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(params)))
+                .build();
+
+        HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+        return mapper.readTree(response.body());
+    }
+
+    public static boolean isAdvancedSearch(String query) {
+        return Arrays.stream(Field.values()).anyMatch(field -> query.contains(field.getMiqlQuery()));
+    }
 
     public static JsonNode getJSON(String url, Map<String, String> queryMap, Manager manager) {
         URL trueURL;
@@ -48,7 +92,7 @@ public class HttpUtils {
             entityStream.close();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logError(e.getMessage());
         }
         return jsonObject;
     }
@@ -65,11 +109,11 @@ public class HttpUtils {
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response == null) {
-                manager.utils.error("No response from " + url + " with post data = " + data.toString());
+                manager.utils.error("No response from " + url + " with post data = " + data);
                 return null;
             }
             if (response.statusCode() != 200) {
-                manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + data.toString());
+                manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + data);
             }
             return new ObjectMapper().readTree(response.body());
 
@@ -80,32 +124,32 @@ public class HttpUtils {
         }
     }
 
-    public static JsonNode postJSON(String url, Map<Object, Object> data, Manager manager, Supplier<Boolean> isCancelled) {
+    public static JsonNode postJSON(String url, Map<Object, Object> body, Manager manager, Supplier<Boolean> isCancelled) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .POST(buildFormDataFromMap(data))
                     .uri(URI.create(url))
+                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body)))
                     .setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
-                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .header("Content-Type", "application/json")
                     .header("accept", "application/json")
                     .build();
             Instant begin = Instant.now();
-            CompletableFuture<String> body = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+            CompletableFuture<String> responseBody = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .thenApply(response -> {
                         if (response.statusCode() != 200) {
-                            manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + data.toString());
+                            manager.utils.error("Error " + response.statusCode() + " from " + url + " with post data = " + body);
                         }
                         return response;
                     }).thenApply(HttpResponse::body);
 
-            while (!body.isDone()) {
+            while (!responseBody.isDone()) {
                 if (isCancelled.get()) {
-                    body.cancel(true);
+                    responseBody.cancel(true);
                     return null;
                 }
             }
             System.out.println("Response received in " + Duration.between(begin, Instant.now()).toSeconds() + "s from " + url);
-            return new ObjectMapper().readTree(body.get());
+            return new ObjectMapper().readTree(responseBody.get());
 
         } catch (Exception e) {
             // e.printStackTrace();
@@ -113,7 +157,6 @@ public class HttpUtils {
             return null;
         }
     }
-
 
     public static String getStringArguments(Map<String, String> args) {
         StringBuilder s = null;
@@ -125,11 +168,10 @@ public class HttpUtils {
                     s.append("&").append(key).append("=").append(URLEncoder.encode(args.get(key), StandardCharsets.UTF_8.displayName()));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logError(e.getMessage());
         }
         return s != null ? s.toString() : "";
     }
-
 
     public static String truncate(String str) {
         if (str.length() > 1000)
@@ -137,14 +179,13 @@ public class HttpUtils {
         return str;
     }
 
-
     private static URLConnection executeWithRedirect(Manager manager, String url, Map<String, String> queryMap) throws Exception {
         // Get the connection from Cytoscape
         HttpURLConnection connection = (HttpURLConnection) manager.utils.getService(StreamUtil.class).getURLConnection(new URL(url));
 
         // We want to write on the stream
         connection.setDoOutput(true);
-        // We want to deal with redirection ourself
+        // We want to deal with redirection ourselves
         connection.setInstanceFollowRedirects(false);
 
         // We write the POST arguments
@@ -178,7 +219,7 @@ public class HttpUtils {
                 builder.append(line); // + "\r\n"(no need, json has no line breaks!)
             }
         }
-        System.out.println("JSON error response: " + builder.toString());
+        System.out.println("JSON error response: " + builder);
         return builder.toString();
     }
 
@@ -194,7 +235,7 @@ public class HttpUtils {
             }
             jsonText = builder.toString();
         } catch (IOException e) {
-            e.printStackTrace();
+            logError(e.getMessage());
         }
 
         return jsonText;
@@ -206,7 +247,7 @@ public class HttpUtils {
             try {
                 return new ObjectMapper().readTree(jsonText);
             } catch (JsonProcessingException e) {
-                e.printStackTrace();
+                logError(e.getMessage());
             }
         }
         return null;
@@ -235,4 +276,7 @@ public class HttpUtils {
         return HttpRequest.BodyPublishers.ofString(builder.toString());
     }
 
+    private static void logError(String message) {
+        LOGGER.error(message);
+    }
 }

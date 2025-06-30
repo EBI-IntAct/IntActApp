@@ -15,7 +15,7 @@ public class ParticipantListField<E> {
     }
 
     public ParticipantListField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, Class<E> type, boolean shared) {
-        SOURCE = new ListField<>(fields,initializers , Field.Namespace.SOURCE, "Source " + name, type, shared);
-        TARGET = new ListField<>(fields,initializers , Field.Namespace.TARGET, "Target " + name, type, shared);
+        SOURCE = new ListField<>(fields,initializers , Field.Namespace.SOURCE, "Source " + name, type, shared, null);
+        TARGET = new ListField<>(fields,initializers , Field.Namespace.TARGET, "Target " + name, type, shared, null);
     }
 }

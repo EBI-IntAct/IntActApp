@@ -69,7 +69,7 @@ public class EdgeParticipants extends AbstractEdgeAttribute {
 
         int thickness = edge.getNbSummarizedEdges() + 2;
         thickness = Integer.min(thickness, 25);
-        content.add(new EdgeDiagram(SummaryStyle.getColor(edge.miScore), thickness, false));
+        content.add(new EdgeDiagram(SummaryStyle.getColor(edge.miScore), thickness, false, edge.isNegative()));
     }
 
     @Override
@@ -103,7 +103,7 @@ public class EdgeParticipants extends AbstractEdgeAttribute {
             nodePanel.add(Box.createVerticalGlue(), layoutHelper.down().expandVert());
         }
 
-        content.add(new EdgeDiagram(StyleMapper.edgeTypeToPaint.get(edge.type.value), 4, edge.expansionType != null && !edge.expansionType.isBlank()));
+        content.add(new EdgeDiagram(StyleMapper.edgeTypeToPaint.get(edge.type.value), 4, edge.expansionType != null && !edge.expansionType.isBlank(), edge.isNegative));
     }
 
     private class ParticipantInfoPanel extends LinePanel {
@@ -226,20 +226,25 @@ public class EdgeParticipants extends AbstractEdgeAttribute {
         Paint color;
         boolean dashed;
         int thickness;
+        Boolean isNegative;
 
-        public EdgeDiagram(Paint paint, int thickness, boolean dashed) {
+        public EdgeDiagram(Paint paint, int thickness, boolean dashed, Boolean isNegative) {
             this.color = paint;
             this.dashed = dashed;
             this.thickness = thickness;
+            this.isNegative = isNegative;
         }
 
         @Override
         public void paint(Graphics g) {
             super.paint(g);
             Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setPaint(color);
+
             if (dashed) {
-                g2.setStroke(new BasicStroke(thickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1.0f, new float[]{6.0f, 5.0f}, 0));
+                g2.setStroke(new BasicStroke(thickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
+                        1.0f, new float[]{6.0f, 5.0f}, 0));
             } else {
                 g2.setStroke(new BasicStroke(thickness));
             }
@@ -247,7 +252,27 @@ public class EdgeParticipants extends AbstractEdgeAttribute {
             Rectangle sourceBounds = sourceDiagram.getBounds();
             Rectangle targetBounds = targetDiagram.getBounds();
             int centerX = (int) sourceBounds.getCenterX();
-            g2.drawLine(centerX, (int) sourceBounds.getCenterY() + 15, centerX, (int) targetBounds.getCenterY() - 15);
+            int y1 = (int) sourceBounds.getCenterY() + 15;
+            int y2 = (int) targetBounds.getCenterY() - 15;
+
+            g2.drawLine(centerX, y1, centerX, y2);
+
+            if (isNegative) {
+                String negation = "X";
+
+                int midY = (y1 + y2) / 2;
+
+                FontMetrics fm = g2.getFontMetrics();
+                int stringWidth = fm.stringWidth(negation);
+                int stringHeight = fm.getAscent();
+
+                int textX = centerX - stringWidth / 2;
+                int textY = midY + stringHeight / 2;
+
+                g2.setPaint(Color.RED);
+                g2.drawString(negation, textX, textY);
+            }
         }
+
     }
 }

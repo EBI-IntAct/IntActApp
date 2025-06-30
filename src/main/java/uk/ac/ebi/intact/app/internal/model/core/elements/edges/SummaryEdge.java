@@ -28,6 +28,10 @@ public class SummaryEdge extends Edge {
         return features;
     }
 
+    public Boolean isNegative() {
+        return getSummarizedEdges().stream().anyMatch(edge -> edge.isNegative);
+    }
+
     protected void buildFeatures(Map<Node, List<Feature>> features, List<String> featureAcs, Node participant, Set<Long> edgesSUID) {
         ArrayList<Feature> participantFeatures = new ArrayList<>();
         features.put(participant, participantFeatures);
@@ -64,6 +68,7 @@ public class SummaryEdge extends Edge {
                     if (summarizedCyEdge == null) return false;
                     return network.getEvidenceEdge(summarizedCyEdge) != null;
                 }).count();
+        EdgeFields.IS_NEGATIVE_INTERACTION.setValue(edgeRow, isNegative());
         EdgeFields.SUMMARY_NB_EDGES.setValue(edgeRow, nbSummarizedEdges);
     }
 

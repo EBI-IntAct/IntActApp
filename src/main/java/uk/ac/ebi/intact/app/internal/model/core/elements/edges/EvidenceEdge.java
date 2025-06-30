@@ -13,10 +13,7 @@ import uk.ac.ebi.intact.app.internal.model.core.identifiers.ontology.CVTerm;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.FeatureFields;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static uk.ac.ebi.intact.app.internal.model.managers.Manager.INTACT_GRAPH_WS;
 import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields.*;
@@ -36,6 +33,7 @@ public class EvidenceEdge extends Edge {
     public final CVTerm targetBiologicalRole;
     public final CVTerm targetExperimentalRole;
     private JsonNode detailsJSON;
+    public final Boolean isNegative;
 
     EvidenceEdge(Network network, CyEdge edge) {
         super(network, edge);
@@ -55,6 +53,7 @@ public class EvidenceEdge extends Edge {
         targetExperimentalRole = new CVTerm(edgeRow, EXPERIMENTAL_ROLE.TARGET);
 
         pubMedId = PUBMED_ID.getValue(edgeRow);
+        isNegative = IS_NEGATIVE_INTERACTION.getValue(edgeRow);
     }
 
     @Override
@@ -128,6 +127,7 @@ public class EvidenceEdge extends Edge {
         AFFECTED_BY_MUTATION.setValue(row, isAffectedByMutation());
 
         PUBMED_ID.setValue(row, pubMedId);
+
         return (EvidenceEdge) Edge.createEdge(network, edge);
     }
 

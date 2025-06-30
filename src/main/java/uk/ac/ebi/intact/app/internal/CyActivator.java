@@ -15,9 +15,11 @@ import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.about.factories.AboutTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.details.factories.ShowDetailPanelTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.feedback.factories.FeedbackTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIAdvancedSearchTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.NoGUIQueryTask;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.ExactQueryTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.query.factories.FuzzySearchTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.query.factories.AdvancedSearchTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.settings.SettingsTask;
 import uk.ac.ebi.intact.app.internal.tasks.version.factories.VersionTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.extract.ExtractNetworkViewTaskFactory;
@@ -186,6 +188,22 @@ public class CyActivator extends AbstractCyActivator {
         {
             Properties propsQueryCommand = new Properties();
             propsQueryCommand.setProperty(COMMAND_NAMESPACE, "intact");
+            propsQueryCommand.setProperty(COMMAND, "advancedQuery");
+            propsQueryCommand.setProperty(COMMAND_DESCRIPTION, "Search for interaction using MIQL (advanced search from IntAct)");
+            propsQueryCommand.setProperty(COMMAND_SUPPORTS_JSON, "true");
+            AbstractTaskFactory intactCommandQueryFactory = new AbstractTaskFactory() {
+                @Override
+                public TaskIterator createTaskIterator() {
+                    return new TaskIterator(new NoGUIAdvancedSearchTask(manager));
+                }
+            };
+
+            registerService(bc, intactCommandQueryFactory, TaskFactory.class, propsQueryCommand);
+        }
+
+        {
+            Properties propsQueryCommand = new Properties();
+            propsQueryCommand.setProperty(COMMAND_NAMESPACE, "intact");
             propsQueryCommand.setProperty(COMMAND, "query");
             propsQueryCommand.setProperty(COMMAND_DESCRIPTION, "Search for interactors ids or names and build network around them");
             propsQueryCommand.setProperty(COMMAND_SUPPORTS_JSON, "false");
@@ -221,6 +239,11 @@ public class CyActivator extends AbstractCyActivator {
             FuzzySearchTaskFactory intactSearch = new FuzzySearchTaskFactory(manager);
             Properties propsSearch = new Properties();
             registerService(bc, intactSearch, NetworkSearchTaskFactory.class, propsSearch);
+        }
+        {
+            AdvancedSearchTaskFactory advancedSearchTaskFactory = new AdvancedSearchTaskFactory(manager);
+            Properties propsSearch = new Properties();
+            registerService(bc, advancedSearchTaskFactory, NetworkSearchTaskFactory.class, propsSearch);
         }
 
         manager.utils.info("Intact App initialized");

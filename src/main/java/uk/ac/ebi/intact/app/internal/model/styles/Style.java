@@ -1,6 +1,8 @@
 package uk.ac.ebi.intact.app.internal.model.styles;
 
+import lombok.Getter;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
@@ -14,18 +16,22 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
+
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.util.Map;
 
 public abstract class Style {
     public static final Color defaultNodeColor = new Color(157, 177, 128);
 
+    @Getter
     protected VisualStyle style;
     protected Manager manager;
     protected CyEventHelper eventHelper;
@@ -101,11 +107,13 @@ public abstract class Style {
         setEdgeSourceShape();
         setEdgeTargetShape();
         setEdgeArrowColor();
+        setEdgeLabel();
     }
 
     @SuppressWarnings("unchecked")
     protected void loadStyle() {
         setNodeLabel();
+        setEdgeLabel();
         nodeTypeToShape = (DiscreteMapping<String, NodeShape>) style.getVisualMappingFunction(BasicVisualLexicon.NODE_SHAPE);
         taxIdToNodeColor = (DiscreteMapping<String, Paint>) style.getVisualMappingFunction(BasicVisualLexicon.NODE_FILL_COLOR);
     }
@@ -145,7 +153,6 @@ public abstract class Style {
 
     protected void setNodeBorderPaintStyle() {
     }
-
 
     protected void setNodeBorderWidth() {
         style.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 0d);
@@ -249,13 +256,27 @@ public abstract class Style {
 
     public abstract NetworkView.Type getStyleViewType();
 
-    public VisualStyle getStyle() {
-        return style;
-    }
-
     @Override
     public String toString() {
         return getStyleName();
     }
-}
 
+    protected void setEdgeLabel() {
+        DiscreteMapping<Boolean, String> edgeLabelMapping =
+                (DiscreteMapping<Boolean, String>) discreteFactory.createVisualMappingFunction(
+                        EdgeFields.IS_NEGATIVE_INTERACTION.toString(),
+                        Boolean.class,
+                        BasicVisualLexicon.EDGE_LABEL
+                );
+
+        edgeLabelMapping.putMapValue(false, "");
+        edgeLabelMapping.putMapValue(true, "X");
+
+        VisualLexicon lex = manager.utils.getService(RenderingEngineManager.class).getDefaultVisualLexicon();
+        VisualProperty labelPosition = lex.lookup(CyEdge.class, "EDGE_LABEL_AUTOROTATE");
+        style.addVisualMappingFunction(edgeLabelMapping);
+        style.setDefaultValue(BasicVisualLexicon.EDGE_LABEL_COLOR, Color.RED);
+        style.setDefaultValue(BasicVisualLexicon.EDGE_LABEL_FONT_SIZE, 30);
+        style.setDefaultValue(labelPosition, true);
+    }
+}

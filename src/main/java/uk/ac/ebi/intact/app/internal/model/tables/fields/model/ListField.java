@@ -18,10 +18,14 @@ public class ListField<E> extends Field<List<E>> {
     public final Class<E> elementsType;
 
     public ListField(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, Class<E> elementsType) {
-        this(fields, initializers, namespace, name, elementsType, true);
+        this(fields, initializers, namespace, name, elementsType, true, null);
     }
 
-    public ListField(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, Class<E> elementsType, boolean shared) {
+    public ListField(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, Class<E> elementsType, String jsonKey) {
+        this(fields, initializers, namespace, name, elementsType, true, jsonKey);
+    }
+
+    public ListField(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, Class<E> elementsType, boolean shared, String jsonKey) {
         super(fields, initializers, namespace, name, null, null, shared);
         this.elementsType = elementsType;
     }

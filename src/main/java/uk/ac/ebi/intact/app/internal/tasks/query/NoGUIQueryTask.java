@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.app.internal.tasks.query;
 
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
@@ -60,6 +61,10 @@ public class NoGUIQueryTask extends AbstractTask {
             description = "Name of the network to build", longDescription = "Name of the network to build.<br> If not given, will be IntAct network")
     public String netName;
 
+    @Tunable(context = "nogui", gravity = 8,
+            description = "If false, the network is built when the query ends. If true, the task is performed in the background. Default: false.")
+    public Boolean asynchronous = false;
+
     private final Manager manager;
     private Network network;
 
@@ -105,6 +110,11 @@ public class NoGUIQueryTask extends AbstractTask {
 
     private void buildNetwork() {
         ImportNetworkTaskFactory factory = new ImportNetworkTaskFactory(network, interactorAcs, includeSeedPartners, applyLayout, netName);
-        insertTasksAfterCurrentTask(factory.createTaskIterator());
+        TaskIterator taskIterator = factory.createTaskIterator();
+        if (!asynchronous) {
+            insertTasksAfterCurrentTask(taskIterator);
+        } else {
+            manager.utils.execute(taskIterator);
+        }
     }
 }

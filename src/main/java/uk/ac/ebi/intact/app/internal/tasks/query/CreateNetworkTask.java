@@ -47,7 +47,7 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
 
         postData.put("interactorAcs", intactAcs);
         System.out.println(intactAcs);
-        postData.put("neighboursRequired", includeNeighbours);
+        postData.put("includeNeighbours", includeNeighbours);
 
         if (cancelled) return;
         monitor.setTitle("Load IntAct Network");
@@ -57,14 +57,18 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         begin = Instant.now();
         manager.utils.registerService(this, TaskObserver.class, new Properties());
 
-        JsonNode results = HttpUtils.postJSON(Manager.INTACT_GRAPH_WS + "network/data", postData, manager, () -> cancelled);
+        JsonNode results = HttpUtils.postJSON(Manager.INTACT_GRAPH_WS + "network/fromInteractors", postData, manager, () -> cancelled);
         System.out.println(Duration.between(begin, Instant.now()).toSeconds());
         // This may change...
         monitor.setTitle("Parsing result data");
         monitor.showMessage(Level.INFO, "Parsing data");
         monitor.setProgress(0.4);
         if (cancelled) return;
-        CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, results, netName, () -> cancelled);
+        CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(
+                network,
+                results,
+                netName,
+                () -> cancelled);
 
         if (cyNetwork == null) {
             monitor.showMessage(Level.ERROR, "IntAct returned no results");

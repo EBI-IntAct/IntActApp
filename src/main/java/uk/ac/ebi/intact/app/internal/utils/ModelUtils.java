@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.app.internal.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cytoscape.model.*;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
@@ -70,7 +71,10 @@ public class ModelUtils {
         return "IntAct Network - " + DateFormat.getDateInstance(DateFormat.SHORT).format(date) + " - " + DateFormat.getTimeInstance(DateFormat.SHORT).format(date);
     }
 
-    public static List<CyNode> loadJSON(Manager manager, Network network, CyNetwork cyNetwork, Map<String, CyNode> idToNode, Map<String, String> idToName, List<CyEdge> newEdges, JsonNode json, Supplier<Boolean> isCancelled) {
+    public static List<CyNode> loadJSON(
+            Manager manager, Network network, CyNetwork cyNetwork,
+            Map<String, CyNode> idToNode, Map<String, String> idToName,
+            List<CyEdge> newEdges, JsonNode json, Supplier<Boolean> isCancelled) {
         if (json == null) {
             manager.utils.error("IntAct servers did not respond");
             return new ArrayList<>();
@@ -221,9 +225,12 @@ public class ModelUtils {
         return valueNode.asText();
     }
 
-
     private static CyNode createNode(CyNetwork cyNetwork, JsonNode nodeJSON, Map<String, CyNode> idToNode, Map<String, String> idToName, CyTable xRefsTable) {
         String intactId = nodeJSON.get("id").textValue();
+        List<String> orthologGroups = new ArrayList<>();
+
+        nodeJSON.get("ortholog_group").elements().forEachRemaining(orthologGroup ->
+                orthologGroups.add(orthologGroup.asText()));
 
         if (idToNode.containsKey(intactId)) return idToNode.get(intactId);
 
@@ -245,11 +252,11 @@ public class ModelUtils {
             nodeRow.set(entry.getKey(), getJsonNodeValue(entry.getValue()));
         });
 
+        NodeFields.ORTHOLOG_GROUP_ID.setValue(nodeRow, orthologGroups);
         idToNode.put(intactId, newNode);
         idToName.put(intactId, NodeFields.NAME.getValue(nodeRow));
         return newNode;
     }
-
 
     private static void createEdge(CyNetwork network, JsonNode edgeJSON, Map<String, CyNode> idToNode, Map<String, String> idToName, List<CyEdge> newEdges, CyTable featuresTable) {
         JsonNode source = edgeJSON.get("source");

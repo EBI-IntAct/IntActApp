@@ -12,6 +12,7 @@ import java.awt.event.*;
 public class SearchQueryComponent extends JTextField {
     private static final long serialVersionUID = 1L;
     private static final String DEF_SEARCH_TEXT = "← Change query type     | Enter one term per line |    Options →";
+    private static final String ADV_SEARCH_TEXT = "← Change query type     |     Enter query ";
     final int vgap = 1;
     final int hgap = 5;
     final String tooltip;
@@ -19,11 +20,14 @@ public class SearchQueryComponent extends JTextField {
     private JTextArea queryTextArea = null;
     private JScrollPane queryScroll = null;
     private JPopupMenu popup = null;
+    final String[] textFromQueryBuilder = {null};
+    final boolean isAdvancedSearch;
 
-    public SearchQueryComponent() {
+    public SearchQueryComponent(boolean advancedSearch) {
         super();
         init();
         tooltip = "Press " + (LookAndFeelUtil.isMac() ? "Command" : "Ctrl") + "+ENTER to run the search";
+        isAdvancedSearch = advancedSearch;
     }
 
     void init() {
@@ -42,7 +46,7 @@ public class SearchQueryComponent extends JTextField {
 
         // Since we provide our own search component, it should let Cytoscape know
         // when it has been updated by the user, so Cytoscape can give a better
-        // feedback to the user of whether or not the whole search component is ready
+        // feedback to the user of whether the whole search component is ready
         // (e.g. Cytoscape may enable or disable the search button)
         getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -81,12 +85,15 @@ public class SearchQueryComponent extends JTextField {
             int y = (metrics.getHeight() / 2) + metrics.getAscent() + vgap;
             // Draw
             g2.setColor(msgColor);
-            g2.drawString(DEF_SEARCH_TEXT, hgap, y);
+            g2.drawString(isAdvancedSearch ? ADV_SEARCH_TEXT : DEF_SEARCH_TEXT, hgap, y);
             g2.dispose();
         }
     }
 
     public String getQueryText() {
+        if (textFromQueryBuilder[0] != null) {
+            return textFromQueryBuilder[0];
+        }
         if (queryTextArea == null) return "";
         return queryTextArea.getText();
     }
@@ -108,11 +115,40 @@ public class SearchQueryComponent extends JTextField {
         queryScroll.setPreferredSize(new Dimension(getSize().width, 200));
         popup.setPreferredSize(queryScroll.getPreferredSize());
 
+        if (isAdvancedSearch) {
+            JButton queryBuilderButton = getBuildQueryButton();
+            popup.add(queryBuilderButton, BorderLayout.EAST);
+        }
+
         popup.show(this, 0, 0);
         popup.requestFocus();
         queryTextArea.requestFocusInWindow();
         queryTextArea.setToolTipText(tooltip);
+    }
 
+    private JButton getBuildQueryButton() {
+        JButton queryBuilder = new JButton("Query builder");
+        queryBuilder.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
+                component.getFrame(queryTextArea.getText());
+
+                component.getBuildQueryButton().addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        String builtQuery = component.getQueryTextField().getText();
+                        textFromQueryBuilder[0] = builtQuery;
+                        queryTextArea.setText(builtQuery);
+                        queryTextArea.revalidate();
+                        queryTextArea.repaint();
+                        updateQueryTextField();
+                    }
+                });
+            }
+        });
+
+        return queryBuilder;
     }
 
     private void updateQueryTextField() {
@@ -144,7 +180,6 @@ public class SearchQueryComponent extends JTextField {
         queryTextArea.getActionMap().put(ENTER_ACTION_KEY, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // System.out.println("\n\nENTER");
                 SearchQueryComponent.this.firePropertyChange(NetworkSearchTaskFactory.SEARCH_REQUESTED_PROPERTY, null, null);
                 popup.setVisible(false);
             }

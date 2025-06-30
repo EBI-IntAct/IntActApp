@@ -15,7 +15,7 @@ import static org.cytoscape.model.CyTableFactory.InitialTableSize.MEDIUM;
 import static org.cytoscape.model.CyTableFactory.InitialTableSize.SMALL;
 
 public enum Table {
-    NODE(NodeFields.SUID, NodeFields.fields, NodeFields.initializers, true, true, MEDIUM, "identifiers", "label"),
+    NODE(NodeFields.SUID, NodeFields.fields, NodeFields.initializers, true, true, MEDIUM, "identifiers", "label", "ortholog_group"),
     EDGE(EdgeFields.SUID, EdgeFields.fields, EdgeFields.initializers, true, true, MEDIUM, "source", "target"),
     NETWORK(NetworkFields.SUID, NetworkFields.fields, NetworkFields.initializers, true, true, SMALL),
     FEATURE(FeatureFields.AC, FeatureFields.fields, FeatureFields.initializers, true, true, MEDIUM),
@@ -29,7 +29,6 @@ public enum Table {
     public final List<FieldInitializer> initializers;
     public final List<Field<?>> fields;
     public final Set<String> keysToIgnore = new HashSet<>();
-
 
     Table(Field<?> primaryKey, List<Field<?>> fields, List<FieldInitializer> initializers, boolean isPublic, boolean isMutable, CyTableFactory.InitialTableSize initialSize, String... keysToIgnore) {
         this.primaryKey = primaryKey;
