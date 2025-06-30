@@ -4,12 +4,16 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.Getter;
+
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
@@ -19,6 +23,7 @@ import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.model.filters.edge.*;
+import uk.ac.ebi.intact.app.internal.model.filters.node.OrthologyGroupingDatabaseFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeSpeciesFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
@@ -34,6 +39,7 @@ public class NetworkView implements FilterUpdatedListener {
     private transient Thread thread;
     public final transient Manager manager;
     private final transient Network network;
+    @Getter
     public final transient CyNetworkView cyView;
     public final transient Set<Node> visibleNodes = new HashSet<>();
     public final transient Set<Edge> visibleEdges = new HashSet<>();
@@ -103,6 +109,8 @@ public class NetworkView implements FilterUpdatedListener {
 
         filters.add(new OrphanNodeFilter(this)); // Must be after edge filters
         filters.add(new OrphanEdgeFilter(this));
+
+        filters.add(new OrthologyGroupingDatabaseFilter(this));
     }
 
     public void resetFilters() {
@@ -120,7 +128,6 @@ public class NetworkView implements FilterUpdatedListener {
             View<CyEdge> edgeView = cyView.getEdgeView(cyEdge);
             if (edgeView == null) return;
             edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
-
         });
         filter();
     }
@@ -247,7 +254,8 @@ public class NetworkView implements FilterUpdatedListener {
     public enum Type {
         SUMMARY("SUMMARY", "IntAct - Summary"),
         EVIDENCE("EVIDENCE", "IntAct - Evidence"),
-        MUTATION("MUTATION", "IntAct - Mutation");
+        MUTATION("MUTATION", "IntAct - Mutation"),
+        ORTHOLOGY("ORTHOLOGY", "IntAct - Orthology"),;
 
         private final String name;
         public final String styleName;

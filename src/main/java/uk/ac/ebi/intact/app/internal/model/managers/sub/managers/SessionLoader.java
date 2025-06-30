@@ -10,10 +10,7 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.styles.EvidenceStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.MutationStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.Style;
-import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.*;
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.FeatureFields;
@@ -50,7 +47,7 @@ public class SessionLoader implements SessionLoadedListener {
                 if (ModelUtils.ifHaveIntactNS(cyNetwork)) {
                     updateSUIDList(cyNetwork.getDefaultEdgeTable(), EdgeFields.SUMMARIZED_EDGES_SUID, CyEdge.class, loadedSession);
                     Network network = new Network(manager);
-                    manager.data.addNetwork(network, cyNetwork);
+                    manager.data.addNetwork(network, cyNetwork, false);
                     network.completeMissingNodeColorsFromTables(true, () -> manager.data.networkViewMap.values().forEach(NetworkView::accordStyleToType));
                 }
             }
@@ -87,6 +84,7 @@ public class SessionLoader implements SessionLoadedListener {
                     manager.style.vmm.addVisualStyle(styleToLoad);
                     switch (type) {
                         case SUMMARY:
+                        case ORTHOLOGY:
                             manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager, styleToLoad));
                             break;
                         case EVIDENCE:
@@ -102,6 +100,7 @@ public class SessionLoader implements SessionLoadedListener {
             if (!styleFound) {
                 switch (type) {
                     case SUMMARY:
+                    case ORTHOLOGY:
                         manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager));
                         break;
                     case EVIDENCE:

@@ -90,7 +90,7 @@ public class CreateNetworkTask extends AbstractTask implements TaskObserver {
         monitor.setTitle("Create summary edges");
         monitor.showMessage(Level.INFO, "Create summary edges");
         monitor.setProgress(0.6);
-        manager.data.addNetwork(network, cyNetwork);
+        manager.data.addNetwork(network, cyNetwork, false);
         manager.data.fireIntactNetworkCreated(network);
         System.out.println(Duration.between(begin, Instant.now()).toSeconds());
 

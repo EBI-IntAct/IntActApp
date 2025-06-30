@@ -22,7 +22,7 @@ public abstract class Edge implements Element {
     public final CyRow edgeRow;
     public final Node source;
     public final Node target;
-    public final double miScore;
+    public final Double miScore;
     public final List<String> sourceFeatureAcs;
     public final List<String> targetFeatureAcs;
     public final boolean isNegative;

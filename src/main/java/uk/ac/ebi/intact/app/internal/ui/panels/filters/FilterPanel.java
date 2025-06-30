@@ -3,10 +3,7 @@ package uk.ac.ebi.intact.app.internal.ui.panels.filters;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 import uk.ac.ebi.intact.app.internal.model.events.FilterUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.FilterUpdatedListener;
-import uk.ac.ebi.intact.app.internal.model.filters.BooleanFilter;
-import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
-import uk.ac.ebi.intact.app.internal.model.filters.ContinuousFilter;
-import uk.ac.ebi.intact.app.internal.model.filters.Filter;
+import uk.ac.ebi.intact.app.internal.model.filters.*;
 import uk.ac.ebi.intact.app.internal.model.filters.edge.EdgePositiveFilter;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.ui.components.buttons.HelpButton;
@@ -66,6 +63,8 @@ public abstract class FilterPanel<F extends Filter<? extends Element>> extends C
                 return new ToggleFilterPanel<>(manager, (EdgePositiveFilter) filter);
             }
             return new BooleanFilterPanel<>(manager, (BooleanFilter<T>) filter);
+        } else if (filter instanceof RadioButtonFilter){
+            return new RadioButtonFilterPanel<>(manager, (RadioButtonFilter<T>) filter);
         }
         return null;
     }

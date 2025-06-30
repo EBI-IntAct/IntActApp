@@ -37,6 +37,7 @@ public class EdgeLegendPanel extends AbstractLegendPanel {
         switch (newType) {
             default:
             case SUMMARY:
+            case ORTHOLOGY:
                 newPanel = summaryEdgeLegendPanel;
                 break;
             case EVIDENCE:

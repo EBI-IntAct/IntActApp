@@ -40,7 +40,6 @@ public class AdvancedSearchTaskFactory extends AbstractNetworkSearchTaskFactory 
     public AdvancedSearchTaskFactory(Manager manager) {
         super(INTACT_ID, INTACT_NAME, INTACT_DESC, ICON, INTACT_URL);
         this.manager = manager;
-        this.network = new Network(manager);
     }
 
     public boolean isReady() {

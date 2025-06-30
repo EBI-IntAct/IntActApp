@@ -30,7 +30,7 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
     private final NetworkView.Type networkViewType;
     private final boolean applyLayout;
     private final Network network;
-    private String netName;
+    private String netName = null;
 
     private AdvancedSearchTask(Manager manager, String query, QueryFilters queryFilters, NetworkView.Type networkViewType, boolean applyLayout) {
         this.query = query;
@@ -71,8 +71,6 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         monitor.setTitle("Create summary edges");
         monitor.showMessage(TaskMonitor.Level.INFO, "Create summary edges");
         monitor.setProgress(0.6);
-        manager.data.addNetwork(network, cyNetwork);
-        manager.data.fireIntactNetworkCreated(network);
 
         if (cancelled) {
             destroyNetwork(manager, network);
@@ -82,7 +80,6 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         monitor.setTitle("Register network");
         monitor.showMessage(TaskMonitor.Level.INFO, "Register network");
         monitor.setProgress(0.7);
-        manager.data.setCurrentNetwork(cyNetwork);
         if (cancelled) {
             manager.utils.getService(CyNetworkManager.class).destroyNetwork(cyNetwork);
             destroyNetwork(manager, network);
@@ -104,7 +101,6 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
             TaskIterator taskIterator = getLayoutTask(monitor, manager, networkView);
             insertTasksAfterCurrentTask(taskIterator);
         }
-
         manager.utils.showResultsPanel();
     }
 
@@ -153,10 +149,10 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
 
         if (cancelled) return;
 
-        CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, netName == null ? query : netName, () -> cancelled);
-        network.setNetwork(cyNetwork);
+        CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, netName != null ? netName : query, () -> cancelled);
+        manager.data.addNetwork(network, cyNetwork, true);
+        manager.data.fireIntactNetworkCreated(network);
     }
-
 
     private void destroyNetwork(Manager manager, Network network) {
         CyNetwork cyNetwork = network.getCyNetwork();
@@ -184,24 +180,5 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
     @Override
     public void allFinished(FinishStatus finishStatus) {
 
-    }
-
-    public static JsonNode mergeJsonNodes(ObjectMapper objectMapper, List<JsonNode> jsonNodes) {
-        ObjectNode merged = objectMapper.createObjectNode();
-        ArrayNode mergedNodes = objectMapper.createArrayNode();
-        ArrayNode mergedEdges = objectMapper.createArrayNode();
-
-        for (JsonNode jsonNode : jsonNodes) {
-            if (jsonNode.has("nodes") && jsonNode.get("nodes").isArray()) {
-                mergedNodes.addAll((ArrayNode) jsonNode.get("nodes"));
-            }
-            if (jsonNode.has("edges") && jsonNode.get("edges").isArray()) {
-                mergedEdges.addAll((ArrayNode) jsonNode.get("edges"));
-            }
-        }
-
-        merged.set("nodes", mergedNodes);
-        merged.set("edges", mergedEdges);
-        return merged;
     }
 }
