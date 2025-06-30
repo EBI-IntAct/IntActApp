@@ -12,6 +12,7 @@ import java.awt.event.*;
 public class SearchQueryComponent extends JTextField {
     private static final long serialVersionUID = 1L;
     private static final String DEF_SEARCH_TEXT = "← Change query type     | Enter one term per line |    Options →";
+    private static final String ADV_SEARCH_TEXT = "← Change query type     |     Enter query ";
     final int vgap = 1;
     final int hgap = 5;
     final String tooltip;
@@ -84,7 +85,7 @@ public class SearchQueryComponent extends JTextField {
             int y = (metrics.getHeight() / 2) + metrics.getAscent() + vgap;
             // Draw
             g2.setColor(msgColor);
-            g2.drawString(DEF_SEARCH_TEXT, hgap, y);
+            g2.drawString(isAdvancedSearch ? ADV_SEARCH_TEXT : DEF_SEARCH_TEXT, hgap, y);
             g2.dispose();
         }
     }

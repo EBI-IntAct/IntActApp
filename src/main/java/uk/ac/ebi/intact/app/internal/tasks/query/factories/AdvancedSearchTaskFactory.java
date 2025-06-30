@@ -56,9 +56,4 @@ public class AdvancedSearchTaskFactory extends AbstractNetworkSearchTaskFactory 
         if (queryComponent == null) queryComponent = new SearchQueryComponent(true);
         return queryComponent;
     }
-
-    @Override
-    public JComponent getOptionsComponent() {
-        return new OptionsPanel(manager, OptionManager.Scope.SEARCH);
-    }
 }
