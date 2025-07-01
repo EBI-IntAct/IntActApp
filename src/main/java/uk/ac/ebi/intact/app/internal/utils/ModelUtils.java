@@ -2,6 +2,7 @@ package uk.ac.ebi.intact.app.internal.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.cytoscape.model.*;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
@@ -181,15 +182,16 @@ public class ModelUtils {
                 JsonNode value = entry.getValue();
                 if (!value.isNull()) {
                     if (value.isArray()) {
-                        columnToType.put(key, getJsonNodeValueClass(value.get(0)));
-                        listKeys.add(key);
+                        if (!value.isEmpty()) {
+                            columnToType.put(key, getArrayNodeValueClass((ArrayNode) value));
+                            listKeys.add(key);
+                        }
                     } else {
                         columnToType.put(key, getJsonNodeValueClass(value));
                     }
                 }
             });
         }
-
         List<String> jsonKeysSorted = new ArrayList<>(columnToType.keySet());
         Collections.sort(jsonKeysSorted);
         for (String jsonKey : jsonKeysSorted) {
@@ -202,8 +204,16 @@ public class ModelUtils {
         }
     }
 
+    private static Class<?> getArrayNodeValueClass(ArrayNode arrayNode) {
+        for (JsonNode value : arrayNode) {
+            if (!value.isNull()) {
+                return getJsonNodeValueClass(value);
+            }
+        }
+        return String.class;
+    }
+
     private static Class<?> getJsonNodeValueClass(JsonNode valueNode) {
-        if (valueNode == null || valueNode.isNull()) return null;
         if (valueNode.isBoolean()) return Boolean.class;
         else if (valueNode.isDouble()) return Double.class;
         else if (valueNode.isLong()) return Long.class;
