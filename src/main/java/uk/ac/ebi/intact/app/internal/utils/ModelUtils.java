@@ -203,6 +203,7 @@ public class ModelUtils {
     }
 
     private static Class<?> getJsonNodeValueClass(JsonNode valueNode) {
+        if (valueNode == null || valueNode.isNull()) return null;
         if (valueNode.isBoolean()) return Boolean.class;
         else if (valueNode.isDouble()) return Double.class;
         else if (valueNode.isLong()) return Long.class;
