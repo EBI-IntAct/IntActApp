@@ -20,7 +20,7 @@ public class HelpButton extends IButton {
     public HelpButton(Manager manager,  String helpText) {
         super(helpIcon);
         this.helpText = "<html>" + helpText + "</html>";
-        this.setBorder(new EmptyBorder(0, 5, 0, 0));
+        this.setBorder(new EmptyBorder(0, 5, 0, 5));
         message = new HTMLLabel(this.helpText);
         message.setSize(new Dimension(300, 10));
         message.setPreferredSize(new Dimension(300, message.getPreferredSize().height));

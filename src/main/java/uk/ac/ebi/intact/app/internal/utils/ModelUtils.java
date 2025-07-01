@@ -191,7 +191,6 @@ public class ModelUtils {
                 }
             });
         }
-
         List<String> jsonKeysSorted = new ArrayList<>(columnToType.keySet());
         Collections.sort(jsonKeysSorted);
         for (String jsonKey : jsonKeysSorted) {

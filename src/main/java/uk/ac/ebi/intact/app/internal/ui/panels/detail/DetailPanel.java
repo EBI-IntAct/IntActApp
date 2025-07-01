@@ -28,6 +28,7 @@ import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactor
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.MutationViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.ui.components.buttons.DocumentedButton;
+import uk.ac.ebi.intact.app.internal.ui.components.buttons.HelpButton;
 import uk.ac.ebi.intact.app.internal.ui.components.buttons.ToggleSwitch;
 import uk.ac.ebi.intact.app.internal.ui.components.panels.VerticalPanel;
 import uk.ac.ebi.intact.app.internal.ui.panels.detail.sub.panels.edge.EdgeDetailPanel;
@@ -165,7 +166,7 @@ public class DetailPanel extends JPanel
     private JPanel getViewParamsPanel() {
         JPanel viewParamsPanel = new JPanel();
         viewParamsPanel.setLayout(new FlowLayout(FlowLayout.LEFT)); // Align components left
-        viewParamsPanel.setBorder(BorderFactory.createTitledBorder("Parameters"));
+//        viewParamsPanel.setBorder(BorderFactory.createTitledBorder("Parameters"));
 
         orthologyButton.setActivated(false);
         orthologyButton.addChangeListener(e -> {
@@ -180,6 +181,8 @@ public class DetailPanel extends JPanel
 
         viewParamsPanel.add(orthologyButton);
         viewParamsPanel.add(new JLabel("Orthology"));
+        HelpButton helpButton = new HelpButton(manager, "Create ortholog groups of nodes to compare interactions between species.");
+        viewParamsPanel.add(helpButton);
 
         return viewParamsPanel;
     }

@@ -2,6 +2,7 @@ package uk.ac.ebi.intact.app.internal.ui.components.query;
 
 import lombok.Getter;
 
+import lombok.Setter;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.*;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RulePanel;
@@ -39,6 +40,9 @@ public class AdvancedSearchQueryComponent {
 
     private final QueryOperators queryOperators = new QueryOperators(this, panels);
     private final MIQLParser miqlParser = new MIQLParser();
+
+    @Setter
+    Runnable onBuildQuery;
 
     private final Logger logger = Logger.getLogger(AdvancedSearchQueryComponent.class);
 
@@ -84,7 +88,9 @@ public class AdvancedSearchQueryComponent {
                 submitAction.actionPerformed(new ActionEvent(queryTextField, ActionEvent.ACTION_PERFORMED, null));
             }
 
+            if (onBuildQuery != null) onBuildQuery.run();
             frame.dispose();
+
         });
 
 
@@ -249,4 +255,5 @@ public class AdvancedSearchQueryComponent {
             }
         }
     }
+
 }
