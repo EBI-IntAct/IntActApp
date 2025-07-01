@@ -91,9 +91,6 @@ public class SearchQueryComponent extends JTextField {
     }
 
     public String getQueryText() {
-        if (textFromQueryBuilder[0] != null) {
-            return textFromQueryBuilder[0];
-        }
         if (queryTextArea == null) return "";
         return queryTextArea.getText();
     }
@@ -133,17 +130,11 @@ public class SearchQueryComponent extends JTextField {
             public void actionPerformed(ActionEvent e) {
                 AdvancedSearchQueryComponent component = new AdvancedSearchQueryComponent();
                 component.getFrame(queryTextArea.getText());
-
-                component.getBuildQueryButton().addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        String builtQuery = component.getQueryTextField().getText();
-                        textFromQueryBuilder[0] = builtQuery;
-                        queryTextArea.setText(builtQuery);
-                        queryTextArea.revalidate();
-                        queryTextArea.repaint();
-                        updateQueryTextField();
-                    }
+                component.setOnBuildQuery(() -> {
+                    String builtQuery = component.getFullQuery();
+                    queryTextArea.setText(builtQuery);
+                    updateQueryTextField();
+                    fireQueryChanged();
                 });
             }
         });

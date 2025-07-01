@@ -10,6 +10,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.*;
 
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
@@ -62,6 +63,8 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         CyNetwork cyNetwork = network.getCyNetwork();
 
         monitor.setTitle("Create summary edges");
+        manager.data.addNetwork(network, cyNetwork);
+        manager.data.fireIntactNetworkCreated(network);
         monitor.showMessage(TaskMonitor.Level.INFO, "Create summary edges");
         monitor.setProgress(0.6);
 
@@ -73,6 +76,7 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         monitor.setTitle("Register network");
         monitor.showMessage(TaskMonitor.Level.INFO, "Register network");
         monitor.setProgress(0.7);
+        manager.data.setCurrentNetwork(cyNetwork);
         if (cancelled) {
             manager.utils.getService(CyNetworkManager.class).destroyNetwork(cyNetwork);
             destroyNetwork(manager, network);
@@ -104,7 +108,6 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         monitor.setProgress(0);
 
         ObjectMapper mapper = new ObjectMapper();
-
 
         Map<String, JsonNode> nodes = new HashMap<>();
         ArrayNode edgesArray = mapper.createArrayNode();
@@ -143,7 +146,7 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         if (cancelled) return;
 
         CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, netName != null ? netName : query, () -> cancelled);
-        manager.data.addNetwork(network, cyNetwork, true);
+        manager.data.addNetwork(network, cyNetwork);
         manager.data.fireIntactNetworkCreated(network);
     }
 
