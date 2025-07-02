@@ -12,13 +12,22 @@ public abstract class AbstractSearchTask extends AbstractTask {
             description = "Filters interactions based on interactor species (comma separated)")
     public String interactorSpeciesFilter;
 
-    @Tunable(context = "nogui", exampleStringValue = "association,proximity",
-            description = "Filters interactions based on interaction types (comma separated)")
-    public String interactionTypesFilter;
-
     @Tunable(context = "nogui", exampleStringValue = "In vitro,Homo sapiens",
             description = "Filters interactions based on interaction host organism (comma separated)")
     public String interactionHostOrganismsFilter;
+
+    @Tunable(context = "nogui", exampleStringValue = "MI:0326,MI:0327",
+            description = "Filters interactions based on interactor types (MI ids, comma separated)")
+    public String interactorTypesFilter;
+
+    // TODO: uncomment when IntAct Portal uses MI terms for these filters
+//    @Tunable(context = "nogui", exampleStringValue = "MI:0915,MI:2364",
+//            description = "Filters interactions based on interaction types (MI ids, comma separated)")
+//    public String interactionTypesFilter;
+//
+//    @Tunable(context = "nogui", exampleStringValue = "MI:0007,MI:0397",
+//            description = "Filters interactions based on interaction detection method (MI ids, comma separated)")
+//    public String interactionDetectionMethodsFilter;
 
     @Tunable(context = "nogui", exampleStringValue = "false",
             description = "Filters to get only negative interactions")
@@ -51,7 +60,10 @@ public abstract class AbstractSearchTask extends AbstractTask {
     protected QueryFilters getQueryParams() {
         return QueryFilters.builder()
                 .interactorSpeciesFilter(paramToSet(interactorSpeciesFilter))
-                .interactionTypesFilter(paramToSet(interactionTypesFilter))
+                .interactorTypesFilter(paramToSet(interactorTypesFilter))
+                // TODO: uncomment when IntAct Portal uses MI terms for these filters
+//                .interactionTypesFilter(paramToSet(interactionTypesFilter))
+//                .interactionDetectionMethodsFilter(paramToSet(interactionDetectionMethodsFilter))
                 .interactionHostOrganismsFilter(paramToSet(interactionHostOrganismsFilter))
                 .negativeFilter(negativeFilter != null
                         ? QueryFilters.NegativeFilterStatus.valueOf(negativeFilter)

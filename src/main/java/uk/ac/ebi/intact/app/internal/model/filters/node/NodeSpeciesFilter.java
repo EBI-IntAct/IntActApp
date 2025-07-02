@@ -5,8 +5,7 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Map;
 
 public class NodeSpeciesFilter extends DiscreteFilter<Node> {
 
@@ -19,7 +18,11 @@ public class NodeSpeciesFilter extends DiscreteFilter<Node> {
     }
 
     @Override
-    public Collection<String> getPropertyValues(Node element) {
-        return List.of(element.species);
+    public Map<String, String> getPropertyValues(Node element) {
+        if (element.taxId != null && element.species != null) {
+            return Map.of(element.taxId, element.species);
+        } else {
+            return Map.of();
+        }
     }
 }

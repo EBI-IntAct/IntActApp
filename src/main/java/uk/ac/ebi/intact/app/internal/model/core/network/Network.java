@@ -132,10 +132,10 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
     public void hideEdgesAndCreateNetworkViewWithParams(CyNetworkView cyNetworkView, QueryFilters queryFilters, NetworkView.Type networkViewType) {
         HideTaskFactory hideTaskFactory = manager.utils.getService(HideTaskFactory.class);
-        if (networkViewType != NetworkView.Type.SUMMARY) {
-            manager.utils.execute(hideTaskFactory.createTaskIterator(cyNetworkView, null, getSummaryCyEdges()));
-        } else {
+        if (networkViewType == null || networkViewType == NetworkView.Type.SUMMARY) {
             manager.utils.execute(hideTaskFactory.createTaskIterator(cyNetworkView, null, getEvidenceCyEdges()));
+        } else {
+            manager.utils.execute(hideTaskFactory.createTaskIterator(cyNetworkView, null, getSummaryCyEdges()));
         }
         NetworkView networkView = manager.data.addNetworkView(cyNetworkView, queryFilters, networkViewType);
         networkView.accordStyleToType();

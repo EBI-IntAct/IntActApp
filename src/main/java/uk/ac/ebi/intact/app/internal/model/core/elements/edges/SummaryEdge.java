@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.app.internal.model.core.elements.edges;
 
+import lombok.Getter;
 import org.cytoscape.model.CyEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
@@ -10,7 +11,19 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class SummaryEdge extends Edge {
+    @Getter
     private int nbSummarizedEdges;
+
+    private boolean isNegative;
+    private boolean isSpokeExpansion;
+    @Getter
+    private Map<String, String> hostOrganisms;
+    @Getter
+    private Map<String, String> interactionDetectionMethods;
+    @Getter
+    private Map<String, String> participantDetectionMethods;
+    @Getter
+    private Map<String, String> types;
 
     SummaryEdge(Network network, CyEdge edge) {
         super(network, edge);
@@ -29,51 +42,13 @@ public class SummaryEdge extends Edge {
     }
 
     @Override
-    public boolean isNegative() {
-        return getSummarizedEdges().stream().anyMatch(EvidenceEdge::isNegative);
+    public Boolean isNegative() {
+        return isNegative;
     }
 
     @Override
     public boolean isSpokeExpansion() {
-        return getSummarizedEdges().stream().allMatch(EvidenceEdge::isSpokeExpansion);
-    }
-
-    @Override
-    public Collection<String> getHostOrganisms() {
-        return getSummarizedEdges().stream()
-                .map(edge -> edge.hostOrganism)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Collection<String> getInteractionDetectionMethods() {
-        return getSummarizedEdges().stream()
-                .map(edge -> edge.interactionDetectionMethod)
-                .filter(Objects::nonNull)
-                .map(interactionDetectionMethod -> interactionDetectionMethod.value)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Collection<String> getParticipantDetectionMethods() {
-        return getSummarizedEdges().stream()
-                .map(edge -> edge.participantDetectionMethod)
-                .filter(Objects::nonNull)
-                .map(participantDetectionMethod -> participantDetectionMethod.value)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Collection<String> getTypes() {
-        return getSummarizedEdges().stream()
-                .map(edge -> edge.type)
-                .filter(Objects::nonNull)
-                .map(type -> type.value)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        return isSpokeExpansion;
     }
 
     protected void buildFeatures(Map<Node, List<Feature>> features, List<String> featureAcs, Node participant, Set<Long> edgesSUID) {
@@ -114,14 +89,23 @@ public class SummaryEdge extends Edge {
                 }).count();
         EdgeFields.IS_NEGATIVE_INTERACTION.setValue(edgeRow, isNegative());
         EdgeFields.SUMMARY_NB_EDGES.setValue(edgeRow, nbSummarizedEdges);
+
+        isNegative = getSummarizedEdges().stream().anyMatch(EvidenceEdge::isNegative);
+        isSpokeExpansion = getSummarizedEdges().stream().allMatch(EvidenceEdge::isSpokeExpansion);
+        hostOrganisms = new HashMap<>();
+        interactionDetectionMethods = new HashMap<>();
+        participantDetectionMethods = new HashMap<>();
+        types = new HashMap<>();
+        for (EvidenceEdge evidenceEdge: getSummarizedEdges()) {
+            hostOrganisms.putAll(evidenceEdge.getHostOrganisms());
+            interactionDetectionMethods.putAll(evidenceEdge.getInteractionDetectionMethods());
+            participantDetectionMethods.putAll(evidenceEdge.getParticipantDetectionMethods());
+            types.putAll(evidenceEdge.getTypes());
+        }
     }
 
     public boolean isSummarizing(EvidenceEdge edge) {
         return EdgeFields.SUMMARIZED_EDGES_SUID.getValue(edgeRow).contains(edge.cyEdge.getSUID());
-    }
-
-    public int getNbSummarizedEdges() {
-        return nbSummarizedEdges;
     }
 
     @Override

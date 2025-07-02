@@ -5,7 +5,7 @@ import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 
-import java.util.Collection;
+import java.util.Map;
 
 public class EdgeHostOrganismFilter extends DiscreteFilter<Edge> {
 
@@ -18,7 +18,7 @@ public class EdgeHostOrganismFilter extends DiscreteFilter<Edge> {
     }
 
     @Override
-    public Collection<String> getPropertyValues(Edge element) {
+    public Map<String, String> getPropertyValues(Edge element) {
         return element.getHostOrganisms();
     }
 }

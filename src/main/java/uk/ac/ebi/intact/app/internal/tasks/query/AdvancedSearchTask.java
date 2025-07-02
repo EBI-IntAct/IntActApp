@@ -10,7 +10,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.*;
 
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
@@ -27,6 +26,7 @@ import static uk.ac.ebi.intact.app.internal.utils.ViewUtils.getLayoutTask;
 
 public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
     private final String query;
+    private final Manager manager;
     private final QueryFilters queryFilters;
     private final NetworkView.Type networkViewType;
     private final boolean applyLayout;
@@ -35,6 +35,7 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
 
     private AdvancedSearchTask(Manager manager, String query, QueryFilters queryFilters, NetworkView.Type networkViewType, boolean applyLayout) {
         this.query = query;
+        this.manager = manager;
         this.queryFilters = queryFilters;
         this.networkViewType = networkViewType;
         this.network = new Network(manager);

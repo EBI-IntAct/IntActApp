@@ -95,11 +95,11 @@ public class NetworkView implements FilterUpdatedListener {
     }
 
     private void setupFilters(QueryFilters queryFilters) {
-        filters.add(new NodeTypeFilter(this));
+        filters.add(new NodeTypeFilter(this, queryFilters));
         filters.add(new NodeSpeciesFilter(this, queryFilters));
 
         filters.add(new EdgeMIScoreFilter(this, queryFilters));
-        filters.add(new EdgeInteractionDetectionMethodFilter(this));
+        filters.add(new EdgeInteractionDetectionMethodFilter(this, queryFilters));
         filters.add(new EdgeParticipantDetectionMethodFilter(this));
         filters.add(new EdgeHostOrganismFilter(this, queryFilters));
         filters.add(new EdgeExpansionTypeFilter(this, queryFilters));
@@ -176,7 +176,7 @@ public class NetworkView implements FilterUpdatedListener {
     public Set<String> getPropertyValuesOfFilter(Class<? extends DiscreteFilter<?>> filterClass) {
         for (Filter<?> filter : filters) {
             if (filterClass == filter.getClass()) {
-                return ((DiscreteFilter<?>) filter).getProperties();
+                return ((DiscreteFilter<?>) filter).getPropertiesLabels();
             }
         }
         return null;

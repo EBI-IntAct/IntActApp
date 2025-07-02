@@ -4,7 +4,7 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.filters.DiscreteFilter;
 
-import java.util.Collection;
+import java.util.Map;
 
 public class EdgeParticipantDetectionMethodFilter extends DiscreteFilter<Edge> {
 
@@ -17,7 +17,7 @@ public class EdgeParticipantDetectionMethodFilter extends DiscreteFilter<Edge> {
     }
 
     @Override
-    public Collection<String> getPropertyValues(Edge element) {
+    public Map<String, String> getPropertyValues(Edge element) {
         return element.getParticipantDetectionMethods();
     }
 }

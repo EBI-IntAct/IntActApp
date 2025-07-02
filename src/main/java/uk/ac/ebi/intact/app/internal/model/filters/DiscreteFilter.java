@@ -12,11 +12,10 @@ import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import java.util.*;
 
 public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
-    protected final Map<String, Boolean> propertiesVisibility = new HashMap<>();
-
-    public DiscreteFilter(NetworkView view, Class<T> elementType, String name, String definition) {
-        this(view, elementType, name, definition, null);
-    }
+    private final Map<String, Boolean> propertiesVisibility = new HashMap<>();
+    private final Map<String, String> propertyLabels = new HashMap<>();
+    private final Set<String> propertiesSet = new HashSet<>();
+    private final Set<String> propertyLabelsSet = new HashSet<>();
 
     public DiscreteFilter(NetworkView view, Class<T> elementType, String name, String definition, Set<String> selectedProperties) {
         super(view, name, definition, elementType);
@@ -35,9 +34,13 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
 
         for (T element : elements) {
             if (element != null) {
-                Collection<String> properties = getProperties(element);
-                properties.forEach(property ->
-                        propertiesVisibility.put(property, selectedProperties == null || selectedProperties.contains(property)));
+                Map<String, String> properties = getProperties(element);
+                properties.forEach((propertyId, propertyValue) -> {
+                    propertiesVisibility.put(propertyId, selectedProperties == null || selectedProperties.contains(propertyId));
+                    propertyLabels.put(propertyId, propertyValue);
+                    propertiesSet.add(propertyId);
+                    propertyLabelsSet.add(propertyValue);
+                });
             }
         }
     }
@@ -45,17 +48,32 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
     @Override
     public boolean load(JsonNode json) {
         if (!super.load(json)) return false;
-        propertiesVisibility.clear();
-        json.get("propertiesVisibility").fields()
-                .forEachRemaining(entry -> propertiesVisibility.put(entry.getKey(), entry.getValue().booleanValue()));
+        // When loading sessions from older versions of IntAct App, these properties are not set, so we cannot load them.
+        if (json.has("propertiesVisibility")) {
+            propertiesVisibility.clear();
+            propertiesSet.clear();
+            json.get("propertiesVisibility").fields().forEachRemaining(entry -> {
+                propertiesVisibility.put(entry.getKey(), entry.getValue().booleanValue());
+                propertiesSet.add(entry.getKey());
+            });
+            propertiesSet.addAll(propertiesVisibility.keySet());
+        }
+        if (json.has("propertyLabels")) {
+            propertyLabels.clear();
+            propertyLabelsSet.clear();
+            json.get("propertyLabels").fields().forEachRemaining(entry -> {
+                propertyLabels.put(entry.getKey(), entry.getValue().textValue());
+                propertyLabelsSet.add(entry.getValue().textValue());
+            });
+        }
         return true;
     }
 
-    protected abstract Collection<String> getPropertyValues(T element);
+    protected abstract Map<String, String> getPropertyValues(T element);
 
-    public Collection<String> getProperties(T element) {
-        Collection<String> properties = getPropertyValues(element);
-        return properties != null ? properties : List.of();
+    public Map<String, String> getProperties(T element) {
+        Map<String, String> properties = getPropertyValues(element);
+        return properties != null ? properties : Map.of();
     }
 
     @Override
@@ -64,12 +82,12 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
             NetworkView view = getNetworkView();
             if (Node.class.isAssignableFrom(elementType)) {
                 view.visibleNodes.removeIf(node ->
-                        getProperties(elementType.cast(node)).stream().noneMatch(propertiesVisibility::get));
+                        getProperties(elementType.cast(node)).keySet().stream().noneMatch(propertiesVisibility::get));
             } else if (Edge.class.isAssignableFrom(elementType)) {
                 if (elementType == SummaryEdge.class && view.getType() != NetworkView.Type.SUMMARY) return;
                 if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.SUMMARY) return;
                 view.visibleEdges.removeIf(edge ->
-                        getProperties(elementType.cast(edge)).stream().noneMatch(propertiesVisibility::get));
+                        getProperties(elementType.cast(edge)).keySet().stream().noneMatch(propertiesVisibility::get));
             }
         }
     }
@@ -81,12 +99,12 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
     }
 
     public boolean getPropertyVisibility(String propertyValueToString) {
-        if (propertiesVisibility.containsKey(propertyValueToString)) {
-            return propertiesVisibility.get(propertyValueToString);
-        }
-        return false;
+        return propertiesVisibility.getOrDefault(propertyValueToString, false);
     }
 
+    public String getPropertyLabel(String propertyValueToString) {
+        return propertyLabels.getOrDefault(propertyValueToString, "");
+    }
 
     public void setPropertyVisibility(String propertyValueToString, boolean visible) {
         if (propertiesVisibility.containsKey(propertyValueToString) && propertiesVisibility.get(propertyValueToString) != visible) {
@@ -96,12 +114,12 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
         }
     }
 
-    public Map<String, Boolean> getPropertiesVisibility() {
-        return new HashMap<>(propertiesVisibility);
+    public Set<String> getProperties() {
+        return propertiesSet;
     }
 
-    public Set<String> getProperties() {
-        return new HashSet<>(propertiesVisibility.keySet());
+    public Set<String> getPropertiesLabels() {
+        return propertyLabelsSet;
     }
 
     @Override
