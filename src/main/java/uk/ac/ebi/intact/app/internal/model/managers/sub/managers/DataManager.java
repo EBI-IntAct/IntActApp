@@ -425,4 +425,8 @@ public class DataManager implements
         manager.utils.fireEvent(new ViewUpdatedEvent(manager, view));
     }
 
+    public void viewParameterChanged(NetworkView view){
+        manager.utils.fireEvent(new ViewUpdatedEvent(manager, view));
+    }
+
 }

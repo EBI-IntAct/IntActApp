@@ -6,10 +6,7 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.managers.sub.managers.color.settings.ColorSettingManager;
-import uk.ac.ebi.intact.app.internal.model.styles.EvidenceStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.MutationStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.Style;
-import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.*;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 
 import java.awt.*;
