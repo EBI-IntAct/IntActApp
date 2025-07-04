@@ -7,6 +7,9 @@ import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 
 import java.util.Map;
 
+import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.mergeOrganismLabelAndTaxIdAsId;
+import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.mergeOrganismLabelAndTaxIdAsLabel;
+
 public class NodeSpeciesFilter extends DiscreteFilter<Node> {
 
     public NodeSpeciesFilter(NetworkView view, QueryFilters queryFilters) {
@@ -20,7 +23,9 @@ public class NodeSpeciesFilter extends DiscreteFilter<Node> {
     @Override
     public Map<String, String> getPropertyValues(Node element) {
         if (element.taxId != null && element.species != null) {
-            return Map.of(element.taxId, element.species);
+            return Map.of(
+                    mergeOrganismLabelAndTaxIdAsId(element.species, element.taxId),
+                    mergeOrganismLabelAndTaxIdAsLabel(element.species, element.taxId));
         } else {
             return Map.of();
         }

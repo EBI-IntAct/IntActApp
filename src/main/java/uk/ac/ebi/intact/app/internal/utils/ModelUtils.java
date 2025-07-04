@@ -414,4 +414,12 @@ public class ModelUtils {
 
         return null;
     }
+
+    public static String mergeOrganismLabelAndTaxIdAsId(String organismName, String taxId) {
+        return String.format("%s__%s", organismName, taxId);
+    }
+
+    public static String mergeOrganismLabelAndTaxIdAsLabel(String organismName, String taxId) {
+        return String.format("%s - %s", taxId, organismName);
+    }
 }

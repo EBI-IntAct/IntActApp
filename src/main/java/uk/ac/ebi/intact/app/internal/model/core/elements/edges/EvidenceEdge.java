@@ -18,6 +18,8 @@ import java.util.*;
 
 import static uk.ac.ebi.intact.app.internal.model.managers.Manager.INTACT_GRAPH_WS;
 import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields.*;
+import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.mergeOrganismLabelAndTaxIdAsId;
+import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.mergeOrganismLabelAndTaxIdAsLabel;
 
 public class EvidenceEdge extends Edge {
     public final long id;
@@ -68,7 +70,13 @@ public class EvidenceEdge extends Edge {
         isNegative = IS_NEGATIVE_INTERACTION.getValue(edgeRow);
 
         isSpokeExpansion = expansionType != null && expansionType.equals("spoke expansion");
-        hostOrganisms = hostOrganism != null ? Map.of(hostOrganism, hostOrganism) : Map.of();
+        if (hostOrganism != null && hostOrganismTaxId != null) {
+            hostOrganisms = Map.of(
+                    mergeOrganismLabelAndTaxIdAsId(hostOrganism, hostOrganismTaxId),
+                    mergeOrganismLabelAndTaxIdAsLabel(hostOrganism, hostOrganismTaxId));
+        } else {
+            hostOrganisms = Map.of();
+        }
         if (interactionDetectionMethod.id != null && interactionDetectionMethod.id.id != null && interactionDetectionMethod.value != null) {
             interactionDetectionMethods = Map.of(interactionDetectionMethod.id.id, interactionDetectionMethod.value);
         } else {
