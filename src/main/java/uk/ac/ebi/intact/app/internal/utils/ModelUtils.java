@@ -1,7 +1,6 @@
 package uk.ac.ebi.intact.app.internal.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.cytoscape.model.*;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -414,5 +413,13 @@ public class ModelUtils {
         }
 
         return null;
+    }
+
+    public static String mergeOrganismLabelAndTaxIdAsId(String organismName, String taxId) {
+        return String.format("%s__%s", organismName, taxId);
+    }
+
+    public static String mergeOrganismLabelAndTaxIdAsLabel(String organismName, String taxId) {
+        return String.format("%s - %s", taxId, organismName);
     }
 }

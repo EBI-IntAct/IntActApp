@@ -24,8 +24,6 @@ public abstract class Edge implements Element {
     public final Double miScore;
     public final List<String> sourceFeatureAcs;
     public final List<String> targetFeatureAcs;
-    public final boolean isNegative;
-
 
     public static Edge createEdge(Network network, CyEdge edge) {
         if (network == null || edge == null) return null;
@@ -38,7 +36,6 @@ public abstract class Edge implements Element {
             return new EvidenceEdge(network, edge);
         }
     }
-
 
     Edge(Network network, CyEdge cyEdge) {
         this.network = new WeakReference<>(network);
@@ -58,11 +55,21 @@ public abstract class Edge implements Element {
         if (targetFeatureAcs != null) {
             targetFeatureAcs.removeIf(String::isBlank);
         }
-
-        isNegative = IS_NEGATIVE_INTERACTION.getValue(edgeRow);
     }
 
-    public abstract Map<Node, List<Feature>> getFeatures() ;
+    public abstract Map<Node, List<Feature>> getFeatures();
+
+    public abstract Boolean isNegative();
+
+    public abstract boolean isSpokeExpansion();
+
+    public abstract Map<String, String> getHostOrganisms();
+
+    public abstract Map<String, String> getInteractionDetectionMethods();
+
+    public abstract Map<String, String> getParticipantDetectionMethods();
+
+    public abstract Map<String, String> getTypes();
 
     @Override
     public boolean equals(Object o) {

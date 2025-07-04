@@ -17,11 +17,13 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.NodeCouple;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
+import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
@@ -128,10 +130,15 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return nonDefinedTaxon;
     }
 
-    public void hideExpandedEdgesOnViewCreation(CyNetworkView networkView) {
+    public void hideEdgesAndCreateNetworkViewWithParams(CyNetworkView cyNetworkView, QueryFilters queryFilters, NetworkView.Type networkViewType) {
         HideTaskFactory hideTaskFactory = manager.utils.getService(HideTaskFactory.class);
-        manager.utils.execute(hideTaskFactory.createTaskIterator(networkView, null, evidenceEdges.keySet()));
-        manager.data.addNetworkView(networkView, false);
+        if (networkViewType == null || networkViewType == NetworkView.Type.SUMMARY) {
+            manager.utils.execute(hideTaskFactory.createTaskIterator(cyNetworkView, null, getEvidenceCyEdges()));
+        } else {
+            manager.utils.execute(hideTaskFactory.createTaskIterator(cyNetworkView, null, getSummaryCyEdges()));
+        }
+        NetworkView networkView = manager.data.addNetworkView(cyNetworkView, queryFilters, networkViewType);
+        networkView.accordStyleToType();
     }
 
     public void completeMissingNodeColorsFromTables(boolean async, Runnable callback) {

@@ -81,11 +81,12 @@ public class ToggleFilterPanel<T extends Element> extends FilterPanel<BooleanFil
         label.setText(filter.description);
         setButtonsEnabled();
 
-        boolean isThereNegativeInteractions = ((EdgePositiveFilter) filter).areThereNegativeInteractions();
-        boolean isTherePositiveInteractions = ((EdgePositiveFilter) filter).areTherePositiveInteractions();
+        boolean isNegativeHidden = ((EdgePositiveFilter) filter).isNegativeHidden();
+        boolean isPositiveHidden = ((EdgePositiveFilter) filter).isPositiveHidden();
 
-        negativeButton.setSelected(isThereNegativeInteractions && !isTherePositiveInteractions);
-        positiveButton.setSelected(isTherePositiveInteractions);
+        bothButton.setSelected(!isNegativeHidden && !isPositiveHidden);
+        negativeButton.setSelected(!isNegativeHidden && isPositiveHidden);
+        positiveButton.setSelected(isNegativeHidden && !isPositiveHidden);
     }
 
     @Override

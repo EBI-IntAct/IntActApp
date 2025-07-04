@@ -7,12 +7,13 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 
 public abstract class BooleanFilter<T extends Element> extends Filter<T> {
-    protected boolean status = false;
+    protected boolean status;
     public final String description;
 
-    public BooleanFilter(NetworkView view, Class<T> elementType, String name, String definition, String description) {
+    public BooleanFilter(NetworkView view, Class<T> elementType, String name, String definition, String description, Boolean status) {
         super(view, name, definition, elementType);
         this.description = description;
+        this.status = status != null ? status : false;
     }
 
     public abstract boolean isToHide(T element);

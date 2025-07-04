@@ -19,12 +19,19 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
     protected double currentMin;
     protected double currentMax;
 
-    public ContinuousFilter(NetworkView view, Class<T> elementType, String name, String definition, double min, double max) {
+    public ContinuousFilter(NetworkView view,
+                            Class<T> elementType,
+                            String name,
+                            String definition,
+                            double min,
+                            double max,
+                            Double currentMin,
+                            Double currentMax) {
         super(view, name, definition, elementType);
         this.min = min;
         this.max = max;
-        currentMin = min;
-        currentMax = max;
+        this.currentMin = currentMin != null ? currentMin : min;
+        this.currentMax = currentMax != null ? currentMax : max;
     }
 
     public ContinuousFilter(NetworkView view, Class<T> elementType, String name, String definition) {
