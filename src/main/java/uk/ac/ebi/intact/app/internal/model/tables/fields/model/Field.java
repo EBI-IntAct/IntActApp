@@ -40,27 +40,33 @@ public class Field<T> implements FieldInitializer {
     public final String jsonKey;
     public final Class<T> type;
     public final boolean shared;
+    public final boolean isPublic;
 
     public final T defaultValue;
 
-    public Field( List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, String jsonKey, Class<T> type) {
-        this(fields, initializers, namespace, name, jsonKey, type, true, null);
+    public Field( List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name,
+                  String jsonKey, Class<T> type, boolean isPublic) {
+        this(fields, initializers, namespace, name, jsonKey, type, true, isPublic, null);
     }
 
-    public Field(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, String jsonKey, Class<T> type, boolean shared) {
-        this(fields, initializers, namespace, name, jsonKey, type, shared, null);
+    public Field(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name,
+                 String jsonKey, Class<T> type, boolean shared, boolean isPublic) {
+        this(fields, initializers, namespace, name, jsonKey, type, shared, isPublic, null);
     }
 
-    public Field(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, String jsonKey, Class<T> type, T defaultValue) {
-        this(fields, initializers, namespace, name, jsonKey, type, true, defaultValue);
+    public Field(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name,
+                 String jsonKey, Class<T> type, boolean isPublic, T defaultValue) {
+        this(fields, initializers, namespace, name, jsonKey, type, true, isPublic, defaultValue);
     }
 
-    public Field(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name, String jsonKey, Class<T> type, boolean shared, T defaultValue) {
+    public Field(List<Field<?>> fields, List<FieldInitializer> initializers, Namespace namespace, String name,
+                 String jsonKey, Class<T> type, boolean shared, boolean isPublic, T defaultValue) {
         this.namespace = namespace;
         this.name = name;
         this.jsonKey = jsonKey;
         this.type = type;
         this.shared = shared;
+        this.isPublic = isPublic;
         this.defaultValue = defaultValue;
         Field.fields.add(this);
         fields.add(this);
@@ -72,8 +78,8 @@ public class Field<T> implements FieldInitializer {
 
     @Override
     public void createColumn(CyTable table) {
-        if (defaultValue == null) TableUtil.createColumnIfNeeded(table, type, toString());
-        else TableUtil.createColumnIfNeeded(table, type, toString(), defaultValue);
+        if (defaultValue == null) TableUtil.createColumnIfNeeded(table, type, toString(), isPublic);
+        else TableUtil.createColumnIfNeeded(table, type, toString(), defaultValue, isPublic);
     }
 
     @Override

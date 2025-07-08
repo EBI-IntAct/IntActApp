@@ -196,9 +196,9 @@ public class ModelUtils {
         for (String jsonKey : jsonKeysSorted) {
             if (Field.keys.contains(jsonKey)) continue;
             if (listKeys.contains(jsonKey)) {
-                createListColumnIfNeeded(table, columnToType.get(jsonKey), jsonKey);
+                createListColumnIfNeeded(table, columnToType.get(jsonKey), jsonKey, true);
             } else {
-                createColumnIfNeeded(table, columnToType.get(jsonKey), jsonKey);
+                createColumnIfNeeded(table, columnToType.get(jsonKey), jsonKey, true);
             }
         }
     }
