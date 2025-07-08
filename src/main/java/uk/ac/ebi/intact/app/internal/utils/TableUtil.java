@@ -40,37 +40,42 @@ public class TableUtil {
         public final Set<CyEdge> nullEdges = new HashSet<>();
     }
 
-    public static void createColumnIfNeeded(CyTable table, Class<?> clazz, String columnName) {
+    public static void createColumnIfNeeded(CyTable table, Class<?> clazz, String columnName, boolean isPublic) {
         if (table.getColumn(columnName) != null)
             return;
         table.createColumn(columnName, clazz, false);
+        table.setPublic(isPublic);
     }
 
-    public static <T> void createColumnIfNeeded(CyTable table, Class<T> clazz, String columnName, T defaultValue) {
+    public static <T> void createColumnIfNeeded(CyTable table, Class<T> clazz, String columnName, T defaultValue, boolean isPublic) {
         if (table.getColumn(columnName) != null)
             return;
         table.createColumn(columnName, clazz, false, defaultValue);
+        table.setPublic(isPublic);
     }
 
-    public static void replaceColumnIfNeeded(CyTable table, Class<?> clazz, String columnName) {
+    public static void replaceColumnIfNeeded(CyTable table, Class<?> clazz, String columnName, boolean isPublic) {
         if (table.getColumn(columnName) != null)
             table.deleteColumn(columnName);
 
         table.createColumn(columnName, clazz, false);
+        table.setPublic(isPublic);
     }
 
-    public static void createListColumnIfNeeded(CyTable table, Class<?> clazz, String columnName) {
+    public static void createListColumnIfNeeded(CyTable table, Class<?> clazz, String columnName, boolean isPublic) {
         if (table.getColumn(columnName) != null)
             return;
 
         table.createListColumn(columnName, clazz, false);
+        table.setPublic(isPublic);
     }
 
-    public static void replaceListColumnIfNeeded(CyTable table, Class<?> clazz, String columnName) {
+    public static void replaceListColumnIfNeeded(CyTable table, Class<?> clazz, String columnName, boolean isPublic) {
         if (table.getColumn(columnName) != null)
             table.deleteColumn(columnName);
 
         table.createListColumn(columnName, clazz, false);
+        table.setPublic(isPublic);
     }
 
     public static void deleteColumnIfExisting(CyTable table, String columnName) {

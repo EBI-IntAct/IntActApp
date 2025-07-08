@@ -22,6 +22,7 @@ import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedListener;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.parameters.OrthologyViewParameterTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.filter.ApplyFiltersTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.filter.ResetFiltersTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.extract.ExtractNetworkViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
@@ -137,6 +138,10 @@ public class DetailPanel extends JPanel
                 "Reset filters",
                 "Reset all filters of the current view",
                 e -> manager.utils.execute(new ResetFiltersTaskFactory(manager, true).createTaskIterator())));
+        buttons.add(new DocumentedButton(manager,
+                "Apply filters on tables",
+                "Select nodes and edges matching the selected filters",
+                e -> manager.utils.execute(new ApplyFiltersTaskFactory(manager, true).createTaskIterator())));
         buttons.add(new DocumentedButton(manager,
                 "Extract for analysis",
                 "IntAct App uses summary edges in addition of its evidence edges to support its visualisation features.<br>" +

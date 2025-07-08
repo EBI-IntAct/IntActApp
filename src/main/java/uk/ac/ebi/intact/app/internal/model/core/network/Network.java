@@ -17,11 +17,13 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.NodeCouple;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
+import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
@@ -54,6 +56,13 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     private final Map<NodeCouple, SummaryEdge> summaryEdges = new HashMap<>();
     private final Map<CyEdge, EvidenceEdge> evidenceEdges = new HashMap<>();
 
+    @Getter
+    private final transient Set<Node> visibleNodes = new HashSet<>();
+    @Getter
+    public final transient Set<Edge> visibleEvidenceEdges = new HashSet<>();
+    @Getter
+    public final transient Set<Edge> visibleSummaryEdges = new HashSet<>();
+
     private final Set<String> taxIds = new HashSet<>();
     @Getter
     private final Set<String> interactorTypes = new HashSet<>();
@@ -68,6 +77,10 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         this.manager = manager;
         groupFactory = manager.utils.getService(CyGroupFactory.class);
         groupManager = manager.utils.getService(CyGroupManager.class);
+    }
+
+    public Set<Edge> getVisibleEdges(NetworkView.Type networkViewType) {
+        return NetworkView.Type.SUMMARY == networkViewType ? visibleSummaryEdges : visibleEvidenceEdges;
     }
 
     public void setNetwork(CyNetwork cyNetwork) {
@@ -128,10 +141,15 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return nonDefinedTaxon;
     }
 
-    public void hideExpandedEdgesOnViewCreation(CyNetworkView networkView) {
+    public void hideEdgesAndCreateNetworkViewWithParams(CyNetworkView cyNetworkView, QueryFilters queryFilters, NetworkView.Type networkViewType) {
         HideTaskFactory hideTaskFactory = manager.utils.getService(HideTaskFactory.class);
-        manager.utils.execute(hideTaskFactory.createTaskIterator(networkView, null, evidenceEdges.keySet()));
-        manager.data.addNetworkView(networkView, false);
+        if (networkViewType == null || networkViewType == NetworkView.Type.SUMMARY) {
+            manager.utils.execute(hideTaskFactory.createTaskIterator(cyNetworkView, null, getEvidenceCyEdges()));
+        } else {
+            manager.utils.execute(hideTaskFactory.createTaskIterator(cyNetworkView, null, getSummaryCyEdges()));
+        }
+        NetworkView networkView = manager.data.addNetworkView(cyNetworkView, queryFilters, networkViewType);
+        networkView.accordStyleToType();
     }
 
     public void completeMissingNodeColorsFromTables(boolean async, Runnable callback) {
@@ -422,6 +440,13 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return new ArrayList<>(summaryEdges.values());
     }
 
+    public List<CyEdge> getVisibleSummaryCyEdges() {
+        return summaryEdges.values().stream()
+                .filter(visibleSummaryEdges::contains)
+                .map(summaryEdge -> summaryEdge.cyEdge)
+                .collect(toList());
+    }
+
     public List<CyEdge> getSummaryCyEdges() {
         return summaryEdges.values().stream().map(summaryEdge -> summaryEdge.cyEdge).collect(toList());
     }
@@ -432,6 +457,13 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
     public List<EvidenceEdge> getEvidenceEdges() {
         return new ArrayList<>(evidenceEdges.values());
+    }
+
+    public List<CyEdge> getVisibleEvidenceCyEdges() {
+        return evidenceEdges.values().stream()
+                .filter(visibleEvidenceEdges::contains)
+                .map(evidenceEdge -> evidenceEdge.cyEdge)
+                .collect(toList());
     }
 
     public List<CyEdge> getEvidenceCyEdges() {

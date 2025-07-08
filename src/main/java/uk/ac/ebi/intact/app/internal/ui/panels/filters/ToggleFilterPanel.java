@@ -11,10 +11,14 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 
 public class ToggleFilterPanel<T extends Element> extends FilterPanel<BooleanFilter<T>> implements ChangeListener {
+    private static final String CHECK_MARK = "✓";
+    private static final String CROSS_MARK = "X";
+
     private final ButtonGroup group = new ButtonGroup();
-    private final JToggleButton positiveButton = new JToggleButton("✔");
-    private final JToggleButton negativeButton = new JToggleButton("❌");
-    private final JToggleButton bothButton = new JToggleButton("✔/❌");
+
+    private final JToggleButton positiveButton = new JToggleButton(CHECK_MARK);
+    private final JToggleButton negativeButton = new JToggleButton(CROSS_MARK);
+    private final JToggleButton bothButton = new JToggleButton(CHECK_MARK + " / " + CROSS_MARK);
 
     private final JLabel label = new JLabel("");
 
@@ -81,11 +85,12 @@ public class ToggleFilterPanel<T extends Element> extends FilterPanel<BooleanFil
         label.setText(filter.description);
         setButtonsEnabled();
 
-        boolean isThereNegativeInteractions = ((EdgePositiveFilter) filter).areThereNegativeInteractions();
-        boolean isTherePositiveInteractions = ((EdgePositiveFilter) filter).areTherePositiveInteractions();
+        boolean isNegativeHidden = ((EdgePositiveFilter) filter).isNegativeHidden();
+        boolean isPositiveHidden = ((EdgePositiveFilter) filter).isPositiveHidden();
 
-        negativeButton.setSelected(isThereNegativeInteractions && !isTherePositiveInteractions);
-        positiveButton.setSelected(isTherePositiveInteractions);
+        bothButton.setSelected(!isNegativeHidden && !isPositiveHidden);
+        negativeButton.setSelected(!isNegativeHidden && isPositiveHidden);
+        positiveButton.setSelected(isNegativeHidden && !isPositiveHidden);
     }
 
     @Override

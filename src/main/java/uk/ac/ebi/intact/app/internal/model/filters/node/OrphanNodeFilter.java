@@ -18,8 +18,10 @@ public class OrphanNodeFilter extends Filter<Node> {
     @Override
     public void filterView() {
         NetworkView view = getNetworkView();
-        Set<CyEdge> visibleEdges = view.visibleEdges.stream().filter(Objects::nonNull).map(edge -> edge.cyEdge).collect(Collectors.toSet());
-        view.visibleNodes.removeIf(node -> !CollectionUtils.anyCommonElement(getNetwork().getCyNetwork().getAdjacentEdgeList(node.cyNode, CyEdge.Type.ANY), visibleEdges));
+        Set<CyEdge> visibleEvidenceEdges = view.getNetwork().getVisibleEvidenceEdges().stream()
+                .filter(Objects::nonNull).map(edge -> edge.cyEdge).collect(Collectors.toSet());
+        view.getNetwork().getVisibleNodes().removeIf(node ->
+                !CollectionUtils.anyCommonElement(getNetwork().getCyNetwork().getAdjacentEdgeList(node.cyNode, CyEdge.Type.ANY), visibleEvidenceEdges));
     }
 
     @Override

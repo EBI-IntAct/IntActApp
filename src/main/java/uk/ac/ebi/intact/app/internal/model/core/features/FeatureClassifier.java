@@ -20,6 +20,10 @@ public class FeatureClassifier {
     public static FeatureClass variant;
     public static FeatureClass tag;
 
+    // MI:0429 (necessary binding region) is a child term of mutation and binding associated region.
+    // We don't want to display features of this type as mutation, as we consider them a binding region feature.
+    private static final Set<String> MI_TERMS_TO_EXCLUDE_AS_MUTATIONS = Set.of("MI:0429");
+
     public static void initMIIdSets() {
         biological = new InnerFeatureClass("Biological features", "MI:0252", "Post Transcription Modification");
         experimental = new InnerFeatureClass("Experimental features", "MI:0505", "Other experimental features");
@@ -80,7 +84,10 @@ public class FeatureClassifier {
                             if (json.get("page").get("totalElements").intValue() > 0) {
                                 JsonNode termChildren = json.get("_embedded").get("terms");
                                 for (final JsonNode objNode : termChildren) {
-                                    innerIdentifiers.add(new OntologyIdentifier(objNode.get("obo_id").textValue(), this.identifier.sourceOntology));
+                                    String childTermId = objNode.get("obo_id").textValue();
+                                    if (!MI_TERMS_TO_EXCLUDE_AS_MUTATIONS.contains(childTermId)) {
+                                        innerIdentifiers.add(new OntologyIdentifier(childTermId, this.identifier.sourceOntology));
+                                    }
                                 }
                             }
                             JsonNode nextPage = json.get("_links").get("next");

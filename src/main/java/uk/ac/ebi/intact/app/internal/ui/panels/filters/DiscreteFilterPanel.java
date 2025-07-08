@@ -34,7 +34,7 @@ public class DiscreteFilterPanel<T extends Element> extends FilterPanel<Discrete
             NetworkView view = filter.getNetworkView();
             setListening(false);
             view.silenceFilters(true);
-            filter.getPropertiesVisibility().keySet().forEach(s -> filter.setPropertyVisibility(s, true));
+            filter.getProperties().forEach(s -> filter.setPropertyVisibility(s, true));
             checkBoxes.forEach(jCheckBox -> jCheckBox.setSelected(true));
             view.silenceFilters(false);
             setListening(true);
@@ -46,7 +46,7 @@ public class DiscreteFilterPanel<T extends Element> extends FilterPanel<Discrete
             setListening(false);
             view.silenceFilters(true);
 
-            filter.getPropertiesVisibility().keySet().forEach(s -> filter.setPropertyVisibility(s, false));
+            filter.getProperties().forEach(s -> filter.setPropertyVisibility(s, false));
             checkBoxes.forEach(jCheckBox -> jCheckBox.setSelected(false));
 
             view.silenceFilters(false);
@@ -58,8 +58,8 @@ public class DiscreteFilterPanel<T extends Element> extends FilterPanel<Discrete
         buttonsPanel.add(selectAll);
         buttonsPanel.add(selectNone);
         content.add(buttonsPanel, layoutHelper.down().expandHoriz());
-        filter.getPropertiesVisibility().keySet().stream().sorted(Comparator.nullsFirst(Comparator.naturalOrder())).forEach((value) -> {
-            JCheckBox checkBox = new JCheckBox(value, filter.getPropertyVisibility(value));
+        filter.getProperties().stream().sorted(Comparator.nullsFirst(Comparator.naturalOrder())).forEach((value) -> {
+            JCheckBox checkBox = new JCheckBox(filter.getPropertyLabel(value), filter.getPropertyVisibility(value));
             checkBox.setBackground(lightBackground);
             checkBoxes.add(checkBox);
             checkBox.addActionListener(e -> {

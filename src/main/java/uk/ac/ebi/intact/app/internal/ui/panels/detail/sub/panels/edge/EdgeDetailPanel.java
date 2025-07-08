@@ -5,6 +5,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
@@ -161,7 +162,9 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
     }
 
     private boolean isEdgeVisible(Edge edge) {
-        return currentView.visibleEdges.contains(edge);
+        return currentView.getType().equals(NetworkView.Type.SUMMARY)
+                ? currentNetwork.getVisibleSummaryEdges().contains(edge)
+                : currentNetwork.getVisibleEvidenceEdges().contains(edge);
     }
 
 

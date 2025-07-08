@@ -1,6 +1,6 @@
 package uk.ac.ebi.intact.app.internal.tasks.view;
 
-import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.hide.HideTaskFactory;
 import org.cytoscape.task.hide.UnHideTaskFactory;
@@ -35,13 +35,15 @@ public abstract class AbstractHiderTask extends AbstractViewTask {
         chooseData();
         if (chosenView != null && chosenView.getType() != NetworkView.Type.SUMMARY) {
             CyNetwork cyNetwork = chosenNetwork.getCyNetwork();
-            Set<CyEdge> edgesToSelect = chosenNetwork.getEvidenceEdges().stream()
+            Set<Long> edgesToSelect = chosenNetwork.getEvidenceEdges().stream()
                     .filter(Edge::isSelected)
-                    .map(edge -> chosenNetwork.getSummaryEdge(edge.cyEdge).cyEdge)
+                    .map(edge -> chosenNetwork.getSummaryEdge(edge.cyEdge))
+                    .filter(edge -> chosenNetwork.getVisibleSummaryEdges().contains(edge))
+                    .map(edge -> edge.cyEdge.getSUID())
                     .collect(Collectors.toSet());
 
-            insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getEvidenceCyEdges()));
-            insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getSummaryCyEdges()));
+            insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getVisibleEvidenceCyEdges()));
+            insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getVisibleSummaryCyEdges()));
             insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(cyNetwork, edgesToSelect).createTaskIterator());
         }
     }
@@ -50,13 +52,16 @@ public abstract class AbstractHiderTask extends AbstractViewTask {
         chooseData();
         if (chosenView != null && chosenView.getType() == NetworkView.Type.SUMMARY) {
             CyNetwork cyNetwork = chosenNetwork.getCyNetwork();
-            Set<CyEdge> edgesToSelect = chosenNetwork.getSummaryEdges().stream()
+            Set<Long> edgesToSelect = chosenNetwork.getSummaryEdges().stream()
                     .filter(Edge::isSelected)
                     .map((SummaryEdge edge) -> chosenNetwork.getSimilarEvidenceCyEdges(edge.cyEdge))
                     .flatMap(List::stream)
+                    .filter(edge -> chosenNetwork.getVisibleEvidenceEdges().contains(chosenNetwork.getEvidenceEdge(edge)))
+                    .map(CyIdentifiable::getSUID)
                     .collect(Collectors.toSet());
-            insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getSummaryCyEdges()));
-            insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getEvidenceCyEdges()));
+
+            insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getVisibleSummaryCyEdges()));
+            insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getVisibleEvidenceCyEdges()));
             insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(cyNetwork, edgesToSelect).createTaskIterator());
         }
     }

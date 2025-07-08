@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.app.internal.model.core.elements.edges;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.Getter;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -17,6 +18,8 @@ import java.util.*;
 
 import static uk.ac.ebi.intact.app.internal.model.managers.Manager.INTACT_GRAPH_WS;
 import static uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields.*;
+import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.mergeOrganismLabelAndTaxIdAsId;
+import static uk.ac.ebi.intact.app.internal.utils.ModelUtils.mergeOrganismLabelAndTaxIdAsLabel;
 
 public class EvidenceEdge extends Edge {
     public final long id;
@@ -33,7 +36,18 @@ public class EvidenceEdge extends Edge {
     public final CVTerm targetBiologicalRole;
     public final CVTerm targetExperimentalRole;
     private JsonNode detailsJSON;
-    public final Boolean isNegative;
+
+    private final Boolean isNegative;
+    private final boolean isSpokeExpansion;
+
+    @Getter
+    private final Map<String, String> hostOrganisms;
+    @Getter
+    private final Map<String, String> interactionDetectionMethods;
+    @Getter
+    private final Map<String, String> participantDetectionMethods;
+    @Getter
+    private final Map<String, String> types;
 
     EvidenceEdge(Network network, CyEdge edge) {
         super(network, edge);
@@ -54,6 +68,30 @@ public class EvidenceEdge extends Edge {
 
         pubMedId = PUBMED_ID.getValue(edgeRow);
         isNegative = IS_NEGATIVE_INTERACTION.getValue(edgeRow);
+
+        isSpokeExpansion = expansionType != null && expansionType.equals("spoke expansion");
+        if (hostOrganism != null && hostOrganismTaxId != null) {
+            hostOrganisms = Map.of(
+                    mergeOrganismLabelAndTaxIdAsId(hostOrganism, hostOrganismTaxId),
+                    mergeOrganismLabelAndTaxIdAsLabel(hostOrganism, hostOrganismTaxId));
+        } else {
+            hostOrganisms = Map.of();
+        }
+        if (interactionDetectionMethod.id != null && interactionDetectionMethod.id.id != null && interactionDetectionMethod.value != null) {
+            interactionDetectionMethods = Map.of(interactionDetectionMethod.id.id, interactionDetectionMethod.value);
+        } else {
+            interactionDetectionMethods = Map.of();
+        }
+        if (participantDetectionMethod.id != null && participantDetectionMethod.id.id != null && participantDetectionMethod.value != null) {
+            participantDetectionMethods = Map.of(participantDetectionMethod.id.id, participantDetectionMethod.value);
+        } else {
+            participantDetectionMethods = Map.of();
+        }
+        if (type.id != null && type.id.id != null && type.value != null) {
+            types = Map.of(type.id.id, type.value);
+        } else {
+            types = Map.of();
+        }
     }
 
     @Override
@@ -63,6 +101,16 @@ public class EvidenceEdge extends Edge {
         buildFeatures(features, sourceFeatureAcs, source);
         buildFeatures(features, targetFeatureAcs, target);
         return features;
+    }
+
+    @Override
+    public Boolean isNegative() {
+        return isNegative;
+    }
+
+    @Override
+    public boolean isSpokeExpansion() {
+        return isSpokeExpansion;
     }
 
     protected void buildFeatures(Map<Node, List<Feature>> features, List<String> featureAcs, Node participant) {
@@ -130,7 +178,6 @@ public class EvidenceEdge extends Edge {
 
         return (EvidenceEdge) Edge.createEdge(network, edge);
     }
-
 
     @Override
     public String toString() {
