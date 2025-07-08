@@ -56,6 +56,13 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     private final Map<NodeCouple, SummaryEdge> summaryEdges = new HashMap<>();
     private final Map<CyEdge, EvidenceEdge> evidenceEdges = new HashMap<>();
 
+    @Getter
+    private final transient Set<Node> visibleNodes = new HashSet<>();
+    @Getter
+    public final transient Set<Edge> visibleEvidenceEdges = new HashSet<>();
+    @Getter
+    public final transient Set<Edge> visibleSummaryEdges = new HashSet<>();
+
     private final Set<String> taxIds = new HashSet<>();
     @Getter
     private final Set<String> interactorTypes = new HashSet<>();
@@ -70,6 +77,10 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         this.manager = manager;
         groupFactory = manager.utils.getService(CyGroupFactory.class);
         groupManager = manager.utils.getService(CyGroupManager.class);
+    }
+
+    public Set<Edge> getVisibleEdges(NetworkView.Type networkViewType) {
+        return NetworkView.Type.SUMMARY == networkViewType ? visibleSummaryEdges : visibleEvidenceEdges;
     }
 
     public void setNetwork(CyNetwork cyNetwork) {
@@ -429,6 +440,13 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return new ArrayList<>(summaryEdges.values());
     }
 
+    public List<CyEdge> getVisibleSummaryCyEdges() {
+        return summaryEdges.values().stream()
+                .filter(visibleSummaryEdges::contains)
+                .map(summaryEdge -> summaryEdge.cyEdge)
+                .collect(toList());
+    }
+
     public List<CyEdge> getSummaryCyEdges() {
         return summaryEdges.values().stream().map(summaryEdge -> summaryEdge.cyEdge).collect(toList());
     }
@@ -439,6 +457,13 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
     public List<EvidenceEdge> getEvidenceEdges() {
         return new ArrayList<>(evidenceEdges.values());
+    }
+
+    public List<CyEdge> getVisibleEvidenceCyEdges() {
+        return evidenceEdges.values().stream()
+                .filter(visibleEvidenceEdges::contains)
+                .map(evidenceEdge -> evidenceEdge.cyEdge)
+                .collect(toList());
     }
 
     public List<CyEdge> getEvidenceCyEdges() {

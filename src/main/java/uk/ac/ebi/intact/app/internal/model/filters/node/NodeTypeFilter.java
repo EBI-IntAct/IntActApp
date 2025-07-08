@@ -18,7 +18,7 @@ public class NodeTypeFilter extends DiscreteFilter<Node> {
 
     @Override
     public Map<String, String> getPropertyValues(Node node) {
-        if (node.type != null && node.type.id != null && node.type.id.id != null && node.typeName != null && node.typeName != null) {
+        if (node.type != null && node.type.id != null && node.type.id.id != null && node.typeName != null) {
             return Map.of(node.type.id.id, node.typeName);
         } else {
             return Map.of();

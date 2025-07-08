@@ -31,9 +31,10 @@ public abstract class BooleanFilter<T extends Element> extends Filter<T> {
         if (!isEnabled() || !status) return;
         NetworkView view = getNetworkView();
         if (Node.class.isAssignableFrom(elementType)) {
-            view.visibleNodes.removeIf(node -> isToHide(elementType.cast(node)));
+            view.getNetwork().getVisibleNodes().removeIf(node -> isToHide(elementType.cast(node)));
         } else if (Edge.class.isAssignableFrom(elementType)) {
-            view.visibleEdges.removeIf(edge -> isToHide(elementType.cast(edge)));
+            view.getNetwork().getVisibleEvidenceEdges().removeIf(edge -> isToHide(elementType.cast(edge)));
+            view.getNetwork().getVisibleSummaryEdges().removeIf(edge -> isToHide(elementType.cast(edge)));
         }
     }
 

@@ -69,18 +69,18 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
     @Override
     public void filterView() {
         if (currentMin == min && currentMax == max) return;
-        Collection<? extends Element> elementsToFilter;
         NetworkView view = getNetworkView();
         if (Node.class.isAssignableFrom(elementType)) {
-            elementsToFilter = view.visibleNodes;
+            filterElements(view.getNetwork().getVisibleNodes());
         } else if (Edge.class.isAssignableFrom(elementType)) {
             if (elementType == SummaryEdge.class && view.getType() != NetworkView.Type.SUMMARY) return;
             if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.SUMMARY) return;
-            elementsToFilter = view.visibleEdges;
-        } else {
-            return;
+            filterElements(view.getNetwork().getVisibleEvidenceEdges());
+            filterElements(view.getNetwork().getVisibleSummaryEdges());
         }
+    }
 
+    private void filterElements(Collection<? extends Element> elementsToFilter) {
         elementsToFilter.removeIf(element -> {
             double property = getProperty(elementType.cast(element));
             return property < currentMin || property > currentMax;

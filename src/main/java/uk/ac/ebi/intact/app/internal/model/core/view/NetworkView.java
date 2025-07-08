@@ -14,7 +14,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.events.FilterUpdatedEvent;
@@ -41,8 +42,6 @@ public class NetworkView implements FilterUpdatedListener {
     private final transient Network network;
     @Getter
     public final transient CyNetworkView cyView;
-    public final transient Set<Node> visibleNodes = new HashSet<>();
-    public final transient Set<Edge> visibleEdges = new HashSet<>();
     private final List<Filter<?>> filters = new ArrayList<>();
     private boolean filtersSilenced = false;
     private boolean listeningToFilterUpdate = true;
@@ -134,41 +133,56 @@ public class NetworkView implements FilterUpdatedListener {
 
     public void filter() {
         if (filtersSilenced) return;
-        visibleNodes.clear();
-        visibleEdges.clear();
+        getNetwork().getVisibleNodes().clear();
+        getNetwork().getVisibleEvidenceEdges().clear();
+        getNetwork().getVisibleSummaryEdges().clear();
 
         Network network = getNetwork();
-        List<Node> nodesToFilter = network.getNodes();
-        List<? extends Edge> edgesToFilter = (getType() == Type.SUMMARY) ? network.getSummaryEdges() : network.getEvidenceEdges();
 
-        visibleNodes.addAll(nodesToFilter);
-        visibleEdges.addAll(edgesToFilter);
+        getNetwork().getVisibleNodes().addAll(network.getNodes());
+        getNetwork().getVisibleEvidenceEdges().addAll(network.getEvidenceEdges());
+        getNetwork().getVisibleSummaryEdges().addAll(network.getSummaryEdges());
 
         for (Filter<?> filter : filters) {
             filter.filterView();
         }
 
-        nodesToFilter.removeAll(visibleNodes);
-        nodesToFilter.forEach(nodeToHide -> {
+        List<Node> nodesToHide = network.getNodes();
+        nodesToHide.removeAll(getNetwork().getVisibleNodes());
+        nodesToHide.forEach(nodeToHide -> {
             View<CyNode> nodeView = cyView.getNodeView(nodeToHide.cyNode);
             if (nodeView != null) nodeView.setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
         });
-        visibleNodes.forEach(nodeToShow -> {
+        getNetwork().getVisibleNodes().forEach(nodeToShow -> {
             View<CyNode> nodeView = cyView.getNodeView(nodeToShow.cyNode);
             if (nodeView != null) nodeView.setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
         });
 
-        edgesToFilter.removeAll(visibleEdges);
-        edgesToFilter.forEach(edgeToHide -> {
+        List<EvidenceEdge> evidenceEdgesToHide = network.getEvidenceEdges();
+        evidenceEdgesToHide.removeAll(getNetwork().getVisibleEvidenceEdges());
+        evidenceEdgesToHide.forEach(edgeToHide -> {
             View<CyEdge> edgeView = cyView.getEdgeView(edgeToHide.cyEdge);
             if (edgeView != null) edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
         });
 
-        visibleEdges.forEach(edgeToShow -> {
+        getNetwork().getVisibleEvidenceEdges().forEach(edgeToShow -> {
             View<CyEdge> edgeView = cyView.getEdgeView(edgeToShow.cyEdge);
             if (edgeView != null) edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true);
         });
 
+        List<SummaryEdge> summaryEdgesToHide = network.getSummaryEdges();
+        summaryEdgesToHide.removeAll(getNetwork().getVisibleSummaryEdges());
+        summaryEdgesToHide.forEach(edgeToHide -> {
+            View<CyEdge> edgeView = cyView.getEdgeView(edgeToHide.cyEdge);
+            if (edgeView != null) edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
+        });
+
+        getNetwork().getVisibleSummaryEdges().forEach(edgeToShow -> {
+            View<CyEdge> edgeView = cyView.getEdgeView(edgeToShow.cyEdge);
+            if (edgeView != null) edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true);
+        });
+
+        network.getSummaryEdges().forEach(SummaryEdge::updateSummary);
         save();
         manager.utils.fireEvent(new ViewUpdatedEvent(manager, this));
     }

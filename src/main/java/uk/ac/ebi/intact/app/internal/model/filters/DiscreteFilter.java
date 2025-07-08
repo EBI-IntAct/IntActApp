@@ -81,12 +81,14 @@ public abstract class DiscreteFilter<T extends Element> extends Filter<T> {
         if (propertiesVisibility.values().stream().anyMatch(visible -> !visible)) {
             NetworkView view = getNetworkView();
             if (Node.class.isAssignableFrom(elementType)) {
-                view.visibleNodes.removeIf(node ->
+                view.getNetwork().getVisibleNodes().removeIf(node ->
                         getProperties(elementType.cast(node)).keySet().stream().noneMatch(propertiesVisibility::get));
             } else if (Edge.class.isAssignableFrom(elementType)) {
                 if (elementType == SummaryEdge.class && view.getType() != NetworkView.Type.SUMMARY) return;
                 if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.SUMMARY) return;
-                view.visibleEdges.removeIf(edge ->
+                view.getNetwork().getVisibleEvidenceEdges().removeIf(edge ->
+                        getProperties(elementType.cast(edge)).keySet().stream().noneMatch(propertiesVisibility::get));
+                view.getNetwork().getVisibleSummaryEdges().removeIf(edge ->
                         getProperties(elementType.cast(edge)).keySet().stream().noneMatch(propertiesVisibility::get));
             }
         }
