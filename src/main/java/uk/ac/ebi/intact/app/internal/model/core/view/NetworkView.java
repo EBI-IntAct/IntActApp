@@ -99,7 +99,7 @@ public class NetworkView implements FilterUpdatedListener {
 
         filters.add(new EdgeMIScoreFilter(this, queryFilters));
         filters.add(new EdgeInteractionDetectionMethodFilter(this, queryFilters));
-        filters.add(new EdgeParticipantDetectionMethodFilter(this));
+        filters.add(new EdgeParticipantDetectionMethodFilter(this, queryFilters));
         filters.add(new EdgeHostOrganismFilter(this, queryFilters));
         filters.add(new EdgeExpansionTypeFilter(this, queryFilters));
         filters.add(new EdgeTypeFilter(this, queryFilters));
