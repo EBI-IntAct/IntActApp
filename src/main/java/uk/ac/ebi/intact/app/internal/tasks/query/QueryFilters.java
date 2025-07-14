@@ -13,6 +13,7 @@ public class QueryFilters {
     private Set<String> interactorTypesFilter;
     private Set<String> interactionTypesFilter;
     private Set<String> interactionDetectionMethodsFilter;
+    private Set<String> participantDetectionMethodsFilter;
     private Set<String> interactionHostOrganismsFilter;
     private NegativeFilterStatus negativeFilter;
     private Double minMIScore;
