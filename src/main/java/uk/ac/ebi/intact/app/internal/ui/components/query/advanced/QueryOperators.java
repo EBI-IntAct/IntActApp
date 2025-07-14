@@ -48,16 +48,14 @@ public class QueryOperators {
             setButtonIntactPurple(andButton);
             setButtonWhite(orButton);
             ruleOperator = "AND";
-            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
-            advancedSearchQueryComponent.highlightQuery(advancedSearchQueryComponent.getQueryTextField().getText());
+            advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
         });
 
         orButton.addActionListener(e -> {
             setButtonWhite(andButton);
             setButtonIntactPurple(orButton);
             ruleOperator = "OR";
-            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
-            advancedSearchQueryComponent.highlightQuery(advancedSearchQueryComponent.getQueryTextField().getText());
+            advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
         });
 
         buttonContainer.add(andButton);
@@ -87,8 +85,7 @@ public class QueryOperators {
             parentContainer.revalidate();
             parentContainer.repaint();
 
-            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
-            advancedSearchQueryComponent.highlightQuery(advancedSearchQueryComponent.getQueryTextField().getText());
+            advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
         });
 
         ruleSetButton.addActionListener(e -> {
@@ -101,8 +98,7 @@ public class QueryOperators {
             parentContainer.revalidate();
             parentContainer.repaint();
 
-            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
-            advancedSearchQueryComponent.highlightQuery(advancedSearchQueryComponent.getQueryTextField().getText());
+            advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
         });
 
         buttonContainer.add(addRuleButton);

@@ -70,13 +70,13 @@ public class MIQLParser {
     }
 
     public void fillRuleSet(RuleSet ruleSet, String value) {
-        ruleSet.setCondition(value.contains("OR") ? "OR" : "AND");
+        ruleSet.setCondition(value.toUpperCase().contains(" OR ") ? "OR" : "AND");
 
         List<RuleComponent> superiorRuleSets = ruleSet.getRules();
         int i = 0;
         ruleSet.setRules(new ArrayList<>());
 
-        String[] ruleStrings = value.split("\\sAND\\s|\\sOR\\s");
+        String[] ruleStrings = value.split("\\sAND\\s|\\sOR\\s|\\sand\\s|\\sor\\s");
         for (String ruleStr : ruleStrings) {
             ruleStr = ruleStr.trim();
 

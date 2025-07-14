@@ -8,6 +8,8 @@ import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.Advance
 import javax.swing.*;
 
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.Objects;
 
 public class RulePanel {
@@ -43,9 +45,9 @@ public class RulePanel {
         oneRule.add(getEntityPropertiesComboBox());
         oneRule.add(getOperatorsComboBox());
         oneRule.add(firstBracket);
-        oneRule.add(getUserInputProperty());
+        oneRule.add(getUserInputProperty(userInputProperty));
         oneRule.add(textTO);
-        oneRule.add(getUserInputProperty2());
+        oneRule.add(getUserInputProperty(userInputProperty2));
         oneRule.add(lastBracket);
 
         oneRule.revalidate();
@@ -59,8 +61,7 @@ public class RulePanel {
 
         entityComboBox.addActionListener(e -> {
             setUpEntityPropertiesCombobox((String) entityComboBox.getSelectedItem());
-            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
-            advancedSearchQueryComponent.highlightQuery(advancedSearchQueryComponent.getQueryTextField().getText());
+            advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
         });
 
         return entityComboBox;
@@ -82,8 +83,7 @@ public class RulePanel {
         operatorsComboBox.addActionListener(e -> {
             setUserInput2Visible();
             userInputProperty.setVisible(operatorsComboBox.getSelectedItem() != null && isUserInputNeeded());
-            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
-            advancedSearchQueryComponent.highlightQuery(advancedSearchQueryComponent.getQueryTextField().getText());
+            advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
         });
 
         return operatorsComboBox;
@@ -111,30 +111,27 @@ public class RulePanel {
         textTO.setBackground(UIManager.getColor("Panel.background"));
     }
 
-
-    private JTextField getUserInputProperty() {
+    private JTextField getUserInputProperty(JTextField userInputProperty) {
         setCorrectDimensions(userInputProperty);
+        // This handles actions like clicking Enter
         userInputProperty.addActionListener(e -> {
-                    advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
-                    advancedSearchQueryComponent.highlightQuery(advancedSearchQueryComponent.getQueryTextField().getText());
+                    advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
                 }
         );
+        // This handles situations like writing a value and clicking 'Submit query' without clicking enter.
+        // When the user click the 'Submit query' button, this input loses focus and the query text is updated.
+        userInputProperty.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
+            }
+        });
         return userInputProperty;
     }
 
-    private boolean isUserInputNeeded() {
+    public boolean isUserInputNeeded() {
         String operatorSelected = (String) operatorsComboBox.getSelectedItem();
         return operatorSelected != null && !(operatorSelected.equals("TRUE") || operatorSelected.equals("FALSE"));
-    }
-
-    private JTextField getUserInputProperty2() {
-        setCorrectDimensions(userInputProperty2);
-        userInputProperty2.addActionListener(e -> {
-                    advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
-                    advancedSearchQueryComponent.highlightQuery(advancedSearchQueryComponent.getQueryTextField().getText());
-                }
-        );
-        return userInputProperty2;
     }
 
     private boolean isUserInput2needed() {

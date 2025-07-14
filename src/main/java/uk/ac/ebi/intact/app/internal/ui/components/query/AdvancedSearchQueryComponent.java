@@ -19,6 +19,8 @@ import javax.swing.text.StyledDocument;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -70,6 +72,12 @@ public class AdvancedSearchQueryComponent {
         frame.add(getRuleScrollPane(), BorderLayout.CENTER);
 
         frame.setVisible(true);
+
+        // When we first create this component, if it is initialized with a valid query,
+        // then we parse it and build the buttons from the query.
+        if (validateQueryText()) {
+            buildButtonsFromQueryText();
+        }
     }
 
     private JPanel getBuildQueryButtonContainer(){
@@ -78,24 +86,20 @@ public class AdvancedSearchQueryComponent {
 
         setButtonIntactPurple(buildQueryButton);
         buildQueryButton.addActionListener(e -> {
-
-            String fullQuery = getFullQuery();
-            queryTextField.setText(fullQuery);
-            highlightQuery(fullQuery);
-
             Action submitAction = queryTextField.getActionMap().get("submitQuery");
             if (submitAction != null) {
                 submitAction.actionPerformed(new ActionEvent(queryTextField, ActionEvent.ACTION_PERFORMED, null));
             }
-
-            if (onBuildQuery != null) onBuildQuery.run();
-            frame.dispose();
-
         });
 
 
         buttonContainer.add(buildQueryButton);
         return buttonContainer;
+    }
+
+    public void setQueryText(String query) {
+        queryTextField.setText(query);
+        highlightQuery(queryTextField.getText());
     }
 
     public String getFullQuery() {
@@ -126,29 +130,54 @@ public class AdvancedSearchQueryComponent {
         return scrollPane;
     }
 
-    private JPanel getQueryInputField(){
+    private boolean validateQueryText() {
+        String input = queryTextField.getText();
+        if (input != null && !input.isEmpty()) {
+            highlightQuery(input);
+            RuleSet parsedQuery = miqlParser.parseMIQL(input);
+            return parsedQuery != null && parsedQuery.rules != null && !parsedQuery.rules.isEmpty();
+        }
+        return false;
+    }
+
+    private void buildButtonsFromQueryText() {
+        String input = queryTextField.getText();
+        RuleSet parsedQuery = miqlParser.parseMIQL(input);
+        queryOperators.setRuleOperator(parsedQuery.condition);
+        queryOperators.updateAndOrButtons();
+
+        modifyComboboxFromQuery(parsedQuery, 0);
+        String builtQuery = getFullQuery();
+        highlightQuery(builtQuery);
+    }
+
+    private JPanel getQueryInputField() {
         JPanel queryInputFieldContainer = new JPanel();
 
         queryTextField.setMinimumSize(new Dimension(frameWidth, 25));
         queryTextField.setPreferredSize(new Dimension(frameWidth/2, 25));
         queryTextField.setVisible(true);
 
-        queryTextField.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "submitQuery");
+        queryTextField.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "validateQuery");
+        queryTextField.getActionMap().put("validateQuery", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (validateQueryText()) {
+                    buildButtonsFromQueryText();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Failed to parse query. Please check the syntax.");
+                }
+            }
+        });
         queryTextField.getActionMap().put("submitQuery", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                String input = queryTextField.getText();
-                highlightQuery(input);
-
-                RuleSet parsedQuery = miqlParser.parseMIQL(input);
-                if (parsedQuery != null && parsedQuery.rules != null && !parsedQuery.rules.isEmpty()) {
-                    queryOperators.setRuleOperator(parsedQuery.condition);
-                    queryOperators.updateAndOrButtons();
-
-                    modifyComboboxFromQuery(parsedQuery, 0);
-                    String builtQuery = getFullQuery();
-                    highlightQuery(builtQuery);
+                if (validateQueryText()) {
+                    buildButtonsFromQueryText();
+                    if (onBuildQuery != null) {
+                        onBuildQuery.run();
+                    }
+                    frame.dispose();
                 } else {
                     JOptionPane.showMessageDialog(null, "Failed to parse query. Please check the syntax.");
                 }
@@ -195,8 +224,12 @@ public class AdvancedSearchQueryComponent {
 
                 rulePanel.entityComboBox.setSelectedItem(rule.getEntity());
                 rulePanel.entityPropertiesCombobox.setSelectedItem(rule.getFieldName());
-                rulePanel.operatorsComboBox.setSelectedItem(rule.getOperator());
-                rulePanel.userInputProperty.setText(rule.getUserInput1());
+                if (rulePanel.isUserInputNeeded()) {
+                    rulePanel.operatorsComboBox.setSelectedItem(rule.getOperator());
+                    rulePanel.userInputProperty.setText(rule.getUserInput1());
+                } else {
+                    rulePanel.operatorsComboBox.setSelectedItem(rule.getUserInput1().toUpperCase());
+                }
                 rulePanel.userInputProperty2.setText(rule.getUserInput2());
 
                 if (indentLevel == 0) {
@@ -217,7 +250,7 @@ public class AdvancedSearchQueryComponent {
         }
     }
 
-    public void highlightQuery(String query) {
+    private void highlightQuery(String query) {
         StyledDocument doc = queryTextField.getStyledDocument();
         doc.removeUndoableEditListener(null);
 
@@ -240,7 +273,8 @@ public class AdvancedSearchQueryComponent {
         for (String token : tokens) {
             Style styleToUse = defaultStyle;
 
-            if (token.equals("AND") || token.equals("OR") || token.equals("NOT")) {
+            if (token.equals("AND") || token.equals("OR") || token.equals("NOT") ||
+                    token.equals("and") || token.equals("or") || token.equals("not")) {
                 styleToUse = operatorStyle;
             } else if (token.matches(Field.getMiQlRegex())) {
                 styleToUse = miQLStyle;
