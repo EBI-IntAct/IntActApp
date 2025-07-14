@@ -8,12 +8,17 @@ import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
 import java.util.Properties;
 
 public class Manager {
-    private static final String INTACT_WEBSERVICES = "https://www.ebi.ac.uk/intact/ws/";
-//    private static final String INTACT_WEBSERVICES = "https://wwwdev.ebi.ac.uk/intact/ws/";
 
-    public static final String INTACT_GRAPH_WS = INTACT_WEBSERVICES + "graph/";
-    public static final String INTACT_INTERACTOR_WS = INTACT_WEBSERVICES + "interactor/";
-    public static final String INTACT_INTERACTION_WS = INTACT_WEBSERVICES + "interaction/";
+    // Change this to false if you want to call IntAct test/dev APIs
+    private static final boolean PROD_API = true;
+
+    private static final String INTACT_WEBSERVICES = "https://www.ebi.ac.uk/intact/ws/";
+    private static final String INTACT_TEST_WEBSERVICES = "https://wwwdev.ebi.ac.uk/intact/test/ws/";
+    private static final String INTACT_DEV_WEBSERVICES = "https://wwwdev.ebi.ac.uk/intact/ws/";
+
+    public static final String INTACT_GRAPH_WS = (PROD_API ? INTACT_WEBSERVICES : INTACT_DEV_WEBSERVICES) + "graph/";
+    public static final String INTACT_INTERACTOR_WS = (PROD_API ? INTACT_WEBSERVICES : INTACT_TEST_WEBSERVICES) + "interactor/";
+    public static final String INTACT_INTERACTION_WS = (PROD_API ? INTACT_WEBSERVICES : INTACT_TEST_WEBSERVICES) + "interaction/";
 
 
     public final CytoUtils utils;
