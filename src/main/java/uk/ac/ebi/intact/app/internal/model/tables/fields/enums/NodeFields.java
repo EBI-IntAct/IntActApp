@@ -23,7 +23,7 @@ public class NodeFields {
     public static final Field<String> SPECIES = new Field<>(fields, initializers, Field.Namespace.INTACT, "Species", "species", String.class, true);
     public static final Field<String> TAX_ID = new Field<>(fields, initializers, Field.Namespace.INTACT, "Taxon Id", "taxId", String.class, true);
     public static final Field<String> DESCRIPTION = new Field<>(fields, initializers, Field.Namespace.INTACT, "Description", "full_name", String.class, true);
-    public static final Field<Boolean> MUTATED = new Field<>(fields, initializers, Field.Namespace.INTACT, "Mutation", null, Boolean.class, false, Boolean.FALSE, true);
+    public static final Field<Boolean> MUTATED = new Field<>(fields, initializers, Field.Namespace.INTACT, "Mutation", null, Boolean.class, false, true, Boolean.FALSE);
     public static final ListField<String> FEATURES = new ListField<>(fields, initializers, Field.Namespace.FEATURE, "Features", String.class, true);
     public static final ListField<String> IDENTIFIERS = new ListField<>(fields, initializers, Field.Namespace.IDENTIFIER, "Identifiers", String.class, true);
     public static final Field<String> ELABEL_STYLE = new Field<>(fields, initializers, Field.Namespace.NULL, "enhancedLabel Passthrough", null, String.class, false,

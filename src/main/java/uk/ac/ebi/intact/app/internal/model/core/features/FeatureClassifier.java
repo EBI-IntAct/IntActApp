@@ -25,20 +25,20 @@ public class FeatureClassifier {
     private static final Set<String> MI_TERMS_TO_EXCLUDE_AS_MUTATIONS = Set.of("MI:0429");
 
     public static void initMIIdSets() {
-        biological = new InnerFeatureClass("Biological features", "MI:0252", "Post Transcription Modification");
-        experimental = new InnerFeatureClass("Experimental features", "MI:0505", "Other experimental features");
+        biological = new InnerFeatureClass("Biological features", "MI:0252", "Post Transcription Modification", Set.of());
+        experimental = new InnerFeatureClass("Experimental features", "MI:0505", "Other experimental features", Set.of());
 
-        mutation = new InnerFeatureClass("Mutations", "MI:0118", "Mutation with undefined effect");
+        mutation = new InnerFeatureClass("Mutations", "MI:0118", "Mutation with undefined effect", MI_TERMS_TO_EXCLUDE_AS_MUTATIONS);
 
-        binding = new FeatureClass("Binding regions", "MI:0117");
-        variant = new FeatureClass("Variants", "MI:1241");
-        tag = new FeatureClass("Tags", "MI:0507");
+        binding = new FeatureClass("Binding regions", "MI:0117", Set.of());
+        variant = new FeatureClass("Variants", "MI:1241", Set.of());
+        tag = new FeatureClass("Tags", "MI:0507", Set.of());
 
-        mutation.subClasses.add(new FeatureClass("Mutation causing an interaction", "MI:2227"));
-        mutation.subClasses.add(new FeatureClass("Mutation decreasing interaction", "MI:0119"));
-        mutation.subClasses.add(new FeatureClass("Mutation increasing interaction", "MI:0382"));
-        mutation.subClasses.add(new FeatureClass("Mutation with complex effect", "MI:2333"));
-        mutation.subClasses.add(new FeatureClass("Mutation with no effect", "MI:2226"));
+        mutation.subClasses.add(new FeatureClass("Mutation causing an interaction", "MI:2227", MI_TERMS_TO_EXCLUDE_AS_MUTATIONS));
+        mutation.subClasses.add(new FeatureClass("Mutation decreasing interaction", "MI:0119", MI_TERMS_TO_EXCLUDE_AS_MUTATIONS));
+        mutation.subClasses.add(new FeatureClass("Mutation increasing interaction", "MI:0382", MI_TERMS_TO_EXCLUDE_AS_MUTATIONS));
+        mutation.subClasses.add(new FeatureClass("Mutation with complex effect", "MI:2333", MI_TERMS_TO_EXCLUDE_AS_MUTATIONS));
+        mutation.subClasses.add(new FeatureClass("Mutation with no effect", "MI:2226", MI_TERMS_TO_EXCLUDE_AS_MUTATIONS));
         biological.subClasses.addAll(List.of(binding, mutation, variant));
         experimental.subClasses.add(tag);
         root = List.of(biological, experimental);
@@ -68,7 +68,7 @@ public class FeatureClassifier {
         public final OntologyIdentifier identifier;
         public final Set<OntologyIdentifier> innerIdentifiers = new HashSet<>();
 
-        public FeatureClass(String name, String identifier) {
+        public FeatureClass(String name, String identifier, Set<String> termsToExclude) {
             this.name = name;
             this.identifier = new OntologyIdentifier(identifier);
             executor.execute(() -> {
@@ -85,7 +85,7 @@ public class FeatureClassifier {
                                 JsonNode termChildren = json.get("_embedded").get("terms");
                                 for (final JsonNode objNode : termChildren) {
                                     String childTermId = objNode.get("obo_id").textValue();
-                                    if (!MI_TERMS_TO_EXCLUDE_AS_MUTATIONS.contains(childTermId)) {
+                                    if (!termsToExclude.contains(childTermId)) {
                                         innerIdentifiers.add(new OntologyIdentifier(childTermId, this.identifier.sourceOntology));
                                     }
                                 }
@@ -128,8 +128,8 @@ public class FeatureClassifier {
         public final List<FeatureClass> subClasses = new ArrayList<>();
         public final FeatureClass nonDefinedLeaf;
 
-        public InnerFeatureClass(String name, String miId, String nonDefinedLeafName) {
-            super(name, miId);
+        public InnerFeatureClass(String name, String miId, String nonDefinedLeafName, Set<String> termsToExclude) {
+            super(name, miId, termsToExclude);
             this.nonDefinedLeaf = new FeatureClass(nonDefinedLeafName);
         }
     }
