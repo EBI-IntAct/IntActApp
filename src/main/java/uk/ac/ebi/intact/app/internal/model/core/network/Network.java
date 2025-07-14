@@ -498,7 +498,10 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     }
 
     public Set<String> getDatabases(String field){
-        return nodeTable.getColumn(field).getValues(List.class).stream()
+        return nodeTable
+                .getColumn(field)
+                .getValues(List.class)
+                .stream()
                 .map(list -> (List<String>) list)
                 .filter(Objects::nonNull)
                 .flatMap(values -> values.stream()
@@ -526,6 +529,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         }
         CyGroupSettingsManager groupSettings = manager.utils.getService(CyGroupSettingsManager.class);
         groupSettings.setGroupViewType(CyGroupSettingsManager.GroupViewType.COMPOUND);
+        groupSettings.setUseNestedNetworks(false);
         groupSettings.setDoubleClickAction(CyGroupSettingsManager.DoubleClickAction.NONE);
         groupSettings.setEnableAttributeAggregation(true);
         Map<String, List<CyNode>> groups = groupNodesByProperty(columnName, database);
