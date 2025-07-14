@@ -69,8 +69,7 @@ public class AdvancedSearchUtils {
                 advancedSearchQueryComponent.getPanels().remove(toRemove);
             }
 
-            advancedSearchQueryComponent.getQueryTextField().setText(advancedSearchQueryComponent.getFullQuery());
-            advancedSearchQueryComponent.highlightQuery(advancedSearchQueryComponent.getQueryTextField().getText());
+            advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
         });
 
         return deleteButton;
