@@ -10,10 +10,7 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.styles.EvidenceStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.MutationStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.Style;
-import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.*;
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.FeatureFields;
@@ -86,14 +83,15 @@ public class SessionLoader implements SessionLoadedListener {
                     manager.style.vmm.removeVisualStyle(toReplace.getStyle());
                     manager.style.vmm.addVisualStyle(styleToLoad);
                     switch (type) {
-                        case SUMMARY:
-                            manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager, styleToLoad));
-                            break;
                         case EVIDENCE:
                             manager.style.styles.put(Type.EVIDENCE, new EvidenceStyle(manager, styleToLoad));
                             break;
                         case MUTATION:
                             manager.style.styles.put(Type.MUTATION, new MutationStyle(manager, styleToLoad));
+                            break;
+                        case SUMMARY:
+                        default:
+                            manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager, styleToLoad));
                             break;
                     }
                     break;
@@ -101,14 +99,15 @@ public class SessionLoader implements SessionLoadedListener {
             }
             if (!styleFound) {
                 switch (type) {
-                    case SUMMARY:
-                        manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager));
-                        break;
                     case EVIDENCE:
                         manager.style.styles.put(Type.EVIDENCE, new EvidenceStyle(manager));
                         break;
                     case MUTATION:
                         manager.style.styles.put(Type.MUTATION, new MutationStyle(manager));
+                        break;
+                    case SUMMARY:
+                    default:
+                        manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager));
                         break;
                 }
             }

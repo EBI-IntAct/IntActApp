@@ -51,7 +51,8 @@ public class HttpUtils {
         Map<String, Object> params = Map.of(
                 "query", query,
                 "advancedSearch", isAdvancedSearch(query),
-                "page", page
+                "page", page,
+                "pageSize", 5_000
         );
 
         HttpRequest request = requestBuilder

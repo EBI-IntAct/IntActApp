@@ -57,11 +57,12 @@ public abstract class Style {
         eventHelper = manager.utils.getService(CyEventHelper.class);
         this.style = style;
         newStyle = false;
-        loadStyle();
 
         continuousFactory = manager.utils.getService(VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
         discreteFactory = manager.utils.getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
         passthroughFactory = manager.utils.getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
+
+        loadStyle();
     }
 
     public Style(Manager manager) {

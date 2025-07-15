@@ -35,15 +35,15 @@ public class EdgeLegendPanel extends AbstractLegendPanel {
         AbstractEdgeElementPanel newPanel;
 
         switch (newType) {
-            default:
-            case SUMMARY:
-                newPanel = summaryEdgeLegendPanel;
-                break;
             case EVIDENCE:
                 newPanel = evidenceEdgeLegendPanel;
                 break;
             case MUTATION:
                 newPanel = mutationEdgeLegendPanel;
+                break;
+            case SUMMARY:
+            default:
+                newPanel = summaryEdgeLegendPanel;
                 break;
         }
 
