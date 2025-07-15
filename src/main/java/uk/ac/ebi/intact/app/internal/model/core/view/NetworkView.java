@@ -232,8 +232,7 @@ public class NetworkView implements FilterUpdatedListener {
     public enum Type {
         SUMMARY("SUMMARY", "IntAct - Summary"),
         EVIDENCE("EVIDENCE", "IntAct - Evidence"),
-        MUTATION("MUTATION", "IntAct - Mutation"),
-        ORTHOLOGY("ORTHOLOGY", "IntAct - Orthology"),;
+        MUTATION("MUTATION", "IntAct - Mutation");
 
         private final String name;
         public final String styleName;
