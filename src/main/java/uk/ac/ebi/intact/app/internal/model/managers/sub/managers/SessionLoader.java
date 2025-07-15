@@ -85,15 +85,15 @@ public class SessionLoader implements SessionLoadedListener {
                     manager.style.vmm.removeVisualStyle(toReplace.getStyle());
                     manager.style.vmm.addVisualStyle(styleToLoad);
                     switch (type) {
-                        case SUMMARY:
-                        case ORTHOLOGY:
-                            manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager, styleToLoad));
-                            break;
                         case EVIDENCE:
                             manager.style.styles.put(Type.EVIDENCE, new EvidenceStyle(manager, styleToLoad));
                             break;
                         case MUTATION:
                             manager.style.styles.put(Type.MUTATION, new MutationStyle(manager, styleToLoad));
+                            break;
+                        case SUMMARY:
+                        default:
+                            manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager, styleToLoad));
                             break;
                     }
                     break;
@@ -101,15 +101,15 @@ public class SessionLoader implements SessionLoadedListener {
             }
             if (!styleFound) {
                 switch (type) {
-                    case SUMMARY:
-                    case ORTHOLOGY:
-                        manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager));
-                        break;
                     case EVIDENCE:
                         manager.style.styles.put(Type.EVIDENCE, new EvidenceStyle(manager));
                         break;
                     case MUTATION:
                         manager.style.styles.put(Type.MUTATION, new MutationStyle(manager));
+                        break;
+                    case SUMMARY:
+                    default:
+                        manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager));
                         break;
                 }
             }

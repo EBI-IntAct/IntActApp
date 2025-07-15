@@ -102,14 +102,15 @@ public class DetailPanel extends JPanel
 
         if (view != null) {
             switch (view.getType()) {
-                case SUMMARY:
-                    summaryViewType.setSelected(true);
-                    break;
                 case EVIDENCE:
                     evidenceViewType.setSelected(true);
                     break;
                 case MUTATION:
                     mutationViewType.setSelected(true);
+                    break;
+                case SUMMARY:
+                default:
+                    summaryViewType.setSelected(true);
                     break;
             }
         }
@@ -271,14 +272,15 @@ public class DetailPanel extends JPanel
         NetworkView networkView = manager.data.getNetworkView(cyView);
         if (networkView != null) {
             switch (networkView.getType()) {
-                case SUMMARY:
-                    summaryViewType.setSelected(true);
-                    break;
                 case EVIDENCE:
                     evidenceViewType.setSelected(true);
                     break;
                 case MUTATION:
                     mutationViewType.setSelected(true);
+                    break;
+                case SUMMARY:
+                default:
+                    summaryViewType.setSelected(true);
                     break;
             }
         }
@@ -360,14 +362,15 @@ public class DetailPanel extends JPanel
         nodePanel.viewUpdated();
         edgePanel.viewUpdated();
         switch (event.newType) {
-            case SUMMARY:
-                summaryViewType.setSelected(true);
-                break;
             case EVIDENCE:
                 evidenceViewType.setSelected(true);
                 break;
             case MUTATION:
                 mutationViewType.setSelected(true);
+                break;
+            case SUMMARY:
+            default:
+                summaryViewType.setSelected(true);
                 break;
         }
     }
