@@ -1,19 +1,19 @@
 package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
 
 import uk.ac.ebi.intact.app.internal.ui.components.query.AdvancedSearchQueryComponent;
-import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RulePanel;
-import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RuleSetPanel;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RuleContainer;
+import uk.ac.ebi.intact.app.internal.utils.IconUtils;
 
 import javax.swing.*;
-
 import java.awt.*;
-import java.util.ArrayList;
 
 public class AdvancedSearchUtils {
     final static Color INTACT_PURPLE = new Color(104, 41, 124);
+    private static final ImageIcon delete = IconUtils.createImageIcon("/Buttons/delete.png", 30, 30);
+
 
     public static void setCorrectDimensions(JComponent component) {
-        Dimension comboboxDimension = new Dimension(300, 20);
+        Dimension comboboxDimension = new Dimension(240, 25);
         component.setPreferredSize(comboboxDimension);
         component.setMinimumSize(comboboxDimension);
         component.setMaximumSize(comboboxDimension);
@@ -33,70 +33,23 @@ public class AdvancedSearchUtils {
         button.setForeground(INTACT_PURPLE);
     }
 
-    public static String getQueriesFromRuleBuilders(ArrayList<Object> panels, String queryOperator) {
-        if (!panels.isEmpty()){
-            ArrayList<String> ruleBuilders = new ArrayList<>();
-            for (Object panel : panels) {
-                if (panel instanceof RulePanel) {
-                    RulePanel rulePanel = (RulePanel) panel;
-                    ruleBuilders.add(rulePanel.getQuery());
-                } else if (panel instanceof RuleSetPanel) {
-                    RuleSetPanel ruleSetPanel = (RuleSetPanel) panel;
-                    ruleBuilders.add(ruleSetPanel.getQuery());
-                }
-            }
-            return String.join(" " + queryOperator + " ", ruleBuilders);
-        } else {
-            return null;
-        }
-    }
 
-    public static JButton getDeletePanelButton(JPanel panelToDelete, AdvancedSearchQueryComponent advancedSearchQueryComponent) {
-        JButton deleteButton = new JButton("X");
+    public static JButton getDeletePanelButton(AdvancedSearchQueryComponent advancedSearchQueryComponent, RuleContainer ruleContainer) {
+        JButton deleteButton = new JButton(delete);
+        deleteButton.setMargin(new Insets(0, 0, 0, 0));
+        Dimension maximumSize = new Dimension(30, 30);
+        deleteButton.setSize(maximumSize);
+        deleteButton.setPreferredSize(maximumSize);
+        deleteButton.setMaximumSize(maximumSize);
+
         setButtonIntactPurple(deleteButton);
 
         deleteButton.addActionListener(e -> {
-            Container parent = panelToDelete.getParent();
-            if (parent != null) {
-                parent.remove(panelToDelete);
-                parent.revalidate();
-                parent.repaint();
-            }
-
-            Object toRemove = findPanel(panelToDelete, advancedSearchQueryComponent.getPanels());
-
-            if (toRemove != null) {
-                advancedSearchQueryComponent.getPanels().remove(toRemove);
-            }
-
+            ruleContainer.delete();
             advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
         });
 
         return deleteButton;
     }
-
-    private static Object findPanel(JPanel panelToDelete, ArrayList<Object> panels) {
-        for (Object obj : panels) {
-            if (obj instanceof RulePanel) {
-                if (((RulePanel) obj).getOneRuleBuilderPanel() == panelToDelete) {
-                    return obj;
-                }
-            } else if (obj instanceof RuleSetPanel) {
-                RuleSetPanel ruleSetPanel = (RuleSetPanel) obj;
-                if (ruleSetPanel.getRuleSetPanel() == panelToDelete) {
-                    return obj;
-                }
-
-                Object nested = findPanel(panelToDelete, ruleSetPanel.getPanels());
-                if (nested != null) {
-                    ruleSetPanel.getPanels().remove(nested);
-                    return null;
-                }
-            }
-        }
-        return null;
-    }
-
-
 
 }
