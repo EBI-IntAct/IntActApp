@@ -66,6 +66,7 @@ public class EvidenceEdgeLegendPanel extends AbstractEdgeElementPanel {
     }
 
     public void filterLegendWithCurrent(NetworkView currentView) {
+        if (currentView == null) return;
         Set<String> currentEdgeTypes = currentView.getPropertyValuesOfFilter(EdgeTypeFilter.class);
         if (currentEdgeTypes == null) return;
         edgeTypeToRepresentation.forEach((edgeType, edgeRepresentation) -> edgeRepresentation.setVisible(currentEdgeTypes.contains(edgeType)

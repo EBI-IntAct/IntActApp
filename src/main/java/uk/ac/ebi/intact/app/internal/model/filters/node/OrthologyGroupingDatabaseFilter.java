@@ -12,14 +12,14 @@ public class OrthologyGroupingDatabaseFilter extends RadioButtonFilter<Node> {
                 "Ortholog Group database",
                 "Select which database to use for orthology grouping",
                 Node.class,
-                NodeFields.ORTHOLOG_GROUP_ID.name,
+                NodeFields.ORTHOLOG_GROUP_ID,
                 "panther"
         );
     }
 
     @Override
     public boolean isEnabled() {
-        return super.getNetworkView().getNetwork().getDatabases(NodeFields.ORTHOLOG_GROUP_ID.name).size() > 1;
+        return super.getNetworkView().getNetwork().getOrthologyDatabases(NodeFields.ORTHOLOG_GROUP_ID).size() > 1;
     }
 
 }

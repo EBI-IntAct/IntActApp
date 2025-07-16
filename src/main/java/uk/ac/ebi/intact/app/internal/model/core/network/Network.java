@@ -23,6 +23,7 @@ import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.ListField;
 import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
@@ -491,16 +492,15 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return cyNetwork.getRow(cyNetwork);
     }
 
-    private Map<String, List<CyNode>> groupNodesByProperty(String columnName, String database) {
+    private Map<String, List<CyNode>> groupNodesByProperty(ListField<String> field, String database) {
         Map<String, List<CyNode>> groups = new HashMap<>();
 
         for (CyNode cyNode : cyNetwork.getNodeList()) {
             CyRow row = cyNetwork.getRow(cyNode);
-            if (row == null || !row.isSet(columnName)) continue;
+            Object value = field.getValue(row);
+            if (value == null) {continue;}
 
-            Object value = row.getRaw(columnName);
-            String id = convertValueToString(value, database);
-
+            String id = extractGroupId(value, database);
             if (id != null) {
                 groups.computeIfAbsent(id, k -> new ArrayList<>()).add(cyNode);
             }
@@ -508,7 +508,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return groups;
     }
 
-    private String convertValueToString(Object value, String database) {
+    private String extractGroupId(Object value, String database) {
         if (value == null) {
             return null;
         } else if (value instanceof List) {
@@ -525,13 +525,8 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return null;
     }
 
-    public Set<String> getDatabases(String field){
-        return nodeTable
-                .getColumn(field)
-                .getValues(List.class)
-                .stream()
-                .map(list -> (List<String>) list)
-                .filter(Objects::nonNull)
+    public Set<String> getOrthologyDatabases(ListField<String> field) {
+        return field.getAllValues(nodeTable).stream()
                 .flatMap(values -> values.stream()
                         .filter(Objects::nonNull)
                         .map((String v) -> v.split(":")[0]))
@@ -551,8 +546,8 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return null;
     }
 
-    public void collapseGroups(String columnName, String database) {
-        if (!groupManager.getGroupSet(cyNetwork).isEmpty()){
+    public void collapseGroups(ListField<String> groupingField, String database) {
+        if (!groupManager.getGroupSet(cyNetwork).isEmpty()) {
             groupManager.reset();
         }
         CyGroupSettingsManager groupSettings = manager.utils.getService(CyGroupSettingsManager.class);
@@ -560,14 +555,14 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         groupSettings.setUseNestedNetworks(false);
         groupSettings.setDoubleClickAction(CyGroupSettingsManager.DoubleClickAction.NONE);
         groupSettings.setEnableAttributeAggregation(true);
-        Map<String, List<CyNode>> groups = groupNodesByProperty(columnName, database);
+        Map<String, List<CyNode>> groups = groupNodesByProperty(groupingField, database);
         groups.forEach((key, cyNodes) -> {
             if (cyNodes.size() > 1) {
                 CyGroup group = groupFactory.createGroup(cyNetwork, cyNodes, null, true);
                 group.addGroupToNetwork(cyNetwork);
                 CyRow row = nodeTable.getRow(group.getGroupNode().getSUID());
-                row.set(NodeFields.NAME.name, key);
-                row.set(NodeFields.GROUP_PARTICIPANTS.name, getProteinsIdsFromGroup(group));
+                NodeFields.NAME.setValue(row, key);
+                NodeFields.GROUP_PARTICIPANTS.setValue(row, getProteinsIdsFromGroup(group));
             }
         });
     }
