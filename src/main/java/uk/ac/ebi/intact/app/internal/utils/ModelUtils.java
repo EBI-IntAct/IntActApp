@@ -302,6 +302,8 @@ public class ModelUtils {
         edgeRow.set(CyEdge.INTERACTION, type);
 
         Table.EDGE.setRowFromJson(edgeRow, edgeJSON);
+        Double miScore = EdgeFields.MI_SCORE.getValue(edgeRow);
+        EdgeFields.WEIGHT.setValue(edgeRow, miScore / 10);
 
         edgeJSON.fields().forEachRemaining(entry -> {
             if (Table.EDGE.keysToIgnore.contains(entry.getKey())) return;

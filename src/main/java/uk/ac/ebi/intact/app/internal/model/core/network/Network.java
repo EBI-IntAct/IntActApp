@@ -202,6 +202,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
                     CyRow firstEdgeRow = cyNetwork.getRow(summarizedEdges.get(0));
                     EdgeFields.MI_SCORE.setValue(summaryRow, EdgeFields.MI_SCORE.getValue(firstEdgeRow));
+                    EdgeFields.WEIGHT.setValue(summaryRow, EdgeFields.MI_SCORE.getValue(firstEdgeRow) / 10);
                     EdgeFields.IS_SUMMARY.setValue(summaryRow, true);
                     EdgeFields.SUMMARY_NB_EDGES.setValue(summaryRow, summarizedEdges.size());
 

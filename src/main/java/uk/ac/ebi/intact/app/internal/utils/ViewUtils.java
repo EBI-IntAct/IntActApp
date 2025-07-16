@@ -11,6 +11,7 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TunableSetter;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,16 +29,33 @@ public class ViewUtils {
 
     public static TaskIterator getLayoutTask(TaskMonitor monitor, Manager manager, CyNetworkView networkView) {
         monitor.showMessage(TaskMonitor.Level.INFO, "Force layout application");
-        CyLayoutAlgorithmManager layoutManager = manager.utils.getService(CyLayoutAlgorithmManager.class);
-        CyLayoutAlgorithm alg = layoutManager.getLayout("force-directed-cl");
-        if (alg == null) alg = layoutManager.getLayout("force-directed");
-        Object context = alg.getDefaultLayoutContext();
-        TunableSetter setter = manager.utils.getService(TunableSetter.class);
-        Map<String, Object> layoutArgs = new HashMap<>();
-        layoutArgs.put("defaultNodeMass", 10.0);
-        setter.applyTunables(context, layoutArgs);
+
+        CyLayoutAlgorithmManager layoutAlgorithmManager = manager.utils.getService(CyLayoutAlgorithmManager.class);
+        TunableSetter tunableSetter = manager.utils.getService(TunableSetter.class);
+
+        Map<String, Object> layoutArgs;
+        CyLayoutAlgorithm forceLayout = layoutAlgorithmManager.getLayout("yfiles.OrganicLayout");
+        Object context;
+
+        if (forceLayout == null) {
+            forceLayout = layoutAlgorithmManager.getLayout("force-directed-cl");
+            if (forceLayout == null) forceLayout = layoutAlgorithmManager.getLayout("force-directed");
+            context = forceLayout.getDefaultLayoutContext();
+            layoutArgs = new HashMap<>();
+            layoutArgs.put("defaultSpringCoefficient", 1E-5);
+            layoutArgs.put("defaultSpringLength", 20);
+            layoutArgs.put("defaultNodeMass", 10);
+
+            layoutArgs.put("defaultEdgeWeight", 0.08);
+            layoutArgs.put("edgeAttribute", EdgeFields.WEIGHT.toString());
+            layoutArgs.put("type", EdgeFields.WEIGHT.toString());
+
+            tunableSetter.applyTunables(context, layoutArgs);
+        } else {
+            context = forceLayout.getDefaultLayoutContext();
+        }
+
         Set<View<CyNode>> nodeViews = new HashSet<>(networkView.getNodeViews());
-        TaskIterator taskIterator = alg.createTaskIterator(networkView, context, nodeViews, null);
-        return taskIterator;
+        return forceLayout.createTaskIterator(networkView, context, nodeViews, null);
     }
 }

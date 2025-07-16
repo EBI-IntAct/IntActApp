@@ -22,6 +22,7 @@ public class EdgeFields {
     public static final Field<String> NAME = new Field<>(fields, initializers, Field.Namespace.NULL, CyNetwork.NAME, null, String.class, true);
     public static final CVField TYPE = new CVField(fields, initializers, Field.Namespace.NULL, CyEdge.INTERACTION, "interaction_type", true);
     public static final Field<Double> MI_SCORE = new Field<>(fields, initializers, Field.Namespace.INTACT, "MI Score", "mi_score", Double.class, true);
+    public static final Field<Double> WEIGHT = new Field<>(fields, initializers, Field.Namespace.INTACT, "Weight", null, Double.class, false);
     public static final Field<String> EXPANSION_TYPE = new Field<>(fields, initializers, Field.Namespace.INTACT, "Expansion type", "expansion_type", String.class, true);
     public static final Field<String> HOST_ORGANISM = new Field<>(fields, initializers, Field.Namespace.INTACT, "Host organism", "host_organism", String.class, true);
     public static final Field<String> HOST_ORGANISM_ID = new Field<>(fields, initializers, Field.Namespace.INTACT, "Host organism taxon id", "host_organism_tax_id", String.class, true);
