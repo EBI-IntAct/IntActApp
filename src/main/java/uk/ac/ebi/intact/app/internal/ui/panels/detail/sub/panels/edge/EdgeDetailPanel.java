@@ -131,6 +131,14 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
             for (Edge edge : edges) {
                 if (!selectionRunning) break;
 
+                if (edgeToPanel.containsKey(edge)) {
+                    if (edgeToPanel.get(edge).requiresUpdate(edge)) {
+                        EdgePanel edgePanel = edgeToPanel.get(edge);
+                        edgePanel.delete();
+                        edgesPanel.remove(edgePanel);
+                        edgeToPanel.remove(edge);
+                    }
+                }
                 edgeToPanel.computeIfAbsent(edge, keyEdge -> {
                     EdgePanel edgePanel = new EdgePanel(keyEdge);
                     edgePanel.setAlignmentX(LEFT_ALIGNMENT);
@@ -186,9 +194,17 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
     private class EdgePanel extends CollapsablePanel {
 
         private final EdgeParticipants edgeParticipants;
+        private final int numberOfEvidenceEdges;
 
         public EdgePanel(Edge edge) {
             super("", !(selectedEdges == null || selectedEdges.collapseAllButton.isExpanded()));
+
+            if (edge instanceof EvidenceEdge) {
+                numberOfEvidenceEdges = 1;
+            } else {
+                numberOfEvidenceEdges = ((SummaryEdge) edge).getNbSummarizedEdges();
+            }
+
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
             content.setAlignmentX(LEFT_ALIGNMENT);
             setBackground(UIColors.lightBackground);
@@ -209,6 +225,10 @@ public class EdgeDetailPanel extends AbstractDetailPanel {
             content.add(new EdgeDetails(edge, openBrowser));
             edgeParticipants = new EdgeParticipants(edge, openBrowser);
             content.add(edgeParticipants);
+        }
+
+        public boolean requiresUpdate(Edge edge) {
+            return edge instanceof SummaryEdge && ((SummaryEdge) edge).getNbSummarizedEdges() != numberOfEvidenceEdges;
         }
 
         public void delete() {
