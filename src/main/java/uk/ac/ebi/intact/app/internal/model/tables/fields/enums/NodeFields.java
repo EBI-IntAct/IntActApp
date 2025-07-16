@@ -26,10 +26,12 @@ public class NodeFields {
     public static final Field<Boolean> MUTATED = new Field<>(fields, initializers, Field.Namespace.INTACT, "Mutation", null, Boolean.class, false, true, Boolean.FALSE);
     public static final ListField<String> FEATURES = new ListField<>(fields, initializers, Field.Namespace.FEATURE, "Features", String.class, true);
     public static final ListField<String> IDENTIFIERS = new ListField<>(fields, initializers, Field.Namespace.IDENTIFIER, "Identifiers", String.class, true);
+
+    public static final ListField<String> ORTHOLOG_GROUP_ID = new ListField<>(fields, initializers, Field.Namespace.ORTHOLOGY, "Ortholog group ids", String.class, "ortholog_group", true);
+    public static final ListField<String> GROUP_PARTICIPANTS = new ListField<>(fields, initializers, Field.Namespace.ORTHOLOGY, "Group participants", String.class, true);
+
     public static final Field<String> ELABEL_STYLE = new Field<>(fields, initializers, Field.Namespace.NULL, "enhancedLabel Passthrough", null, String.class, false,
             "label: attribute=\"name\" labelsize=12 labelAlignment=center outline=true outlineColor=black outlineTransparency=130 outlineWidth=5 background=false color=white dropShadow=false");
 
-    public static final ListField<String> ORTHOLOG_GROUP_ID = new ListField<>(fields, initializers, Field.Namespace.NULL, "Ortholog group ids", String.class, "ortholog_group", true);
-    public static final ListField<String> GROUP_PARTICIPANTS = new ListField<>(fields, initializers, Field.Namespace.NULL, "Group participants", String.class, true);
 
 }

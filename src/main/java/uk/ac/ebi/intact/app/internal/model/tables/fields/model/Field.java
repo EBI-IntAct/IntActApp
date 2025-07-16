@@ -14,6 +14,7 @@ public class Field<T> implements FieldInitializer {
     public enum Namespace {
         NULL(""),
         INTACT("IntAct"),
+        ORTHOLOGY("IntAct - Orthology"),
         SUMMARY("IntAct - Summary"),
         SOURCE("IntAct - Source"),
         TARGET("IntAct - Target"),

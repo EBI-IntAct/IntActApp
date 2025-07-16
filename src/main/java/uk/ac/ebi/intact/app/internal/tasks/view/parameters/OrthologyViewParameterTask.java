@@ -37,7 +37,7 @@ public class OrthologyViewParameterTask extends AbstractViewTask {
         chooseData();
         manager.data.viewParameterChanged(chosenView);
         if (isParameterApplied) {
-            chosenNetwork.collapseGroups(NodeFields.ORTHOLOG_GROUP_ID.name, DEFAULT_ORTHOLOGY_DB);
+            chosenNetwork.collapseGroups(NodeFields.ORTHOLOG_GROUP_ID, DEFAULT_ORTHOLOGY_DB);
             applyParameterLayout();
         } else {
             chosenNetwork.expandGroups();
