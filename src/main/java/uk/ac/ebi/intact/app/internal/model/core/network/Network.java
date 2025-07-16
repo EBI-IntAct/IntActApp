@@ -79,10 +79,6 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         groupManager = manager.utils.getService(CyGroupManager.class);
     }
 
-    public Set<Edge> getVisibleEdges(NetworkView.Type networkViewType) {
-        return NetworkView.Type.SUMMARY == networkViewType ? visibleSummaryEdges : visibleEvidenceEdges;
-    }
-
     public void setNetwork(CyNetwork cyNetwork) {
         this.cyNetwork = cyNetwork;
 
@@ -495,7 +491,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return cyNetwork.getRow(cyNetwork);
     }
 
-    public Map<String, List<CyNode>> groupNodesByProperty(String columnName, String database) {
+    private Map<String, List<CyNode>> groupNodesByProperty(String columnName, String database) {
         Map<String, List<CyNode>> groups = new HashMap<>();
 
         for (CyNode cyNode : cyNetwork.getNodeList()) {

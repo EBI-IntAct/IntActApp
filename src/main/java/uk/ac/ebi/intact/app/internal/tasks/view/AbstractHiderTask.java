@@ -42,15 +42,14 @@ public abstract class AbstractHiderTask extends AbstractViewTask {
                     .map(edge -> edge.cyEdge.getSUID())
                     .collect(Collectors.toSet());
 
-            insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getVisibleEvidenceCyEdges()));
-            insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getVisibleSummaryCyEdges()));
             insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(cyNetwork, edgesToSelect).createTaskIterator());
+            manager.data.viewChanged(NetworkView.Type.SUMMARY, chosenView);
         }
     }
 
-    protected void expandEdgesIfNeeded() {
+    protected void expandEdgesIfNeeded(NetworkView.Type newViewType) {
         chooseData();
-        if (chosenView != null && chosenView.getType() == NetworkView.Type.SUMMARY) {
+        if (chosenView != null && chosenView.getType() != newViewType) {
             CyNetwork cyNetwork = chosenNetwork.getCyNetwork();
             Set<Long> edgesToSelect = chosenNetwork.getSummaryEdges().stream()
                     .filter(Edge::isSelected)
@@ -59,10 +58,10 @@ public abstract class AbstractHiderTask extends AbstractViewTask {
                     .filter(edge -> chosenNetwork.getVisibleEvidenceEdges().contains(chosenNetwork.getEvidenceEdge(edge)))
                     .map(CyIdentifiable::getSUID)
                     .collect(Collectors.toSet());
+            manager.utils.info("edgesToSelect = " + edgesToSelect.size());
 
-            insertTasksAfterCurrentTask(hideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getVisibleSummaryCyEdges()));
-            insertTasksAfterCurrentTask(unHideTaskFactory.createTaskIterator(cyView, null, chosenNetwork.getVisibleEvidenceCyEdges()));
             insertTasksAfterCurrentTask(new SelectEdgesTaskFactory(cyNetwork, edgesToSelect).createTaskIterator());
+            manager.data.viewChanged(newViewType, chosenView);
         }
     }
 }
