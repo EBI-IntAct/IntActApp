@@ -127,7 +127,7 @@ public class DetailPanel extends JPanel
         viewsContainer.setLayout(new GridLayout(3,0));
         viewTypesPanel.add(viewsContainer);
 
-        JPanel viewParamsPanel = getViewParamsPanel();
+        JPanel viewParamsPanel = getViewParamsPanel(network);
         viewTypesPanel.add(viewParamsPanel);
 
         JPanel upperPanel = new JPanel(new GridLayout(1, 2));
@@ -169,12 +169,11 @@ public class DetailPanel extends JPanel
         repaint();
     }
 
-    private JPanel getViewParamsPanel() {
+    private JPanel getViewParamsPanel(Network network) {
         JPanel viewParamsPanel = new JPanel();
         viewParamsPanel.setLayout(new FlowLayout(FlowLayout.LEFT)); // Align components left
-//        viewParamsPanel.setBorder(BorderFactory.createTitledBorder("Parameters"));
 
-        orthologyButton.setActivated(false);
+        orthologyButton.setActivated(isNetworkGroupedByOrthology(network));
         orthologyButton.addChangeListener(e -> {
             if (!orthologyButton.isActivated()) {
                 orthologyButton.setText("Group by orthology");
@@ -288,14 +287,14 @@ public class DetailPanel extends JPanel
 
     private void updateParamsButton(NetworkView networkView) {
         Network network = networkView.getNetwork();
-        boolean isGrouped = network != null && isNetworkGroupedByOrthology(network);
-        orthologyViewParameterTaskFactory = new OrthologyViewParameterTaskFactory(manager, networkView, isNetworkGroupedByOrthology(network));
+        boolean isGrouped = isNetworkGroupedByOrthology(network);
+        orthologyViewParameterTaskFactory = new OrthologyViewParameterTaskFactory(manager, networkView, isGrouped);
         orthologyButton.setActivated(isGrouped);
         orthologyButton.setText(isGrouped ? "Ungroup by orthology" : "Group by orthology");
     }
 
     private boolean isNetworkGroupedByOrthology(Network network) {
-        return !network.getGroupManager().getGroupSet(network.getCyNetwork()).isEmpty();
+        return network != null && !network.getGroupManager().getGroupSet(network.getCyNetwork()).isEmpty();
     }
 
     @Override
