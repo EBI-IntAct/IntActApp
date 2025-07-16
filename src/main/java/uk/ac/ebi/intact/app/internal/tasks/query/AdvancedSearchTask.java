@@ -124,11 +124,13 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
             int page = 0;
             JsonNode pagedResult;
             do {
-                pagedResult = HttpUtils.getJsonNetworkWithRequestBody(this.query, page++);
+                int pageSize = 1_000;
+                pagedResult = HttpUtils.getJsonNetworkWithRequestBody(this.query, page++, pageSize);
                 JsonNode network = pagedResult.get("content").get(0);
                 Number totalPages = pagedResult.get("totalPages").numberValue();
+                Number totalElements = pagedResult.get("totalElements").numberValue();
 
-                monitor.showMessage(TaskMonitor.Level.INFO, "Page " + page + " / " + totalPages);
+                monitor.showMessage(TaskMonitor.Level.INFO, "Page " + page + " / " + totalPages + " - Loaded " + page  * pageSize + " evidence edges on " + totalElements);
                 monitor.setProgress(page / totalPages.doubleValue());
                 if (cancelled) return;
 
