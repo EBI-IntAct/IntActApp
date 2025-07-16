@@ -171,7 +171,6 @@ public class DetailPanel extends JPanel
     private JPanel getViewParamsPanel() {
         JPanel viewParamsPanel = new JPanel();
         viewParamsPanel.setLayout(new FlowLayout(FlowLayout.LEFT)); // Align components left
-//        viewParamsPanel.setBorder(BorderFactory.createTitledBorder("Parameters"));
 
         orthologyButton.setActivated(false);
         orthologyButton.addChangeListener(e -> {
