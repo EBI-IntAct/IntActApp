@@ -51,9 +51,9 @@ public class NetworkView implements FilterUpdatedListener {
     private boolean listeningToFilterUpdate = true;
     private Type type;
     @JsonIgnore
-    protected final HideTaskFactory hideTaskFactory;
+    private final HideTaskFactory hideTaskFactory;
     @JsonIgnore
-    protected final UnHideTaskFactory unHideTaskFactory;
+    private final UnHideTaskFactory unHideTaskFactory;
 
     public NetworkView(Manager manager, CyNetworkView cyView, QueryFilters queryFilters, Type type) {
         this(manager, cyView, type);
