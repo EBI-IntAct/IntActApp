@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.app.internal.model.core.view;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,8 +50,9 @@ public class NetworkView implements FilterUpdatedListener {
     private boolean filtersSilenced = false;
     private boolean listeningToFilterUpdate = true;
     private Type type;
-
+    @JsonIgnore
     protected final HideTaskFactory hideTaskFactory;
+    @JsonIgnore
     protected final UnHideTaskFactory unHideTaskFactory;
 
     public NetworkView(Manager manager, CyNetworkView cyView, QueryFilters queryFilters, Type type) {
