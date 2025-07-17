@@ -106,6 +106,7 @@ public class NetworkView implements FilterUpdatedListener {
     private void setupFilters(QueryFilters queryFilters) {
         filters.add(new NodeTypeFilter(this, queryFilters));
         filters.add(new NodeSpeciesFilter(this, queryFilters));
+        filters.add(new OrphanEdgeFilter(this)); // Run after node filters to make OrphanNode take into account node filters
 
         filters.add(new EdgeMIScoreFilter(this, queryFilters));
         filters.add(new EdgeInteractionDetectionMethodFilter(this, queryFilters));
@@ -117,7 +118,7 @@ public class NetworkView implements FilterUpdatedListener {
         filters.add(new EdgePositiveFilter(this, queryFilters));
 
         filters.add(new OrphanNodeFilter(this)); // Must be after edge filters
-        filters.add(new OrphanEdgeFilter(this));
+        filters.add(new OrphanEdgeFilter(this)); // Run a second time to clear edges after orphan nodes
 
         filters.add(new OrthologyGroupingDatabaseFilter(this));
     }
