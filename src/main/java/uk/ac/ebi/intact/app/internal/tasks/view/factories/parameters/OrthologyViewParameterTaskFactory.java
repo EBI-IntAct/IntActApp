@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.app.internal.tasks.view.factories.parameters;
 
+import lombok.Getter;
 import lombok.Setter;
 import org.cytoscape.work.TaskIterator;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
@@ -9,16 +10,21 @@ import uk.ac.ebi.intact.app.internal.tasks.view.parameters.OrthologyViewParamete
 
 public class OrthologyViewParameterTaskFactory extends AbstractViewTaskFactory {
     private final Manager manager;
-    private final NetworkView networkView;
 
     @Setter
+    private NetworkView networkView;
+    @Setter
     private boolean isParameterApplied;
+    @Getter
+    @Setter
+    private String database;
 
-    public OrthologyViewParameterTaskFactory(Manager manager, NetworkView networkView, boolean isParameterApplied) {
+    public OrthologyViewParameterTaskFactory(Manager manager, NetworkView networkView, boolean isParameterApplied, String database) {
         super(manager, false);
         this.manager = manager;
         this.networkView = networkView;
         this.isParameterApplied = isParameterApplied;
+        this.database = database;
     }
 
     public OrthologyViewParameterTaskFactory(Manager manager, boolean currentNetwork) {
@@ -37,6 +43,6 @@ public class OrthologyViewParameterTaskFactory extends AbstractViewTaskFactory {
         if (currentView){
             return new TaskIterator(new OrthologyViewParameterTask(manager, currentView));
         }
-        return new TaskIterator(new OrthologyViewParameterTask(manager, view, isParameterApplied));
+        return new TaskIterator(new OrthologyViewParameterTask(manager, view, isParameterApplied, database));
     }
 }

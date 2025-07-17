@@ -493,7 +493,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return cyNetwork.getRow(cyNetwork);
     }
 
-    private Map<String, List<CyNode>> groupNodesByProperty(ListField<String> field, String database) {
+    public Map<String, List<CyNode>> groupNodesByProperty(ListField<String> field, String database) {
         Map<String, List<CyNode>> groups = new HashMap<>();
 
         for (CyNode cyNode : cyNetwork.getNodeList()) {
@@ -547,7 +547,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return null;
     }
 
-    public void collapseGroups(ListField<String> groupingField, String database) {
+    public void collapseGroups(Map<String, List<CyNode>> groups) {
         if (!groupManager.getGroupSet(cyNetwork).isEmpty()) {
             groupManager.reset();
         }
@@ -556,7 +556,6 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         groupSettings.setUseNestedNetworks(false);
         groupSettings.setDoubleClickAction(CyGroupSettingsManager.DoubleClickAction.NONE);
         groupSettings.setEnableAttributeAggregation(true);
-        Map<String, List<CyNode>> groups = groupNodesByProperty(groupingField, database);
         groups.forEach((key, cyNodes) -> {
             if (cyNodes.size() > 1) {
                 CyGroup group = groupFactory.createGroup(cyNetwork, cyNodes, null, true);

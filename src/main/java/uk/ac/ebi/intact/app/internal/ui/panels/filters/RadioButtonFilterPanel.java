@@ -1,7 +1,6 @@
 package uk.ac.ebi.intact.app.internal.ui.panels.filters;
 
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
-import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.filters.RadioButtonFilter;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 
@@ -58,9 +57,6 @@ public class RadioButtonFilterPanel <T extends Element> extends FilterPanel<Radi
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        Network network = super.getFilter().getNetwork();
-        network.expandGroups();
-        network.collapseGroups(filter.getGroupingField(), selectedProperty);
     }
 
     @Override

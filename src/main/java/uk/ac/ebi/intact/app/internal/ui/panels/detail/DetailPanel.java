@@ -17,6 +17,8 @@ import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.NetworkCreatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.NetworkCreatedListener;
+import uk.ac.ebi.intact.app.internal.model.events.OrthologyDatabaseUpdatedEvent;
+import uk.ac.ebi.intact.app.internal.model.events.OrthologyDatabaseUpdatedListener;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedListener;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
@@ -28,6 +30,7 @@ import uk.ac.ebi.intact.app.internal.tasks.view.extract.ExtractNetworkViewTaskFa
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.MutationViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.parameters.OrthologyViewParameterTask;
 import uk.ac.ebi.intact.app.internal.ui.components.buttons.DocumentedButton;
 import uk.ac.ebi.intact.app.internal.ui.components.buttons.HelpButton;
 import uk.ac.ebi.intact.app.internal.ui.components.buttons.ToggleSwitch;
@@ -51,7 +54,8 @@ public class DetailPanel extends JPanel
         SetCurrentNetworkViewListener,
         SelectedNodesAndEdgesListener,
         NetworkCreatedListener,
-        ViewUpdatedListener {
+        ViewUpdatedListener,
+        OrthologyDatabaseUpdatedListener {
 
     private static final Icon icon = IconUtils.createImageIcon("/IntAct/DIGITAL/Gradient_over_Transparent/favicon_32x32.ico");
     final Manager manager;
@@ -66,7 +70,7 @@ public class DetailPanel extends JPanel
     private final EvidenceViewTaskFactory evidenceViewTaskFactory;
     private final MutationViewTaskFactory mutationViewTaskFactory;
 
-    private OrthologyViewParameterTaskFactory orthologyViewParameterTaskFactory;
+    private final OrthologyViewParameterTaskFactory orthologyViewParameterTaskFactory;
 
     private final NodeDetailPanel nodePanel;
     private final EdgeDetailPanel edgePanel;
@@ -87,7 +91,8 @@ public class DetailPanel extends JPanel
         summaryViewTaskFactory = new SummaryViewTaskFactory(manager, true);
         evidenceViewTaskFactory = new EvidenceViewTaskFactory(manager, true);
         mutationViewTaskFactory = new MutationViewTaskFactory(manager, true);
-        orthologyViewParameterTaskFactory = new OrthologyViewParameterTaskFactory(manager, view, isNetworkGroupedByOrthology(network));
+        orthologyViewParameterTaskFactory = new OrthologyViewParameterTaskFactory(
+                manager, view, isNetworkGroupedByOrthology(network), OrthologyViewParameterTask.DEFAULT_ORTHOLOGY_DB);
 
         ButtonGroup viewTypes = new ButtonGroup();
         viewTypes.add(summaryViewType);
@@ -288,7 +293,8 @@ public class DetailPanel extends JPanel
     private void updateParamsButton(NetworkView networkView) {
         Network network = networkView.getNetwork();
         boolean isGrouped = isNetworkGroupedByOrthology(network);
-        orthologyViewParameterTaskFactory = new OrthologyViewParameterTaskFactory(manager, networkView, isGrouped);
+        orthologyViewParameterTaskFactory.setNetworkView(networkView);
+        orthologyViewParameterTaskFactory.setParameterApplied(isGrouped);
         orthologyButton.setActivated(isGrouped);
         orthologyButton.setText(isGrouped ? "Ungroup by orthology" : "Group by orthology");
     }
@@ -371,6 +377,24 @@ public class DetailPanel extends JPanel
             default:
                 summaryViewType.setSelected(true);
                 break;
+        }
+    }
+
+    @Override
+    public void handleEvent(OrthologyDatabaseUpdatedEvent event) {
+        if (!orthologyViewParameterTaskFactory.getDatabase().equals(event.getNewOrthologyDatabase())) {
+            if (orthologyButton.isActivated()) {
+                // If orthology grouping is enabled, then we remove the existing groups
+                orthologyViewParameterTaskFactory.setParameterApplied(false);
+                manager.utils.execute(orthologyViewParameterTaskFactory.createTaskIterator());
+            }
+            // Then we update the database used for orthology grouping
+            orthologyViewParameterTaskFactory.setDatabase(event.getNewOrthologyDatabase());
+            if (orthologyButton.isActivated()) {
+                // And we create new groups based on the new database
+                orthologyViewParameterTaskFactory.setParameterApplied(true);
+                manager.utils.execute(orthologyViewParameterTaskFactory.createTaskIterator());
+            }
         }
     }
 }

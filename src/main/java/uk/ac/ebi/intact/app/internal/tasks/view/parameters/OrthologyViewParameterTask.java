@@ -31,19 +31,20 @@ import java.util.stream.Collectors;
 
 public class OrthologyViewParameterTask extends AbstractViewTask {
     public static final int CIRCLE_LAYOUT_SPACING = 90;
-    private final String DEFAULT_ORTHOLOGY_DB = "panther";
+    public static final String DEFAULT_ORTHOLOGY_DB = "panther";
     private final boolean isParameterApplied;
-    private NetworkView networkView;
+    private final String database;
 
-    public OrthologyViewParameterTask(Manager manager, NetworkView networkView, boolean isParameterApplied) {
+    public OrthologyViewParameterTask(Manager manager, NetworkView networkView, boolean isParameterApplied, String database) {
         super(manager, networkView);
-        this.networkView = networkView;
         this.isParameterApplied = isParameterApplied;
+        this.database = database;
     }
 
     public OrthologyViewParameterTask(Manager manager, boolean currentView) {
         super(manager, currentView);
         this.isParameterApplied = true;
+        this.database = DEFAULT_ORTHOLOGY_DB;
     }
 
     @Override
@@ -51,8 +52,13 @@ public class OrthologyViewParameterTask extends AbstractViewTask {
         chooseData();
         manager.data.viewParameterChanged(chosenView);
         if (isParameterApplied) {
-            chosenNetwork.collapseGroups(NodeFields.ORTHOLOG_GROUP_ID, DEFAULT_ORTHOLOGY_DB);
-            applyParameterLayout(monitor);
+            Map<String, List<CyNode>> groups = chosenNetwork.groupNodesByProperty(NodeFields.ORTHOLOG_GROUP_ID, database);
+            if (groups.isEmpty()) {
+                resetLayout(monitor);
+            } else {
+                chosenNetwork.collapseGroups(groups);
+                applyParameterLayout(monitor);
+            }
         } else {
             chosenNetwork.expandGroups();
             resetLayout(monitor);
