@@ -10,26 +10,23 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.events.SelectedNodesAndEdgesEvent;
 import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
 import org.cytoscape.view.model.CyNetworkView;
-
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
-import uk.ac.ebi.intact.app.internal.model.events.NetworkCreatedEvent;
-import uk.ac.ebi.intact.app.internal.model.events.NetworkCreatedListener;
-import uk.ac.ebi.intact.app.internal.model.events.OrthologyDatabaseUpdatedEvent;
-import uk.ac.ebi.intact.app.internal.model.events.OrthologyDatabaseUpdatedListener;
-import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
-import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedListener;
+import uk.ac.ebi.intact.app.internal.model.events.*;
 import uk.ac.ebi.intact.app.internal.model.filters.Filter;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
-import uk.ac.ebi.intact.app.internal.tasks.view.factories.parameters.OrthologyViewParameterTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.view.filter.ApplyFiltersTaskFactory;
-import uk.ac.ebi.intact.app.internal.tasks.view.filter.ResetFiltersTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.extract.ExtractNetworkViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.MutationViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.factories.parameters.OrthologyViewParameterTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.filter.ApplyFiltersTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.filter.ResetFiltersTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.parameters.OrthologyViewParameterTask;
 import uk.ac.ebi.intact.app.internal.ui.components.buttons.DocumentedButton;
 import uk.ac.ebi.intact.app.internal.ui.components.buttons.HelpButton;
@@ -45,8 +42,10 @@ import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 public class DetailPanel extends JPanel
         implements CytoPanelComponent2,
@@ -123,13 +122,12 @@ public class DetailPanel extends JPanel
         VerticalPanel viewTypesPanel = new VerticalPanel();
 
 
-
         viewTypesPanel.setBorder(BorderFactory.createTitledBorder("View"));
         VerticalPanel viewsContainer = new VerticalPanel();
         viewsContainer.add(summaryViewType);
         viewsContainer.add(evidenceViewType);
         viewsContainer.add(mutationViewType);
-        viewsContainer.setLayout(new GridLayout(3,0));
+        viewsContainer.setLayout(new GridLayout(3, 0));
         viewTypesPanel.add(viewsContainer);
 
         JPanel viewParamsPanel = getViewParamsPanel(network);
@@ -179,14 +177,25 @@ public class DetailPanel extends JPanel
         viewParamsPanel.setLayout(new FlowLayout(FlowLayout.LEFT)); // Align components left
 
         orthologyButton.setActivated(isNetworkGroupedByOrthology(network));
-        orthologyButton.addChangeListener(e -> {
+
+        orthologyButton.addChangeListener(event -> {
+            orthologyButton.setEnabled(false);
             if (!orthologyButton.isActivated()) {
                 orthologyButton.setText("Group by orthology");
             } else {
                 orthologyButton.setText("Ungroup by orthology");
             }
             orthologyViewParameterTaskFactory.setParameterApplied(orthologyButton.isActivated());
-            manager.utils.execute(orthologyViewParameterTaskFactory.createTaskIterator());
+            TaskIterator taskIterator = orthologyViewParameterTaskFactory.createTaskIterator();
+            taskIterator.append(new AbstractTask() {
+                @Override
+                public void run(TaskMonitor taskMonitor) {
+                    Timer timer = new Timer(500, x -> orthologyButton.setEnabled(true));
+                    timer.setRepeats(false);
+                    timer.start();
+                }
+            });
+            manager.utils.execute(taskIterator);
         });
 
         viewParamsPanel.add(orthologyButton);
@@ -196,6 +205,7 @@ public class DetailPanel extends JPanel
 
         return viewParamsPanel;
     }
+
     public void showCytoPanel() {
         CySwingApplication swingApplication = manager.utils.getService(CySwingApplication.class);
         CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.EAST);
@@ -246,30 +256,35 @@ public class DetailPanel extends JPanel
 
     @Override
     public void handleEvent(SelectedNodesAndEdgesEvent event) {
+//        new Thread(() -> {
         if (!registered) return;
-        if (Instant.now().minusMillis(200).isAfter(lastSelection)) {
+        if (event.getNetwork() != manager.data.getCurrentNetwork()) return;
+        if (!Instant.now().minusMillis(200).isAfter(lastSelection)) return;
 
-            if (nodePanel.selectionRunning || edgePanel.selectionRunning) {
-                nodePanel.selectionRunning = false;
-                edgePanel.selectionRunning = false;
-                TimeUtils.sleep(200);
-            }
-            lastSelection = Instant.now();
-            Collection<CyNode> selectedNodes = event.getSelectedNodes();
-            Collection<CyEdge> selectedEdges = event.getSelectedEdges();
-            boolean nodesSelected = !selectedNodes.isEmpty();
-            boolean edgesSelected = !selectedEdges.isEmpty();
-            if (nodesSelected && edgesSelected && tabs.getSelectedComponent() == legendPanel) {
-                tabs.setSelectedComponent(nodePanel);
-            } else if (nodesSelected && selectedEdges.isEmpty()) {
-                tabs.setSelectedComponent(nodePanel);
-            } else if (selectedNodes.isEmpty() && edgesSelected) {
-                tabs.setSelectedComponent(edgePanel);
-            }
-
-            new Thread(() -> nodePanel.selectedNodes(selectedNodes)).start();
-            new Thread(() -> edgePanel.selectedEdges(selectedEdges)).start();
+        if (nodePanel.selectionRunning || edgePanel.selectionRunning) {
+            nodePanel.selectionRunning = false;
+            edgePanel.selectionRunning = false;
+            TimeUtils.sleep(200);
         }
+        lastSelection = Instant.now();
+
+        Collection<CyNode> selectedNodes = event.getSelectedNodes();
+        Collection<CyEdge> selectedEdges = event.getSelectedEdges();
+        boolean nodesSelected = !selectedNodes.isEmpty();
+        boolean edgesSelected = !selectedEdges.isEmpty();
+        if (nodesSelected && edgesSelected && tabs.getSelectedComponent() == legendPanel) {
+            tabs.setSelectedComponent(nodePanel);
+        } else if (nodesSelected && selectedEdges.isEmpty()) {
+            tabs.setSelectedComponent(nodePanel);
+        } else if (selectedNodes.isEmpty() && edgesSelected) {
+            tabs.setSelectedComponent(edgePanel);
+        }
+//        nodePanel.selectedNodes(selectedNodes);
+//        edgePanel.selectedEdges(selectedEdges);
+
+        new Thread(() -> nodePanel.selectedNodes(selectedNodes)).start();
+        new Thread(() -> edgePanel.selectedEdges(selectedEdges)).start();
+//        }).start();
     }
 
     private void updateRadioButtons(CyNetworkView cyView) {

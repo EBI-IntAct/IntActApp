@@ -23,9 +23,9 @@ import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.model.ListField;
 import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
-import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
@@ -499,7 +499,9 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         for (CyNode cyNode : cyNetwork.getNodeList()) {
             CyRow row = cyNetwork.getRow(cyNode);
             Object value = field.getValue(row);
-            if (value == null) {continue;}
+            if (value == null) {
+                continue;
+            }
 
             String id = extractGroupId(value, database);
             if (id != null) {
@@ -556,15 +558,18 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         groupSettings.setUseNestedNetworks(false);
         groupSettings.setDoubleClickAction(CyGroupSettingsManager.DoubleClickAction.NONE);
         groupSettings.setEnableAttributeAggregation(true);
-        groups.forEach((key, cyNodes) -> {
-            if (cyNodes.size() > 1) {
-                CyGroup group = groupFactory.createGroup(cyNetwork, cyNodes, null, true);
-                group.addGroupToNetwork(cyNetwork);
-                CyRow row = nodeTable.getRow(group.getGroupNode().getSUID());
-                NodeFields.NAME.setValue(row, key);
-                NodeFields.GROUP_PARTICIPANTS.setValue(row, getProteinsIdsFromGroup(group));
-            }
-        });
+
+
+        groups.entrySet().stream()
+                .filter(e -> e.getValue().size() > 1)
+                .forEach(e -> {
+                    CyGroup group = groupFactory.createGroup(cyNetwork, e.getValue(), null, true);
+                    group.addGroupToNetwork(cyNetwork);
+                    CyRow row = nodeTable.getRow(group.getGroupNode().getSUID());
+                    NodeFields.NAME.setValue(row, e.getKey());
+                    NodeFields.GROUP_PARTICIPANTS.setValue(row, getProteinsIdsFromGroup(group));
+                });
+
     }
 
     public void expandGroups() {
