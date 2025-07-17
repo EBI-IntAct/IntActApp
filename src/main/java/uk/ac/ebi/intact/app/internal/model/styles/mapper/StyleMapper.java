@@ -18,12 +18,11 @@ import uk.ac.ebi.intact.app.internal.utils.TimeUtils;
 import java.awt.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static uk.ac.ebi.intact.app.internal.model.styles.mapper.definitions.Taxons.ARTIFICIAL;
 
@@ -168,10 +167,11 @@ public class StyleMapper {
         if (taxIdsToCheckAndAdd == null)
             return addedTaxIds;
 
+        taxIdsToCheckAndAdd.remove(null);
         taxIdsToCheckAndAdd.removeAll(speciesColors.keySet());
         taxIdsToCheckAndAdd.removeAll(kingdomColors.keySet());
 
-        if (taxIdsToCheckAndAdd.size() == 0)
+        if (taxIdsToCheckAndAdd.isEmpty())
             return addedTaxIds;
 
         try {
