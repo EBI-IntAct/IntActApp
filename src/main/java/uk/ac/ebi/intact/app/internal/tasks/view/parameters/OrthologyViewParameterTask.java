@@ -1,6 +1,7 @@
 package uk.ac.ebi.intact.app.internal.tasks.view.parameters;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
@@ -124,7 +125,7 @@ public class OrthologyViewParameterTask extends AbstractViewTask {
             tempNetwork.addEdge(source, target, false);
         });
 
-        Thread.sleep(500); // Required for next layout algorithm to be running correctly somehow
+        manager.utils.getService(CyEventHelper.class).flushPayloadEvents(); // Required for next layout algorithm to be running correctly somehow
 
         // Step 3: run force-directed layout on fake network
         taskManager.execute(ViewUtils.getLayoutTask(monitor, manager, tempView));
