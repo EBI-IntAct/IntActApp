@@ -12,22 +12,22 @@ public class ParticipantField<T> implements FieldInitializer {
     public final Field<T> SOURCE;
     public final Field<T> TARGET;
 
-    public ParticipantField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, Class<T> type) {
-        this(fields, initializers, name, jsonKey, type, true, null);
+    public ParticipantField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, Class<T> type, boolean isPublic) {
+        this(fields, initializers, name, jsonKey, type, true, null, isPublic);
     }
 
-    public ParticipantField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, Class<T> type, boolean shared) {
-        this(fields, initializers, name, jsonKey, type, shared, null);
+    public ParticipantField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, Class<T> type, boolean shared, boolean isPublic) {
+        this(fields, initializers, name, jsonKey, type, shared, null, isPublic);
     }
 
 
-    public ParticipantField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, Class<T> type, T defaultValue) {
-        this(fields, initializers, name, jsonKey, type, true, defaultValue);
+    public ParticipantField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, Class<T> type, T defaultValue, boolean isPublic) {
+        this(fields, initializers, name, jsonKey, type, true, defaultValue, isPublic);
     }
 
-    public ParticipantField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, Class<T> type, boolean shared, T defaultValue) {
-        SOURCE = new Field<>(fields, initializers, Field.Namespace.SOURCE, "Source " + name, jsonKey, type, shared, defaultValue);
-        TARGET = new Field<>(fields, initializers, Field.Namespace.TARGET, "Target " + name, jsonKey, type, shared, defaultValue);
+    public ParticipantField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, Class<T> type, boolean shared, T defaultValue, boolean isPublic) {
+        SOURCE = new Field<>(fields, initializers, Field.Namespace.SOURCE, "Source " + name, jsonKey, type, shared, isPublic, defaultValue);
+        TARGET = new Field<>(fields, initializers, Field.Namespace.TARGET, "Target " + name, jsonKey, type, shared, isPublic, defaultValue);
         initializers.remove(SOURCE);
         initializers.remove(TARGET);
         initializers.add(this);

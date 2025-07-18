@@ -17,12 +17,15 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.NodeCouple;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Interactor;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.styles.Style;
 import uk.ac.ebi.intact.app.internal.model.styles.mapper.StyleMapper;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.ListField;
+import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 import uk.ac.ebi.intact.app.internal.ui.components.legend.NodeColorLegendEditor;
 import uk.ac.ebi.intact.app.internal.utils.TableUtil;
 
@@ -53,6 +56,13 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
     private final Map<NodeCouple, List<CyEdge>> coupleToSummarizedEdges = new HashMap<>();
     private final Map<NodeCouple, SummaryEdge> summaryEdges = new HashMap<>();
     private final Map<CyEdge, EvidenceEdge> evidenceEdges = new HashMap<>();
+
+    @Getter
+    private final transient Set<Node> visibleNodes = new HashSet<>();
+    @Getter
+    public final transient Set<Edge> visibleEvidenceEdges = new HashSet<>();
+    @Getter
+    public final transient Set<Edge> visibleSummaryEdges = new HashSet<>();
 
     private final Set<String> taxIds = new HashSet<>();
     @Getter
@@ -128,10 +138,15 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return nonDefinedTaxon;
     }
 
-    public void hideExpandedEdgesOnViewCreation(CyNetworkView networkView) {
+    public void hideEdgesAndCreateNetworkViewWithParams(CyNetworkView cyNetworkView, QueryFilters queryFilters, NetworkView.Type networkViewType) {
         HideTaskFactory hideTaskFactory = manager.utils.getService(HideTaskFactory.class);
-        manager.utils.execute(hideTaskFactory.createTaskIterator(networkView, null, evidenceEdges.keySet()));
-        manager.data.addNetworkView(networkView, false);
+        if (networkViewType == null || networkViewType == NetworkView.Type.SUMMARY) {
+            manager.utils.execute(hideTaskFactory.createTaskIterator(cyNetworkView, null, getEvidenceCyEdges()));
+        } else {
+            manager.utils.execute(hideTaskFactory.createTaskIterator(cyNetworkView, null, getSummaryCyEdges()));
+        }
+        NetworkView networkView = manager.data.addNetworkView(cyNetworkView, queryFilters, networkViewType);
+        networkView.accordStyleToType();
     }
 
     public void completeMissingNodeColorsFromTables(boolean async, Runnable callback) {
@@ -187,6 +202,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
                     CyRow firstEdgeRow = cyNetwork.getRow(summarizedEdges.get(0));
                     EdgeFields.MI_SCORE.setValue(summaryRow, EdgeFields.MI_SCORE.getValue(firstEdgeRow));
+                    EdgeFields.WEIGHT.setValue(summaryRow, EdgeFields.MI_SCORE.getValue(firstEdgeRow) / 10);
                     EdgeFields.IS_SUMMARY.setValue(summaryRow, true);
                     EdgeFields.SUMMARY_NB_EDGES.setValue(summaryRow, summarizedEdges.size());
 
@@ -422,6 +438,13 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return new ArrayList<>(summaryEdges.values());
     }
 
+    public List<CyEdge> getVisibleSummaryCyEdges() {
+        return summaryEdges.values().stream()
+                .filter(visibleSummaryEdges::contains)
+                .map(summaryEdge -> summaryEdge.cyEdge)
+                .collect(toList());
+    }
+
     public List<CyEdge> getSummaryCyEdges() {
         return summaryEdges.values().stream().map(summaryEdge -> summaryEdge.cyEdge).collect(toList());
     }
@@ -432,6 +455,13 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
 
     public List<EvidenceEdge> getEvidenceEdges() {
         return new ArrayList<>(evidenceEdges.values());
+    }
+
+    public List<CyEdge> getVisibleEvidenceCyEdges() {
+        return evidenceEdges.values().stream()
+                .filter(visibleEvidenceEdges::contains)
+                .map(evidenceEdge -> evidenceEdge.cyEdge)
+                .collect(toList());
     }
 
     public List<CyEdge> getEvidenceCyEdges() {
@@ -463,16 +493,17 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return cyNetwork.getRow(cyNetwork);
     }
 
-    public Map<String, List<CyNode>> groupNodesByProperty(String columnName, String database) {
+    public Map<String, List<CyNode>> groupNodesByProperty(ListField<String> field, String database) {
         Map<String, List<CyNode>> groups = new HashMap<>();
 
         for (CyNode cyNode : cyNetwork.getNodeList()) {
             CyRow row = cyNetwork.getRow(cyNode);
-            if (row == null || !row.isSet(columnName)) continue;
+            Object value = field.getValue(row);
+            if (value == null) {
+                continue;
+            }
 
-            Object value = row.getRaw(columnName);
-            String id = convertValueToString(value, database);
-
+            String id = extractGroupId(value, database);
             if (id != null) {
                 groups.computeIfAbsent(id, k -> new ArrayList<>()).add(cyNode);
             }
@@ -480,7 +511,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return groups;
     }
 
-    private String convertValueToString(Object value, String database) {
+    private String extractGroupId(Object value, String database) {
         if (value == null) {
             return null;
         } else if (value instanceof List) {
@@ -497,17 +528,12 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return null;
     }
 
-    public Set<String> getDatabases(String field){
-        return nodeTable
-                .getColumn(field)
-                .getValues(List.class)
-                .stream()
-                .map(list -> (List<String>) list)
-                .filter(Objects::nonNull)
+    public Set<String> getOrthologyDatabases(ListField<String> field) {
+        return field.getAllValues(nodeTable).stream()
                 .flatMap(values -> values.stream()
                         .filter(Objects::nonNull)
                         .map((String v) -> v.split(":")[0]))
-                .filter(Objects::nonNull)
+                .filter(value -> value != null && !value.isEmpty())
                 .collect(Collectors.toSet());
     }
 
@@ -523,8 +549,8 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         return null;
     }
 
-    public void collapseGroups(String columnName, String database) {
-        if (!groupManager.getGroupSet(cyNetwork).isEmpty()){
+    public void collapseGroups(Map<String, List<CyNode>> groups) {
+        if (!groupManager.getGroupSet(cyNetwork).isEmpty()) {
             groupManager.reset();
         }
         CyGroupSettingsManager groupSettings = manager.utils.getService(CyGroupSettingsManager.class);
@@ -532,16 +558,18 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
         groupSettings.setUseNestedNetworks(false);
         groupSettings.setDoubleClickAction(CyGroupSettingsManager.DoubleClickAction.NONE);
         groupSettings.setEnableAttributeAggregation(true);
-        Map<String, List<CyNode>> groups = groupNodesByProperty(columnName, database);
-        groups.forEach((key, cyNodes) -> {
-            if (cyNodes.size() > 1) {
-                CyGroup group = groupFactory.createGroup(cyNetwork, cyNodes, null, true);
-                group.addGroupToNetwork(cyNetwork);
-                CyRow row = nodeTable.getRow(group.getGroupNode().getSUID());
-                row.set(NodeFields.NAME.name, key);
-                row.set(NodeFields.GROUP_PARTICIPANTS.name, getProteinsIdsFromGroup(group));
-            }
-        });
+
+
+        groups.entrySet().stream()
+                .filter(e -> e.getValue().size() > 1)
+                .forEach(e -> {
+                    CyGroup group = groupFactory.createGroup(cyNetwork, e.getValue(), null, true);
+                    group.addGroupToNetwork(cyNetwork);
+                    CyRow row = nodeTable.getRow(group.getGroupNode().getSUID());
+                    NodeFields.NAME.setValue(row, e.getKey());
+                    NodeFields.GROUP_PARTICIPANTS.setValue(row, getProteinsIdsFromGroup(group));
+                });
+
     }
 
     public void expandGroups() {

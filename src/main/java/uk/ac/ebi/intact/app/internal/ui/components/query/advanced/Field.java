@@ -3,7 +3,10 @@ package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
 import lombok.Getter;
 
 import java.time.Year;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Getter
 public enum Field {
@@ -66,11 +69,13 @@ public enum Field {
     private final String defaultValue;
     private final String[] operators;
 
-    public static final Map<String, Field> FIELD_MAP = new HashMap<>();
+    public static final Map<String, Field> ENTITY_NAME_TO_FIELD = new LinkedHashMap<>();
+    public static final Map<String, Field> MIQL_TO_FIELD = new HashMap<>();
 
     static {
         for (Field field : values()) {
-            FIELD_MAP.put(field.name(), field);
+            ENTITY_NAME_TO_FIELD.put(joinEntityName(field.getEntity(), field.getName()).toLowerCase(), field);
+            MIQL_TO_FIELD.put(field.getMiqlQuery().toLowerCase(), field);
         }
     }
 
@@ -92,55 +97,28 @@ public enum Field {
     }
 
     public static Field getFieldFromNameAndEntity(String name, String entity) {
-        List<Field> matchingFields = getFieldsFromName(name);
-
-        for (Field field : matchingFields) {
-            if (field.getEntity().equalsIgnoreCase(entity)) {
-                return field;
-            }
-        }
-
-        return null;
-    }
-
-    private static List<Field> getFieldsFromName(String name) {
-        List<Field> matchingFields = new ArrayList<>();
-        for (Field field : FIELD_MAP.values()) {
-            if (field.getName().equalsIgnoreCase(name)) {
-                matchingFields.add(field);
-            }
-        }
-        return matchingFields;
+        return ENTITY_NAME_TO_FIELD.get(joinEntityName(entity, name).toLowerCase());
     }
 
     public static Field getFieldsFromMiQL(String miqlQuery) {
-        for (Field field : FIELD_MAP.values()) {
-            if (field.getMiqlQuery().equalsIgnoreCase(miqlQuery)) {
-                return field;
-            }
-        }
-        return null;
+        return MIQL_TO_FIELD.get(miqlQuery.toLowerCase());
     }
 
     public static String[] getEntities() {
-        Set<String> uniqueEntities = new HashSet<>();
-        for (Field field : FIELD_MAP.values()) {
-            uniqueEntities.add(field.getEntity());
-        }
-
-        List<String> sortedEntities = new ArrayList<>(uniqueEntities);
-        Collections.sort(sortedEntities);
-
-        return sortedEntities.toArray(new String[0]);
+        return ENTITY_NAME_TO_FIELD.values().stream()
+                .map(Field::getEntity)
+                .distinct()
+                .toArray(String[]::new);
     }
 
     public static String getMiQlRegex() {
-        Set<String> uniqueMiqls = new HashSet<>();
-        for (Field field : FIELD_MAP.values()) {
-            uniqueMiqls.add(field.getMiqlQuery());
-        }
-        List<String> sortedMiqls = new ArrayList<>(uniqueMiqls);
-        Collections.sort(sortedMiqls);
-        return String.join("|", sortedMiqls);
+        return ENTITY_NAME_TO_FIELD.values().stream()
+                .map(Field::getMiqlQuery)
+                .distinct()
+                .collect(Collectors.joining("|"));
+    }
+
+    public static String joinEntityName(String entity, String name) {
+        return entity + "-" + name;
     }
 }

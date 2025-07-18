@@ -1,7 +1,6 @@
 package uk.ac.ebi.intact.app.internal.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.cytoscape.model.*;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -197,9 +196,9 @@ public class ModelUtils {
         for (String jsonKey : jsonKeysSorted) {
             if (Field.keys.contains(jsonKey)) continue;
             if (listKeys.contains(jsonKey)) {
-                createListColumnIfNeeded(table, columnToType.get(jsonKey), jsonKey);
+                createListColumnIfNeeded(table, columnToType.get(jsonKey), jsonKey, true);
             } else {
-                createColumnIfNeeded(table, columnToType.get(jsonKey), jsonKey);
+                createColumnIfNeeded(table, columnToType.get(jsonKey), jsonKey, true);
             }
         }
     }
@@ -303,6 +302,8 @@ public class ModelUtils {
         edgeRow.set(CyEdge.INTERACTION, type);
 
         Table.EDGE.setRowFromJson(edgeRow, edgeJSON);
+        Double miScore = EdgeFields.MI_SCORE.getValue(edgeRow);
+        EdgeFields.WEIGHT.setValue(edgeRow, miScore / 10);
 
         edgeJSON.fields().forEachRemaining(entry -> {
             if (Table.EDGE.keysToIgnore.contains(entry.getKey())) return;
@@ -414,5 +415,13 @@ public class ModelUtils {
         }
 
         return null;
+    }
+
+    public static String mergeOrganismLabelAndTaxIdAsId(String organismName, String taxId) {
+        return String.format("%s__%s", organismName, taxId);
+    }
+
+    public static String mergeOrganismLabelAndTaxIdAsLabel(String organismName, String taxId) {
+        return String.format("%s - %s", taxId, organismName);
     }
 }

@@ -10,11 +10,11 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.*;
 
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
@@ -27,20 +27,28 @@ import static uk.ac.ebi.intact.app.internal.utils.ViewUtils.getLayoutTask;
 public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
     private final String query;
     private final Manager manager;
+    private final QueryFilters queryFilters;
+    private final NetworkView.Type networkViewType;
     private final boolean applyLayout;
     private final Network network;
     private String netName = null;
 
-    public AdvancedSearchTask(Manager manager, String query, boolean applyLayout) {
+    private AdvancedSearchTask(Manager manager, String query, QueryFilters queryFilters, NetworkView.Type networkViewType, boolean applyLayout) {
         this.query = query;
         this.manager = manager;
+        this.queryFilters = queryFilters;
+        this.networkViewType = networkViewType;
         this.network = new Network(manager);
         this.applyLayout = applyLayout;
     }
 
-    public AdvancedSearchTask(Manager manager, String query, boolean applyLayout, String netName) {
-        this(manager, query, applyLayout);
+    public AdvancedSearchTask(Manager manager, String query, QueryFilters queryFilters, NetworkView.Type networkViewType, boolean applyLayout, String netName) {
+        this(manager, query, queryFilters, networkViewType, applyLayout);
         this.netName = netName;
+    }
+
+    public AdvancedSearchTask(Manager manager, String query, boolean applyLayout) {
+        this(manager, query, null, null, applyLayout);
     }
 
     @Override
@@ -86,7 +94,7 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         monitor.setTitle("Create and register network view + Initialize filters");
         monitor.showMessage(TaskMonitor.Level.INFO, "Create and register network view + Initialize filters");
         monitor.setProgress(0.8);
-        CyNetworkView networkView = manager.data.createNetworkView(cyNetwork);
+        CyNetworkView networkView = manager.data.createNetworkView(cyNetwork, queryFilters, networkViewType);
         ViewUtils.registerView(manager, networkView);
 
         if (cancelled) {
@@ -116,11 +124,13 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
             int page = 0;
             JsonNode pagedResult;
             do {
-                pagedResult = HttpUtils.getJsonNetworkWithRequestBody(this.query, page++);
+                int pageSize = 1_000;
+                pagedResult = HttpUtils.getJsonNetworkWithRequestBody(this.query, page++, pageSize);
                 JsonNode network = pagedResult.get("content").get(0);
                 Number totalPages = pagedResult.get("totalPages").numberValue();
+                Number totalElements = pagedResult.get("totalElements").numberValue();
 
-                monitor.showMessage(TaskMonitor.Level.INFO, "Page " + page + " / " + totalPages);
+                monitor.showMessage(TaskMonitor.Level.INFO, "Page " + page + " / " + totalPages + " - Loaded " + page  * pageSize + " evidence edges on " + totalElements);
                 monitor.setProgress(page / totalPages.doubleValue());
                 if (cancelled) return;
 

@@ -2,28 +2,27 @@ package uk.ac.ebi.intact.app.internal.model.filters;
 
 import lombok.Getter;
 import lombok.Setter;
-
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
-import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.model.ListField;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Getter
 @Setter
-public class RadioButtonFilter<T extends Element> extends Filter<T>  {
-    private String groupingField;
+public abstract class RadioButtonFilter<T extends Element> extends Filter<T>  {
+    private ListField<String> groupingField;
     private String currentSelectedProperty;
     private String defaultSelectedProperty;
-    @Getter
-    private Set<String> properties = new HashSet<>();
+    private Set<String> properties;
 
-    public RadioButtonFilter(NetworkView view, String name, String definition, Class<T> elementType, String groupingField, String currentSelectedProperty) {
+    public RadioButtonFilter(NetworkView view, String name, String definition, Class<T> elementType, ListField<String> groupingField, String currentSelectedProperty) {
         super(view, name, definition, elementType);
         this.groupingField = groupingField;
         this.currentSelectedProperty = currentSelectedProperty;
         this.defaultSelectedProperty = currentSelectedProperty;
+        this.properties = new HashSet<>();
         setProperties();
     }
 
@@ -36,9 +35,5 @@ public class RadioButtonFilter<T extends Element> extends Filter<T>  {
         this.currentSelectedProperty = defaultSelectedProperty;
     }
 
-    public void setProperties(){
-        Network network = super.getNetwork();
-        properties.clear();
-        properties = network.getDatabases(groupingField);
-    }
+    public abstract void setProperties();
 }

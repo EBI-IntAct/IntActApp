@@ -54,8 +54,10 @@ public class ExtractNetworkViewTask extends AbstractViewTask {
             nodesToExport = chosenNetwork.getNodes();
             edgesToExport = chosenView.getType().equals(NetworkView.Type.SUMMARY) ? chosenNetwork.getSummaryEdges() : chosenNetwork.getEvidenceEdges();
         } else {
-            nodesToExport = chosenView.visibleNodes;
-            edgesToExport = chosenView.visibleEdges;
+            nodesToExport = chosenView.getNetwork().getVisibleNodes();
+            edgesToExport = chosenView.getType().equals(NetworkView.Type.SUMMARY)
+                    ? chosenView.getNetwork().getVisibleSummaryEdges()
+                    : chosenView.getNetwork().getVisibleEvidenceEdges();
         }
 
         copyData();

@@ -6,7 +6,7 @@
         <bundle.name>IntAct App</bundle.name>
         <bundle.symbolicName>intact.app</bundle.symbolicName>
         <bundle.namespace>uk.ac.ebi.intact.app.internal</bundle.namespace>
-        <cytoscape.api.version>3.8.0</cytoscape.api.version>
+        <cytoscape.api.version>3.9.0</cytoscape.api.version>
         <osgi.api.version>4.2.0</osgi.api.version>
     </properties>
 
@@ -91,6 +91,13 @@
             </releases>
             <name>Cytoscape Releases</name>
             <url>https://code.cytoscape.org/nexus/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>UCSD Cytoscape Releases</id>
+            <url>https://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
         <repository>
             <id>apache-repo-releases</id>

@@ -1,20 +1,25 @@
 package uk.ac.ebi.intact.app.internal.model.core.view;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
 
+import org.cytoscape.group.CyGroup;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.task.hide.HideTaskFactory;
+import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
-import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.EvidenceEdge;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.nodes.Node;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.events.FilterUpdatedEvent;
@@ -29,6 +34,7 @@ import uk.ac.ebi.intact.app.internal.model.filters.node.NodeTypeFilter;
 import uk.ac.ebi.intact.app.internal.model.filters.node.OrphanNodeFilter;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
+import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,21 +46,38 @@ public class NetworkView implements FilterUpdatedListener {
     private final transient Network network;
     @Getter
     public final transient CyNetworkView cyView;
-    public final transient Set<Node> visibleNodes = new HashSet<>();
-    public final transient Set<Edge> visibleEdges = new HashSet<>();
     private final List<Filter<?>> filters = new ArrayList<>();
     private boolean filtersSilenced = false;
     private boolean listeningToFilterUpdate = true;
     private Type type;
+    @JsonIgnore
+    private final HideTaskFactory hideTaskFactory;
+    @JsonIgnore
+    private final UnHideTaskFactory unHideTaskFactory;
+
+    public NetworkView(Manager manager, CyNetworkView cyView, QueryFilters queryFilters, Type type) {
+        this(manager, cyView, type);
+        if (cyView != null) {
+            setupFiltersWithParams(queryFilters);
+        }
+    }
 
     public NetworkView(Manager manager, CyNetworkView cyView, boolean loadData, Type type) {
+        this(manager, cyView, type);
+        if (cyView != null) {
+            setupFiltersAndLoadData(loadData);
+        }
+    }
+
+    private NetworkView(Manager manager, CyNetworkView cyView, Type type) {
         this.manager = manager;
         this.manager.utils.registerAllServices(this, new Properties());
+        hideTaskFactory = manager.utils.getService(HideTaskFactory.class);
+        unHideTaskFactory = manager.utils.getService(UnHideTaskFactory.class);
         if (cyView != null) {
             this.cyView = cyView;
             this.network = manager.data.getNetwork(cyView.getModel());
             this.type = type != null ? type : Type.SUMMARY;
-            setupFilters(loadData);
         } else {
             this.cyView = null;
             this.network = null;
@@ -69,26 +92,34 @@ public class NetworkView implements FilterUpdatedListener {
         return new ArrayList<>(filters);
     }
 
-    private void setupFilters(boolean loadData) {
-        filters.add(new NodeTypeFilter(this));
-        filters.add(new NodeSpeciesFilter(this));
-
-        filters.add(new EdgeMIScoreFilter(this));
-        filters.add(new EdgeInteractionDetectionMethodFilter(this));
-        filters.add(new EdgeParticipantDetectionMethodFilter(this));
-        filters.add(new EdgeHostOrganismFilter(this));
-        filters.add(new EdgeExpansionTypeFilter(this));
-        filters.add(new EdgeTypeFilter(this));
-        filters.add(new EdgeMutationFilter(this));
-        filters.add(new EdgePositiveFilter(this));
-
-        filters.add(new OrphanNodeFilter(this)); // Must be after edge filters
-        filters.add(new OrphanEdgeFilter(this));
-
-        filters.add(new OrthologyGroupingDatabaseFilter(this));
-
+    private void setupFiltersAndLoadData(boolean loadData) {
+        setupFilters(null);
         if (loadData) load();
         totalFilter();
+    }
+
+    private void setupFiltersWithParams(QueryFilters queryFilters) {
+        setupFilters(queryFilters);
+        totalFilter();
+    }
+
+    private void setupFilters(QueryFilters queryFilters) {
+        filters.add(new NodeTypeFilter(this, queryFilters));
+        filters.add(new NodeSpeciesFilter(this, queryFilters));
+        filters.add(new OrphanEdgeFilter(this)); // Run after node filters to make OrphanNode take into account node filters
+
+        filters.add(new EdgeMIScoreFilter(this, queryFilters));
+        filters.add(new EdgeInteractionDetectionMethodFilter(this, queryFilters));
+        filters.add(new EdgeParticipantDetectionMethodFilter(this, queryFilters));
+        filters.add(new EdgeHostOrganismFilter(this, queryFilters));
+        filters.add(new EdgeExpansionTypeFilter(this, queryFilters));
+        filters.add(new EdgeTypeFilter(this, queryFilters));
+        filters.add(new EdgeMutationFilter(this, queryFilters));
+        filters.add(new EdgePositiveFilter(this, queryFilters));
+
+        filters.add(new OrphanNodeFilter(this)); // Must be after edge filters
+
+        filters.add(new OrthologyGroupingDatabaseFilter(this));
     }
 
     public void resetFilters() {
@@ -112,49 +143,78 @@ public class NetworkView implements FilterUpdatedListener {
 
     public void filter() {
         if (filtersSilenced) return;
-        visibleNodes.clear();
-        visibleEdges.clear();
+        getNetwork().getVisibleNodes().clear();
+        getNetwork().getVisibleEvidenceEdges().clear();
+        getNetwork().getVisibleSummaryEdges().clear();
 
         Network network = getNetwork();
-        List<Node> nodesToFilter = network.getNodes();
-        List<? extends Edge> edgesToFilter = (getType() == Type.SUMMARY) ? network.getSummaryEdges() : network.getEvidenceEdges();
 
-        visibleNodes.addAll(nodesToFilter);
-        visibleEdges.addAll(edgesToFilter);
+        getNetwork().getVisibleNodes().addAll(network.getNodes());
+        getNetwork().getVisibleEvidenceEdges().addAll(network.getEvidenceEdges());
+        getNetwork().getVisibleSummaryEdges().addAll(network.getSummaryEdges());
 
         for (Filter<?> filter : filters) {
             filter.filterView();
         }
 
-        nodesToFilter.removeAll(visibleNodes);
-        nodesToFilter.forEach(nodeToHide -> {
+        List<Node> nodesToHide = network.getNodes();
+        nodesToHide.removeAll(getNetwork().getVisibleNodes());
+        nodesToHide.forEach(nodeToHide -> {
             View<CyNode> nodeView = cyView.getNodeView(nodeToHide.cyNode);
             if (nodeView != null) nodeView.setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
         });
-        visibleNodes.forEach(nodeToShow -> {
+
+        Set<Long> visibleNodeIds = new HashSet<>();
+        getNetwork().getVisibleNodes().forEach(nodeToShow -> {
+            visibleNodeIds.add(nodeToShow.cyNode.getSUID());
             View<CyNode> nodeView = cyView.getNodeView(nodeToShow.cyNode);
             if (nodeView != null) nodeView.setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
         });
 
-        edgesToFilter.removeAll(visibleEdges);
-        edgesToFilter.forEach(edgeToHide -> {
-            View<CyEdge> edgeView = cyView.getEdgeView(edgeToHide.cyEdge);
-            if (edgeView != null) edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
+        // Hide or show node groups based on the visible nodes
+        getNetwork().getCyNetwork().getNodeList().forEach(node -> {
+            if (getNetwork().getGroupManager().isGroup(node, getNetwork().getCyNetwork())) {
+                CyGroup group = getNetwork().getGroupManager().getGroup(node, getNetwork().getCyNetwork());
+                View<CyNode> nodeView = cyView.getNodeView(node);
+                if (nodeView != null) {
+                    if (group.getNodeList().stream().anyMatch(subNode -> visibleNodeIds.contains(subNode.getSUID()))) {
+                        nodeView.setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
+                    } else {
+                        nodeView.setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
+                    }
+                }
+            }
         });
 
-        visibleEdges.forEach(edgeToShow -> {
-            View<CyEdge> edgeView = cyView.getEdgeView(edgeToShow.cyEdge);
-            if (edgeView != null) edgeView.setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true);
-        });
+        List<EvidenceEdge> evidenceEdgesToHide = network.getEvidenceEdges();
+        evidenceEdgesToHide.removeAll(getNetwork().getVisibleEvidenceEdges());
 
+        List<SummaryEdge> summaryEdgesToHide = network.getSummaryEdges();
+        summaryEdgesToHide.removeAll(getNetwork().getVisibleSummaryEdges());
+
+        network.getSummaryEdges().forEach(SummaryEdge::updateSummary);
         save();
+
+        Collection<CyEdge> visibleEdges = new HashSet<>();
+        Collection<CyEdge> cyEdgesToHide = new HashSet<>();
+        if (type == Type.SUMMARY) {
+            visibleEdges.addAll(getNetwork().getVisibleSummaryCyEdges());
+            cyEdgesToHide.addAll(getNetwork().getEvidenceCyEdges());
+            summaryEdgesToHide.forEach(summaryEdge -> cyEdgesToHide.add(summaryEdge.cyEdge));
+        } else {
+            visibleEdges.addAll(getNetwork().getVisibleEvidenceCyEdges());
+            cyEdgesToHide.addAll(getNetwork().getSummaryCyEdges());
+            evidenceEdgesToHide.forEach(summaryEdge -> cyEdgesToHide.add(summaryEdge.cyEdge));
+        }
+        manager.utils.execute(hideTaskFactory.createTaskIterator(cyView, null, cyEdgesToHide));
+        manager.utils.execute(unHideTaskFactory.createTaskIterator(cyView, null, visibleEdges));
         manager.utils.fireEvent(new ViewUpdatedEvent(manager, this));
     }
 
     public Set<String> getPropertyValuesOfFilter(Class<? extends DiscreteFilter<?>> filterClass) {
         for (Filter<?> filter : filters) {
             if (filterClass == filter.getClass()) {
-                return ((DiscreteFilter<?>) filter).getProperties();
+                return ((DiscreteFilter<?>) filter).getPropertiesLabels();
             }
         }
         return null;

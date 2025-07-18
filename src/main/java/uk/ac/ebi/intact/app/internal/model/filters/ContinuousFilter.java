@@ -19,12 +19,19 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
     protected double currentMin;
     protected double currentMax;
 
-    public ContinuousFilter(NetworkView view, Class<T> elementType, String name, String definition, double min, double max) {
+    public ContinuousFilter(NetworkView view,
+                            Class<T> elementType,
+                            String name,
+                            String definition,
+                            double min,
+                            double max,
+                            Double currentMin,
+                            Double currentMax) {
         super(view, name, definition, elementType);
         this.min = min;
         this.max = max;
-        currentMin = min;
-        currentMax = max;
+        this.currentMin = currentMin != null ? currentMin : min;
+        this.currentMax = currentMax != null ? currentMax : max;
     }
 
     public ContinuousFilter(NetworkView view, Class<T> elementType, String name, String definition) {
@@ -62,18 +69,18 @@ public abstract class ContinuousFilter<T extends Element> extends Filter<T> {
     @Override
     public void filterView() {
         if (currentMin == min && currentMax == max) return;
-        Collection<? extends Element> elementsToFilter;
         NetworkView view = getNetworkView();
         if (Node.class.isAssignableFrom(elementType)) {
-            elementsToFilter = view.visibleNodes;
+            filterElements(view.getNetwork().getVisibleNodes());
         } else if (Edge.class.isAssignableFrom(elementType)) {
             if (elementType == SummaryEdge.class && view.getType() != NetworkView.Type.SUMMARY) return;
             if (elementType == EvidenceEdge.class && view.getType() == NetworkView.Type.SUMMARY) return;
-            elementsToFilter = view.visibleEdges;
-        } else {
-            return;
+            filterElements(view.getNetwork().getVisibleEvidenceEdges());
+            filterElements(view.getNetwork().getVisibleSummaryEdges());
         }
+    }
 
+    private void filterElements(Collection<? extends Element> elementsToFilter) {
         elementsToFilter.removeIf(element -> {
             double property = getProperty(elementType.cast(element));
             return property < currentMin || property > currentMax;

@@ -17,9 +17,6 @@ public class EvidenceViewTask extends AbstractHiderTask {
 
     @Override
     public void run(TaskMonitor taskMonitor) {
-        expandEdgesIfNeeded();
-        if (chosenView != null && chosenView.getType() != NetworkView.Type.EVIDENCE) {
-            manager.data.viewChanged(NetworkView.Type.EVIDENCE, chosenView);
-        }
+        expandEdgesIfNeeded(NetworkView.Type.EVIDENCE);
     }
 }
