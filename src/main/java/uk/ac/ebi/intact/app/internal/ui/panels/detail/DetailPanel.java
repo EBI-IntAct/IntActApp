@@ -256,7 +256,6 @@ public class DetailPanel extends JPanel
 
     @Override
     public void handleEvent(SelectedNodesAndEdgesEvent event) {
-//        new Thread(() -> {
         if (!registered) return;
         if (event.getNetwork() != manager.data.getCurrentNetwork()) return;
         if (!Instant.now().minusMillis(200).isAfter(lastSelection)) return;
@@ -279,12 +278,9 @@ public class DetailPanel extends JPanel
         } else if (selectedNodes.isEmpty() && edgesSelected) {
             tabs.setSelectedComponent(edgePanel);
         }
-//        nodePanel.selectedNodes(selectedNodes);
-//        edgePanel.selectedEdges(selectedEdges);
 
         new Thread(() -> nodePanel.selectedNodes(selectedNodes)).start();
         new Thread(() -> edgePanel.selectedEdges(selectedEdges)).start();
-//        }).start();
     }
 
     private void updateRadioButtons(CyNetworkView cyView) {
