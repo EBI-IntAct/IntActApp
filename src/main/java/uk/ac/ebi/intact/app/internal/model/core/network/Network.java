@@ -533,7 +533,7 @@ public class Network implements AddedEdgesListener, AboutToRemoveEdgesListener, 
                 .flatMap(values -> values.stream()
                         .filter(Objects::nonNull)
                         .map((String v) -> v.split(":")[0]))
-                .filter(Objects::nonNull)
+                .filter(value -> value != null && !value.isEmpty())
                 .collect(Collectors.toSet());
     }
 
