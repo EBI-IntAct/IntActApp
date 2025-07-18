@@ -1,5 +1,6 @@
 package uk.ac.ebi.intact.app.internal.model.managers.sub.managers;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.*;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.events.SessionLoadedEvent;
@@ -18,6 +19,7 @@ import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.FeatureFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.model.ListField;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -56,12 +58,20 @@ public class SessionLoader implements SessionLoadedListener {
         }
 
         linkIntactTablesToNetwork(loadedSession.getTables(), loadedSession);
-        for (CyNetworkView view : loadedSession.getNetworkViews()) {
+        Set<CyNetworkView> cyNetworkViews = loadedSession.getNetworkViews();
+        for (CyNetworkView view : cyNetworkViews) {
             if (manager.data.getNetwork(view.getModel()) != null) {
                 manager.data.addNetworkView(view, true, null);
             }
         }
 
+        // When loading a session, there are issues because the loaded network(s) is not properly selected.
+        // To avoid those issues, we unset the current network and network view, and then we
+        // select any of the loaded networks and network views.
+        manager.utils.getService(CyApplicationManager.class).setCurrentNetworkView(null);
+        manager.utils.getService(CyApplicationManager.class).setCurrentNetwork(null);
+        manager.data.setCurrentNetwork(cyNetworks.iterator().next());
+        ViewUtils.registerView(manager, cyNetworkViews.iterator().next());
 
         NetworkView currentView = manager.data.getCurrentNetworkView();
         if (currentView != null) {
