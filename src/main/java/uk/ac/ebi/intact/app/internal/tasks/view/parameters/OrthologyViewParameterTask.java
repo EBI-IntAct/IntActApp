@@ -56,6 +56,7 @@ public class OrthologyViewParameterTask extends AbstractViewTask {
                 resetLayout(monitor);
             } else {
                 chosenNetwork.collapseGroups(groups);
+                chosenView.filter(); // Need to filter after collapsing as collapsing set the child node visibility to true
                 applyParameterLayout(monitor);
             }
         } else {
