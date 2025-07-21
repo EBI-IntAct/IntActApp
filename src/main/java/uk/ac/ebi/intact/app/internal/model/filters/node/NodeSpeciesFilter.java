@@ -22,7 +22,7 @@ public class NodeSpeciesFilter extends DiscreteFilter<Node> {
 
     @Override
     public Map<String, String> getPropertyValues(Node element) {
-        if (element.taxId != null && element.species != null) {
+        if (element.taxId != null && !element.taxId.isEmpty() && element.species != null && !element.species.isEmpty()) {
             return Map.of(
                     mergeOrganismLabelAndTaxIdAsId(element.species, element.taxId),
                     mergeOrganismLabelAndTaxIdAsLabel(element.species, element.taxId));
