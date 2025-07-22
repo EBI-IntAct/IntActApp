@@ -133,6 +133,7 @@ public class OrthologyViewParameterTask extends AbstractViewTask {
 
             // Required for next layout algorithm to be running correctly somehow
             eventHelper.flushPayloadEvents();
+            Thread.sleep(1000);
 
             // Step 3: run force-directed layout on fake network
             manager.utils.execute(ViewUtils.getLayoutTask(monitor, manager, tempView), true);
