@@ -4,10 +4,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
+import org.cytoscape.model.*;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -18,11 +15,14 @@ import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
+import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NodeFields;
 import uk.ac.ebi.intact.app.internal.tasks.view.AbstractViewTask;
 import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
 
+import java.awt.geom.Point2D;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class OrthologyViewParameterTask extends AbstractViewTask {
@@ -71,6 +71,7 @@ public class OrthologyViewParameterTask extends AbstractViewTask {
         CyNetworkManager networkManager = manager.utils.getService(CyNetworkManager.class);
         CyNetworkViewFactory networkViewFactory = manager.utils.getService(CyNetworkViewFactory.class);
         CyNetworkViewManager networkViewManager = manager.utils.getService(CyNetworkViewManager.class);
+        CyEventHelper eventHelper = manager.utils.getService(CyEventHelper.class);
 
         // Step 0: Initialise temp network
         CyGroupManager groupManager = chosenNetwork.getGroupManager();
@@ -96,28 +97,7 @@ public class OrthologyViewParameterTask extends AbstractViewTask {
 
         try {
             // Step 1: layout groups using simple circle layout
-            groupSet.stream().parallel().forEach(group -> {
-                List<View<CyNode>> childNodeViews = group.getNodeList().stream().map(cyView::getNodeView).collect(Collectors.toList());
-                List<View<CyNode>> visibleChildren = childNodeViews.stream().filter(n -> n.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE)).collect(Collectors.toList());
-                List<View<CyNode>> hiddenChildren = childNodeViews.stream().filter(n -> !n.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE)).collect(Collectors.toList());
-
-                int n = visibleChildren.size();
-                double circumference = n * CIRCLE_LAYOUT_SPACING;
-                double radius = circumference / (2 * Math.PI);
-
-                // Arrange visible nodes in a circle
-                for (int i = 0; i < n; i++) {
-                    double angle = 2 * Math.PI * i / n;
-                    View<CyNode> nodeView = visibleChildren.get(i);
-                    nodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, radius * Math.cos(angle));
-                    nodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, radius * Math.sin(angle));
-                }
-                // Place the invisible nodes in the middle of the circle to avoid them having an impact on the group size
-                hiddenChildren.forEach(nodeView -> {
-                    nodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, 0.0);
-                    nodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, 0.0);
-                });
-            });
+            groupSet.stream().parallel().forEach(this::simpleLayoutGroup);
             cyView.updateView();
 
             // Step 2: create a clone graph with the compound nodes and the singletons, with correct node size
@@ -141,7 +121,8 @@ public class OrthologyViewParameterTask extends AbstractViewTask {
                     });
 
             chosenNetwork.getCyNetwork().getEdgeList().forEach(edge -> {
-                if (!cyView.getEdgeView(edge).getVisualProperty(BasicVisualLexicon.EDGE_VISIBLE)) return; // Remove filtered edges
+                if (!cyView.getEdgeView(edge).getVisualProperty(BasicVisualLexicon.EDGE_VISIBLE))
+                    return; // Remove filtered edges
                 CyNode source = childNodesToCompoundNode.getOrDefault(edge.getSource(), edge.getSource());
                 CyNode target = childNodesToCompoundNode.getOrDefault(edge.getTarget(), edge.getTarget());
                 source = originalToCopyNode.get(source);
@@ -151,7 +132,7 @@ public class OrthologyViewParameterTask extends AbstractViewTask {
             });
 
             // Required for next layout algorithm to be running correctly somehow
-            manager.utils.getService(CyEventHelper.class).flushPayloadEvents();
+            eventHelper.flushPayloadEvents();
 
             // Step 3: run force-directed layout on fake network
             manager.utils.execute(ViewUtils.getLayoutTask(monitor, manager, tempView), true);
@@ -178,6 +159,10 @@ public class OrthologyViewParameterTask extends AbstractViewTask {
                 });
             });
             cyView.updateView();
+
+            // Optional step: rearrange groups to place node closer to their neighbors
+            groupSet.stream().parallel().forEach(this::rearrangeGroup);
+            cyView.updateView();
             cyView.fitContent();
         } catch (Exception e) {
             e.printStackTrace();
@@ -186,6 +171,91 @@ public class OrthologyViewParameterTask extends AbstractViewTask {
             networkViewManager.destroyNetworkView(tempView);
             networkManager.destroyNetwork(tempNetwork);
         }
+    }
+
+    private void simpleLayoutGroup(CyGroup group) {
+        List<View<CyNode>> childNodeViews = group.getNodeList().stream().map(cyView::getNodeView).collect(Collectors.toList());
+        List<View<CyNode>> visibleChildren = childNodeViews.stream().filter(n -> n.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE)).collect(Collectors.toList());
+        List<View<CyNode>> hiddenChildren = childNodeViews.stream().filter(n -> !n.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE)).collect(Collectors.toList());
+
+        layoutInCircle(visibleChildren, new Point2D.Double(0, 0));
+        // Place the invisible nodes in the middle of the circle to avoid them having an impact on the group size
+        layoutAtOrigin(hiddenChildren);
+    }
+
+    private static void layoutAtOrigin(List<View<CyNode>> hiddenChildren) {
+        hiddenChildren.forEach(nodeView -> {
+            nodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, 0.0);
+            nodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, 0.0);
+        });
+    }
+
+    private static void layoutInCircle(List<View<CyNode>> visibleChildren, Point2D.Double center) {
+        int n = visibleChildren.size();
+        double circumference = n * CIRCLE_LAYOUT_SPACING;
+        double radius = circumference / (2 * Math.PI);
+
+        // Arrange visible nodes in a circle
+        for (int i = 0; i < n; i++) {
+            double angle = 2 * Math.PI * i / n;
+            View<CyNode> nodeView = visibleChildren.get(i);
+            nodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, center.x + radius * Math.cos(angle));
+            nodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, center.y + radius * Math.sin(angle));
+        }
+    }
+
+    private void rearrangeGroup(CyGroup group) {
+        CyNetwork cyNetwork = chosenNetwork.getCyNetwork();
+        Point2D.Double origin = toPoint(cyView.getNodeView(group.getGroupNode()));
+        HashSet<CyNode> nodeSet = new HashSet<>(group.getNodeList());
+        Map<CyNode, Double> nodeToAngle = group.getNodeList().stream()
+                .filter(node -> cyView.getNodeView(node).getVisualProperty(BasicVisualLexicon.NODE_VISIBLE))
+                .collect(Collectors.toMap(Function.identity(), node -> {
+                    List<CyEdge> adjacentSummaryEdges = cyNetwork.getAdjacentEdgeList(node, CyEdge.Type.ANY).stream()
+                            .filter(edge -> EdgeFields.IS_SUMMARY.getValue(cyNetwork.getRow(edge)))
+                            .filter(edge -> {
+                                CyNode neighbor = edge.getTarget() == node ? edge.getSource() : edge.getTarget();
+                                return !nodeSet.contains(neighbor) && // Exclude other nodes of the group
+                                        cyView.getNodeView(neighbor).getVisualProperty(BasicVisualLexicon.NODE_VISIBLE); // Exclude invisible nodes
+                            })
+                            .collect(Collectors.toList());
+                    Point2D.Double centroid = getWeightedCentroid(node, adjacentSummaryEdges, edge -> EdgeFields.MI_SCORE.getValue(cyNetwork.getRow(edge)));
+                    return getAngle(centroid, origin);
+                }));
+        List<View<CyNode>> nodesSortedByAngle = nodeToAngle.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.naturalOrder()))
+                .map(Map.Entry::getKey)
+                .map(cyView::getNodeView)
+                .collect(Collectors.toList());
+        layoutInCircle(nodesSortedByAngle, origin);
+    }
+
+    private double getAngle(Point2D.Double origin, Point2D.Double target) {
+        return (
+                Math.toDegrees(
+                        Math.atan2(target.getY() - origin.getY(), target.getX() - origin.getX()) // Gradient angle [-π, π]
+                ) + 180) % 360; // Normalized to [0, 360]
+    }
+
+    private Point2D.Double getWeightedCentroid(CyNode origin, Collection<CyEdge> edges, Function<CyEdge, Double> edgeWeigher) {
+        if (edges.isEmpty()) return new Point2D.Double(0, 0);
+        double x = 0.0, y = 0.0, weight = 0.0;
+        for (CyEdge edge : edges) {
+            CyNode node = edge.getTarget() == origin ? edge.getSource() : edge.getTarget();
+            Double edgeWeight = edgeWeigher.apply(edge);
+            Point2D.Double point = toPoint(cyView.getNodeView(node));
+            x += point.x * edgeWeight;
+            y += point.y * edgeWeight;
+            weight += edgeWeight;
+        }
+        return new Point2D.Double(x / weight, y / weight);
+    }
+
+    private static Point2D.Double toPoint(View<CyNode> view) {
+        return new Point2D.Double(
+                view.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION),
+                view.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)
+        );
     }
 
     private void resetLayout(TaskMonitor monitor) {
