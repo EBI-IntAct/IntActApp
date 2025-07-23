@@ -5,6 +5,7 @@ import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.*;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.events.SelectedNodesAndEdgesEvent;
@@ -46,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DetailPanel extends JPanel
         implements CytoPanelComponent2,
@@ -267,7 +270,12 @@ public class DetailPanel extends JPanel
         }
         lastSelection = Instant.now();
 
-        Collection<CyNode> selectedNodes = event.getSelectedNodes();
+        CyGroupManager groupManager = manager.utils.getService(CyGroupManager.class);
+        Collection<CyNode> selectedNodes = event.getSelectedNodes().stream()
+                .flatMap(node -> groupManager.isGroup(node, event.getNetwork()) ?
+                        groupManager.getGroup(node, event.getNetwork()).getNodeList().stream() :
+                        Stream.of(node))
+                .collect(Collectors.toSet());
         Collection<CyEdge> selectedEdges = event.getSelectedEdges();
         boolean nodesSelected = !selectedNodes.isEmpty();
         boolean edgesSelected = !selectedEdges.isEmpty();
