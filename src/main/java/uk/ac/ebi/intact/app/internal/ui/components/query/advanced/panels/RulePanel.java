@@ -3,58 +3,60 @@ package uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels;
 import uk.ac.ebi.intact.app.internal.ui.components.query.AdvancedSearchQueryComponent;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.Field;
 
-import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.*;
-
+import javax.annotation.Nullable;
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.Objects;
 
-public class RulePanel {
+import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.getDeletePanelButton;
+import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.setCorrectDimensions;
 
-    JPanel oneRule = new JPanel();
+public class RulePanel extends RuleContainer {
 
     public JComboBox<String> entityComboBox = new JComboBox<>(Field.getEntities());
     public JComboBox<String> entityPropertiesCombobox = new JComboBox<>();
     public JComboBox<String> operatorsComboBox = new JComboBox<>();
 
 
-    public JTextArea firstBracket = new JTextArea("[");
+    public JLabel firstBracket = new JLabel("[");
     public JTextField userInputProperty = new JTextField();
-    public JTextArea textTO = new JTextArea(" TO ");
+    public JLabel textTO = new JLabel(" TO ");
     public JTextField userInputProperty2 = new JTextField();
-    public JTextArea lastBracket = new JTextArea("]");
+    public JLabel lastBracket = new JLabel("]");
 
     AdvancedSearchQueryComponent advancedSearchQueryComponent;
 
-    public RulePanel(AdvancedSearchQueryComponent advancedSearchQueryComponent) {
+    public RulePanel(AdvancedSearchQueryComponent advancedSearchQueryComponent, @Nullable RuleSetPanel parent) {
+        this.parent = parent;
         this.advancedSearchQueryComponent = advancedSearchQueryComponent;
-        getOneRuleBuilderPanel();
-        oneRule.add(getDeletePanelButton(oneRule, advancedSearchQueryComponent));
+        container.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder("Rule"),
+                BorderFactory.createEmptyBorder(0, 0, 5, 0)
+        ));
+        container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
+        container.setVisible(true);
+
+        container.add(getEntityComboBox());
+        container.add(getEntityPropertiesComboBox());
+        container.add(getOperatorsComboBox());
+        container.add(firstBracket);
+        container.add(getUserInputProperty(userInputProperty));
+        container.add(textTO);
+        container.add(getUserInputProperty(userInputProperty2));
+        container.add(lastBracket);
+        container.add(Box.createHorizontalGlue());
+
+        container.add(getDeletePanelButton(advancedSearchQueryComponent, this));
+        container.add(Box.createHorizontalStrut(5));
+
+
+        container.setMaximumSize(new Dimension(Integer.MAX_VALUE, container.getPreferredSize().height));
+        container.revalidate();
+        container.repaint();
     }
 
-    public JPanel getOneRuleBuilderPanel() {
-        oneRule.setBorder(BorderFactory.createTitledBorder("Rule"));
-        oneRule.setLayout(new BoxLayout(oneRule, BoxLayout.X_AXIS));
-        oneRule.setVisible(true);
-        setUpDisplay();
-
-        oneRule.add(getEntityComboBox());
-        oneRule.add(getEntityPropertiesComboBox());
-        oneRule.add(getOperatorsComboBox());
-        oneRule.add(firstBracket);
-        oneRule.add(getUserInputProperty(userInputProperty));
-        oneRule.add(textTO);
-        oneRule.add(getUserInputProperty(userInputProperty2));
-        oneRule.add(lastBracket);
-
-        oneRule.revalidate();
-        oneRule.repaint();
-
-        return oneRule;
-    }
 
     private JComboBox<String> getEntityComboBox() {
         setCorrectDimensions(entityComboBox);
@@ -70,10 +72,10 @@ public class RulePanel {
     private JComboBox<String> getEntityPropertiesComboBox() {
         setCorrectDimensions(entityPropertiesCombobox);
 
-        entityPropertiesCombobox.addItemListener(e -> {
-            setUpOperatorsCombobox((String) entityPropertiesCombobox.getSelectedItem(),
-                    (String) entityComboBox.getSelectedItem());
-        });
+        entityPropertiesCombobox.addItemListener(e -> setUpOperatorsCombobox(
+                (String) entityPropertiesCombobox.getSelectedItem(),
+                (String) entityComboBox.getSelectedItem())
+        );
         return entityPropertiesCombobox;
     }
 
@@ -89,7 +91,7 @@ public class RulePanel {
         return operatorsComboBox;
     }
 
-    private void setUserInput2Visible(){
+    private void setUserInput2Visible() {
         boolean visible = operatorsComboBox.getSelectedItem() != null && isUserInput2needed();
         userInputProperty2.setVisible(visible);
         firstBracket.setVisible(visible);
@@ -97,26 +99,10 @@ public class RulePanel {
         textTO.setVisible(visible);
     }
 
-    private void setUpDisplay(){
-        firstBracket.setMaximumSize(new Dimension(10,20));
-        lastBracket.setMaximumSize(new Dimension(10,20));
-        textTO.setMaximumSize(new Dimension(10,20));
-
-        firstBracket.setEditable(false);
-        lastBracket.setEditable(false);
-        textTO.setEditable(false);
-
-        firstBracket.setBackground(UIManager.getColor("Panel.background"));
-        lastBracket.setBackground(UIManager.getColor("Panel.background"));
-        textTO.setBackground(UIManager.getColor("Panel.background"));
-    }
-
     private JTextField getUserInputProperty(JTextField userInputProperty) {
         setCorrectDimensions(userInputProperty);
         // This handles actions like clicking Enter
-        userInputProperty.addActionListener(e -> {
-                    advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
-                }
+        userInputProperty.addActionListener(e -> advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery())
         );
         // This handles situations like writing a value and clicking 'Submit query' without clicking enter.
         // When the user click the 'Submit query' button, this input loses focus and the query text is updated.
@@ -179,12 +165,11 @@ public class RulePanel {
         operatorsComboBox.repaint();
     }
 
-    public void setEntityComboboxSelected(){
+    public void setEntityComboboxSelected() {
         entityComboBox.setSelectedIndex(0);
     }
 
     public String getQuery() {
-
         String entityPropertySelected = entityPropertiesCombobox.getSelectedItem() != null ? (String) entityPropertiesCombobox.getSelectedItem() : "";
         String entitySelected = entityComboBox.getSelectedItem() != null ? (String) entityComboBox.getSelectedItem() : "";
         String operatorSelected = operatorsComboBox.getSelectedItem() != null ? (String) operatorsComboBox.getSelectedItem() : "";

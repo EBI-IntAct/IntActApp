@@ -17,9 +17,6 @@ public class MutationViewTask extends AbstractHiderTask {
 
     @Override
     public void run(TaskMonitor taskMonitor) {
-        expandEdgesIfNeeded();
-        if (chosenView != null && chosenView.getType() != NetworkView.Type.MUTATION) {
-            manager.data.viewChanged(NetworkView.Type.MUTATION, chosenView);
-        }
+        expandEdgesIfNeeded(NetworkView.Type.MUTATION);
     }
 }

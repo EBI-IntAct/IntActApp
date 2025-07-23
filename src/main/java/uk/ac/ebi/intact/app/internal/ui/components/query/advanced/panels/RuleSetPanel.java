@@ -5,75 +5,62 @@ import lombok.Setter;
 import uk.ac.ebi.intact.app.internal.ui.components.query.AdvancedSearchQueryComponent;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.QueryOperators;
 
-import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.*;
-
+import javax.annotation.Nullable;
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 @Getter
-public class RuleSetPanel {
+public class RuleSetPanel extends RuleContainer {
 
-    private final JPanel ruleSetPanel = new JPanel();
+    private final AdvancedSearchQueryComponent queryComponent;
 
     @Setter
     private QueryOperators queryOperators;
 
     @Getter
-    private final ArrayList<Object> panels = new ArrayList<>();
+    private final ArrayList<RuleContainer> panels = new ArrayList<>();
 
-    public RuleSetPanel(AdvancedSearchQueryComponent advancedSearchQueryComponent) {
+    public RuleSetPanel(AdvancedSearchQueryComponent advancedSearchQueryComponent, @Nullable RuleSetPanel parent) {
+        this.parent = parent;
+        queryComponent = advancedSearchQueryComponent;
         queryOperators = new QueryOperators(advancedSearchQueryComponent, panels);
-        ruleSetPanel.setBorder(BorderFactory.createTitledBorder("Rule Set"));
-        ruleSetPanel.setLayout(new BoxLayout(ruleSetPanel, BoxLayout.Y_AXIS));
-        ruleSetPanel.add(queryOperators.getButtons(ruleSetPanel));
-        ruleSetPanel.add(getDeletePanelButton(ruleSetPanel, advancedSearchQueryComponent));
+        container.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder("Rule set"),
+                BorderFactory.createEmptyBorder(0, 0, 5, 0)
+        ));
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.add(queryOperators.getButtons(parent != null, this));
+        updateHeight();
     }
 
-    public String getQuery(){
-        String queryFromSubRuleSets = getQueryFromSubRuleSets();
-        if (queryFromSubRuleSets != null) {
-            return "(" + getQueryFromRules() + " " + this.queryOperators.getRuleOperator() + " " + getQueryFromSubRuleSets() + ")";
-        } else {
-            return "(" + getQueryFromRules() + ")";
-        }
+
+    public String getQuery() {
+        return "(" + this.panels.stream().map(RuleContainer::getQuery).collect(Collectors.joining(" " + queryOperators.getRuleOperator() + " ")) + ")";
     }
 
-    private String getQueryFromRules() {
-        ArrayList<Object> rules = panels.stream()
-                .filter(panel -> panel instanceof RulePanel)
-                .map(panel -> (RulePanel) panel)
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        return getQueriesFromRuleBuilders(rules, this.queryOperators.getRuleOperator());
-    }
-
-    private String getQueryFromSubRuleSets(){
-        ArrayList<RuleSetPanel> subRuleSets = panels.stream()
-                .filter(panel -> panel instanceof RuleSetPanel)
-                .map(panel -> (RuleSetPanel) panel)
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        if (!subRuleSets.isEmpty()) {
-            StringBuilder subQuery = new StringBuilder();
-            for (RuleSetPanel subRuleSet : subRuleSets) {
-                subQuery.append(subRuleSet.getQuery());
-            }
-            return subQuery.toString();
-        }
-
-        return null;
-    }
-    
     public void addRulePanel(RulePanel rulePanel) {
         panels.add(rulePanel);
-        ruleSetPanel.add(rulePanel.getOneRuleBuilderPanel());
+        container.add(rulePanel.getContainer());
+        updateHeight();
     }
 
     public void addRuleSetPanel(RuleSetPanel ruleSetPanelToAdd) {
         panels.add(ruleSetPanelToAdd);
-        ruleSetPanel.add(ruleSetPanelToAdd.getRuleSetPanel());
-        ruleSetPanel.revalidate();
-        ruleSetPanel.repaint();
+        container.add(ruleSetPanelToAdd.getContainer());
+        updateHeight();
+    }
+
+    public void clearContent() {
+        panels.forEach(panel -> container.remove(panel.getContainer()));
+        panels.clear();
+    }
+
+    public void updateHeight() {
+        container.revalidate();
+        container.setMaximumSize(new Dimension(Short.MAX_VALUE, container.getPreferredSize().height));
+        container.repaint();
+        if (parent != null) parent.updateHeight();
     }
 }

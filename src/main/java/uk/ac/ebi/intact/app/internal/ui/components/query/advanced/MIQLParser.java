@@ -102,6 +102,10 @@ public class MIQLParser {
                         String userInput1 = ruleValue;
                         String userInput2 = null;
 
+                        if (ruleField.getType().equals("boolean")) {
+                            operator = ruleValue.toUpperCase();
+                        }
+
                         if (ruleValue.startsWith("[") && ruleValue.endsWith("]") && ruleValue.contains("TO")) {
                             ruleValue = ruleValue.replace("[", "").replace("]", "");
                             String[] userInputs = ruleValue.split("TO");

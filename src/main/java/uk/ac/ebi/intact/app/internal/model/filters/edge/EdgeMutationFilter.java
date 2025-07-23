@@ -5,11 +5,12 @@ import uk.ac.ebi.intact.app.internal.model.core.features.Feature;
 import uk.ac.ebi.intact.app.internal.model.core.features.FeatureClassifier;
 import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.filters.BooleanFilter;
+import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 
 import java.util.List;
 
 public class EdgeMutationFilter extends BooleanFilter<Edge> {
-    public EdgeMutationFilter(NetworkView view) {
+    public EdgeMutationFilter(NetworkView view, QueryFilters queryFilters) {
         super(view,
                 Edge.class,
                 "Mutations",
@@ -17,7 +18,8 @@ public class EdgeMutationFilter extends BooleanFilter<Edge> {
                         "structure in comparison to a reference entity due to an insertion, deletion or substitution event." +
                         " When possible, the effect of such changes on the specific interaction involved versus the reference" +
                         "(wild type) version of the molecule are reported",
-                "Hide edges without mutations");
+                "Hide edges without mutations",
+                queryFilters != null ? queryFilters.getMutationFilter() : null);
     }
 
     @Override

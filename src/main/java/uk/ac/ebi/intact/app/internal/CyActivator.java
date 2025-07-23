@@ -27,6 +27,7 @@ import uk.ac.ebi.intact.app.internal.tasks.view.factories.EvidenceViewTaskFactor
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.MutationViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.SummaryViewTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.factories.parameters.OrthologyViewParameterTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.view.filter.ApplyFiltersTaskFactory;
 import uk.ac.ebi.intact.app.internal.tasks.view.filter.ResetFiltersTaskFactory;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
@@ -132,7 +133,20 @@ public class CyActivator extends AbstractCyActivator {
 
             registerService(bc, new ResetFiltersTaskFactory(manager, false), TaskFactory.class, properties);
         }
+        {
+            Properties properties = new Properties();
+            properties.setProperty(COMMAND_NAMESPACE, "intact");
+            properties.setProperty(COMMAND, "apply-filters");
+            properties.setProperty(COMMAND_DESCRIPTION, "Select nodes and edges matching the selected filters");
+            properties.setProperty(COMMAND_SUPPORTS_JSON, "false");
 
+            properties.setProperty(PREFERRED_MENU, "Apps.IntAct");
+            properties.setProperty(TITLE, "Apply filters on tables");
+            properties.setProperty(MENU_GRAVITY, "4.0");
+            properties.setProperty(IN_MENU_BAR, "true");
+
+            registerService(bc, new ApplyFiltersTaskFactory(manager, false), TaskFactory.class, properties);
+        }
         {
             Properties properties = new Properties();
             properties.setProperty(COMMAND_NAMESPACE, "intact");

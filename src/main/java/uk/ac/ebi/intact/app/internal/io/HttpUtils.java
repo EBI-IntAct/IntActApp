@@ -45,14 +45,14 @@ public class HttpUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpUtils.class);
 
-    public static JsonNode getJsonNetworkWithRequestBody(String query, int page) throws IOException, InterruptedException {
+    public static JsonNode getJsonNetworkWithRequestBody(String query, int page, int pageSize) throws IOException, InterruptedException {
         String baseUrl = INTACT_GRAPH_WS + "network/fromPagedInteractions";
 
         Map<String, Object> params = Map.of(
                 "query", query,
                 "advancedSearch", isAdvancedSearch(query),
                 "page", page,
-                "pageSize", 5_000
+                "pageSize", pageSize
         );
 
         HttpRequest request = requestBuilder

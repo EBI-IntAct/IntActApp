@@ -29,12 +29,12 @@ import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.NetworkCreatedEvent;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.*;
 import uk.ac.ebi.intact.app.internal.tasks.clone.TableClonedEvent;
 import uk.ac.ebi.intact.app.internal.tasks.clone.TableClonedListener;
 import uk.ac.ebi.intact.app.internal.tasks.clone.factories.CloneTableTaskFactory;
+import uk.ac.ebi.intact.app.internal.tasks.query.QueryFilters;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 
 import java.util.*;
@@ -86,7 +86,7 @@ public class DataManager implements
             fireIntactNetworkCreated(network);
             network.completeMissingNodeColorsFromTables(true, null);
             for (CyNetworkView view : networkViewManager.getNetworkViews(cyNetwork)) {
-                addNetworkView(view, true);
+                addNetworkView(view, true, null);
             }
         }
     }
@@ -143,23 +143,24 @@ public class DataManager implements
         manager.utils.getService(CyApplicationManager.class).setCurrentNetwork(cyNetwork);
     }
 
-    public CyNetworkView createNetworkView(CyNetwork cyNetwork) {
+    public CyNetworkView createNetworkView(CyNetwork cyNetwork, QueryFilters queryFilters, NetworkView.Type networkViewType) {
         CyNetworkView view = manager.utils.getService(CyNetworkViewFactory.class)
                 .createNetworkView(cyNetwork);
         manager.style.setStylesFancy(true);
         if (networkMap.containsKey(cyNetwork)) {
-            networkMap.get(cyNetwork).hideExpandedEdgesOnViewCreation(view);
-            manager.style.styles.get(SummaryStyle.type).applyStyle(view);
+            networkMap.get(cyNetwork).hideEdgesAndCreateNetworkViewWithParams(view, queryFilters, networkViewType);
         }
         return view;
     }
 
-    public NetworkView addNetworkView(CyNetworkView cyView, boolean loadData) {
-        return addNetworkView(cyView, loadData, NetworkView.Type.SUMMARY);
-    }
-
     public NetworkView addNetworkView(CyNetworkView cyView, boolean loadData, NetworkView.Type type) {
         NetworkView view = new NetworkView(manager, cyView, loadData, type);
+        networkViewMap.put(cyView, view);
+        return view;
+    }
+
+    public NetworkView addNetworkView(CyNetworkView cyView, QueryFilters queryFilters, NetworkView.Type type) {
+        NetworkView view = new NetworkView(manager, cyView, queryFilters, type);
         networkViewMap.put(cyView, view);
         return view;
     }
@@ -265,6 +266,7 @@ public class DataManager implements
                     List<Long> summarizedEdgesSUID = network.getSimilarEvidenceCyEdges(network.getCyEdge(edgeSUID)).stream()
                             .map(CyIdentifiable::getSUID).collect(Collectors.toList());
                     EdgeFields.SUMMARIZED_EDGES_SUID.setValue(edgeRow, summarizedEdgesSUID);
+                    network.getSummaryEdges().forEach(SummaryEdge::updateSummary);
                 }
             }
             NetworkFields.UUID.setAllValues(clonedTable, NetworkFields.UUID.getValue(network.getCyRow()));
@@ -331,22 +333,38 @@ public class DataManager implements
      */
     @Override
     public void handleEvent(NetworkViewAddedEvent e) {
-        CyNetwork cyNetwork = e.getNetworkView().getModel();
+        CyNetworkView cyNetworkView = e.getNetworkView();
+        CyNetwork cyNetwork = cyNetworkView.getModel();
         if (networkMap.containsKey(cyNetwork)) {
             if (networkTypesToSet.containsKey(cyNetwork)) {
                 NetworkViewTypeToSet networkViewTypeToSet = networkTypesToSet.get(cyNetwork);
-                if (!networkViewTypeToSet.toSet) networkViewTypeToSet.toSet = true; // Avoid work at first trigger
-                else {
-                    NetworkView networkView = addNetworkView(e.getNetworkView(), false, networkViewTypeToSet.type);
-                    manager.style.styles.get(networkViewTypeToSet.type).applyStyle(e.getNetworkView());
+                if (!networkViewTypeToSet.toSet) {
+                    // Avoid work at first trigger
+                    networkViewTypeToSet.toSet = true;
+                } else {
+                    NetworkView networkView = getOrCreateNetworkView(cyNetworkView, networkViewTypeToSet.type);
+                    networkView.accordStyleToType();
                     networkViewTypesToSet.put(networkView, networkViewTypeToSet);
                     networkTypesToSet.remove(cyNetwork);
                 }
             } else {
-                NetworkView networkView = addNetworkView(e.getNetworkView(), false);
-                manager.style.styles.get(NetworkView.Type.SUMMARY).applyStyle(networkView.cyView);
+                NetworkView networkView = getOrCreateNetworkView(cyNetworkView, null);
+                networkView.accordStyleToType();
             }
         }
+    }
+
+    private NetworkView getOrCreateNetworkView(CyNetworkView cyNetworkView, NetworkView.Type type) {
+        NetworkView networkView;
+        if (networkViewMap.containsKey(cyNetworkView)) {
+            networkView = networkViewMap.get(cyNetworkView);
+            if (type != null) {
+                networkView.setType(type);
+            }
+        } else {
+            networkView = addNetworkView(cyNetworkView, false, type);
+        }
+        return networkView;
     }
 
     /**
@@ -366,7 +384,7 @@ public class DataManager implements
             VisualStyle currentStyle = manager.style.vmm.getVisualStyle(networkView.cyView);
 
             if (currentStyle != correctStyle) {
-                manager.style.styles.get(networkView.getType()).applyStyle(networkView.cyView);
+                networkView.accordStyleToType();
             }
 
             correctType.counterOfStyleResetting++;
@@ -421,7 +439,7 @@ public class DataManager implements
 
     public void viewChanged(NetworkView.Type newType, NetworkView view) {
         view.setType(newType);
-        manager.style.styles.get(newType).applyStyle(view.cyView);
+        view.accordStyleToType();
         manager.utils.fireEvent(new ViewUpdatedEvent(manager, view));
     }
 

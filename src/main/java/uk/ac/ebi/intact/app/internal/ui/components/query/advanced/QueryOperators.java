@@ -2,13 +2,12 @@ package uk.ac.ebi.intact.app.internal.ui.components.query.advanced;
 
 import lombok.Getter;
 import lombok.Setter;
-
 import uk.ac.ebi.intact.app.internal.ui.components.query.AdvancedSearchQueryComponent;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RuleContainer;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RulePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RuleSetPanel;
 
 import javax.swing.*;
-
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -26,17 +25,17 @@ public class QueryOperators {
     AdvancedSearchQueryComponent advancedSearchQueryComponent;
 
     @Getter
-    ArrayList<Object> panels;
+    ArrayList<RuleContainer> panels;
 
 
     public QueryOperators(AdvancedSearchQueryComponent advancedSearchQueryComponent,
-                          ArrayList<Object> panels) {
+                          ArrayList<RuleContainer> panels) {
         this.advancedSearchQueryComponent = advancedSearchQueryComponent;
         this.panels = panels;
     }
 
-    public JPanel getAndOrButton() {
-        JPanel buttonContainer = new JPanel();
+    public Box getAndOrButton() {
+        Box buttonContainer = Box.createHorizontalBox();
 
 
         setButtonIntactPurple(andButton);
@@ -58,14 +57,17 @@ public class QueryOperators {
             advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
         });
 
+        buttonContainer.add(Box.createHorizontalStrut(3));
         buttonContainer.add(andButton);
         buttonContainer.add(orButton);
+
+        buttonContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         return buttonContainer;
     }
 
-    public JPanel getRuleAndRuleSetButton(JPanel parentContainer) {
-        JPanel buttonContainer = new JPanel();
+    public Box getRuleAndRuleSetButton(boolean addDeleteButton, RuleSetPanel ruleSetPanel) {
+        Box buttonContainer = Box.createHorizontalBox();
 
         JButton addRuleButton = new JButton("+ Rule");
         setButtonIntactPurple(addRuleButton);
@@ -75,44 +77,39 @@ public class QueryOperators {
 
 
         addRuleButton.addActionListener(e -> {
-            RulePanel rule = new RulePanel(advancedSearchQueryComponent);
-
-            parentContainer.add(rule.getOneRuleBuilderPanel());
+            RulePanel rule = new RulePanel(advancedSearchQueryComponent, ruleSetPanel);
+            ruleSetPanel.addRulePanel(rule);
             rule.setEntityComboboxSelected(); //triggers the actionListener to set up the other comboBoxes
-
-            panels.add(rule);
-
-            parentContainer.revalidate();
-            parentContainer.repaint();
-
             advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
         });
 
         ruleSetButton.addActionListener(e -> {
-            RuleSetPanel ruleSet = new RuleSetPanel(
-                    advancedSearchQueryComponent);
-
-            parentContainer.add(ruleSet.getRuleSetPanel());
-
-            panels.add(ruleSet);
-            parentContainer.revalidate();
-            parentContainer.repaint();
-
+            RuleSetPanel ruleSet = new RuleSetPanel(advancedSearchQueryComponent, ruleSetPanel);
+            ruleSetPanel.addRuleSetPanel(ruleSet);
             advancedSearchQueryComponent.setQueryText(advancedSearchQueryComponent.getFullQuery());
         });
 
         buttonContainer.add(addRuleButton);
+        buttonContainer.add(Box.createHorizontalStrut(5));
         buttonContainer.add(ruleSetButton);
+        if (addDeleteButton) {
+            buttonContainer.add(Box.createHorizontalStrut(5));
+            buttonContainer.add(getDeletePanelButton( advancedSearchQueryComponent, ruleSetPanel));
+        }
+        buttonContainer.add(Box.createHorizontalStrut(5));
+        buttonContainer.setAlignmentX(Component.RIGHT_ALIGNMENT);
 
         return buttonContainer;
 
     }
 
-    public JPanel getButtons(JPanel parentContainer) {
-        JPanel container = new JPanel();
-        container.setLayout(new GridLayout(1,2));
+    public Box getButtons(boolean addDeleteButton, RuleSetPanel ruleSetPanel) {
+        Box container = Box.createHorizontalBox();
         container.add(getAndOrButton());
-        container.add(getRuleAndRuleSetButton(parentContainer));
+        container.add(Box.createHorizontalGlue());
+        container.add(getRuleAndRuleSetButton(addDeleteButton, ruleSetPanel));
+        Dimension size = new Dimension(Short.MAX_VALUE, 35);
+        container.setMaximumSize(size);
         return container;
     }
 

@@ -9,16 +9,16 @@ import org.cytoscape.work.TaskMonitor;
 import java.util.Collection;
 
 @AllArgsConstructor
-public class SelectEdgesTask extends AbstractTask {
+public class SelectNodesTask extends AbstractTask {
     private final CyNetwork cyNetwork;
-    private final Collection<Long> edgeIdsToSelect;
+    private final Collection<Long> nodeIdsToSelect;
 
     @Override
     public void run(TaskMonitor taskMonitor) {
-        cyNetwork.getEdgeList().forEach(edge -> {
-            CyRow row = cyNetwork.getRow(edge);
+        cyNetwork.getNodeList().forEach(node -> {
+            CyRow row = cyNetwork.getRow(node);
             if (row != null) {
-                row.set(CyNetwork.SELECTED, edgeIdsToSelect.contains(edge.getSUID()));
+                row.set(CyNetwork.SELECTED, nodeIdsToSelect.contains(node.getSUID()));
             }
         });
     }

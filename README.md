@@ -1,7 +1,7 @@
 ![Logo](docs/assets/logo/Logo_Gradient_250x82.png)  
-[![Latest release](https://img.shields.io/static/v1?label=release&message=1.0.0&color=blue)]()
-[![Java version](https://img.shields.io/static/v1?label=java&message=11&color=blue)](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
-[![Cytoscape version](https://img.shields.io/static/v1?label=cytoscape&message=3.8&color=blue)](https://cytoscape.org/download.html)
+[![Latest release](https://img.shields.io/static/v1?label=release&message=1.1.0&color=blue)]()
+[![Java version](https://img.shields.io/static/v1?label=java&message=17&color=blue)](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
+[![Cytoscape version](https://img.shields.io/static/v1?label=cytoscape&message=3.10&color=blue)](https://cytoscape.org/download.html)
 ## Installation
 ### Cytoscape install
 - Apps > App manager

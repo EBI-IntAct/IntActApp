@@ -19,20 +19,22 @@ public class ParticipantCVField implements FieldInitializer {
      * and
      * Assume id json key is formatted as "{valueJsonKey}_{Ontology.abbreviation.toLowerCase()}_identifier"
      */
-    public ParticipantCVField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey) {
-        this(fields, initializers, name, jsonKey, SourceOntology.MI);
+    public ParticipantCVField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, boolean isPublic) {
+        this(fields, initializers, name, jsonKey, SourceOntology.MI, isPublic);
     }
 
     /**
      * Assume id json key is formatted as "{valueJsonKey}_{Ontology.abbreviation.toLowerCase()}_identifier"
      */
-    public ParticipantCVField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey, SourceOntology ontology) {
-        this(fields, initializers, name, jsonKey, String.format("%s_%s_identifier", jsonKey, ontology.abbreviation.toLowerCase()), ontology);
+    public ParticipantCVField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String jsonKey,
+                              SourceOntology ontology, boolean isPublic) {
+        this(fields, initializers, name, jsonKey, String.format("%s_%s_identifier", jsonKey, ontology.abbreviation.toLowerCase()), ontology, isPublic);
     }
 
-    public ParticipantCVField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String valueJsonKey, String idJsonKey, SourceOntology ontology) {
-        SOURCE = new CVField(fields, initializers, Field.Namespace.SOURCE, "Source " + name, valueJsonKey, idJsonKey, ontology);
-        TARGET = new CVField(fields, initializers, Field.Namespace.TARGET, "Target " + name, valueJsonKey, idJsonKey, ontology);
+    public ParticipantCVField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, String valueJsonKey,
+                              String idJsonKey, SourceOntology ontology, boolean isPublic) {
+        SOURCE = new CVField(fields, initializers, Field.Namespace.SOURCE, "Source " + name, valueJsonKey, idJsonKey, ontology, isPublic);
+        TARGET = new CVField(fields, initializers, Field.Namespace.TARGET, "Target " + name, valueJsonKey, idJsonKey, ontology, isPublic);
         initializers.remove(SOURCE);
         initializers.remove(TARGET);
         initializers.add(this);

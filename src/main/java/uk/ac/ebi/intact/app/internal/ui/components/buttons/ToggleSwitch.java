@@ -8,6 +8,7 @@ import java.awt.event.MouseListener;
 public class ToggleSwitch extends AbstractButton implements MouseListener {
     private boolean activated;
     private Color accentColor;
+    private final Color disabledColor = new Color(214, 214, 214);
     private final Color unactivatedColor = new Color(177, 177, 177);
     private final Color buttonColor = new Color(251, 251, 251);
     private final int height = 15;
@@ -65,7 +66,7 @@ public class ToggleSwitch extends AbstractButton implements MouseListener {
         int delta = 2;
         int diameter = height - 2 * delta;
 
-        g2.setPaint((activated) ? accentColor : unactivatedColor);
+        g2.setPaint(enabled ? (activated) ? accentColor : unactivatedColor : disabledColor);
         g2.fillRoundRect(0, 0, width, height, height, height);
 
         int x = activated ? width - delta - diameter : delta;
@@ -97,7 +98,7 @@ public class ToggleSwitch extends AbstractButton implements MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        toggle();
+        if (enabled) toggle();
     }
 
     @Override
@@ -112,12 +113,23 @@ public class ToggleSwitch extends AbstractButton implements MouseListener {
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        setCursor(new Cursor(Cursor.HAND_CURSOR));
+        cursorIn = true;
+        if (enabled) setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
+        cursorIn = false;
+    }
 
+    boolean enabled = true;
+    boolean cursorIn = false;
+
+    @Override
+    public void setEnabled(boolean b) {
+        this.enabled = b;
+        repaint();
+        if (cursorIn) setCursor(b ? new Cursor(Cursor.HAND_CURSOR) : new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
     @Override
