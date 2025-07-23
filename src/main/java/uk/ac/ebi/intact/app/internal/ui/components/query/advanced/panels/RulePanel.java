@@ -1,9 +1,9 @@
 package uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels;
 
+import org.jspecify.annotations.Nullable;
 import uk.ac.ebi.intact.app.internal.ui.components.query.AdvancedSearchQueryComponent;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.Field;
 
-import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;

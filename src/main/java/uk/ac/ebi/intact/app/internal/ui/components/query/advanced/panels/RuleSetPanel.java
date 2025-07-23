@@ -2,10 +2,10 @@ package uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.jspecify.annotations.Nullable;
 import uk.ac.ebi.intact.app.internal.ui.components.query.AdvancedSearchQueryComponent;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.QueryOperators;
 
-import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;

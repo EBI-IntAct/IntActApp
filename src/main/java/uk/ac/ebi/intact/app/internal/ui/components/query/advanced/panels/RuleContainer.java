@@ -1,8 +1,8 @@
 package uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels;
 
 import lombok.Getter;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import javax.swing.*;
 
 public abstract class RuleContainer {
