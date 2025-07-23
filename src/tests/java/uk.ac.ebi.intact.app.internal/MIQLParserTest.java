@@ -1,4 +1,4 @@
-package uk.ac.ebi.intact.app.internal.ui.components.query.advanced.tests;
+package uk.ac.ebi.intact.app.internal;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
