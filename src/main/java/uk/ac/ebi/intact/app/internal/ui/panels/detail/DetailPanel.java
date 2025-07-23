@@ -257,7 +257,7 @@ public class DetailPanel extends JPanel
     @Override
     public void handleEvent(SelectedNodesAndEdgesEvent event) {
         if (!registered) return;
-        if (event.getNetwork() != manager.data.getCurrentNetwork()) return;
+        if (event.getNetwork() != manager.data.getCurrentCyNetwork()) return;
         if (!Instant.now().minusMillis(200).isAfter(lastSelection)) return;
 
         if (nodePanel.selectionRunning || edgePanel.selectionRunning) {
