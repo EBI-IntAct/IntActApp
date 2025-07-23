@@ -84,7 +84,7 @@ public class JLink extends JTextField {
     }
 
     private void open(URI uri) {
-        openBrowser.openURL(uri.toString());
+        openBrowser.openURL(uri.toString(), false);
     }
 
 }

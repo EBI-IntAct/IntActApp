@@ -13,7 +13,7 @@ import java.util.function.Function;
 
 public class DbIdentifiersToLink {
     private enum Database {
-        UNIPROT("uniprotkb", "UniProt", s -> "https://www.uniprot.org/uniprot/" + s),
+        UNIPROT("uniprotkb", "UniProt", s -> "https://www.uniprot.org/uniprotkb?query=" + s),
         INTACT("intact", "IntAct", s -> "https://www.ebi.ac.uk/intact/molecule/" + s),
         CH_EBI("chebi", "ChEBI", s -> "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=" + s),
         CH_EMBL("chembl", "ChEMBL", s -> "https://www.ebi.ac.uk/chembl/compound_report_card/" + s),
