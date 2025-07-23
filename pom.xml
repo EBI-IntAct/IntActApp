@@ -34,7 +34,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>6.0.0</version>
+                <version>5.1.2</version>
                 <extensions>true</extensions>
                 <configuration>
                     <unpackBundle>false</unpackBundle>
@@ -50,7 +50,7 @@
                         <Import-Package>*;resolution:=optional</Import-Package>
                         <Embed-Dependency>*;scope=!provided|!test</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
-                        <Cytoscape-App-Dependencies>enhancedGraphics;1.5.5, yFilesLayoutAlgorithms;1.1.5</Cytoscape-App-Dependencies>
+                        <Cytoscape-App-Dependencies>enhancedGraphics;1.5.5, "yFiles Layout Algorithms";1.1.5</Cytoscape-App-Dependencies>
                     </instructions>
                 </configuration>
             </plugin>
@@ -59,8 +59,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
                 <configuration>
-                    <source>17</source>
-                    <target>17</target>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
         </plugins>
