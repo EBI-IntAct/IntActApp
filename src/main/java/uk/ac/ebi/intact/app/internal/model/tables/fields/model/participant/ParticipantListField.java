@@ -10,12 +10,12 @@ public class ParticipantListField<E> {
     public final ListField<E> SOURCE;
     public final ListField<E> TARGET;
 
-    public ParticipantListField( List<Field<?>> fields, List<FieldInitializer> initializers, String name, Class<E> type) {
-        this(fields, initializers, name, type, false);
+    public ParticipantListField( List<Field<?>> fields, List<FieldInitializer> initializers, String name, Class<E> type, boolean isPublic) {
+        this(fields, initializers, name, type, false, isPublic);
     }
 
-    public ParticipantListField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, Class<E> type, boolean shared) {
-        SOURCE = new ListField<>(fields,initializers , Field.Namespace.SOURCE, "Source " + name, type, shared, null);
-        TARGET = new ListField<>(fields,initializers , Field.Namespace.TARGET, "Target " + name, type, shared, null);
+    public ParticipantListField(List<Field<?>> fields, List<FieldInitializer> initializers, String name, Class<E> type, boolean shared, boolean isPublic) {
+        SOURCE = new ListField<>(fields,initializers , Field.Namespace.SOURCE, "Source " + name, type, shared, null, isPublic);
+        TARGET = new ListField<>(fields,initializers , Field.Namespace.TARGET, "Target " + name, type, shared, null, isPublic);
     }
 }

@@ -132,7 +132,7 @@ public class NodeDetailPanel extends AbstractDetailPanel {
             List<Node> nodes = cyNodes.stream()
                     .map(currentNetwork::getNode)
                     .filter(Objects::nonNull)
-                    .filter(node -> currentView.visibleNodes.contains(node))
+                    .filter(node -> currentNetwork.getVisibleNodes().contains(node))
                     .collect(Comparators.least(maxSelectedNodeInfoShown, Node::compareTo));
 
             for (Node node : nodes) {

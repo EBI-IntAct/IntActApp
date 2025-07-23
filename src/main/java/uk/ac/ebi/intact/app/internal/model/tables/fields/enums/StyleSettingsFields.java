@@ -12,6 +12,6 @@ public class StyleSettingsFields {
     public final static List<Field<?>> fields = new ArrayList<>();
     public final static List<FieldInitializer> initializers = new ArrayList<>();
 
-    public static final Field<String> TYPE =  new Field<>(fields, initializers, NULL, "type", null, String.class);
-    public static final Field<String> JSON_VALUE =  new Field<>(fields, initializers, NULL, "JSON value", null, String.class);
+    public static final Field<String> TYPE =  new Field<>(fields, initializers, NULL, "type", null, String.class, true);
+    public static final Field<String> JSON_VALUE =  new Field<>(fields, initializers, NULL, "JSON value", null, String.class, true);
 }

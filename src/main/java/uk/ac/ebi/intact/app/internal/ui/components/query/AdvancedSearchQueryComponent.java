@@ -1,26 +1,24 @@
 package uk.ac.ebi.intact.app.internal.ui.components.query;
 
 import lombok.Getter;
-
+import lombok.Setter;
 import org.apache.log4j.Logger;
-import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.*;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.Field;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.MIQLParser;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RulePanel;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.panels.RuleSetPanel;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.Rule;
+import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.RuleComponent;
 import uk.ac.ebi.intact.app.internal.ui.components.query.advanced.parser.components.RuleSet;
-
-import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.*;
 
 import javax.swing.*;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.stream.Collectors;
+
+import static uk.ac.ebi.intact.app.internal.ui.components.query.advanced.AdvancedSearchUtils.setButtonIntactPurple;
 
 public class AdvancedSearchQueryComponent {
     static int frameWidth = 2000;
@@ -29,16 +27,15 @@ public class AdvancedSearchQueryComponent {
     @Getter
     private final JTextPane queryTextField = new JTextPane();
 
-    public final JPanel rulesPanel = new JPanel();
-
-    @Getter
-    private final ArrayList<Object> panels = new ArrayList<>();
+    public final RuleSetPanel ruleSetPanel = new RuleSetPanel(this, null);
 
     @Getter
     private final JButton buildQueryButton = new JButton("Build query");
 
-    private final QueryOperators queryOperators = new QueryOperators(this, panels);
     private final MIQLParser miqlParser = new MIQLParser();
+
+    @Setter
+    Runnable onBuildQuery;
 
     private final Logger logger = Logger.getLogger(AdvancedSearchQueryComponent.class);
 
@@ -56,35 +53,30 @@ public class AdvancedSearchQueryComponent {
         queryContainer.add(getQueryInputField(), BorderLayout.LINE_START);
         queryContainer.add(getBuildQueryButtonContainer(), BorderLayout.CENTER);
 
-        JPanel buttonsContainer = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        buttonsContainer.add(queryOperators.getButtons(rulesPanel), BorderLayout.LINE_END);
-
         pageStartContainer.add(queryContainer);
-        pageStartContainer.add(buttonsContainer);
 
         frame.add(pageStartContainer, BorderLayout.PAGE_START);
         frame.add(getRuleScrollPane(), BorderLayout.CENTER);
 
         frame.setVisible(true);
+
+        // When we first create this component, if it is initialized with a valid query,
+        // then we parse it and build the buttons from the query.
+        if (validateQueryText()) {
+            buildButtonsFromQueryText();
+        }
     }
 
-    private JPanel getBuildQueryButtonContainer(){
+    private JPanel getBuildQueryButtonContainer() {
         JPanel buttonContainer = new JPanel();
         buttonContainer.setLayout(new FlowLayout(FlowLayout.CENTER));
 
         setButtonIntactPurple(buildQueryButton);
         buildQueryButton.addActionListener(e -> {
-
-            String fullQuery = getFullQuery();
-            queryTextField.setText(fullQuery);
-            highlightQuery(fullQuery);
-
             Action submitAction = queryTextField.getActionMap().get("submitQuery");
             if (submitAction != null) {
                 submitAction.actionPerformed(new ActionEvent(queryTextField, ActionEvent.ACTION_PERFORMED, null));
             }
-
-            frame.dispose();
         });
 
 
@@ -92,57 +84,77 @@ public class AdvancedSearchQueryComponent {
         return buttonContainer;
     }
 
-    public String getFullQuery() {
-        return panels.stream()
-                .map(panel -> {
-                    if (panel instanceof RuleSetPanel) {
-                        return ((RuleSetPanel) panel).getQuery();
-                    } else if (panel instanceof RulePanel) {
-                        return ((RulePanel) panel).getQuery();
-                    }
-                    logger.warn("Panel type does not return query: " + panel.getClass().getName());
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.joining(" " + queryOperators.getRuleOperator() + " "));
+    public void setQueryText(String query) {
+        queryTextField.setText(query);
+        highlightQuery(queryTextField.getText());
     }
 
-    private JScrollPane getRuleScrollPane() {
+    public String getFullQuery() {
+        return ruleSetPanel.getQuery().substring(1, ruleSetPanel.getQuery().length() - 1);
+    }
+
+    private Container getRuleScrollPane() {
+        JPanel container = ruleSetPanel.getContainer();
+        container.setBorder(BorderFactory.createEmptyBorder());
+
         JScrollPane scrollPane = new JScrollPane();
 
-        rulesPanel.setAutoscrolls(true);
-        rulesPanel.setLayout(new BoxLayout(rulesPanel, BoxLayout.Y_AXIS));
+        container.setAutoscrolls(true);
 
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setViewportView(rulesPanel);
+        scrollPane.setViewportView(container);
 
         return scrollPane;
     }
 
-    private JPanel getQueryInputField(){
+    private boolean validateQueryText() {
+        String input = queryTextField.getText();
+        if (input != null && !input.isEmpty()) {
+            highlightQuery(input);
+            RuleSet parsedQuery = miqlParser.parseMIQL(input);
+            return parsedQuery != null && parsedQuery.rules != null && !parsedQuery.rules.isEmpty();
+        }
+        return false;
+    }
+
+    private void buildButtonsFromQueryText() {
+        String input = queryTextField.getText();
+        RuleSet parsedQuery = miqlParser.parseMIQL(input);
+
+        modifyComboboxFromQuery(parsedQuery, 0, ruleSetPanel);
+        String builtQuery = getFullQuery();
+        highlightQuery(builtQuery);
+    }
+
+    private JPanel getQueryInputField() {
         JPanel queryInputFieldContainer = new JPanel();
 
-        queryTextField.setMinimumSize(new Dimension(frameWidth, 25));
-        queryTextField.setPreferredSize(new Dimension(frameWidth/2, 25));
+        queryTextField.setMinimumSize(new Dimension(frameWidth, 30));
+        queryTextField.setPreferredSize(new Dimension(frameWidth / 2, 30));
+        queryTextField.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
         queryTextField.setVisible(true);
 
-        queryTextField.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "submitQuery");
+        queryTextField.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "validateQuery");
+        queryTextField.getActionMap().put("validateQuery", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (validateQueryText()) {
+                    buildButtonsFromQueryText();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Failed to parse query. Please check the syntax.");
+                }
+            }
+        });
         queryTextField.getActionMap().put("submitQuery", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                String input = queryTextField.getText();
-                highlightQuery(input);
-
-                RuleSet parsedQuery = miqlParser.parseMIQL(input);
-                if (parsedQuery != null && parsedQuery.rules != null && !parsedQuery.rules.isEmpty()) {
-                    queryOperators.setRuleOperator(parsedQuery.condition);
-                    queryOperators.updateAndOrButtons();
-
-                    modifyComboboxFromQuery(parsedQuery, 0);
-                    String builtQuery = getFullQuery();
-                    highlightQuery(builtQuery);
+                if (validateQueryText()) {
+                    buildButtonsFromQueryText();
+                    if (onBuildQuery != null) {
+                        onBuildQuery.run();
+                    }
+                    frame.dispose();
                 } else {
                     JOptionPane.showMessageDialog(null, "Failed to parse query. Please check the syntax.");
                 }
@@ -153,65 +165,53 @@ public class AdvancedSearchQueryComponent {
         return queryInputFieldContainer;
     }
 
-    private RuleSetPanel modifyComboboxFromQuery(RuleSet ruleSet, int indentLevel) {
+    private RuleSetPanel modifyComboboxFromQuery(RuleSet ruleSet, int indentLevel, RuleSetPanel currentPanel) {
         if (indentLevel == 0) {
-            rulesPanel.removeAll();
-            panels.clear();
+            currentPanel = ruleSetPanel;
+            currentPanel.clearContent();
+        } else {
+            currentPanel = new RuleSetPanel(this, currentPanel);
         }
 
-        RuleSetPanel currentRuleSetPanel = null;
+        currentPanel.getQueryOperators().setRuleOperator(ruleSet.condition);
+        currentPanel.getQueryOperators().updateAndOrButtons();
 
-        if (indentLevel != 0) {
-            currentRuleSetPanel = new RuleSetPanel(this);
-            currentRuleSetPanel.getPanels().clear();
-            currentRuleSetPanel.getQueryOperators().setRuleOperator(ruleSet.condition);
-            currentRuleSetPanel.getQueryOperators().updateAndOrButtons();
-        }
-
-        for (Object ruleComponent : ruleSet.rules) {
+        for (RuleComponent ruleComponent : ruleSet.rules) {
             if (ruleComponent instanceof RuleSet) {
                 RuleSet nestedRuleSet = (RuleSet) ruleComponent;
-                RuleSetPanel nestedPanel = modifyComboboxFromQuery(nestedRuleSet, indentLevel + 1);
+                RuleSetPanel nestedPanel = modifyComboboxFromQuery(nestedRuleSet, indentLevel + 1, currentPanel);
 
-
-                if (nestedPanel != null) {
-                    if (indentLevel == 0) {
-                        rulesPanel.add(nestedPanel.getRuleSetPanel());
-                        panels.add(nestedPanel);
-                    } else {
-                        currentRuleSetPanel.addRuleSetPanel(nestedPanel);
-                    }
-                }
+                currentPanel.addRuleSetPanel(nestedPanel);
 
             } else if (ruleComponent instanceof Rule) {
                 Rule rule = (Rule) ruleComponent;
-                RulePanel rulePanel = new RulePanel(this);
+                RulePanel rulePanel = new RulePanel(this, currentPanel);
 
                 rulePanel.entityComboBox.setSelectedItem(rule.getEntity());
                 rulePanel.entityPropertiesCombobox.setSelectedItem(rule.getFieldName());
-                rulePanel.operatorsComboBox.setSelectedItem(rule.getOperator());
-                rulePanel.userInputProperty.setText(rule.getUserInput1());
+                if (rulePanel.isUserInputNeeded()) {
+                    rulePanel.operatorsComboBox.setSelectedItem(rule.getOperator());
+                    rulePanel.userInputProperty.setText(rule.getUserInput1());
+                } else {
+                    rulePanel.operatorsComboBox.setSelectedItem(rule.getUserInput1().toUpperCase());
+                }
                 rulePanel.userInputProperty2.setText(rule.getUserInput2());
 
-                if (indentLevel == 0) {
-                    rulesPanel.add(rulePanel.getOneRuleBuilderPanel());
-                    panels.add(rulePanel);
-                } else {
-                    currentRuleSetPanel.addRulePanel(rulePanel);
-                }
+
+                currentPanel.addRulePanel(rulePanel);
             }
         }
 
         if (indentLevel == 0) {
-            rulesPanel.revalidate();
-            rulesPanel.repaint();
+            ruleSetPanel.getContainer().revalidate();
+            ruleSetPanel.getContainer().repaint();
             return null;
         } else {
-            return currentRuleSetPanel;
+            return currentPanel;
         }
     }
 
-    public void highlightQuery(String query) {
+    private void highlightQuery(String query) {
         StyledDocument doc = queryTextField.getStyledDocument();
         doc.removeUndoableEditListener(null);
 
@@ -234,7 +234,8 @@ public class AdvancedSearchQueryComponent {
         for (String token : tokens) {
             Style styleToUse = defaultStyle;
 
-            if (token.equals("AND") || token.equals("OR") || token.equals("NOT")) {
+            if (token.equals("AND") || token.equals("OR") || token.equals("NOT") ||
+                    token.equals("and") || token.equals("or") || token.equals("not")) {
                 styleToUse = operatorStyle;
             } else if (token.matches(Field.getMiQlRegex())) {
                 styleToUse = miQLStyle;
@@ -249,4 +250,5 @@ public class AdvancedSearchQueryComponent {
             }
         }
     }
+
 }

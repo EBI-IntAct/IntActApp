@@ -6,7 +6,7 @@
         <bundle.name>IntAct App</bundle.name>
         <bundle.symbolicName>intact.app</bundle.symbolicName>
         <bundle.namespace>uk.ac.ebi.intact.app.internal</bundle.namespace>
-        <cytoscape.api.version>3.8.0</cytoscape.api.version>
+        <cytoscape.api.version>3.9.0</cytoscape.api.version>
         <osgi.api.version>4.2.0</osgi.api.version>
     </properties>
 
@@ -14,7 +14,7 @@
     <artifactId>intactApp</artifactId>
     <packaging>bundle</packaging>
     <name>${bundle.name}</name>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
 
     <scm>
         <connection>scm:git:https://github.com/EliotRagueneau/IntactApp.git</connection>
@@ -61,8 +61,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>17</source>
+                    <target>17</target>
                 </configuration>
             </plugin>
         </plugins>
@@ -91,6 +91,13 @@
             </releases>
             <name>Cytoscape Releases</name>
             <url>https://code.cytoscape.org/nexus/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>UCSD Cytoscape Releases</id>
+            <url>https://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
         <repository>
             <id>apache-repo-releases</id>
@@ -280,7 +287,7 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>RELEASE</version>
+            <version>7.11.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

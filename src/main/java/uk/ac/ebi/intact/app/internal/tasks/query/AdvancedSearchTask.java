@@ -14,12 +14,12 @@ import org.cytoscape.work.*;
 
 import uk.ac.ebi.intact.app.internal.io.HttpUtils;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
+import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
 import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.*;
 
 import static uk.ac.ebi.intact.app.internal.utils.ViewUtils.getLayoutTask;
@@ -27,20 +27,28 @@ import static uk.ac.ebi.intact.app.internal.utils.ViewUtils.getLayoutTask;
 public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
     private final String query;
     private final Manager manager;
+    private final QueryFilters queryFilters;
+    private final NetworkView.Type networkViewType;
     private final boolean applyLayout;
     private final Network network;
-    private String netName;
+    private String netName = null;
 
-    public AdvancedSearchTask(Manager manager, String query, boolean applyLayout) {
+    private AdvancedSearchTask(Manager manager, String query, QueryFilters queryFilters, NetworkView.Type networkViewType, boolean applyLayout) {
         this.query = query;
         this.manager = manager;
+        this.queryFilters = queryFilters;
+        this.networkViewType = networkViewType;
         this.network = new Network(manager);
         this.applyLayout = applyLayout;
     }
 
-    public AdvancedSearchTask(Manager manager, String query, boolean applyLayout, String netName) {
-        this(manager, query, applyLayout);
+    public AdvancedSearchTask(Manager manager, String query, QueryFilters queryFilters, NetworkView.Type networkViewType, boolean applyLayout, String netName) {
+        this(manager, query, queryFilters, networkViewType, applyLayout);
         this.netName = netName;
+    }
+
+    public AdvancedSearchTask(Manager manager, String query, boolean applyLayout) {
+        this(manager, query, null, null, applyLayout);
     }
 
     @Override
@@ -63,10 +71,10 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         CyNetwork cyNetwork = network.getCyNetwork();
 
         monitor.setTitle("Create summary edges");
-        monitor.showMessage(TaskMonitor.Level.INFO, "Create summary edges");
-        monitor.setProgress(0.6);
         manager.data.addNetwork(network, cyNetwork);
         manager.data.fireIntactNetworkCreated(network);
+        monitor.showMessage(TaskMonitor.Level.INFO, "Create summary edges");
+        monitor.setProgress(0.6);
 
         if (cancelled) {
             destroyNetwork(manager, network);
@@ -86,7 +94,7 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
         monitor.setTitle("Create and register network view + Initialize filters");
         monitor.showMessage(TaskMonitor.Level.INFO, "Create and register network view + Initialize filters");
         monitor.setProgress(0.8);
-        CyNetworkView networkView = manager.data.createNetworkView(cyNetwork);
+        CyNetworkView networkView = manager.data.createNetworkView(cyNetwork, queryFilters, networkViewType);
         ViewUtils.registerView(manager, networkView);
 
         if (cancelled) {
@@ -98,7 +106,6 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
             TaskIterator taskIterator = getLayoutTask(monitor, manager, networkView);
             insertTasksAfterCurrentTask(taskIterator);
         }
-
         manager.utils.showResultsPanel();
     }
 
@@ -110,7 +117,6 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
 
         ObjectMapper mapper = new ObjectMapper();
 
-
         Map<String, JsonNode> nodes = new HashMap<>();
         ArrayNode edgesArray = mapper.createArrayNode();
 
@@ -118,11 +124,13 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
             int page = 0;
             JsonNode pagedResult;
             do {
-                pagedResult = HttpUtils.getJsonNetworkWithRequestBody(this.query, page++);
+                int pageSize = 1_000;
+                pagedResult = HttpUtils.getJsonNetworkWithRequestBody(this.query, page++, pageSize);
                 JsonNode network = pagedResult.get("content").get(0);
                 Number totalPages = pagedResult.get("totalPages").numberValue();
+                Number totalElements = pagedResult.get("totalElements").numberValue();
 
-                monitor.showMessage(TaskMonitor.Level.INFO, "Page " + page + " / " + totalPages);
+                monitor.showMessage(TaskMonitor.Level.INFO, "Page " + page + " / " + totalPages + " - Loaded " + page  * pageSize + " evidence edges on " + totalElements);
                 monitor.setProgress(page / totalPages.doubleValue());
                 if (cancelled) return;
 
@@ -147,10 +155,10 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
 
         if (cancelled) return;
 
-        CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, netName == null ? query : netName, () -> cancelled);
-        network.setNetwork(cyNetwork);
+        CyNetwork cyNetwork = ModelUtils.createIntactNetworkFromJSON(network, fetchedNetwork, netName != null ? netName : query, () -> cancelled);
+        manager.data.addNetwork(network, cyNetwork);
+        manager.data.fireIntactNetworkCreated(network);
     }
-
 
     private void destroyNetwork(Manager manager, Network network) {
         CyNetwork cyNetwork = network.getCyNetwork();
@@ -178,24 +186,5 @@ public class AdvancedSearchTask extends AbstractTask implements TaskObserver {
     @Override
     public void allFinished(FinishStatus finishStatus) {
 
-    }
-
-    public static JsonNode mergeJsonNodes(ObjectMapper objectMapper, List<JsonNode> jsonNodes) {
-        ObjectNode merged = objectMapper.createObjectNode();
-        ArrayNode mergedNodes = objectMapper.createArrayNode();
-        ArrayNode mergedEdges = objectMapper.createArrayNode();
-
-        for (JsonNode jsonNode : jsonNodes) {
-            if (jsonNode.has("nodes") && jsonNode.get("nodes").isArray()) {
-                mergedNodes.addAll((ArrayNode) jsonNode.get("nodes"));
-            }
-            if (jsonNode.has("edges") && jsonNode.get("edges").isArray()) {
-                mergedEdges.addAll((ArrayNode) jsonNode.get("edges"));
-            }
-        }
-
-        merged.set("nodes", mergedNodes);
-        merged.set("edges", mergedEdges);
-        return merged;
     }
 }

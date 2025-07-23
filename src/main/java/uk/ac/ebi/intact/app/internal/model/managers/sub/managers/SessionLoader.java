@@ -1,25 +1,25 @@
 package uk.ac.ebi.intact.app.internal.model.managers.sub.managers;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.*;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
+import uk.ac.ebi.intact.app.internal.model.core.elements.edges.SummaryEdge;
 import uk.ac.ebi.intact.app.internal.model.core.network.Network;
 import uk.ac.ebi.intact.app.internal.model.core.view.NetworkView;
 import uk.ac.ebi.intact.app.internal.model.events.ViewUpdatedEvent;
 import uk.ac.ebi.intact.app.internal.model.managers.Manager;
-import uk.ac.ebi.intact.app.internal.model.styles.EvidenceStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.MutationStyle;
-import uk.ac.ebi.intact.app.internal.model.styles.Style;
-import uk.ac.ebi.intact.app.internal.model.styles.SummaryStyle;
+import uk.ac.ebi.intact.app.internal.model.styles.*;
 import uk.ac.ebi.intact.app.internal.model.tables.Table;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.EdgeFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.FeatureFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.enums.NetworkFields;
 import uk.ac.ebi.intact.app.internal.model.tables.fields.model.ListField;
 import uk.ac.ebi.intact.app.internal.utils.ModelUtils;
+import uk.ac.ebi.intact.app.internal.utils.ViewUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -50,6 +50,7 @@ public class SessionLoader implements SessionLoadedListener {
                 if (ModelUtils.ifHaveIntactNS(cyNetwork)) {
                     updateSUIDList(cyNetwork.getDefaultEdgeTable(), EdgeFields.SUMMARIZED_EDGES_SUID, CyEdge.class, loadedSession);
                     Network network = new Network(manager);
+                    network.getSummaryEdges().forEach(SummaryEdge::updateSummary);
                     manager.data.addNetwork(network, cyNetwork);
                     network.completeMissingNodeColorsFromTables(true, () -> manager.data.networkViewMap.values().forEach(NetworkView::accordStyleToType));
                 }
@@ -57,12 +58,20 @@ public class SessionLoader implements SessionLoadedListener {
         }
 
         linkIntactTablesToNetwork(loadedSession.getTables(), loadedSession);
-        for (CyNetworkView view : loadedSession.getNetworkViews()) {
+        Set<CyNetworkView> cyNetworkViews = loadedSession.getNetworkViews();
+        for (CyNetworkView view : cyNetworkViews) {
             if (manager.data.getNetwork(view.getModel()) != null) {
-                manager.data.addNetworkView(view, true);
+                manager.data.addNetworkView(view, true, null);
             }
         }
 
+        // When loading a session, there are issues because the loaded network(s) is not properly selected.
+        // To avoid those issues, we unset the current network and network view, and then we
+        // select any of the loaded networks and network views.
+        manager.utils.getService(CyApplicationManager.class).setCurrentNetworkView(null);
+        manager.utils.getService(CyApplicationManager.class).setCurrentNetwork(null);
+        manager.data.setCurrentNetwork(cyNetworks.iterator().next());
+        ViewUtils.registerView(manager, cyNetworkViews.iterator().next());
 
         NetworkView currentView = manager.data.getCurrentNetworkView();
         if (currentView != null) {
@@ -86,14 +95,15 @@ public class SessionLoader implements SessionLoadedListener {
                     manager.style.vmm.removeVisualStyle(toReplace.getStyle());
                     manager.style.vmm.addVisualStyle(styleToLoad);
                     switch (type) {
-                        case SUMMARY:
-                            manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager, styleToLoad));
-                            break;
                         case EVIDENCE:
                             manager.style.styles.put(Type.EVIDENCE, new EvidenceStyle(manager, styleToLoad));
                             break;
                         case MUTATION:
                             manager.style.styles.put(Type.MUTATION, new MutationStyle(manager, styleToLoad));
+                            break;
+                        case SUMMARY:
+                        default:
+                            manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager, styleToLoad));
                             break;
                     }
                     break;
@@ -101,14 +111,15 @@ public class SessionLoader implements SessionLoadedListener {
             }
             if (!styleFound) {
                 switch (type) {
-                    case SUMMARY:
-                        manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager));
-                        break;
                     case EVIDENCE:
                         manager.style.styles.put(Type.EVIDENCE, new EvidenceStyle(manager));
                         break;
                     case MUTATION:
                         manager.style.styles.put(Type.MUTATION, new MutationStyle(manager));
+                        break;
+                    case SUMMARY:
+                    default:
+                        manager.style.styles.put(Type.SUMMARY, new SummaryStyle(manager));
                         break;
                 }
             }

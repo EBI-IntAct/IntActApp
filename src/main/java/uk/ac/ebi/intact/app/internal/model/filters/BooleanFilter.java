@@ -7,12 +7,13 @@ import uk.ac.ebi.intact.app.internal.model.core.elements.edges.Edge;
 import uk.ac.ebi.intact.app.internal.model.core.elements.Element;
 
 public abstract class BooleanFilter<T extends Element> extends Filter<T> {
-    protected boolean status = false;
+    protected boolean status;
     public final String description;
 
-    public BooleanFilter(NetworkView view, Class<T> elementType, String name, String definition, String description) {
+    public BooleanFilter(NetworkView view, Class<T> elementType, String name, String definition, String description, Boolean status) {
         super(view, name, definition, elementType);
         this.description = description;
+        this.status = status != null ? status : false;
     }
 
     public abstract boolean isToHide(T element);
@@ -30,9 +31,10 @@ public abstract class BooleanFilter<T extends Element> extends Filter<T> {
         if (!isEnabled() || !status) return;
         NetworkView view = getNetworkView();
         if (Node.class.isAssignableFrom(elementType)) {
-            view.visibleNodes.removeIf(node -> isToHide(elementType.cast(node)));
+            view.getNetwork().getVisibleNodes().removeIf(node -> isToHide(elementType.cast(node)));
         } else if (Edge.class.isAssignableFrom(elementType)) {
-            view.visibleEdges.removeIf(edge -> isToHide(elementType.cast(edge)));
+            view.getNetwork().getVisibleEvidenceEdges().removeIf(edge -> isToHide(elementType.cast(edge)));
+            view.getNetwork().getVisibleSummaryEdges().removeIf(edge -> isToHide(elementType.cast(edge)));
         }
     }
 
