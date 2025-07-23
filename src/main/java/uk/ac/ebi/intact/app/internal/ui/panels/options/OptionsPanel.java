@@ -43,6 +43,6 @@ public class OptionsPanel extends JPanel implements OptionUpdatedListener {
 
     @Override
     public void handleEvent(OptionUpdatedEvent event) {
-        fields.get(event.getSource()).update();
+        if (fields.containsKey(event.getSource())) fields.get(event.getSource()).update();
     }
 }
